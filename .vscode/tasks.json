@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Restore & Build (.NET Framework)",
+      "type": "shell",
+      "command": ".\\build-only.bat",
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "Run IIS Express",
+      "type": "shell",
+      "command": ".\\start-iis-express.bat",
+      "isBackground": true
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach to IIS Express (.NET Framework)",
+      "type": "clr",
+      "request": "attach",
+      "preLaunchTask": "Run IIS Express",
+      "processId": "${command:pickProcess}"
+    }
+  ]
+}
