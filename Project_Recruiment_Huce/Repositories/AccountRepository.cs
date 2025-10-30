@@ -3,7 +3,7 @@ using System.Linq;
 using Project_Recruiment_Huce.DbContext;
 using Project_Recruiment_Huce.Models;
 
-namespace Project_Recruiment_Huce.Services
+namespace Project_Recruiment_Huce.Repositories
 {
     public class AccountRepository
     {
@@ -51,5 +51,3 @@ namespace Project_Recruiment_Huce.Services
         }
     }
 }
-
-

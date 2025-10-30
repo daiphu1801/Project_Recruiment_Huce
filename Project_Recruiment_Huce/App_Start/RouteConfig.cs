@@ -14,9 +14,17 @@ namespace Project_Recruiment_Huce
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
+                name: "Root",
+                url: "",
+                defaults: new { controller = "Home", action = "Index" },
+                namespaces: new[] { "Project_Recruiment_Huce.Controllers" }
+            );
+
+            routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
+                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional },
+                namespaces: new[] { "Project_Recruiment_Huce.Controllers" }
             );
         }
     }

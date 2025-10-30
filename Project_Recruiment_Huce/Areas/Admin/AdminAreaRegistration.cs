@@ -17,7 +17,8 @@ namespace Project_Recruiment_Huce.Areas.Admin
             context.MapRoute(
                 "Admin_default",
                 "Admin/{controller}/{action}/{id}",
-                new { action = "Index", id = UrlParameter.Optional }
+                new { action = "Index", id = UrlParameter.Optional },
+                namespaces: new[] { "Project_Recruiment_Huce.Areas.Admin.Controllers" }
             );
         }
     }
