@@ -1,0 +1,60 @@
+@model Project_Recruiment_Huce.Models.Recruiter
+@{
+  ViewBag.Title = "Recruiter Profile";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-7">
+        <h1 class="text-white font-weight-bold">Recruiter Profile</h1>
+        <div class="custom-breadcrumbs">
+          <a href="@Url.Action("Index","Home")">Home</a> <span class="mx-2 slash">/</span>
+          <span class="text-white"><strong>Recruiter</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="site-section">
+  <div class="container">
+    <div class="row mb-5">
+      <div class="col-lg-12">
+        @using (Html.BeginForm(null, null, FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "recruiter-form" }))
+        {
+          <h3 class="text-black mb-5 border-bottom pb-2">Recruiter Details</h3>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="FullName">Full Name</label>
+              @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "e.g. Jane Doe" })
+            </div>
+            <div class="form-group col-md-6">
+              <label for="PositionTitle">Position Title</label>
+              @Html.TextBoxFor(m => m.PositionTitle, new { @class = "form-control", placeholder = "HR Manager" })
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="WorkEmail">Work Email</label>
+              @Html.TextBoxFor(m => m.WorkEmail, new { @class = "form-control", type = "email", placeholder = "you@company.com" })
+            </div>
+            <div class="form-group col-md-6">
+              <label for="Phone">Phone</label>
+              @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "090..." })
+            </div>
+          </div>
+
+          <div class="text-right">
+            <button type="submit" class="btn btn-primary btn-md">Save Recruiter</button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+

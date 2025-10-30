@@ -14,6 +14,12 @@ namespace Project_Recruiment_Huce.Controllers
             ViewBag.JobId = id;
             return View();
         }
+
+        [HttpGet]
+        public ActionResult JobsCreate()
+        {
+            return View();
+        }
     }
 }
 

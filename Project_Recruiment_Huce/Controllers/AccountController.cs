@@ -43,12 +43,12 @@ namespace Project_Recruiment_Huce.Controllers
 
             using (var db = new RecruitmentDbContext())
             {
-                // Normalize input
+                // Normalize input (allow username OR email)
                 var input = (model.EmailOrUsername ?? string.Empty).Trim();
-                // Find user by Username or Email in Accounts (case-insensitive for email)
+                bool isEmail = input.Contains("@");
+                var lower = input.ToLower();
                 var user = db.Accounts.FirstOrDefault(a =>
-                    (a.Username == input || a.Email.ToLower() == input.ToLower())
-                    && a.ActiveFlag == 1);
+                    (isEmail ? a.Email.ToLower() == lower : a.Username == input) && a.ActiveFlag == 1);
 
                 if (user != null && PasswordHelper.VerifyPassword(model.Password, user.PasswordHash))
                 {

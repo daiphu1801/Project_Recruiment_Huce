@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Web.Mvc;
 
 namespace Project_Recruiment_Huce.Models
 {
@@ -17,6 +18,7 @@ namespace Project_Recruiment_Huce.Models
         [StringLength(15)] public string Phone { get; set; }
         [StringLength(100)] public string Email { get; set; }
         [StringLength(255)] public string Address { get; set; }
+        [AllowHtml]
         [StringLength(500)] public string About { get; set; }
         public int? PhotoId { get; set; }
         public DateTime? CreatedAt { get; set; }
