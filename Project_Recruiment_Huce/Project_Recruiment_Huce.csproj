@@ -195,8 +195,8 @@
     <Compile Include="Startup.cs" />
     <Compile Include="DbContext\RecruitmentDbContext.cs" />
     <Compile Include="Helpers\PasswordHelper.cs" />
-    <Compile Include="Services\AccountRepository.cs" />
-    <Compile Include="Services\JobPostRepository.cs" />
+    <Compile Include="Repositories\AccountRepository.cs" />
+    <Compile Include="Repositories\JobPostRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\Admin\css\adminlte.css" />

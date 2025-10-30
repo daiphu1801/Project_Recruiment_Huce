@@ -3,7 +3,7 @@ using System.Linq;
 using Project_Recruiment_Huce.DbContext;
 using Project_Recruiment_Huce.Models;
 
-namespace Project_Recruiment_Huce.Services
+namespace Project_Recruiment_Huce.Repositories
 {
     public class JobPostRepository
     {
@@ -27,7 +27,6 @@ namespace Project_Recruiment_Huce.Services
         {
             var job = _db.JobPosts.FirstOrDefault(j => j.JobId == jobId);
             if (job == null) return null;
-            // consumers can query details when needed
             return job;
         }
 
@@ -53,5 +52,3 @@ namespace Project_Recruiment_Huce.Services
         }
     }
 }
-
-
