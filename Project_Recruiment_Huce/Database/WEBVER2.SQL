@@ -1,7 +1,18 @@
+-- Xóa database nếu tồn tại
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'JOBPORTAL_EN')
+BEGIN
+    DROP DATABASE JOBPORTAL_EN;
+END
+GO
+
+-- Tạo lại database
 CREATE DATABASE JOBPORTAL_EN;
 GO
+
+-- Chuyển sang sử dụng database vừa tạo
 USE JOBPORTAL_EN;
 GO
+
 
 /* =================== MASTER TABLES =================== */
 CREATE TABLE Accounts (
@@ -196,6 +207,37 @@ CREATE TABLE Transactions (
     UpdatedAt      DATETIME DEFAULT GETDATE()
 );
 GO
+CREATE TABLE BankCards (
+    CardId         INT IDENTITY(1,1) PRIMARY KEY,
+    CompanyId      INT NOT NULL,
+    CardNumber     VARCHAR(20) NOT NULL,
+    CardHolder     NVARCHAR(100) NOT NULL,
+    BankName       NVARCHAR(150),
+    ExpiryDate     CHAR(5), -- MM/YY
+    CreatedAt      DATETIME DEFAULT GETDATE(),
+    ActiveFlag     TINYINT DEFAULT 1
+);
+GO
+CREATE TABLE PendingPayments (
+    PendingId      INT IDENTITY(1,1) PRIMARY KEY,
+    CompanyId      INT NOT NULL,
+    AmountDue      DECIMAL(18,2) NOT NULL,
+    DueDate        DATETIME,
+    Status         NVARCHAR(50) DEFAULT N'Pending',
+    CreatedAt      DATETIME DEFAULT GETDATE()
+);
+
+GO
+CREATE TABLE PaymentHistory (
+    PaymentId      INT IDENTITY(1,1) PRIMARY KEY,
+    CompanyId      INT NOT NULL,
+    Amount         DECIMAL(18,2) NOT NULL,
+    PaymentMethod  NVARCHAR(100) NOT NULL, -- Bank Card / Momo / Cash
+    PaymentDate    DATETIME DEFAULT GETDATE(),
+    Status         NVARCHAR(50) DEFAULT N'Completed',
+    Description    NVARCHAR(500)
+);
+GO
 
 /* =================== FOREIGN KEYS =================== */
 -- Accounts ↔ Photos
@@ -272,11 +314,23 @@ ALTER TABLE dbo.Applications
 ALTER TABLE dbo.Transactions
   ADD CONSTRAINT FK_Transactions_Accounts
   FOREIGN KEY (AccountId) REFERENCES dbo.Accounts(AccountId);
+
+ALTER TABLE PaymentHistory
+ADD CONSTRAINT FK_PaymentHistory_Company
+FOREIGN KEY (CompanyId) REFERENCES Companies(CompanyId);
+
+ALTER TABLE BankCards
+ADD CONSTRAINT FK_BankCards_Company
+FOREIGN KEY (CompanyId) REFERENCES Companies(CompanyId);
+
+ALTER TABLE PendingPayments
+ADD CONSTRAINT FK_PendingPayments_Company
+FOREIGN KEY (CompanyId) REFERENCES Companies(CompanyId);
+
 GO
 
 /* =================== INDEXES =================== */
 -- Login
-CREATE UNIQUE INDEX UQ_Accounts_Email ON dbo.Accounts(LOWER(Email));
 CREATE INDEX IX_Accounts_Role ON dbo.Accounts(Role);
 
 -- Recruiters/Companies

@@ -21,6 +21,7 @@
     <!-- MAIN CSS -->
     <link rel="stylesheet" href="~/Content/css/style.css">    
   </head>
+  @RenderSection("Styles", required: false)
   <body id="top">
 
   <div id="overlayer"></div>
@@ -57,7 +58,11 @@
                 <a href="@Url.Action("JobsListing","Jobs")">Job Listings</a>
                 <ul class="dropdown">
                   <li><a href="@Url.Action("JobsDetails","Jobs", new { id = 1 })">Job Single</a></li>
-                  <li><a href="#">Post a Job</a></li>
+                  @{ var roleClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro") : null; }
+                  @if (Request.IsAuthenticated && roleClaim != null && (roleClaim.Value == "Company" || roleClaim.Value == "Recruiter"))
+                  {
+                    <li><a href="@Url.Action("JobsCreate","Jobs")">Post a Job</a></li>
+                  }
                 </ul>
               </li>
               <li class="has-children">
@@ -75,13 +80,33 @@
               </li>
               <li><a href="blog.html">Blog</a></li>
               <li><a href="@Url.Action("Contact","Home")">Contact</a></li>
-              <li class="d-lg-none"><a href="post-job.html"><span class="mr-2">+</span> Post a Job</a></li>
+              @{ var roleClaim2 = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro") : null; }
+              @if (Request.IsAuthenticated && roleClaim2 != null && (roleClaim2.Value == "Company" || roleClaim2.Value == "Recruiter"))
+              {
+                <li class="d-lg-none"><a href="@Url.Action("JobsCreate","Jobs")"><span class="mr-2">+</span> Post a Job</a></li>
+              }
               @if (Request.IsAuthenticated)
               {
                 <li class="has-children d-lg-none">
                   <a href="#">@User.Identity.Name</a>
                   <ul class="dropdown">
-                    <li><a href="@Url.Action("Manage", "Account")">Manage</a></li>
+                    @{ var mobileRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro"); }
+                    @if (mobileRoleClaim != null && mobileRoleClaim.Value == "Candidate")
+                    {
+                      <li><a href="@Url.Action("CandidatesManage", "Candidates")">Manage</a></li>
+                    }
+                    else if (mobileRoleClaim != null && mobileRoleClaim.Value == "Company")
+                    {
+                      <li><a href="@Url.Action("CompaniesManage", "Companies")">Manage</a></li>
+                    }
+                    else if (mobileRoleClaim != null && mobileRoleClaim.Value == "Recruiter")
+                    {
+                      <li><a href="@Url.Action("RecruitersManage", "Recruiters")">Manage</a></li>
+                    }
+                    else
+                    {
+                      <li><a href="@Url.Action("Manage", "Account")">Manage</a></li>
+                    }
                     <li><a href="@Url.Action("LogOffGet", "Account")">Log Out</a></li>
                   </ul>
                 </li>
@@ -95,7 +120,11 @@
           
           <div class="right-cta-menu text-right d-flex aligin-items-center col-6">
             <div class="ml-auto">
-              <a href="post-job.html" class="btn btn-outline-white border-width-2 d-none d-lg-inline-block"><span class="mr-2 icon-add"></span>Post a Job</a>
+              @{ var roleClaim3 = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro") : null; }
+              @if (Request.IsAuthenticated && roleClaim3 != null && (roleClaim3.Value == "Company" || roleClaim3.Value == "Recruiter"))
+              {
+                <a href="@Url.Action("JobsCreate","Jobs")" class="btn btn-outline-white border-width-2 d-none d-lg-inline-block"><span class="mr-2 icon-add"></span>Post a Job</a>
+              }
               @if (Request.IsAuthenticated)
               {
                 <div class="dropdown d-none d-lg-inline-block">
@@ -103,7 +132,23 @@
                     <span class="mr-2 icon-lock_outline"></span>@User.Identity.Name
                   </a>
                   <div class="dropdown-menu dropdown-menu-right">
-                    <a class="dropdown-item" href="@Url.Action("Manage", "Account")">Manage</a>
+                    @{ var navRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro"); }
+                    @if (navRoleClaim != null && navRoleClaim.Value == "Candidate")
+                    {
+                      <a class="dropdown-item" href="@Url.Action("CandidatesManage", "Candidates")">Manage</a>
+                    }
+                    else if (navRoleClaim != null && navRoleClaim.Value == "Company")
+                    {
+                      <a class="dropdown-item" href="@Url.Action("CompaniesManage", "Companies")">Manage</a>
+                    }
+                    else if (navRoleClaim != null && navRoleClaim.Value == "Recruiter")
+                    {
+                      <a class="dropdown-item" href="@Url.Action("RecruitersManage", "Recruiters")">Manage</a>
+                    }
+                    else
+                    {
+                      <a class="dropdown-item" href="@Url.Action("Manage", "Account")">Manage</a>
+                    }
                     @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
                     {
                       @Html.AntiForgeryToken()
