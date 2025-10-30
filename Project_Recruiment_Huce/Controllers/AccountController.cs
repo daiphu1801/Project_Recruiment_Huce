@@ -43,20 +43,22 @@ namespace Project_Recruiment_Huce.Controllers
 
             using (var db = new RecruitmentDbContext())
             {
-                // Find user by TenDangNhap or Email
-                var user = db.TaiKhoans.FirstOrDefault(t => 
-                    (t.TenDangNhap == model.EmailOrUsername || t.Email == model.EmailOrUsername) 
-                    && t.TrangThai == 1);
+                // Normalize input
+                var input = (model.EmailOrUsername ?? string.Empty).Trim();
+                // Find user by Username or Email in Accounts (case-insensitive for email)
+                var user = db.Accounts.FirstOrDefault(a =>
+                    (a.Username == input || a.Email.ToLower() == input.ToLower())
+                    && a.ActiveFlag == 1);
 
-                if (user != null && PasswordHelper.VerifyPassword(model.Password, user.MatKhau))
+                if (user != null && PasswordHelper.VerifyPassword(model.Password, user.PasswordHash))
                 {
                     // Create claims identity for OWIN authentication
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.TaiKhoanID.ToString()),
-                    new Claim(ClaimTypes.Name, user.TenDangNhap),
+                    new Claim(ClaimTypes.NameIdentifier, user.AccountId.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Email, user.Email),
-                    new Claim("VaiTro", user.VaiTro),
+                    new Claim("VaiTro", user.Role),
                     new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                 };
 
@@ -117,50 +119,81 @@ namespace Project_Recruiment_Huce.Controllers
             {
                 using (var db = new RecruitmentDbContext())
                 {
-                    // Check if TenDangNhap already exists
-                    if (db.TaiKhoans.Any(t => t.TenDangNhap == model.TenDangNhap))
+                    // Check if Username already exists
+                    if (db.Accounts.Any(a => a.Username == model.TenDangNhap))
                     {
                         ModelState.AddModelError("TenDangNhap", "Tên đăng nhập đã tồn tại.");
                         return View(model);
                     }
 
                     // Check if Email already exists
-                    if (db.TaiKhoans.Any(t => t.Email == model.Email))
+                    var email = (model.Email ?? string.Empty).Trim();
+                    if (db.Accounts.Any(a => a.Email.ToLower() == email.ToLower()))
                     {
                         ModelState.AddModelError("Email", "Email đã được sử dụng.");
                         return View(model);
                     }
 
-                    // Validate VaiTro
-                    var validVaiTro = new[] { "Admin", "CongTy", "NhaTuyenDung", "NguoiUngTuyen" };
+                    // Extra server-side password complexity validation
+                    var password = model.Password ?? string.Empty;
+                    bool hasLower = password.Any(char.IsLower);
+                    bool hasUpper = password.Any(char.IsUpper);
+                    bool hasDigit = password.Any(char.IsDigit);
+                    if (password.Length < 6 || !hasLower || !hasUpper || !hasDigit)
+                    {
+                        ModelState.AddModelError("Password", "Mật khẩu phải tối thiểu 6 ký tự gồm chữ hoa, chữ thường và số.");
+                        return View(model);
+                    }
+
+                    // Validate VaiTro -> Role mapping to new schema (hide Admin from public registration)
+                    var validVaiTro = new[] { "CongTy", "NhaTuyenDung", "NguoiUngTuyen" };
                     if (!validVaiTro.Contains(model.VaiTro))
                     {
                         ModelState.AddModelError("VaiTro", "Vai trò không hợp lệ.");
                         return View(model);
                     }
 
-                    // Create new TaiKhoan
-                    var newTaiKhoan = new TaiKhoan
+                    // Map roles from old labels to new schema values (no C# 8 switch for compatibility)
+                    string mappedRole;
+                    if (model.VaiTro == "CongTy")
                     {
-                        TenDangNhap = model.TenDangNhap,
-                        Email = model.Email,
-                        SoDienThoai = model.SoDienThoai,
-                        VaiTro = model.VaiTro,
-                        MatKhau = PasswordHelper.HashPassword(model.Password),
-                        NgayTao = DateTime.Now,
-                        TrangThai = 1
+                        mappedRole = "Company";
+                    }
+                    else if (model.VaiTro == "NhaTuyenDung")
+                    {
+                        mappedRole = "Recruiter";
+                    }
+                    else if (model.VaiTro == "NguoiUngTuyen")
+                    {
+                        mappedRole = "Candidate";
+                    }
+                    else
+                    {
+                        mappedRole = "Candidate";
+                    }
+
+                    // Create new Account
+                    var newAccount = new Account
+                    {
+                        Username = model.TenDangNhap,
+                        Email = email,
+                        Phone = model.SoDienThoai,
+                        Role = mappedRole,
+                        PasswordHash = PasswordHelper.HashPassword(model.Password),
+                        CreatedAt = DateTime.Now,
+                        ActiveFlag = 1
                     };
 
-                    db.TaiKhoans.Add(newTaiKhoan);
+                    db.Accounts.Add(newAccount);
                     db.SaveChanges();
 
                     // Auto login after registration
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.NameIdentifier, newTaiKhoan.TaiKhoanID.ToString()),
-                    new Claim(ClaimTypes.Name, newTaiKhoan.TenDangNhap),
-                    new Claim(ClaimTypes.Email, newTaiKhoan.Email),
-                    new Claim("VaiTro", newTaiKhoan.VaiTro),
+                    new Claim(ClaimTypes.NameIdentifier, newAccount.AccountId.ToString()),
+                    new Claim(ClaimTypes.Name, newAccount.Username),
+                    new Claim(ClaimTypes.Email, newAccount.Email),
+                    new Claim("VaiTro", newAccount.Role),
                     new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                 };
 
@@ -203,6 +236,12 @@ namespace Project_Recruiment_Huce.Controllers
         // GET: /Account/ExternalLoginFailure
         [AllowAnonymous]
         public ActionResult ExternalLoginFailure()
+        {
+            return View();
+        }
+
+        [Authorize]
+        public ActionResult Manage()
         {
             return View();
         }

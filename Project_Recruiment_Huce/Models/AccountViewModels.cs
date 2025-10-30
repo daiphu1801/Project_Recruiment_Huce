@@ -49,11 +49,13 @@ namespace Project_Recruiment_Huce.Models
     public class LoginViewModel
     {
         [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập hoặc email")]
+        [StringLength(150, ErrorMessage = "Tối đa 150 ký tự")]
         [Display(Name = "Tên đăng nhập hoặc Email")]
         public string EmailOrUsername { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         [DataType(DataType.Password)]
+        [StringLength(100, ErrorMessage = "Mật khẩu tối đa 100 ký tự")]
         [Display(Name = "Mật khẩu")]
         public string Password { get; set; }
 
@@ -65,6 +67,7 @@ namespace Project_Recruiment_Huce.Models
     {
         [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
         [StringLength(100, ErrorMessage = "Tên đăng nhập không được vượt quá 100 ký tự")]
+        [RegularExpression("^[a-zA-Z0-9_]{3,20}$", ErrorMessage = "Tên đăng nhập 3-20 ký tự, chỉ chữ, số, gạch dưới")]
         [Display(Name = "Tên đăng nhập")]
         public string TenDangNhap { get; set; }
 
@@ -83,6 +86,7 @@ namespace Project_Recruiment_Huce.Models
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         [StringLength(100, ErrorMessage = "Mật khẩu phải có ít nhất {2} ký tự.", MinimumLength = 6)]
+        [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}$", ErrorMessage = "Mật khẩu phải gồm chữ hoa, chữ thường và số")] 
         [DataType(DataType.Password)]
         [Display(Name = "Mật khẩu")]
         public string Password { get; set; }

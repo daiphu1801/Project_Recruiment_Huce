@@ -11,14 +11,20 @@ namespace Project_Recruiment_Huce.DbContext
             Database.SetInitializer<RecruitmentDbContext>(null);
         }
 
-        public virtual DbSet<Job> Jobs { get; set; }
-
-        // Domain tables
-        public virtual DbSet<TaiKhoan> TaiKhoans { get; set; }
+        // New schema DbSets
+        public virtual DbSet<Account> Accounts { get; set; }
+        public virtual DbSet<Photo> Photos { get; set; }
         public virtual DbSet<Admin> Admins { get; set; }
-        public virtual DbSet<NguoiUngTuyen> NguoiUngTuyens { get; set; }
-        public virtual DbSet<NhaUngTuyen> NhaUngTuyens { get; set; }
-        public virtual DbSet<CongTy> CongTys { get; set; }
+        public virtual DbSet<Company> Companies { get; set; }
+        public virtual DbSet<Recruiter> Recruiters { get; set; }
+        public virtual DbSet<Candidate> Candidates { get; set; }
+        public virtual DbSet<WorkExperience> WorkExperiences { get; set; }
+        public virtual DbSet<Certificate> Certificates { get; set; }
+        public virtual DbSet<CandidateCertificate> CandidateCertificates { get; set; }
+        public virtual DbSet<JobPost> JobPosts { get; set; }
+        public virtual DbSet<JobPostDetail> JobPostDetails { get; set; }
+        public virtual DbSet<Application> Applications { get; set; }
+        public virtual DbSet<Transaction> Transactions { get; set; }
 
         public static RecruitmentDbContext Create()
         {

@@ -13,6 +13,12 @@ namespace Project_Recruiment_Huce.Controllers
             return View();
         }
 
+        [AllowAnonymous]
+        public ActionResult Login()
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";
