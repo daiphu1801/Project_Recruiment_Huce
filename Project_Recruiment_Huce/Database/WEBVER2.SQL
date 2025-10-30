@@ -1,306 +1,297 @@
-CREATE DATABASE WEBVER2;
+CREATE DATABASE JOBPORTAL_EN;
 GO
-USE WEBVER2;
+USE JOBPORTAL_EN;
 GO
-/*
-CREATE TRIGGER TG_TaiKhoan_MaTuDong
-ON TaiKhoan
-INSTEAD OF INSERT
-AS
-BEGIN
-    SET NOCOUNT ON;
 
-    DECLARE @prefix NVARCHAR(2);
-    DECLARE @next_id INT;
-    DECLARE @VaiTro NVARCHAR(50);
-    DECLARE @TenDangNhap NVARCHAR(100);
-    DECLARE @MatKhau NVARCHAR(255);
-    DECLARE @Email NVARCHAR(150);
-    DECLARE @SoDienThoai NVARCHAR(20);
-    DECLARE @AnhID INT;
-    DECLARE @MaTaiKhoan NVARCHAR(20);
-
-    -- Lấy dữ liệu từ bảng tạm inserted
-    SELECT 
-        @VaiTro = VaiTro,
-        @TenDangNhap = TenDangNhap,
-        @MatKhau = MatKhau,
-        @Email = Email,
-        @SoDienThoai = SoDienThoai,
-        @AnhID = AnhID
-    FROM inserted;
-
-    -- Xác định tiền tố dựa theo VaiTro
-    IF @VaiTro = 'Admin'
-        SET @prefix = 'AD';
-    ELSE IF @VaiTro = 'NguoiUngTuyen'
-        SET @prefix = 'UR';
-    ELSE IF @VaiTro = 'NhaTuyenDung'
-        SET @prefix = 'HR';
-    ELSE IF @VaiTro = 'CongTy'
-        SET @prefix = 'CM';
-
-    -- Lấy số thứ tự tiếp theo
-    SELECT @next_id = COUNT(*) + 1 FROM TaiKhoan WHERE VaiTro = @VaiTro;
-
-    -- Sinh mã dạng: AD001, HR002, ...
-    SET @MaTaiKhoan = @prefix + RIGHT('000' + CAST(@next_id AS VARCHAR(3)), 3);
-
-    -- Thực hiện chèn dữ liệu thật sự
-    INSERT INTO TaiKhoan (TenDangNhap, MatKhau, Email, SoDienThoai, VaiTro, NgayTao, TrangThai, AnhID)
-    SELECT 
-        @TenDangNhap, 
-        @MatKhau, 
-        @Email, 
-        @SoDienThoai, 
-        @VaiTro, 
-        GETDATE(), 
-        1, 
-        @AnhID;
-END;
-GO
-*/
-CREATE TABLE TaiKhoan (
-    TaiKhoanID     INT IDENTITY(1,1) PRIMARY KEY,       -- Khóa chính
-    TenDangNhap    VARCHAR(100) NOT NULL UNIQUE,        -- Tên đăng nhập duy nhất
-    MatKhau        VARCHAR(255) NOT NULL,               -- Mật khẩu (đã mã hóa + salt)
-    Email          VARCHAR(150) NOT NULL UNIQUE,        -- Email đăng ký
-    SoDienThoai    VARCHAR(20),                         -- Số điện thoại
-    VaiTro         NVARCHAR(30) NOT NULL CHECK (VaiTro IN (N'Admin', N'CongTy', N'NhaTuyenDung', N'NguoiUngTuyen')), 
-                                                       -- Loại tài khoản
-    NgayTao        DATETIME DEFAULT GETDATE(),          -- Ngày tạo tài khoản
-    TrangThai      TINYINT DEFAULT 1,                   -- 1 = hoạt động, 0 = khóa
-    AnhID          INT                                  -- Liên kết tới bảng Ảnh
+/* =================== MASTER TABLES =================== */
+CREATE TABLE Accounts (
+    AccountId    INT IDENTITY(1,1) PRIMARY KEY,
+    Username     VARCHAR(100) NOT NULL UNIQUE,
+    PasswordHash VARCHAR(255) NOT NULL,
+    Email        VARCHAR(150) NOT NULL UNIQUE,
+    Phone        VARCHAR(20),
+    Role         NVARCHAR(30) NOT NULL CHECK (Role IN (N'Admin', N'Company', N'Recruiter', N'Candidate')),
+    CreatedAt    DATETIME DEFAULT GETDATE(),
+    ActiveFlag   TINYINT  DEFAULT 1,
+    PhotoId      INT NULL
 );
 GO
 
-CREATE TABLE Admin (
-    AdminID       INT IDENTITY(1,1) PRIMARY KEY,       -- Khóa chính
-    TaiKhoanID    INT NOT NULL UNIQUE,                 -- Liên kết 1-1 đến bảng TaiKhoan
-    HoTen         NVARCHAR(100) NOT NULL,              -- Họ và tên admin
-    EmailLienHe   VARCHAR(150),                        -- Email nội bộ
-    QuyenHan      NVARCHAR(100) DEFAULT N'ToanQuyen',  -- Mức quyền
-    NgayTao       DATETIME DEFAULT GETDATE()           -- Ngày tạo
+CREATE TABLE Photos (
+    PhotoId     INT IDENTITY(1,1) PRIMARY KEY,
+    FileName    VARCHAR(255) NOT NULL,
+    FilePath    VARCHAR(500) NOT NULL,
+    SizeKB      INT,
+    MimeType    VARCHAR(50),
+    UploadedAt  DATETIME DEFAULT GETDATE()
 );
 GO
 
-CREATE TABLE CongTy (
-    CongTyID        INT IDENTITY(1,1) PRIMARY KEY,     -- Khóa chính
-    TaiKhoanID      INT NOT NULL UNIQUE,                -- Liên kết với bảng TaiKhoan
-    TenCongTy       NVARCHAR(255) NOT NULL,             -- Tên công ty
-    MaSoThue        VARCHAR(20),                        -- Mã số thuế
-    LinhVucHoatDong NVARCHAR(150),                      -- Lĩnh vực hoạt động
-    DiaChi          NVARCHAR(255),                      -- Địa chỉ
-    SoDienThoai     VARCHAR(20),                        -- Số điện thoại
-    EmailCongTy     VARCHAR(150),                       -- Email chính thức
-    Website         VARCHAR(200),                       -- Trang web
-    MoTa            NVARCHAR(1000),                     -- Mô tả
-    NgayTao         DATETIME DEFAULT GETDATE(),          -- Ngày đăng ký
-    TrangThai       TINYINT DEFAULT 1                   -- Trạng thái
+CREATE TABLE Admins (
+    AdminId     INT IDENTITY(1,1) PRIMARY KEY,
+    AccountId   INT NOT NULL UNIQUE,
+    FullName    NVARCHAR(100) NOT NULL,
+    ContactEmail VARCHAR(150),
+    Permission  NVARCHAR(100) DEFAULT N'Full',
+    CreatedAt   DATETIME DEFAULT GETDATE()
 );
 GO
 
-CREATE TABLE NhaTuyenDung (
-    NhaTuyenDungID   INT IDENTITY(1,1) PRIMARY KEY,   -- Khóa chính
-    TaiKhoanID       INT NOT NULL UNIQUE,             -- Liên kết 1-1 với bảng TaiKhoan
-    CongTyID         INT,                             -- Liên kết tới bảng CôngTy
-    HoTen            NVARCHAR(100) NOT NULL,          -- Họ tên người tuyển dụng
-    ChucVu           NVARCHAR(100),                   -- Chức vụ
-    EmailCongTy      VARCHAR(150),                    -- Email công ty
-    SoDienThoai      VARCHAR(20),                     -- Liên hệ
-    NgayTao          DATETIME DEFAULT GETDATE(),       -- Ngày tạo
-    TrangThai        TINYINT DEFAULT 1                -- Trạng thái
+CREATE TABLE Companies (
+    CompanyId      INT IDENTITY(1,1) PRIMARY KEY,
+    AccountId      INT NOT NULL UNIQUE,
+    CompanyName    NVARCHAR(255) NOT NULL,
+    TaxCode        VARCHAR(20),
+    Industry       NVARCHAR(150),
+    Address        NVARCHAR(255),
+    Phone          VARCHAR(20),
+    CompanyEmail   VARCHAR(150),
+    Website        VARCHAR(200),
+    Description    NVARCHAR(1000),
+    CreatedAt      DATETIME DEFAULT GETDATE(),
+    ActiveFlag     TINYINT DEFAULT 1
 );
 GO
 
-CREATE TABLE NguoiUngTuyen (
-    NguoiUngTuyenID INT IDENTITY(1,1) PRIMARY KEY,   -- Khóa chính
-    TaiKhoanID INT NOT NULL,                         -- Liên kết đến bảng Tài khoản
-    HoTen NVARCHAR(100) NOT NULL,                    -- Họ tên
-    NgaySinh DATE,                                   -- Ngày sinh
-    GioiTinh NVARCHAR(5) NOT NULL CHECK (GioiTinh IN (N'Nam', N'Nữ')),-- Giới tính                                                     
-    SDT VARCHAR(15),                                 -- Số điện thoại
-    Email VARCHAR(100),                              -- Email
-    DiaChi NVARCHAR(255),                            -- Địa chỉ
-    GioiThieu NVARCHAR(500),                         -- Giới thiệu bản thân
-    AnhID INT NULL,                                  -- Ảnh đại diện
-    NgayTao DATETIME DEFAULT GETDATE(),               -- Ngày tạo
-    TrangThai TINYINT DEFAULT 1                      -- Trạng thái
+CREATE TABLE Recruiters (
+    RecruiterId   INT IDENTITY(1,1) PRIMARY KEY,
+    AccountId     INT NOT NULL UNIQUE,
+    CompanyId     INT NULL,
+    FullName      NVARCHAR(100) NOT NULL,
+    PositionTitle NVARCHAR(100),
+    WorkEmail     VARCHAR(150),
+    Phone         VARCHAR(20),
+    CreatedAt     DATETIME DEFAULT GETDATE(),
+    ActiveFlag    TINYINT DEFAULT 1
 );
 GO
 
-CREATE TABLE Anh (
-    AnhID        INT IDENTITY(1,1) PRIMARY KEY,       -- Khóa chính
-    TenAnh       VARCHAR(255) NOT NULL,               -- Tên file ảnh
-    DuongDan     VARCHAR(500) NOT NULL,               -- Đường dẫn file
-    KichThuoc    INT,                                 -- Dung lượng ảnh (KB)
-    DinhDang     VARCHAR(50),                         -- Định dạng
-    NgayTaiLen   DATETIME DEFAULT GETDATE()           -- Ngày tải lên
+CREATE TABLE Candidates (
+    CandidateId  INT IDENTITY(1,1) PRIMARY KEY,
+    AccountId    INT NOT NULL UNIQUE,
+    FullName     NVARCHAR(100) NOT NULL,
+    BirthDate    DATE,
+    Gender       NVARCHAR(5) NOT NULL CHECK (Gender IN (N'Nam', N'Nữ')), -- giữ nguyên nhãn VN nếu bạn muốn
+    Phone        VARCHAR(15),
+    Email        VARCHAR(100),
+    Address      NVARCHAR(255),
+    About        NVARCHAR(500),
+    PhotoId      INT NULL,
+    CreatedAt    DATETIME DEFAULT GETDATE(),
+    ActiveFlag   TINYINT DEFAULT 1
 );
 GO
 
-CREATE TABLE KinhNghiemLamViec (
-    KinhNghiemID INT IDENTITY(1,1) PRIMARY KEY,         -- Khóa chính tự tăng
-    NguoiUngTuyenID INT NOT NULL,                       -- Ứng viên sở hữu kinh nghiệm
-    CongTyCu NVARCHAR(255) NOT NULL,                    -- Tên công ty cũ
-    ChucVu NVARCHAR(150) NOT NULL,                      -- Vị trí đảm nhiệm
-    NganhNghe NVARCHAR(150),                            -- Ngành nghề
-    ChuyenNganh NVARCHAR(150),                          -- Chuyên ngành (nếu có)
-    MoTaCongViec NVARCHAR(MAX),                         -- Mô tả chi tiết công việc
-    NgayBatDau DATE NOT NULL,                           -- Ngày bắt đầu làm
-    NgayKetThuc DATE,                                   -- Ngày kết thúc (NULL nếu vẫn làm)
-    MucLuong DECIMAL(18,2),                             -- Mức lương (tuỳ chọn)
-    DonViLuong NVARCHAR(20) DEFAULT N'VNĐ',             -- Đơn vị tiền
-    ThanhTuu NVARCHAR(500),                             -- Thành tích, ghi chú
-    NgayTao DATETIME DEFAULT GETDATE()
+/* =================== CANDIDATE DOMAIN =================== */
+CREATE TABLE WorkExperiences (
+    ExperienceId    INT IDENTITY(1,1) PRIMARY KEY,
+    CandidateId     INT NOT NULL,
+    CompanyName     NVARCHAR(255) NOT NULL,
+    JobTitle        NVARCHAR(150) NOT NULL,
+    Industry        NVARCHAR(150),
+    Major           NVARCHAR(150),
+    JobDescription  NVARCHAR(MAX),
+    StartDate       DATE NOT NULL,
+    EndDate         DATE NULL,
+    SalaryAmount    DECIMAL(18,2) NULL,
+    SalaryCurrency  NVARCHAR(20) DEFAULT N'VNĐ',
+    Achievements    NVARCHAR(500),
+    CreatedAt       DATETIME DEFAULT GETDATE()
 );
 GO
 
-CREATE TABLE ChungChi (
-    ChungChiID INT IDENTITY(1,1) PRIMARY KEY,        -- Khóa chính
-    TenChungChi NVARCHAR(100) NOT NULL,              -- Tên chứng chỉ
-    CoQuanCap NVARCHAR(100),                         -- Đơn vị cấp
-    NganhNghe NVARCHAR(100) NOT NULL,                -- Ngành nghề
-    ChuyenNganh NVARCHAR(150),                       -- Chuyên ngành
-    MoTaVeChungChi NVARCHAR(255)                     -- Mô tả ngắn gọn
+CREATE TABLE Certificates (
+    CertificateId   INT IDENTITY(1,1) PRIMARY KEY,
+    CertificateName NVARCHAR(100) NOT NULL,
+    Issuer          NVARCHAR(100),
+    Industry        NVARCHAR(100) NOT NULL,
+    Major           NVARCHAR(150),
+    Summary         NVARCHAR(255)
 );
 GO
 
-CREATE TABLE ChiTietChungChi (
-    ChiTietChungChiID INT IDENTITY(1,1) PRIMARY KEY, -- Khóa chính
-    NguoiUngTuyenID INT NOT NULL,                    -- FK đến ứng viên
-    ChungChiID INT NOT NULL,                         -- FK đến chứng chỉ
-    NgayCap DATE,                                    -- Ngày cấp
-    NgayHetHan DATE,                                 -- Hết hạn
-    TepTinDuongDan VARCHAR(500),                     -- Đường dẫn file
-    DiemSo NVARCHAR(50),                             -- Điểm số
-    GhiChu NVARCHAR(255),                            -- Ghi chú
-    NgayTaiLen DATETIME DEFAULT GETDATE()             -- Ngày tải lên
+CREATE TABLE CandidateCertificates (
+    CandidateCertificateId INT IDENTITY(1,1) PRIMARY KEY,
+    CandidateId            INT NOT NULL,
+    CertificateId          INT NOT NULL,
+    IssuedDate             DATE,
+    ExpiredDate            DATE,
+    FilePath               VARCHAR(500),
+    ScoreText              NVARCHAR(50),
+    Note                   NVARCHAR(255),
+    UploadedAt             DATETIME DEFAULT GETDATE()
 );
 GO
 
-CREATE TABLE LichSuUngTuyen (
-    LichSuUngTuyenID INT IDENTITY(1,1) PRIMARY KEY,       -- Khóa chính
-    NguoiUngTuyenID INT NOT NULL,                         -- Liên kết đến người ứng tuyển
-    TinTuyenDungID INT NOT NULL,                          -- Liên kết đến tin tuyển dụng
-    NgayUngTuyen DATETIME DEFAULT GETDATE(),              -- Ngày nộp hồ sơ
-    TrangThai NVARCHAR(50) DEFAULT N'Đang xét duyệt',     -- Trạng thái: Đang xét, Đã phỏng vấn, Trúng tuyển, Từ chối...
-    TepCV NVARCHAR(500),                                  -- Đường dẫn file CV tải lên
-    TepChungChi NVARCHAR(500),                            -- File chứng chỉ kèm theo (nếu có)
-    GhiChu NVARCHAR(500),                                 -- Ghi chú thêm của ứng viên hoặc hệ thống
-    NgayCapNhat DATETIME DEFAULT GETDATE()                 -- Thời gian cập nhật trạng thái
+/* =================== JOB POSTS =================== */
+CREATE TABLE JobPosts (
+    JobId         INT IDENTITY(1,1) PRIMARY KEY,
+    JobCode       NVARCHAR(20) UNIQUE,
+    RecruiterId   INT NOT NULL,
+    CompanyId     INT NULL,
+    Title         NVARCHAR(200) NOT NULL,
+    Description   NVARCHAR(MAX),
+    Requirements  NVARCHAR(MAX),
+    SalaryMin     DECIMAL(18,2),
+    SalaryMax     DECIMAL(18,2),
+    SalaryUnit    NVARCHAR(50) DEFAULT N'VNĐ',
+    LocationText  NVARCHAR(255),
+    Employment    NVARCHAR(100),   -- Full-time / Part-time / Remote
+    Deadline      DATE,
+    Status        NVARCHAR(50) DEFAULT N'Visible',
+    PostedAt      DATETIME DEFAULT GETDATE(),
+    UpdatedAt     DATETIME DEFAULT GETDATE(),
+    CONSTRAINT CHK_JobPosts_Salary CHECK (
+        (SalaryMin IS NULL AND SalaryMax IS NULL) OR
+        (SalaryMin IS NOT NULL AND SalaryMax IS NOT NULL AND SalaryMin <= SalaryMax)
+    )
 );
 GO
 
-CREATE TABLE LichSuGiaoDich (
-    GiaoDichID INT IDENTITY(1,1) PRIMARY KEY,           -- Mã giao dịch tự tăng
-    MaGiaoDich NVARCHAR(20) UNIQUE,                     -- Mã giao dịch hiển thị (VD: GD0001)
-    TaiKhoanID INT NOT NULL,                            -- Tài khoản thực hiện giao dịch
-    LoaiGiaoDich NVARCHAR(100) NOT NULL,                -- Nạp tiền / Thanh toán / Mua gói / Hoàn tiền...
-    SoTien DECIMAL(18,2) NOT NULL,                      -- Số tiền giao dịch
-    PhuongThuc NVARCHAR(50) NOT NULL,                   -- Phương thức (Chuyển khoản, Momo, Thẻ, v.v.)
-    TrangThai NVARCHAR(50) DEFAULT N'Đang xử lý',       -- Trạng thái: Đang xử lý / Hoàn tất / Thất bại
-    NgayGiaoDich DATETIME DEFAULT GETDATE(),            -- Ngày giao dịch
-    MoTa NVARCHAR(500),                                 -- Ghi chú, mô tả thêm
-    NgayCapNhat DATETIME DEFAULT GETDATE()              -- Cập nhật lần cuối
+CREATE TABLE JobPostDetails (
+    DetailId        INT IDENTITY(1,1) PRIMARY KEY,
+    JobId           INT NOT NULL,
+    Industry        NVARCHAR(150) NOT NULL,
+    Major           NVARCHAR(150),
+    YearsExperience INT  DEFAULT 0,
+    EducationLevel  NVARCHAR(100),
+    Skills          NVARCHAR(MAX),
+    Headcount       INT DEFAULT 1,
+    Gender          NVARCHAR(10) CHECK (Gender IN (N'Nam', N'Nữ', N'Không yêu cầu')),
+    AgeFrom         INT NULL,
+    AgeTo           INT NULL,
+    Status          NVARCHAR(50) DEFAULT N'Visible',
+    CONSTRAINT CHK_JobPostDetails_Age CHECK (
+        (AgeFrom IS NULL AND AgeTo IS NULL) OR
+        (AgeFrom IS NOT NULL AND AgeTo IS NOT NULL AND AgeFrom <= AgeTo)
+    )
 );
 GO
 
-CREATE TABLE TinTuyenDung (
-    TinID INT IDENTITY(1,1) PRIMARY KEY,                  -- Khóa chính tự tăng
-    MaTin NVARCHAR(20) UNIQUE,                            -- Mã tin (TTD001, TTD002,...)
-    NhaTuyenDungID INT NOT NULL,                          -- Người đăng tin (liên kết đến NhaTuyenDung)
-    CongTyID INT,                                         -- Công ty đăng tin (nếu có)
-    TieuDe NVARCHAR(200) NOT NULL,                        -- Tiêu đề tin tuyển dụng
-    MoTa NVARCHAR(MAX),                                   -- Mô tả công việc
-    YeuCau NVARCHAR(MAX),                                 -- Yêu cầu công việc
-    MucLuongTu DECIMAL(18,2),                             -- Mức lương tối thiểu
-    MucLuongDen DECIMAL(18,2),                            -- Mức lương tối đa
-    DonViLuong NVARCHAR(50) DEFAULT N'VNĐ',               -- Đơn vị lương (VNĐ, USD,…)
-    DiaDiem NVARCHAR(255),                                -- Địa điểm làm việc
-    HinhThuc NVARCHAR(100),                               -- Toàn thời gian / Bán thời gian / Remote
-    HanNopHoSo DATE,                                      -- Hạn nộp hồ sơ
-    TrangThai NVARCHAR(50) DEFAULT N'Đang hiển thị',      -- Trạng thái tin
-    NgayDang DATETIME DEFAULT GETDATE(),                  -- Ngày đăng
-    NgayCapNhat DATETIME DEFAULT GETDATE()                -- Lần cập nhật gần nhất
+/* =================== APPLICATIONS & TRANSACTIONS =================== */
+CREATE TABLE Applications (
+    ApplicationId  INT IDENTITY(1,1) PRIMARY KEY,
+    CandidateId    INT NOT NULL,
+    JobId          INT NOT NULL,
+    AppliedAt      DATETIME DEFAULT GETDATE(),
+    AppStatus      NVARCHAR(50) DEFAULT N'Under review',
+    CvPath         NVARCHAR(500),
+    CertificatePath NVARCHAR(500),
+    Note           NVARCHAR(500),
+    UpdatedAt      DATETIME DEFAULT GETDATE(),
+    CONSTRAINT UQ_Applications UNIQUE (CandidateId, JobId)
 );
 GO
 
-CREATE TABLE ChiTietTinTuyenDung (
-    ChiTietID INT IDENTITY(1,1) PRIMARY KEY,              -- Mã chi tiết
-    TinID INT NOT NULL,                                   -- Liên kết đến TinTuyenDung
-    NganhNghe NVARCHAR(150) NOT NULL,                     -- Ngành nghề tuyển dụng
-    ChuyenNganh NVARCHAR(150),                            -- Chuyên ngành cụ thể
-    SoNamKinhNghiem INT DEFAULT 0,                        -- Số năm kinh nghiệm yêu cầu
-    BangCap NVARCHAR(100),                                -- Trình độ học vấn
-    KyNang NVARCHAR(MAX),                                 -- Kỹ năng cần thiết
-    SoLuong INT DEFAULT 1,                                -- Số lượng cần tuyển
-    GioiTinh NVARCHAR(10) CHECK (GioiTinh IN (N'Nam', N'Nữ', N'Không yêu cầu')), -- Giới tính yêu cầu
-    DoTuoiTu INT,                                         -- Độ tuổi tối thiểu
-    DoTuoiDen INT,                                        -- Độ tuổi tối đa
-    TrangThai NVARCHAR(50) DEFAULT N'Đang hiển thị'
+CREATE TABLE Transactions (
+    TransactionId  INT IDENTITY(1,1) PRIMARY KEY,
+    TransactionNo  NVARCHAR(20) UNIQUE,
+    AccountId      INT NOT NULL,
+    Type           NVARCHAR(100) NOT NULL, -- Topup/Payment/Package/Refund...
+    Amount         DECIMAL(18,2) NOT NULL,
+    Method         NVARCHAR(50)  NOT NULL, -- Bank, Momo, Card...
+    Status         NVARCHAR(50) DEFAULT N'Processing',
+    TransactedAt   DATETIME DEFAULT GETDATE(),
+    Description    NVARCHAR(500),
+    UpdatedAt      DATETIME DEFAULT GETDATE()
 );
 GO
-/* ===== TAIKHOAN → ANH (optional avatar) ===== */
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_TaiKhoan_Anh')
-ALTER TABLE dbo.TaiKhoan
-    WITH CHECK ADD CONSTRAINT FK_TaiKhoan_Anh
-    FOREIGN KEY (AnhID) REFERENCES dbo.Anh(AnhID);
+
+/* =================== FOREIGN KEYS =================== */
+-- Accounts ↔ Photos
+ALTER TABLE dbo.Accounts
+  ADD CONSTRAINT FK_Accounts_Photos
+  FOREIGN KEY (PhotoId) REFERENCES dbo.Photos(PhotoId);
+
+-- Admins ↔ Accounts
+ALTER TABLE dbo.Admins
+  ADD CONSTRAINT FK_Admins_Accounts
+  FOREIGN KEY (AccountId) REFERENCES dbo.Accounts(AccountId);
+
+-- Companies ↔ Accounts
+ALTER TABLE dbo.Companies
+  ADD CONSTRAINT FK_Companies_Accounts
+  FOREIGN KEY (AccountId) REFERENCES dbo.Accounts(AccountId);
+
+-- Recruiters ↔ (Accounts, Companies)
+ALTER TABLE dbo.Recruiters
+  ADD CONSTRAINT FK_Recruiters_Accounts
+  FOREIGN KEY (AccountId) REFERENCES dbo.Accounts(AccountId);
+ALTER TABLE dbo.Recruiters
+  ADD CONSTRAINT FK_Recruiters_Companies
+  FOREIGN KEY (CompanyId) REFERENCES dbo.Companies(CompanyId);
+
+-- Candidates ↔ (Accounts, Photos)
+ALTER TABLE dbo.Candidates
+  ADD CONSTRAINT FK_Candidates_Accounts
+  FOREIGN KEY (AccountId) REFERENCES dbo.Accounts(AccountId);
+ALTER TABLE dbo.Candidates
+  ADD CONSTRAINT FK_Candidates_Photos
+  FOREIGN KEY (PhotoId) REFERENCES dbo.Photos(PhotoId);
+
+-- WorkExperiences ↔ Candidates
+ALTER TABLE dbo.WorkExperiences
+  ADD CONSTRAINT FK_WorkExperiences_Candidates
+  FOREIGN KEY (CandidateId) REFERENCES dbo.Candidates(CandidateId)
+  ON DELETE CASCADE;
+
+-- CandidateCertificates ↔ (Candidates, Certificates)
+ALTER TABLE dbo.CandidateCertificates
+  ADD CONSTRAINT FK_CandidateCertificates_Candidates
+  FOREIGN KEY (CandidateId) REFERENCES dbo.Candidates(CandidateId)
+  ON DELETE CASCADE;
+ALTER TABLE dbo.CandidateCertificates
+  ADD CONSTRAINT FK_CandidateCertificates_Certificates
+  FOREIGN KEY (CertificateId) REFERENCES dbo.Certificates(CertificateId);
+
+-- JobPosts ↔ (Recruiters, Companies)
+ALTER TABLE dbo.JobPosts
+  ADD CONSTRAINT FK_JobPosts_Recruiters
+  FOREIGN KEY (RecruiterId) REFERENCES dbo.Recruiters(RecruiterId);
+ALTER TABLE dbo.JobPosts
+  ADD CONSTRAINT FK_JobPosts_Companies
+  FOREIGN KEY (CompanyId)  REFERENCES dbo.Companies(CompanyId);
+
+-- JobPostDetails ↔ JobPosts
+ALTER TABLE dbo.JobPostDetails
+  ADD CONSTRAINT FK_JobPostDetails_JobPosts
+  FOREIGN KEY (JobId) REFERENCES dbo.JobPosts(JobId)
+  ON DELETE CASCADE;
+
+-- Applications ↔ (Candidates, JobPosts)
+ALTER TABLE dbo.Applications
+  ADD CONSTRAINT FK_Applications_Candidates
+  FOREIGN KEY (CandidateId) REFERENCES dbo.Candidates(CandidateId)
+  ON DELETE CASCADE;
+ALTER TABLE dbo.Applications
+  ADD CONSTRAINT FK_Applications_JobPosts
+  FOREIGN KEY (JobId) REFERENCES dbo.JobPosts(JobId)
+  ON DELETE CASCADE;
+
+-- Transactions ↔ Accounts
+ALTER TABLE dbo.Transactions
+  ADD CONSTRAINT FK_Transactions_Accounts
+  FOREIGN KEY (AccountId) REFERENCES dbo.Accounts(AccountId);
 GO
 
-/* ===== ADMIN → TAIKHOAN (1–1) ===== */
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Admin_TaiKhoan')
-ALTER TABLE dbo.Admin
-    WITH CHECK ADD CONSTRAINT FK_Admin_TaiKhoan
-    FOREIGN KEY (TaiKhoanID) REFERENCES dbo.TaiKhoan(TaiKhoanID);
-GO
+/* =================== INDEXES =================== */
+-- Login
+CREATE UNIQUE INDEX UQ_Accounts_Email ON dbo.Accounts(LOWER(Email));
+CREATE INDEX IX_Accounts_Role ON dbo.Accounts(Role);
 
-/* ===== CONGTY → TAIKHOAN (1–1) ===== */
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_CongTy_TaiKhoan')
-ALTER TABLE dbo.CongTy
-    WITH CHECK ADD CONSTRAINT FK_CongTy_TaiKhoan
-    FOREIGN KEY (TaiKhoanID) REFERENCES dbo.TaiKhoan(TaiKhoanID);
-GO
+-- Recruiters/Companies
+CREATE INDEX IX_Recruiters_CompanyId ON dbo.Recruiters(CompanyId);
+CREATE INDEX IX_Companies_Name ON dbo.Companies(CompanyName);
 
-/* ===== NHATUYENDUNG → TAIKHOAN (1–1) ===== */
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_NhaTuyenDung_TaiKhoan')
-ALTER TABLE dbo.NhaTuyenDung
-    WITH CHECK ADD CONSTRAINT FK_NhaTuyenDung_TaiKhoan
-    FOREIGN KEY (TaiKhoanID) REFERENCES dbo.TaiKhoan(TaiKhoanID);
-GO
+-- Job listing
+CREATE INDEX IX_JobPosts_Status_Date ON dbo.JobPosts(Status, PostedAt DESC) INCLUDE (Title, CompanyId, RecruiterId);
+CREATE INDEX IX_JobPostDetails_JobId  ON dbo.JobPostDetails(JobId);
+CREATE INDEX IX_JobPostDetails_IndustryMajor ON dbo.JobPostDetails(Industry, Major);
 
-/* ===== NHATUYENDUNG → CONGTY (N–1) ===== */
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_NhaTuyenDung_CongTy')
-ALTER TABLE dbo.NhaTuyenDung
-    WITH CHECK ADD CONSTRAINT FK_NhaTuyenDung_CongTy
-    FOREIGN KEY (CongTyID) REFERENCES dbo.CongTy(CongTyID);
-GO
+-- Applications
+CREATE INDEX IX_Applications_Candidate ON dbo.Applications(CandidateId, AppliedAt DESC);
+CREATE INDEX IX_Applications_Job       ON dbo.Applications(JobId);
 
-/* ===== NGUOIUNGTUYEN → TAIKHOAN (N–1, thực tế 1–1 vì UNIQUE) ===== */
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_NguoiUngTuyen_TaiKhoan')
-ALTER TABLE dbo.NguoiUngTuyen
-    WITH CHECK ADD CONSTRAINT FK_NguoiUngTuyen_TaiKhoan
-    FOREIGN KEY (TaiKhoanID) REFERENCES dbo.TaiKhoan(TaiKhoanID);
-GO
-
-/* ===== NGUOIUNGTUYEN → ANH (optional avatar) ===== */
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_NguoiUngTuyen_Anh')
-ALTER TABLE dbo.NguoiUngTuyen
-    WITH CHECK ADD CONSTRAINT FK_NguoiUngTuyen_Anh
-    FOREIGN KEY (AnhID) REFERENCES dbo.Anh(AnhID);
-GO
-
-CREATE INDEX IX_Admin_TaiKhoanID           ON dbo.Admin(TaiKhoanID);
-GO
-CREATE INDEX IX_CongTy_TaiKhoanID          ON dbo.CongTy(TaiKhoanID);
-GO
-CREATE INDEX IX_NhaTuyenDung_TaiKhoanID    ON dbo.NhaTuyenDung(TaiKhoanID);
-GO
-CREATE INDEX IX_NhaTuyenDung_CongTyID      ON dbo.NhaTuyenDung(CongTyID);
-GO
-CREATE INDEX IX_NguoiUngTuyen_TaiKhoanID   ON dbo.NguoiUngTuyen(TaiKhoanID);
-GO
-CREATE INDEX IX_NguoiUngTuyen_AnhID        ON dbo.NguoiUngTuyen(AnhID);
-GO
-CREATE INDEX IX_TaiKhoan_AnhID             ON dbo.TaiKhoan(AnhID);
+-- Transactions
+CREATE INDEX IX_Transactions_Account ON dbo.Transactions(AccountId, TransactedAt DESC);
 GO

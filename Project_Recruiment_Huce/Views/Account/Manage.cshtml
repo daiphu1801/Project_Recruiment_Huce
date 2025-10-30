@@ -1,0 +1,33 @@
+@{
+    ViewBag.Title = "Quản lý tài khoản";
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-7">
+        <h1 class="text-white font-weight-bold">Account Settings</h1>
+        <div class="custom-breadcrumbs">
+          <a href="@Url.Action("Index", "Home")">Home</a> <span class="mx-2 slash">/</span>
+          <span class="text-white"><strong>Manage</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="site-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h2 class="mb-4">Xin chào, @User.Identity.Name</h2>
+        <div class="p-4 border rounded">
+          <p>Manage Account.</p>
+          <p>Update your account information here in the future.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
