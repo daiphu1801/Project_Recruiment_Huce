@@ -166,18 +166,17 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
-    
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
+    <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
+    <Compile Include="Areas\Admin\Controllers\HomeController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\JobsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
-    
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\Admin.cs" />
     <Compile Include="Models\Account.cs" />
@@ -200,6 +199,44 @@
     <Compile Include="Services\JobPostRepository.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\Admin\css\adminlte.css" />
+    <Content Include="Content\Admin\css\adminlte.min.css" />
+    <Content Include="Content\Admin\css\adminlte.rtl.css" />
+    <Content Include="Content\Admin\css\adminlte.rtl.min.css" />
+    <Content Include="Content\Admin\img\AdminLTEFullLogo.png" />
+    <Content Include="Content\Admin\img\AdminLTELogo.png" />
+    <Content Include="Content\Admin\img\avatar.png" />
+    <Content Include="Content\Admin\img\avatar2.png" />
+    <Content Include="Content\Admin\img\avatar3.png" />
+    <Content Include="Content\Admin\img\avatar4.png" />
+    <Content Include="Content\Admin\img\avatar5.png" />
+    <Content Include="Content\Admin\img\boxed-bg.jpg" />
+    <Content Include="Content\Admin\img\boxed-bg.png" />
+    <Content Include="Content\Admin\img\credit\american-express.png" />
+    <Content Include="Content\Admin\img\credit\cirrus.png" />
+    <Content Include="Content\Admin\img\credit\mastercard.png" />
+    <Content Include="Content\Admin\img\credit\paypal.png" />
+    <Content Include="Content\Admin\img\credit\paypal2.png" />
+    <Content Include="Content\Admin\img\credit\visa.png" />
+    <Content Include="Content\Admin\img\default-150x150.png" />
+    <Content Include="Content\Admin\img\icons.png" />
+    <Content Include="Content\Admin\img\photo1.png" />
+    <Content Include="Content\Admin\img\photo2.png" />
+    <Content Include="Content\Admin\img\photo3.jpg" />
+    <Content Include="Content\Admin\img\photo4.jpg" />
+    <Content Include="Content\Admin\img\prod-1.jpg" />
+    <Content Include="Content\Admin\img\prod-2.jpg" />
+    <Content Include="Content\Admin\img\prod-3.jpg" />
+    <Content Include="Content\Admin\img\prod-4.jpg" />
+    <Content Include="Content\Admin\img\prod-5.jpg" />
+    <Content Include="Content\Admin\img\user1-128x128.jpg" />
+    <Content Include="Content\Admin\img\user2-160x160.jpg" />
+    <Content Include="Content\Admin\img\user3-128x128.jpg" />
+    <Content Include="Content\Admin\img\user4-128x128.jpg" />
+    <Content Include="Content\Admin\img\user5-128x128.jpg" />
+    <Content Include="Content\Admin\img\user6-128x128.jpg" />
+    <Content Include="Content\Admin\img\user7-128x128.jpg" />
+    <Content Include="Content\Admin\img\user8-128x128.jpg" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
     <Content Include="Content\bootstrap-grid.rtl.css" />
@@ -219,13 +256,24 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="Scripts\Admin\js\adminlte.js" />
+    <Content Include="Scripts\Admin\js\adminlte.min.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
-    
+    <Content Include="Areas\Admin\Views\web.config" />
+    <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\_Layout.cshtml" />
+    <Content Include="Areas\Admin\Views\Home\Index.cshtml" />
+    <Content Include="Content\Admin\css\adminlte.css.map" />
+    <Content Include="Content\Admin\css\adminlte.min.css.map" />
+    <Content Include="Content\Admin\css\adminlte.rtl.css.map" />
+    <Content Include="Content\Admin\css\adminlte.rtl.min.css.map" />
+    <Content Include="Scripts\Admin\js\adminlte.js.map" />
+    <Content Include="Scripts\Admin\js\adminlte.min.js.map" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -253,17 +301,14 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Jobs\JobsListing.cshtml" />
     <Content Include="Views\Jobs\JobsDetails.cshtml" />
-    
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Account\Register.cshtml" />
     <Content Include="Views\Account\Manage.cshtml" />
-    
-    
     <Content Include="Views\Shared\Lockout.cshtml" />
-    
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Areas\Admin\Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />
