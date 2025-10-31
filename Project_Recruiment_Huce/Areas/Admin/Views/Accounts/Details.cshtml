@@ -1,0 +1,36 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.AccountListVm
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><h5 class="card-title">Thông tin tài khoản</h5></div>
+      <div class="card-body">
+        <div class="row mb-2"><div class="col-4 text-secondary">ID</div><div class="col-8">@Model.AccountId</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Tên đăng nhập</div><div class="col-8">@Model.Username</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Email</div><div class="col-8">@Model.Email</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Điện thoại</div><div class="col-8">@Model.Phone</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Vai trò</div><div class="col-8">@Model.Role</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@(Model.Active ? "Hoạt động" : "Tạm khóa")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@Model.CreatedAt.ToString("dd/MM/yyyy")</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card"><div class="card-header"><h6 class="mb-0">Liên kết</h6></div>
+      <div class="card-body">
+        @if (Model.Role == "Company") {
+          <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Details","Companies", new { area="Admin", id = 1 })">Xem Công ty</a>
+        } else if (Model.Role == "Recruiter") {
+          <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Details","Recruiters", new { area="Admin", id = 1 })">Xem Nhà tuyển dụng</a>
+        } else if (Model.Role == "Candidate") {
+          <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Details","Candidates", new { area="Admin", id = 1 })">Xem Ứng viên</a>
+        } else {
+          <span class="text-secondary">Không có liên kết</span>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+

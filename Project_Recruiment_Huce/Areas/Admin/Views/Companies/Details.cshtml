@@ -1,0 +1,31 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.CompanyListVm
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><h5 class="card-title">Thông tin công ty</h5></div>
+      <div class="card-body">
+        <div class="row mb-2"><div class="col-4 text-secondary">ID</div><div class="col-8">@Model.CompanyId</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Tên công ty</div><div class="col-8">@Model.CompanyName</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">MST</div><div class="col-8">@Model.TaxCode</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Lĩnh vực</div><div class="col-8">@Model.Industry</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">SĐT</div><div class="col-8">@Model.Phone</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Email</div><div class="col-8">@Model.CompanyEmail</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@(Model.Active ? "Hoạt động" : "Tạm khóa")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@Model.CreatedAt.ToString("dd/MM/yyyy")</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card"><div class="card-header"><h6 class="mb-0">Liên quan</h6></div>
+      <div class="card-body">
+        <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","Recruiters", new { area="Admin", companyId = Model.CompanyId })">Nhà tuyển dụng</a>
+        <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","JobPosts", new { area="Admin", companyId = Model.CompanyId })">Tin tuyển dụng</a>
+        <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","BankCards", new { area="Admin", companyId = Model.CompanyId })">Thẻ ngân hàng</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+

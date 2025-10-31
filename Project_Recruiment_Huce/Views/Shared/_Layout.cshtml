@@ -88,7 +88,23 @@
               @if (Request.IsAuthenticated)
               {
                 <li class="has-children d-lg-none">
-                  <a href="#">@User.Identity.Name</a>
+                  @{ 
+                    string mAvatarUrl = null; 
+                    try {
+                      var idClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) : null;
+                      if (idClaim != null) {
+                        var accId = int.Parse(idClaim.Value);
+                        using (var mdb = new Project_Recruiment_Huce.DbContext.RecruitmentDbContext()) {
+                          var acc = mdb.Accounts.FirstOrDefault(a => a.AccountId == accId);
+                          if (acc != null && acc.PhotoId.HasValue) {
+                            var photo = mdb.Photos.FirstOrDefault(p => p.PhotoId == acc.PhotoId.Value);
+                            if (photo != null) { mAvatarUrl = Url.Content(photo.FilePath); }
+                          }
+                        }
+                      }
+                    } catch { }
+                  }
+                  <a href="#"><img src="@(mAvatarUrl ?? Url.Content("~/Content/images/person_1.jpg"))" alt="avatar" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:8px;" /> @User.Identity.Name</a>
                   <ul class="dropdown">
                     @{ var mobileRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro"); }
                     @if (mobileRoleClaim != null && mobileRoleClaim.Value == "Candidate")
@@ -128,8 +144,24 @@
               @if (Request.IsAuthenticated)
               {
                 <div class="dropdown d-none d-lg-inline-block">
+                  @{ 
+                    string avatarUrl = null; 
+                    try {
+                      var idClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) : null;
+                      if (idClaim != null) {
+                        var accId = int.Parse(idClaim.Value);
+                        using (var navdb = new Project_Recruiment_Huce.DbContext.RecruitmentDbContext()) {
+                          var acc = navdb.Accounts.FirstOrDefault(a => a.AccountId == accId);
+                          if (acc != null && acc.PhotoId.HasValue) {
+                            var photo = navdb.Photos.FirstOrDefault(p => p.PhotoId == acc.PhotoId.Value);
+                            if (photo != null) { avatarUrl = Url.Content(photo.FilePath); }
+                          }
+                        }
+                      }
+                    } catch { }
+                  }
                   <a href="#" class="btn btn-primary border-width-2 dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="mr-2 icon-lock_outline"></span>@User.Identity.Name
+                    <img src="@(avatarUrl ?? Url.Content("~/Content/images/person_1.jpg"))" alt="avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-right:8px;" /> @User.Identity.Name
                   </a>
                   <div class="dropdown-menu dropdown-menu-right">
                     @{ var navRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro"); }

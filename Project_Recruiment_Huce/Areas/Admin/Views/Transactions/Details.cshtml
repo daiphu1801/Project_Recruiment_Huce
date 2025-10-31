@@ -1,0 +1,22 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.TransactionListVm
+@using Project_Recruiment_Huce.Areas.Admin.Models
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><h5 class="card-title">Giao dịch</h5></div>
+      <div class="card-body">
+        <div class="row mb-2"><div class="col-4 text-secondary">Mã GD</div><div class="col-8">@Model.TransactionNo</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Tài khoản</div><div class="col-8">@Model.AccountEmail</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Số tiền</div><div class="col-8">@AdminUiHelpers.FormatMoney(Model.Amount) đ</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Phương thức</div><div class="col-8">@Model.Method</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(Model.Status, "Transactions"))</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Thời gian</div><div class="col-8">@Model.TransactedAt.ToString("dd/MM/yyyy")</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4"></div>
+</div>
+
+

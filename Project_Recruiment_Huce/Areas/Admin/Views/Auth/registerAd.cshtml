@@ -1,0 +1,44 @@
+@model Project_Recruiment_Huce.Models.RegisterViewModel
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-body register-card-body">
+          <h5 class="register-box-msg mb-4 text-center">Tạo tài khoản quản trị</h5>
+          @using (Html.BeginForm("Register", "Auth", FormMethod.Post, new { area = "Admin" }))
+          {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, null, new { @class = "text-danger" })
+            <div class="input-group mb-3">
+              @Html.TextBoxFor(m => m.TenDangNhap, new { @class = "form-control", placeholder = "Tên đăng nhập" })
+              <div class="input-group-text"><span class="bi bi-person"></span></div>
+            </div>
+            <div class="input-group mb-3">
+              @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Email" })
+              <div class="input-group-text"><span class="bi bi-envelope"></span></div>
+            </div>
+            <div class="input-group mb-3">
+              @Html.TextBoxFor(m => m.SoDienThoai, new { @class = "form-control", placeholder = "Số điện thoại" })
+              <div class="input-group-text"><span class="bi bi-telephone"></span></div>
+            </div>
+            <div class="input-group mb-3">
+              @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Mật khẩu" })
+              <div class="input-group-text"><span class="bi bi-lock-fill"></span></div>
+            </div>
+            <div class="input-group mb-4">
+              @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Xác nhận mật khẩu" })
+              <div class="input-group-text"><span class="bi bi-lock"></span></div>
+            </div>
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary">Đăng ký</button>
+            </div>
+          }
+          <p class="mb-0 mt-3 text-center">
+            <a href="@Url.Action("Login","Auth", new { area = "Admin" })" class="text-center">Đã có tài khoản? Đăng nhập</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

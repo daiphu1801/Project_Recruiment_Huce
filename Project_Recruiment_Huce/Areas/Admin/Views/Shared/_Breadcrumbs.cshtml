@@ -1,0 +1,22 @@
+@{
+    var crumbs = ViewBag.Breadcrumbs as IEnumerable<System.Tuple<string, string>> ?? new List<System.Tuple<string, string>>();
+}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="@Url.Action("Index","Home", new { area = "Admin" })">Dashboard</a></li>
+    @foreach (var c in crumbs)
+    {
+        if (!string.IsNullOrEmpty(c.Item2))
+        {
+            <li class="breadcrumb-item"><a href="@c.Item2">@c.Item1</a></li>
+        }
+        else
+        {
+            <li class="breadcrumb-item active" aria-current="page">@c.Item1</li>
+        }
+    }
+  </ol>
+  <h4 class="mb-0">@ViewBag.Title</h4>
+</nav>
+
+

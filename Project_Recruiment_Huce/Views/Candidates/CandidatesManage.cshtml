@@ -28,6 +28,23 @@
           document.getElementById('About').value = about.root.innerHTML;
         });
       }
+
+      // avatar preview + filename
+      var avatarInput = document.getElementById('avatarInput');
+      var avatarImg = document.getElementById('avatarPreview');
+      var fileNameEl = document.getElementById('avatarFileName');
+      if (avatarInput && avatarImg) {
+        avatarInput.addEventListener('change', function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          if (fileNameEl) fileNameEl.textContent = file.name;
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            avatarImg.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
     })();
   </script>
 }
@@ -53,10 +70,41 @@
     }
     <div class="row mb-5">
       <div class="col-lg-12">
-        @using (Html.BeginForm("CandidatesManage", "Candidates", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "candidate-form" }))
+        @using (Html.BeginForm("CandidatesManage", "Candidates", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "candidate-form", enctype = "multipart/form-data" }))
         {
           @Html.AntiForgeryToken()
+          @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
           <h3 class="text-black mb-5 border-bottom pb-2">Personal Details</h3>
+
+          <div class="form-row align-items-center mb-4">
+            <div class="col-md-2 text-center mb-3 mb-md-0">
+              @{ 
+                string avatarUrl = null; 
+                try {
+                  var idClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) : null;
+                  if (idClaim != null) {
+                    var accId = int.Parse(idClaim.Value);
+                    using (var vdb = new Project_Recruiment_Huce.DbContext.RecruitmentDbContext()) {
+                      var acc = vdb.Accounts.FirstOrDefault(a => a.AccountId == accId);
+                      if (acc != null && acc.PhotoId.HasValue) {
+                        var photo = vdb.Photos.FirstOrDefault(p => p.PhotoId == acc.PhotoId.Value);
+                        if (photo != null) { avatarUrl = Url.Content(photo.FilePath); }
+                      }
+                    }
+                  }
+                } catch { }
+              }
+              <img id="avatarPreview" src="@(avatarUrl ?? Url.Content("~/Content/images/person_1.jpg"))" alt="avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover;" />
+            </div>
+            <div class="col-md-10">
+              <label class="d-block">Upload Avatar</label>
+              <label class="btn btn-success btn-md btn-file mb-0">
+                Browse File<input id="avatarInput" type="file" name="avatar" accept="image/*" hidden>
+              </label>
+              <small id="avatarFileName" class="text-muted ml-2"></small>
+              <small class="text-muted ml-2">JPG/PNG up to 2MB.</small>
+            </div>
+          </div>
 
           <div class="form-row">
             <div class="form-group col-md-6">

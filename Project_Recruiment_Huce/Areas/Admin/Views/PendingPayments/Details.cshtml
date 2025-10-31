@@ -1,0 +1,20 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.PendingPaymentVm
+@using Project_Recruiment_Huce.Areas.Admin.Models
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><h5 class="card-title">Công nợ</h5></div>
+      <div class="card-body">
+        <div class="row mb-2"><div class="col-4 text-secondary">Công ty</div><div class="col-8">@Model.CompanyName</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Số tiền</div><div class="col-8">@AdminUiHelpers.FormatMoney(Model.AmountDue) đ</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Đến hạn</div><div class="col-8">@(Model.DueDate.HasValue ? Model.DueDate.Value.ToString("dd/MM/yyyy") : "")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@Model.Status</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4"></div>
+</div>
+
+

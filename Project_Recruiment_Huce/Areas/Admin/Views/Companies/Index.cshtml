@@ -1,0 +1,29 @@
+@model List<Project_Recruiment_Huce.Areas.Admin.Models.CompanyListVm>
+@section Toolbar {
+  @Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
+}
+
+@section TableHead {
+  <tr>
+    <th>Tên công ty</th><th>Mã số thuế</th><th>Lĩnh vực</th><th>SĐT</th><th>Email</th><th>Hoạt động</th><th>Ngày tạo</th><th></th>
+  </tr>
+}
+
+@section TableBody {
+  @foreach (var item in Model) {
+    <tr>
+      <td>@item.CompanyName</td>
+      <td>@item.TaxCode</td>
+      <td>@item.Industry</td>
+      <td>@item.Phone</td>
+      <td>@item.CompanyEmail</td>
+      <td>@(item.Active ? "Yes" : "No")</td>
+      <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
+      <td><a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = item.CompanyId })"><i class="bi bi-eye me-1"></i>Chi tiết</a></td>
+    </tr>
+  }
+}
+
+@Html.Partial("~/Areas/Admin/Views/Shared/_Pagination.cshtml", new { PageIndex = 1, TotalPages = 1, BaseUrl = Url.Action("Index", new { q = Request["q"] }) })
+
+
