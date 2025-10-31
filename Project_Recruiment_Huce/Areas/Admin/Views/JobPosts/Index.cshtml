@@ -1,0 +1,38 @@
+@model List<Project_Recruiment_Huce.Areas.Admin.Models.JobPostListVm>
+@using Project_Recruiment_Huce.Areas.Admin.Models
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+@Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
+
+<div class="card mb-4">
+  <div class="card-body table-responsive p-0">
+    <table class="table table-hover">
+      <thead><tr>
+        <th>Mã</th><th>Tiêu đề</th><th>Công ty</th><th>Nhà tuyển dụng</th>
+        <th>Lương</th><th>Hình thức</th><th>Hạn nộp</th><th>Trạng thái</th><th>Đăng lúc</th><th></th>
+      </tr></thead>
+      <tbody>
+      @foreach (var item in Model) {
+        <tr>
+          <td>@item.JobCode</td>
+          <td>@item.Title</td>
+          <td>@item.CompanyName</td>
+          <td>@item.RecruiterName</td>
+          <td>@(AdminUiHelpers.FormatMoney(item.SalaryMin)) - @(AdminUiHelpers.FormatMoney(item.SalaryMax)) @item.SalaryUnit</td>
+          <td>@item.Employment</td>
+          <td>@(item.Deadline.HasValue ? item.Deadline.Value.ToString("dd/MM/yyyy") : "")</td>
+          <td>@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(item.Status, "JobPosts"))</td>
+          <td>@item.PostedAt.ToString("dd/MM/yyyy")</td>
+          <td>
+            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = item.JobId })" title="Chi tiết"><i class="bi bi-eye me-1"></i>Chi tiết</a>
+            <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Index","JobPostDetails", new { area="Admin", jobId = item.JobId })" title="Yêu cầu"><i class="bi bi-info-circle me-1"></i>Yêu cầu</a>
+          </td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@Html.Partial("~/Areas/Admin/Views/Shared/_Pagination.cshtml", new { PageIndex = 1, TotalPages = 1, BaseUrl = Url.Action("Index", new { q = Request["q"], status = Request["status"], companyId = Request["companyId"], recruiterId = Request["recruiterId"] }) })
+
+

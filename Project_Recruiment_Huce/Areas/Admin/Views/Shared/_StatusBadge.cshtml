@@ -1,0 +1,29 @@
+@model System.Tuple<string,string>
+@{
+    var status = (Model?.Item1 ?? string.Empty).Trim();
+    var type = (Model?.Item2 ?? string.Empty).Trim();
+    string css = "badge bg-secondary";
+    if (type.Equals("JobPosts", System.StringComparison.OrdinalIgnoreCase))
+    {
+        if (status.Equals("Visible", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-primary"; }
+        else if (status.Equals("Hidden", System.StringComparison.OrdinalIgnoreCase) || status.Equals("Closed", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-secondary"; }
+        else if (status.Equals("Draft", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-warning"; }
+    }
+    else if (type.Equals("Applications", System.StringComparison.OrdinalIgnoreCase))
+    {
+        if (status.Equals("Under review", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-warning"; }
+        else if (status.Equals("Interview", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-info"; }
+        else if (status.Equals("Offered", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-primary"; }
+        else if (status.Equals("Hired", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-success"; }
+        else if (status.Equals("Rejected", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-danger"; }
+    }
+    else if (type.Equals("Transactions", System.StringComparison.OrdinalIgnoreCase))
+    {
+        if (status.Equals("Processing", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-warning"; }
+        else if (status.Equals("Completed", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-success"; }
+        else if (status.Equals("Failed", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-danger"; }
+    }
+}
+<span class="@css">@status</span>
+
+

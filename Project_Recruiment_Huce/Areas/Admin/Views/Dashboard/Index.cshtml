@@ -1,0 +1,124 @@
+@model dynamic
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="app-content-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-6"><h3 class="mb-0">Bảng điều khiển</h3></div>
+    </div>
+  </div>
+  </div>
+
+<div class="app-content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-3 col-6">
+        <div class="small-box text-bg-primary">
+          <div class="inner"><h3>@Model.JobPosts</h3><p>Tin tuyển dụng</p></div>
+          <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25z"></path></svg>
+        </div>
+      </div>
+      <div class="col-lg-3 col-6">
+        <div class="small-box text-bg-success">
+          <div class="inner"><h3>@Model.Applications</h3><p>Hồ sơ ứng tuyển</p></div>
+          <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z"></path></svg>
+        </div>
+      </div>
+      <div class="col-lg-3 col-6">
+        <div class="small-box text-bg-warning">
+          <div class="inner"><h3>@Model.Companies</h3><p>Công ty</p></div>
+          <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122z"></path></svg>
+        </div>
+      </div>
+      <div class="col-lg-3 col-6">
+        <div class="small-box text-bg-info">
+          <div class="inner"><h3>@Model.Candidates</h3><p>Ứng viên</p></div>
+          <svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path clip-rule="evenodd" fill-rule="evenodd" d="M2.25 13.5a8.25 8.25 0 018.25-8.25.75.75 0 01.75.75v6.75H18a.75.75 0 01.75.75 8.25 8.25 0 01-16.5 0z"></path><path clip-rule="evenodd" fill-rule="evenodd" d="M12.75 3a.75.75 0 01.75-.75 8.25 8.25 0 018.25 8.25.75.75 0 01-.75.75h-7.5a.75.75 0 01-.75-.75V3z"></path></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-7 connectedSortable">
+        <div class="card mb-4">
+          <div class="card-header"><h3 class="card-title">Tin tuyển dụng theo thời gian</h3></div>
+          <div class="card-body"><div id="revenue-chart"></div></div>
+        </div>
+      </div>
+      <div class="col-lg-5 connectedSortable">
+        <div class="card text-white bg-primary bg-gradient border-primary mb-4">
+          <div class="card-header border-0">
+            <h3 class="card-title">Phân bố theo quốc gia (demo)</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-primary btn-sm" data-lte-toggle="card-collapse">
+                <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
+                <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body"><div id="world-map" style="height: 220px"></div></div>
+          <div class="card-footer border-0">
+            <div class="row">
+              <div class="col-4 text-center">
+                <div id="sparkline-1" class="text-dark"></div>
+                <div class="text-white">Tin mới</div>
+              </div>
+              <div class="col-4 text-center">
+                <div id="sparkline-2" class="text-dark"></div>
+                <div class="text-white">Ứng tuyển</div>
+              </div>
+              <div class="col-4 text-center">
+                <div id="sparkline-3" class="text-dark"></div>
+                <div class="text-white">Đăng ký</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-4 col-12">
+        <div class="card"><div class="card-header"><h5 class="card-title">Giao dịch thanh toán</h5></div><div class="card-body"><h3>@Model.Transactions</h3></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+  <script>
+    (function () {
+      // Build area chart from mock data
+      var dates = @Html.Raw(System.Web.Helpers.Json.Encode(Model.Dates7));
+      var job = @Html.Raw(System.Web.Helpers.Json.Encode(Model.JobPostsWeekly));
+      var apps = @Html.Raw(System.Web.Helpers.Json.Encode(Model.ApplicationsWeekly));
+
+      if (window.ApexCharts) {
+        var options = {
+          series: [
+            { name: 'Tin tuyển dụng', data: job },
+            { name: 'Hồ sơ ứng tuyển', data: apps }
+          ],
+          chart: { height: 300, type: 'area', toolbar: { show: false } },
+          legend: { show: true },
+          colors: ['#0d6efd', '#20c997'],
+          dataLabels: { enabled: false },
+          stroke: { curve: 'smooth' },
+          xaxis: { type: 'datetime', categories: dates },
+          tooltip: { x: { format: 'dd/MM/yyyy' } }
+        };
+        var chart = new ApexCharts(document.querySelector('#revenue-chart'), options);
+        chart.render();
+
+        // Sparklines
+        var spark1 = new ApexCharts(document.querySelector('#sparkline-1'), { series: [{ data: job }], chart: { type: 'area', height: 50, sparkline: { enabled: true } }, stroke: { curve: 'straight' }, fill: { opacity: 0.3 }, colors: ['#DCE6EC'] });
+        spark1.render();
+        var spark2 = new ApexCharts(document.querySelector('#sparkline-2'), { series: [{ data: apps }], chart: { type: 'area', height: 50, sparkline: { enabled: true } }, stroke: { curve: 'straight' }, fill: { opacity: 0.3 }, colors: ['#DCE6EC'] });
+        spark2.render();
+        var spark3 = new ApexCharts(document.querySelector('#sparkline-3'), { series: [{ data: job.map(function(v,i){ return (apps[i]||0) + v; }) }], chart: { type: 'area', height: 50, sparkline: { enabled: true } }, stroke: { curve: 'straight' }, fill: { opacity: 0.3 }, colors: ['#DCE6EC'] });
+        spark3.render();
+      }
+    })();
+  </script>
+}
+

@@ -1,0 +1,24 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.PhotoVm
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body text-center">
+        <img src="@Url.Content(Model.FilePath)" alt="@Model.FileName" style="max-width:100%;height:auto;" />
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card"><div class="card-header"><h6 class="mb-0">Thông tin ảnh</h6></div>
+      <div class="card-body">
+        <div class="mb-2"><span class="text-secondary">Tên: </span>@Model.FileName</div>
+        <div class="mb-2"><span class="text-secondary">Loại: </span>@Model.MimeType</div>
+        <div class="mb-2"><span class="text-secondary">Kích thước: </span>@(Model.SizeKB.HasValue ? Model.SizeKB.Value + " KB" : "")</div>
+        <div class="mb-2"><span class="text-secondary">Tải lên: </span>@Model.UploadedAt.ToString("dd/MM/yyyy")</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+

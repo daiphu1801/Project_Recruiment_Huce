@@ -172,11 +172,34 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
+    <!-- Admin Area -->
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
-    <Compile Include="Areas\Admin\Controllers\HomeController.cs" />
+    
+    <Compile Include="Areas\Admin\Controllers\AuthController.cs" />
+    <Compile Include="Areas\Admin\Controllers\DashboardController.cs" />
+    <Compile Include="Areas\Admin\Controllers\AccountsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\CompaniesController.cs" />
+    <Compile Include="Areas\Admin\Controllers\RecruitersController.cs" />
+    <Compile Include="Areas\Admin\Controllers\CandidatesController.cs" />
+    <Compile Include="Areas\Admin\Controllers\WorkExperiencesController.cs" />
+    <Compile Include="Areas\Admin\Controllers\CandidateCertificatesController.cs" />
+    <Compile Include="Areas\Admin\Controllers\CertificatesController.cs" />
+    <Compile Include="Areas\Admin\Controllers\JobPostsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\JobPostDetailsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\ApplicationsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\TransactionsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\BankCardsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\PendingPaymentsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\PaymentHistoryController.cs" />
+    <Compile Include="Areas\Admin\Controllers\PhotosController.cs" />
+    <Compile Include="Areas\Admin\Models\ViewModels.cs" />
+    <Compile Include="Areas\Admin\Models\MockData.cs" />
+    <Compile Include="Areas\Admin\Controllers\ProfileController.cs" />
+    <!-- User -->
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\JobsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -271,7 +294,8 @@
     <Content Include="Areas\Admin\Views\web.config" />
     <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\_Layout.cshtml" />
-    <Content Include="Areas\Admin\Views\Home\Index.cshtml" />
+    
+    <Content Include="Areas\Admin\Views\Profile\Manage.cshtml" />
     <Content Include="Content\Admin\css\adminlte.css.map" />
     <Content Include="Content\Admin\css\adminlte.min.css.map" />
     <Content Include="Content\Admin\css\adminlte.rtl.css.map" />

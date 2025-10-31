@@ -1,0 +1,26 @@
+@model List<Project_Recruiment_Huce.Areas.Admin.Models.JobPostDetailVm>
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="card">
+  <div class="card-body table-responsive p-0">
+    <table class="table table-hover">
+      <thead><tr>
+        <th>Ngành</th><th>Chuyên môn</th><th>Kinh nghiệm (năm)</th><th>Học vấn</th><th>Giới tính</th><th>Độ tuổi</th>
+      </tr></thead>
+      <tbody>
+      @foreach (var item in Model) {
+        <tr>
+          <td>@item.Industry</td>
+          <td>@item.Major</td>
+          <td>@item.YearsExperience</td>
+          <td>@item.EducationLevel</td>
+          <td>@item.Gender</td>
+          <td>@(item.AgeFrom.HasValue ? item.AgeFrom.Value.ToString() : "") - @(item.AgeTo.HasValue ? item.AgeTo.Value.ToString() : "")</td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+

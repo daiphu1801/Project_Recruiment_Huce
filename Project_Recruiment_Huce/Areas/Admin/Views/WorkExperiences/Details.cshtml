@@ -1,0 +1,20 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.WorkExperienceVm
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><h5 class="card-title">Kinh nghiệm</h5></div>
+      <div class="card-body">
+        <div class="row mb-2"><div class="col-4 text-secondary">Ứng viên</div><div class="col-8">@Model.CandidateName</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Công ty</div><div class="col-8">@Model.CompanyName</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Chức danh</div><div class="col-8">@Model.JobTitle</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Bắt đầu</div><div class="col-8">@Model.StartDate.ToString("dd/MM/yyyy")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Kết thúc</div><div class="col-8">@(Model.EndDate.HasValue? Model.EndDate.Value.ToString("dd/MM/yyyy") : "Hiện tại")</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4"></div>
+</div>
+
+

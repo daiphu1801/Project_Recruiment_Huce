@@ -1,0 +1,34 @@
+@model List<Project_Recruiment_Huce.Areas.Admin.Models.TransactionListVm>
+@using Project_Recruiment_Huce.Areas.Admin.Models
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+@{
+    ViewBag.StatusOptions = new System.Web.Mvc.SelectList(new[] { "Processing", "Completed", "Failed" });
+    ViewBag.MethodOptions = new System.Web.Mvc.SelectList(new[] { "Bank", "Card" });
+}
+@Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
+
+<div class="card">
+  <div class="card-body table-responsive p-0">
+    <table class="table table-hover">
+      <thead><tr>
+        <th>Mã GD</th><th>Tài khoản</th><th>Số tiền</th><th>Phương thức</th><th>Trạng thái</th><th>Thời gian</th><th></th>
+      </tr></thead>
+      <tbody>
+      @foreach (var item in Model) {
+        <tr>
+          <td>@item.TransactionNo</td>
+          <td>@item.AccountEmail</td>
+          <td>@AdminUiHelpers.FormatMoney(item.Amount) đ</td>
+          <td>@item.Method</td>
+          <td>@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(item.Status, "Transactions"))</td>
+          <td>@item.TransactedAt.ToString("dd/MM/yyyy")</td>
+          <td><a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = item.TransactionId })"><i class="fa fa-eye"></i></a></td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>
+</div>
+@Html.Partial("~/Areas/Admin/Views/Shared/_Pagination.cshtml", new { PageIndex = 1, TotalPages = 1, BaseUrl = Url.Action("Index", new { q = Request["q"], method = Request["method"], status = Request["status"] }) })
+
+
