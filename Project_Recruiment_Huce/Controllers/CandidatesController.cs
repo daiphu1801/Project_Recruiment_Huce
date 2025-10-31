@@ -4,7 +4,7 @@ using System.Security.Claims;
 using System.Web;
 using System.Web.Mvc;
 using System.IO;
-using Project_Recruiment_Huce.DbContext;
+using System.Configuration;
 using Project_Recruiment_Huce.Models;
 
 namespace Project_Recruiment_Huce.Controllers
@@ -29,7 +29,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            using (var db = new RecruitmentDbContext())
+            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountId == accountId.Value);
                 if (candidate == null)
@@ -42,8 +42,8 @@ namespace Project_Recruiment_Huce.Controllers
                         CreatedAt = DateTime.Now,
                         ActiveFlag = 1
                     };
-                    db.Candidates.Add(candidate);
-                    db.SaveChanges();
+                    db.Candidates.InsertOnSubmit(candidate);
+                    db.SubmitChanges();
                 }
 
                 return View(candidate);
@@ -62,13 +62,13 @@ namespace Project_Recruiment_Huce.Controllers
 
             // Do not return early on invalid model; we still allow saving avatar
 
-            using (var db = new RecruitmentDbContext())
+            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountId == accountId.Value);
                 if (candidate == null)
                 {
                     candidate = new Candidate { AccountId = accountId.Value, FullName = User.Identity.Name, Gender = "Nam", CreatedAt = DateTime.Now, ActiveFlag = 1 };
-                    db.Candidates.Add(candidate);
+                    db.Candidates.InsertOnSubmit(candidate);
                 }
 
                 // Update profile fields only when model is valid
@@ -125,8 +125,8 @@ namespace Project_Recruiment_Huce.Controllers
                             MimeType = avatar.ContentType,
                             UploadedAt = DateTime.UtcNow
                         };
-                        db.Photos.Add(photo);
-                        db.SaveChanges();
+                        db.Photos.InsertOnSubmit(photo);
+                        db.SubmitChanges();
 
                         // Link to both candidate and account
                         candidate.PhotoId = photo.PhotoId;
@@ -143,7 +143,7 @@ namespace Project_Recruiment_Huce.Controllers
                     }
                 }
 
-                db.SaveChanges();
+                db.SubmitChanges();
                 if (ModelState.IsValid)
                 {
                     TempData["SuccessMessage"] = "Cập nhật hồ sơ thành công.";

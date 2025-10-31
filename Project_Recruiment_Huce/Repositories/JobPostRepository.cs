@@ -1,15 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
-using Project_Recruiment_Huce.DbContext;
 using Project_Recruiment_Huce.Models;
 
 namespace Project_Recruiment_Huce.Repositories
 {
     public class JobPostRepository
     {
-        private readonly RecruitmentDbContext _db;
+        private readonly JOBPROTAL_ENDataContext _db;
 
-        public JobPostRepository(RecruitmentDbContext db)
+        public JobPostRepository(JOBPROTAL_ENDataContext db)
         {
             _db = db;
         }
