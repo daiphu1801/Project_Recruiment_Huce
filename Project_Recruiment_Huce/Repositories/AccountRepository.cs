@@ -1,15 +1,14 @@
 using System;
 using System.Linq;
-using Project_Recruiment_Huce.DbContext;
 using Project_Recruiment_Huce.Models;
 
 namespace Project_Recruiment_Huce.Repositories
 {
     public class AccountRepository
     {
-        private readonly RecruitmentDbContext _db;
+        private readonly JOBPROTAL_ENDataContext _db;
 
-        public AccountRepository(RecruitmentDbContext db)
+        public AccountRepository(JOBPROTAL_ENDataContext db)
         {
             _db = db;
         }
@@ -45,8 +44,8 @@ namespace Project_Recruiment_Huce.Repositories
                 CreatedAt = DateTime.Now,
                 ActiveFlag = 1
             };
-            _db.Accounts.Add(account);
-            _db.SaveChanges();
+            _db.Accounts.InsertOnSubmit(account);
+            _db.SubmitChanges();
             return account;
         }
     }

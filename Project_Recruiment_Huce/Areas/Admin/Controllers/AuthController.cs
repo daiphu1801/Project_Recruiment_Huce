@@ -6,7 +6,7 @@ using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
-using Project_Recruiment_Huce.DbContext;
+using System.Configuration;
 using Project_Recruiment_Huce.Helpers;
 using Project_Recruiment_Huce.Models;
 
@@ -31,7 +31,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 return View("loginAd", model);
             }
 
-            using (var db = new RecruitmentDbContext())
+            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 var input = (model.EmailOrUsername ?? string.Empty).Trim();
                 bool isEmail = input.Contains("@");
@@ -91,7 +91,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 return View("registerAd", model);
             }
 
-            using (var db = new RecruitmentDbContext())
+            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 if (db.Accounts.Any(a => a.Username == model.TenDangNhap))
                 {
@@ -125,11 +125,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     CreatedAt = DateTime.Now,
                     ActiveFlag = 1
                 };
-                db.Accounts.Add(newAccount);
-                db.SaveChanges();
+                db.Accounts.InsertOnSubmit(newAccount);
+                db.SubmitChanges();
 
                 // create Admin profile
-                db.Admins.Add(new Project_Recruiment_Huce.Models.Admin
+                db.Admins.InsertOnSubmit(new Project_Recruiment_Huce.Models.Admin
                 {
                     AccountId = newAccount.AccountId,
                     FullName = model.TenDangNhap,
@@ -137,7 +137,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     CreatedAt = DateTime.Now,
                     Permission = "Super"
                 });
-                db.SaveChanges();
+                db.SubmitChanges();
 
                 var claims = new List<Claim>
                 {

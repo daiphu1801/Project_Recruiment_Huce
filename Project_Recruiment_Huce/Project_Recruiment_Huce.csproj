@@ -174,7 +174,6 @@
     <Compile Include="App_Start\Startup.Auth.cs" />
     <!-- Admin Area -->
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
-    
     <Compile Include="Areas\Admin\Controllers\AuthController.cs" />
     <Compile Include="Areas\Admin\Controllers\DashboardController.cs" />
     <Compile Include="Areas\Admin\Controllers\AccountsController.cs" />
@@ -199,31 +198,27 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\JobsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
-    <Compile Include="Models\Admin.cs" />
-    <Compile Include="Models\Account.cs" />
-    <Compile Include="Models\Photo.cs" />
-    <Compile Include="Models\Company.cs" />
-    <Compile Include="Models\Recruiter.cs" />
-    <Compile Include="Models\Candidate.cs" />
-    <Compile Include="Models\WorkExperience.cs" />
-    <Compile Include="Models\Certificate.cs" />
-    <Compile Include="Models\CandidateCertificate.cs" />
-    <Compile Include="Models\JobPost.cs" />
-    <Compile Include="Models\JobPostDetail.cs" />
-    <Compile Include="Models\Application.cs" />
-    <Compile Include="Models\TransactionEntity.cs" />
+    <Compile Include="Models\JOBPROTAL_EN.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>JOBPROTAL_EN.dbml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="DbContext\RecruitmentDbContext.cs" />
     <Compile Include="Helpers\PasswordHelper.cs" />
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\JobPostRepository.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Models\JOBPROTAL_EN.dbml">
+      <Generator>MSLinqToSqlGenerator</Generator>
+      <LastGenOutput>JOBPROTAL_EN.designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\Admin\css\adminlte.css" />
@@ -294,7 +289,6 @@
     <Content Include="Areas\Admin\Views\web.config" />
     <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\_Layout.cshtml" />
-    
     <Content Include="Areas\Admin\Views\Profile\Manage.cshtml" />
     <Content Include="Content\Admin\css\adminlte.css.map" />
     <Content Include="Content\Admin\css\adminlte.min.css.map" />
@@ -302,6 +296,9 @@
     <Content Include="Content\Admin\css\adminlte.rtl.min.css.map" />
     <Content Include="Scripts\Admin\js\adminlte.js.map" />
     <Content Include="Scripts\Admin\js\adminlte.min.js.map" />
+    <None Include="Models\JOBPROTAL_EN.dbml.layout">
+      <DependentUpon>JOBPROTAL_EN.dbml</DependentUpon>
+    </None>
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -336,7 +333,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Areas\Admin\Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />

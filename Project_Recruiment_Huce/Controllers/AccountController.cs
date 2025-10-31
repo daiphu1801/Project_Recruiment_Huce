@@ -4,13 +4,13 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Configuration;
 using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Project_Recruiment_Huce.Models;
-using Project_Recruiment_Huce.DbContext;
 using Project_Recruiment_Huce.Helpers;
 
 namespace Project_Recruiment_Huce.Controllers
@@ -41,7 +41,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return View(model);
             }
 
-            using (var db = new RecruitmentDbContext())
+            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 // Normalize input (allow username OR email)
                 var input = (model.EmailOrUsername ?? string.Empty).Trim();
@@ -117,7 +117,7 @@ namespace Project_Recruiment_Huce.Controllers
         {
             if (ModelState.IsValid)
             {
-                using (var db = new RecruitmentDbContext())
+                using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
                 {
                     // Check if Username already exists
                     if (db.Accounts.Any(a => a.Username == model.TenDangNhap))
@@ -184,8 +184,8 @@ namespace Project_Recruiment_Huce.Controllers
                         ActiveFlag = 1
                     };
 
-                    db.Accounts.Add(newAccount);
-                    db.SaveChanges();
+                    db.Accounts.InsertOnSubmit(newAccount);
+                    db.SubmitChanges();
 
                     // Auto login after registration
                 var claims = new List<Claim>
