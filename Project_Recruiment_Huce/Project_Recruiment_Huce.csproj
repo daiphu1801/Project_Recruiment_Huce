@@ -407,4 +407,18 @@
   </Target>
   <Target Name="AfterBuild">
   </Target> -->
+  
+  <!-- Auto-include Admin area files so VS shows them on fresh clone -->
+  <ItemGroup>
+    <!-- Code -->
+    <Compile Include="Areas\Admin\Controllers\**\*.cs" />
+    <Compile Include="Areas\Admin\Models\**\*.cs" />
+
+    <!-- Views -->
+    <Content Include="Areas\Admin\Views\**\*.cshtml" />
+
+    <!-- Static assets (optional) -->
+    <Content Include="Areas\Admin\Content\**\*.*" />
+    <Content Include="Areas\Admin\Scripts\**\*.*" />
+  </ItemGroup>
 </Project>
