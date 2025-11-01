@@ -213,7 +213,8 @@
                                     var idClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) : null;
                                     if (idClaim != null) {
                                         var accId = int.Parse(idClaim.Value);
-                                        using (var adb = new Project_Recruiment_Huce.DbContext.RecruitmentDbContext()) {
+                                        using (var adb = new Project_Recruiment_Huce.Models.JOBPROTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString)) {
+                                            adb.ObjectTrackingEnabled = false;
                                             var acc = adb.Accounts.FirstOrDefault(a => a.AccountId == accId);
                                             if (acc != null && acc.PhotoId.HasValue) {
                                                 var photo = adb.Photos.FirstOrDefault(p => p.PhotoId == acc.PhotoId.Value);
