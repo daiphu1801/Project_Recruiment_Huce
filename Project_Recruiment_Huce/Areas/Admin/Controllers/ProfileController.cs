@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using System.Web.Mvc;
 using Project_Recruiment_Huce.Areas.Admin.Models;
+using System.Configuration;
+using Project_Recruiment_Huce.Models;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
@@ -18,8 +20,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
             var idClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             int accountId = idClaim != null ? int.Parse(idClaim.Value) : 0;
-            using (var db = new Project_Recruiment_Huce.DbContext.RecruitmentDbContext())
+            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
+                db.ObjectTrackingEnabled = false;
                 var acc = db.Accounts.FirstOrDefault(a => a.AccountId == accountId);
                 if (acc == null) return HttpNotFound();
                 var vm = new ProfileVm
