@@ -6,7 +6,7 @@ using Project_Recruiment_Huce.Areas.Admin.Models;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
-    public class DashboardController : Controller
+    public class DashboardController : AdminBaseController
     {
         public ActionResult Index()
         {

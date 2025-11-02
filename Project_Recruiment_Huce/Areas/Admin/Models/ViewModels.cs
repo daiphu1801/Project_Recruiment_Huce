@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Web;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Models
 {
@@ -21,7 +22,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
     }
 
     // ViewModels
-    public class AccountListVm { public int AccountId { get; set; } public string Username { get; set; } public string Email { get; set; } public string Phone { get; set; } public string Role { get; set; } public bool Active { get; set; } public DateTime CreatedAt { get; set; } }
+    public class AccountListVm { public int AccountId { get; set; } public string Username { get; set; } public string Email { get; set; } public string Phone { get; set; } public string Role { get; set; } public bool Active { get; set; } public DateTime CreatedAt { get; set; } public string PhotoUrl { get; set; } }
     public class CompanyListVm { public int CompanyId { get; set; } public string CompanyName { get; set; } public string TaxCode { get; set; } public string Industry { get; set; } public string Phone { get; set; } public string CompanyEmail { get; set; } public bool Active { get; set; } public DateTime CreatedAt { get; set; } }
     public class RecruiterListVm { public int RecruiterId { get; set; } public string FullName { get; set; } public string CompanyName { get; set; } public string PositionTitle { get; set; } public string WorkEmail { get; set; } public string Phone { get; set; } public DateTime CreatedAt { get; set; } public bool Active { get; set; } }
     public class CandidateListVm { public int CandidateId { get; set; } public string FullName { get; set; } public string Email { get; set; } public string Phone { get; set; } public DateTime? BirthDate { get; set; } public string Gender { get; set; } public DateTime CreatedAt { get; set; } public bool Active { get; set; } }
@@ -60,6 +61,53 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string Phone { get; set; }
         public string Role { get; set; }
         public DateTime? CreatedAt { get; set; }
+    }
+
+    // Admin Account CRUD ViewModels
+    public class CreateAccountVm
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
+        [System.ComponentModel.DataAnnotations.StringLength(100, ErrorMessage = "Tên đăng nhập tối đa 100 ký tự")]
+        public string Username { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập email")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        public string Email { get; set; }
+
+        [System.ComponentModel.DataAnnotations.StringLength(20)]
+        public string Phone { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng chọn vai trò")]
+        public string Role { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
+        [System.ComponentModel.DataAnnotations.StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự")]
+        public string Password { get; set; }
+
+        public HttpPostedFileBase PhotoFile { get; set; }
+    }
+
+    public class EditAccountVm
+    {
+        public int AccountId { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
+        [System.ComponentModel.DataAnnotations.StringLength(100, ErrorMessage = "Tên đăng nhập tối đa 100 ký tự")]
+        public string Username { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập email")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        public string Email { get; set; }
+
+        [System.ComponentModel.DataAnnotations.StringLength(20)]
+        public string Phone { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng chọn vai trò")]
+        public string Role { get; set; }
+
+        public bool Active { get; set; }
+        public string CurrentPhotoUrl { get; set; }
+        public HttpPostedFileBase PhotoFile { get; set; }
     }
 }
 

@@ -1,0 +1,93 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.AccountListVm
+@{
+    ViewBag.Title = "Xóa tài khoản";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle"></i> Bạn có chắc chắn muốn xóa tài khoản này?
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0"><i class="bi bi-trash"></i> Xác nhận xóa tài khoản</h5>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-8">
+        <table class="table table-borderless">
+          <tr>
+            <th width="150">ID:</th>
+            <td>@Model.AccountId</td>
+          </tr>
+          <tr>
+            <th>Tên đăng nhập:</th>
+            <td>@Model.Username</td>
+          </tr>
+          <tr>
+            <th>Email:</th>
+            <td>@Model.Email</td>
+          </tr>
+          <tr>
+            <th>Điện thoại:</th>
+            <td>@Model.Phone</td>
+          </tr>
+          <tr>
+            <th>Vai trò:</th>
+            <td>@Model.Role</td>
+          </tr>
+          <tr>
+            <th>Trạng thái:</th>
+            <td>
+              @if (Model.Active)
+              {
+                <span class="badge bg-success">Hoạt động</span>
+              }
+              else
+              {
+                <span class="badge bg-secondary">Tạm khóa</span>
+              }
+            </td>
+          </tr>
+          <tr>
+            <th>Ngày tạo:</th>
+            <td>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+          </tr>
+        </table>
+      </div>
+      <div class="col-md-4 text-center">
+        @if (!string.IsNullOrEmpty(Model.PhotoUrl))
+        {
+          <img src="@Model.PhotoUrl" alt="@Model.Username" class="img-fluid rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;" />
+        }
+        else
+        {
+          <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white mx-auto mb-3" style="width: 200px; height: 200px;">
+            <i class="bi bi-person" style="font-size: 80px;"></i>
+          </div>
+        }
+      </div>
+    </div>
+
+    @using (Html.BeginForm("Delete", "Accounts", FormMethod.Post))
+    {
+      @Html.AntiForgeryToken()
+      @Html.Hidden("id", Model.AccountId)
+      
+      <div class="alert alert-danger mt-3">
+        <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến tài khoản này sẽ bị xóa.
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+          <i class="bi bi-arrow-left"></i> Hủy
+        </a>
+        <button type="submit" class="btn btn-danger">
+          <i class="bi bi-trash"></i> Xác nhận xóa
+        </button>
+      </div>
+    }
+  </div>
+</div>
+

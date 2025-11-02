@@ -6,7 +6,7 @@ using Project_Recruiment_Huce.Areas.Admin.Models;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
-    public class CertificatesController : Controller
+    public class CertificatesController : AdminBaseController
     {
         public ActionResult Index(string q)
         {

@@ -1,40 +1,50 @@
 @model Project_Recruiment_Huce.Models.LoginViewModel
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AuthLayout.cshtml";
+    ViewBag.Title = "Đăng nhập";
+}
 
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-      <div class="card shadow-sm">
-        <div class="card-body login-card-body">
-          <h5 class="login-box-msg mb-4 text-center">Đăng nhập quản trị</h5>
-          @using (Html.BeginForm("Login", "Auth", FormMethod.Post, new { area = "Admin" }))
-          {
-            @Html.AntiForgeryToken()
-            @Html.ValidationSummary(true, null, new { @class = "text-danger" })
-            <div class="input-group mb-3">
-              @Html.TextBoxFor(m => m.EmailOrUsername, new { @class = "form-control", placeholder = "Email hoặc Tên đăng nhập" })
-              <div class="input-group-text"><span class="bi bi-envelope"></span></div>
-            </div>
-            <div class="input-group mb-3">
-              @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Mật khẩu" })
-              <div class="input-group-text"><span class="bi bi-lock-fill"></span></div>
-            </div>
-            <div class="row align-items-center mb-3">
-              <div class="col-7">
-                <div class="form-check">
-                  @Html.CheckBoxFor(m => m.RememberMe, new { @class = "form-check-input", id = "flexCheckDefault" })
-                  <label class="form-check-label" for="flexCheckDefault"> Ghi nhớ đăng nhập </label>
-                </div>
-              </div>
-              <div class="col-5 text-end">
-                <button type="submit" class="btn btn-primary">Đăng nhập</button>
-              </div>
-            </div>
-          }
-          <p class="mb-0 text-center">
-            <a href="@Url.Action("Register","Auth", new { area = "Admin" })" class="text-center">Đăng ký quản trị</a>
-          </p>
+<div class="card auth-card shadow-lg">
+  <div class="auth-header">
+    <h3 class="mb-2"><i class="bi bi-shield-lock-fill"></i> Đăng nhập Quản trị</h3>
+    <p class="mb-0 opacity-75">Vui lòng đăng nhập để tiếp tục</p>
+  </div>
+  <div class="auth-body">
+    @using (Html.BeginForm("Login", "Auth", new { area = "Admin", returnUrl = ViewBag.ReturnUrl }, FormMethod.Post))
+    {
+      @Html.AntiForgeryToken()
+      @Html.ValidationSummary(true, null, new { @class = "alert alert-danger" })
+      <div class="mb-3">
+        <label class="form-label">Email hoặc Tên đăng nhập</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+          @Html.TextBoxFor(m => m.EmailOrUsername, new { @class = "form-control", placeholder = "Email hoặc Tên đăng nhập", required = "required" })
         </div>
+        @Html.ValidationMessageFor(m => m.EmailOrUsername, "", new { @class = "text-danger small" })
       </div>
+      <div class="mb-3">
+        <label class="form-label">Mật khẩu</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+          @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Mật khẩu", required = "required" })
+        </div>
+        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
+      </div>
+      <div class="mb-3 form-check">
+        @Html.CheckBoxFor(m => m.RememberMe, new { @class = "form-check-input", id = "rememberMe" })
+        <label class="form-check-label" for="rememberMe">Ghi nhớ đăng nhập</label>
+      </div>
+      <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
+        </button>
+      </div>
+    }
+    <div class="text-center">
+      <p class="mb-0">
+        Chưa có tài khoản? 
+        <a href="@Url.Action("Register","Auth", new { area = "Admin" })" class="text-decoration-none">Đăng ký ngay</a>
+      </p>
     </div>
   </div>
 </div>

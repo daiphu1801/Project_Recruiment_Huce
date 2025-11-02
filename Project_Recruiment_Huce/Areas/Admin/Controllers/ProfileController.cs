@@ -7,8 +7,7 @@ using Project_Recruiment_Huce.Models;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
-    [Authorize]
-    public class ProfileController : Controller
+    public class ProfileController : AdminBaseController
     {
         public ActionResult Manage()
         {

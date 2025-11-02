@@ -1,7 +1,19 @@
 @model List<Project_Recruiment_Huce.Areas.Admin.Models.JobPostListVm>
 @using Project_Recruiment_Huce.Areas.Admin.Models
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+@{
+  ViewBag.ShowEmployment = true;
+  ViewBag.CenterSearch = true; // thu nhỏ & căn giữa ô tìm kiếm cho trang này
+  ViewBag.SearchWidth = "320px"; // có thể chỉnh 280-360px tùy ý
+}
 @Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
+
+<div class="d-flex justify-content-end mb-3">
+  <a class="btn btn-primary" href="@Url.Action("Create")">
+    <i class="bi bi-plus-lg me-1"></i>Thêm bài đăng
+  </a>
+  @* Đặt các nút bulk khác ở đây nếu cần *@
+</div>
 
 <div class="card mb-4">
   <div class="card-body table-responsive p-0">
@@ -22,9 +34,13 @@
           <td>@(item.Deadline.HasValue ? item.Deadline.Value.ToString("dd/MM/yyyy") : "")</td>
           <td>@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(item.Status, "JobPosts"))</td>
           <td>@item.PostedAt.ToString("dd/MM/yyyy")</td>
-          <td>
-            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = item.JobId })" title="Chi tiết"><i class="bi bi-eye me-1"></i>Chi tiết</a>
-            <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Index","JobPostDetails", new { area="Admin", jobId = item.JobId })" title="Yêu cầu"><i class="bi bi-info-circle me-1"></i>Yêu cầu</a>
+          <td class="text-end" style="white-space:nowrap;">
+            @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string,string>{
+              {"Details", Url.Action("Details", new { id = item.JobId })},
+              {"Edit", Url.Action("Edit", new { id = item.JobId })},
+              {"Delete", Url.Action("Delete", new { id = item.JobId })}
+            })
+            <a class="btn btn-sm btn-outline-secondary ms-1" href="@Url.Action("Index","JobPostDetails", new { area="Admin", jobId = item.JobId })" title="Yêu cầu"><i class="bi bi-info-circle"></i></a>
           </td>
         </tr>
       }

@@ -1,0 +1,17 @@
+@model System.Collections.Generic.Dictionary<string, string>
+@{
+    var hasDetails = Model != null && Model.ContainsKey("Details");
+    var hasEdit = Model != null && Model.ContainsKey("Edit");
+    var hasDelete = Model != null && Model.ContainsKey("Delete");
+}
+<div class="btn-group btn-group-sm" role="group">
+  @if (hasDetails) {
+    <a class="btn btn-outline-primary" href="@Model["Details"]" title="Chi tiết"><i class="bi bi-eye"></i></a>
+  }
+  @if (hasEdit) {
+    <a class="btn btn-outline-secondary" href="@Model["Edit"]" title="Sửa"><i class="bi bi-pencil"></i></a>
+  }
+  @if (hasDelete) {
+    <a class="btn btn-outline-danger" href="@Model["Delete"]" title="Xóa" onclick="return confirm('Xóa mục này?');"><i class="bi bi-trash"></i></a>
+  }
+</div>

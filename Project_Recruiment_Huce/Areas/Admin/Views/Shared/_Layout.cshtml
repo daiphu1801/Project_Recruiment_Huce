@@ -58,6 +58,30 @@
 <!--end::Head-->
 <!--begin::Body-->
 <body class="layout-fixed sidebar-expand-lg sidebar-open bg-body-tertiary">
+    @{
+        // Kiểm tra authentication ngay trong Layout để đảm bảo không thể bypass
+        if (!Request.IsAuthenticated)
+        {
+            Response.Redirect(Url.Action("Login", "Auth", new { area = "Admin", returnUrl = Request.RawUrl }));
+            return;
+        }
+        // Kiểm tra role Admin
+        var identity = User.Identity as System.Security.Claims.ClaimsIdentity;
+        if (identity != null)
+        {
+            var roleClaim = identity.FindFirst("VaiTro");
+            if (roleClaim == null || roleClaim.Value != "Admin")
+            {
+                Response.Redirect(Url.Action("Login", "Auth", new { area = "Admin" }));
+                return;
+            }
+        }
+        else
+        {
+            Response.Redirect(Url.Action("Login", "Auth", new { area = "Admin", returnUrl = Request.RawUrl }));
+            return;
+        }
+    }
     <!--begin::App Wrapper-->
     <div class="app-wrapper">
         <!--begin::Header-->
