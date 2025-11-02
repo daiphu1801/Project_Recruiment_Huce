@@ -1,44 +1,74 @@
 @model Project_Recruiment_Huce.Models.RegisterViewModel
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AuthLayout.cshtml";
+    ViewBag.Title = "Đăng ký";
+}
 
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-7 col-lg-6">
-      <div class="card shadow-sm">
-        <div class="card-body register-card-body">
-          <h5 class="register-box-msg mb-4 text-center">Tạo tài khoản quản trị</h5>
-          @using (Html.BeginForm("Register", "Auth", FormMethod.Post, new { area = "Admin" }))
-          {
-            @Html.AntiForgeryToken()
-            @Html.ValidationSummary(true, null, new { @class = "text-danger" })
-            <div class="input-group mb-3">
-              @Html.TextBoxFor(m => m.TenDangNhap, new { @class = "form-control", placeholder = "Tên đăng nhập" })
-              <div class="input-group-text"><span class="bi bi-person"></span></div>
-            </div>
-            <div class="input-group mb-3">
-              @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Email" })
-              <div class="input-group-text"><span class="bi bi-envelope"></span></div>
-            </div>
-            <div class="input-group mb-3">
-              @Html.TextBoxFor(m => m.SoDienThoai, new { @class = "form-control", placeholder = "Số điện thoại" })
-              <div class="input-group-text"><span class="bi bi-telephone"></span></div>
-            </div>
-            <div class="input-group mb-3">
-              @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Mật khẩu" })
-              <div class="input-group-text"><span class="bi bi-lock-fill"></span></div>
-            </div>
-            <div class="input-group mb-4">
-              @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Xác nhận mật khẩu" })
-              <div class="input-group-text"><span class="bi bi-lock"></span></div>
-            </div>
-            <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-primary">Đăng ký</button>
-            </div>
-          }
-          <p class="mb-0 mt-3 text-center">
-            <a href="@Url.Action("Login","Auth", new { area = "Admin" })" class="text-center">Đã có tài khoản? Đăng nhập</a>
-          </p>
+<div class="card auth-card shadow-lg">
+  <div class="auth-header">
+    <h3 class="mb-2"><i class="bi bi-person-plus-fill"></i> Tạo tài khoản Quản trị</h3>
+    <p class="mb-0 opacity-75">Điền thông tin để tạo tài khoản mới</p>
+  </div>
+  <div class="auth-body">
+    @using (Html.BeginForm("Register", "Auth", FormMethod.Post, new { area = "Admin" }))
+    {
+      @Html.AntiForgeryToken()
+      if (!ViewData.ModelState.IsValid)
+      {
+        @Html.ValidationSummary(false, "", new { @class = "alert alert-danger", role = "alert" })
+      }
+      <div class="mb-3">
+        <label class="form-label">Tên đăng nhập</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-person"></i></span>
+          @Html.TextBoxFor(m => m.TenDangNhap, new { @class = "form-control", placeholder = "Tên đăng nhập", required = "required" })
         </div>
+        @Html.ValidationMessageFor(m => m.TenDangNhap, "", new { @class = "text-danger small" })
       </div>
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+          @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Email", type = "email", required = "required" })
+        </div>
+        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Số điện thoại</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+          @Html.TextBoxFor(m => m.SoDienThoai, new { @class = "form-control", placeholder = "Số điện thoại" })
+        </div>
+        @Html.ValidationMessageFor(m => m.SoDienThoai, "", new { @class = "text-danger small" })
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Mật khẩu</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+          @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Mật khẩu (tối thiểu 6 ký tự, có chữ hoa, chữ thường và số)", required = "required" })
+        </div>
+        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
+        <small class="form-text text-muted">Mật khẩu phải có tối thiểu 6 ký tự, bao gồm chữ hoa, chữ thường và số</small>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Xác nhận mật khẩu</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock"></i></span>
+          @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Xác nhận mật khẩu", required = "required" })
+        </div>
+        @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger small" })
+      </div>
+      <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="bi bi-person-check-fill me-2"></i>Đăng ký
+        </button>
+      </div>
+    }
+    <div class="text-center">
+      <p class="mb-0">
+        Đã có tài khoản? 
+        <a href="@Url.Action("Login","Auth", new { area = "Admin" })" class="text-decoration-none">Đăng nhập ngay</a>
+      </p>
     </div>
   </div>
 </div>

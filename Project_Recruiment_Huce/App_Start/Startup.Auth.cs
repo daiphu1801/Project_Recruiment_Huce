@@ -10,11 +10,26 @@ namespace Project_Recruiment_Huce
         // For more information on configuring authentication, please visit https://go.microsoft.com/fwlink/?LinkId=301864
         public void ConfigureAuth(IAppBuilder app)
         {
-            // Enable the application to use a cookie to store information for the signed in user
+            // Configure User Authentication Cookie (for main site users) - ACTIVE to set context.User
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
-                AuthenticationType = "ApplicationCookie",
-                LoginPath = new PathString("/Account/Login")
+                AuthenticationType = "UserCookie",
+                LoginPath = new PathString("/Account/Login"),
+                CookieName = "UserAuth",
+                SlidingExpiration = true,
+                ExpireTimeSpan = TimeSpan.FromHours(24),
+                AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Active
+            });
+
+            // Configure Admin Authentication Cookie (for admin panel) - PASSIVE since UserCookie is active
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                AuthenticationType = "AdminCookie",
+                LoginPath = new PathString("/Admin/Auth/Login"),
+                CookieName = "AdminAuth",
+                SlidingExpiration = true,
+                ExpireTimeSpan = TimeSpan.FromHours(8),
+                AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Passive
             });            
         }
     }

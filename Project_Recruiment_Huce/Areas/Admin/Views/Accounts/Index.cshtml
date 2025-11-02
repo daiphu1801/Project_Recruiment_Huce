@@ -1,24 +1,44 @@
 @model List<Project_Recruiment_Huce.Areas.Admin.Models.AccountListVm>
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+@{
+  ViewBag.AddUrl = Url.Action("Create");
+  ViewBag.AddLabel = "Thêm tài khoản";
+}
 @Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
 
 <div class="card mb-4">
   <div class="card-body table-responsive p-0">
     <table class="table table-hover">
       <thead><tr>
-        <th>Tên đăng nhập</th><th>Email</th><th>Điện thoại</th><th>Vai trò</th><th>Hoạt động</th><th>Ngày tạo</th><th></th>
+        <th>Ảnh</th><th>Tên đăng nhập</th><th>Email</th><th>Điện thoại</th><th>Vai trò</th><th>Hoạt động</th><th>Ngày tạo</th><th></th>
       </tr></thead>
       <tbody>
       @foreach (var item in Model) {
         <tr>
+          <td>
+            @if (!string.IsNullOrEmpty(item.PhotoUrl))
+            {
+              <img src="@item.PhotoUrl" alt="@item.Username" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
+            }
+            else
+            {
+              <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px;">
+                <i class="bi bi-person"></i>
+              </div>
+            }
+          </td>
           <td>@item.Username</td>
           <td>@item.Email</td>
           <td>@item.Phone</td>
           <td>@item.Role</td>
           <td>@(item.Active ? "Yes" : "No")</td>
           <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
-          <td>
-            <a class="btn btn-sm btn-outline-primary" title="Chi tiết" href="@Url.Action("Details", new { id = item.AccountId })"><i class="bi bi-eye me-1"></i>Chi tiết</a>
+          <td class="text-end" style="white-space:nowrap;">
+            @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string,string>{
+              {"Details", Url.Action("Details", new { id = item.AccountId })},
+              {"Edit", Url.Action("Edit", new { id = item.AccountId })},
+              {"Delete", Url.Action("Delete", new { id = item.AccountId })}
+            })
           </td>
         </tr>
       }

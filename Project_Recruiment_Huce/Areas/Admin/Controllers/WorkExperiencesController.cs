@@ -6,7 +6,7 @@ using Project_Recruiment_Huce.Areas.Admin.Models;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
-    public class WorkExperiencesController : Controller
+    public class WorkExperiencesController : AdminBaseController
     {
         public ActionResult Index(int candidateId)
         {

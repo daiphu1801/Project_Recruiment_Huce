@@ -52,7 +52,14 @@ namespace Project_Recruiment_Huce.Controllers
 
                 if (user != null && PasswordHelper.VerifyPassword(model.Password, user.PasswordHash))
                 {
-                    // Create claims identity for OWIN authentication
+                    // Reject Admin users from main site login
+                    if (user.Role == "Admin")
+                    {
+                        ModelState.AddModelError("", "Tài khoản Admin phải đăng nhập tại trang Quản trị.");
+                        return View(model);
+                    }
+
+                    // Create claims identity for OWIN authentication (User Cookie)
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.AccountId.ToString()),
@@ -62,7 +69,7 @@ namespace Project_Recruiment_Huce.Controllers
                     new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                 };
 
-                    var identity = new ClaimsIdentity(claims, DefaultAuthenticationTypes.ApplicationCookie);
+                    var identity = new ClaimsIdentity(claims, "UserCookie");
                     AuthenticationManager.SignIn(new AuthenticationProperties 
                     { 
                         IsPersistent = model.RememberMe 
@@ -187,7 +194,7 @@ namespace Project_Recruiment_Huce.Controllers
                     db.Accounts.InsertOnSubmit(newAccount);
                     db.SubmitChanges();
 
-                    // Auto login after registration
+                    // Auto login after registration (User Cookie)
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, newAccount.AccountId.ToString()),
@@ -197,7 +204,7 @@ namespace Project_Recruiment_Huce.Controllers
                     new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                 };
 
-                    var identity = new ClaimsIdentity(claims, DefaultAuthenticationTypes.ApplicationCookie);
+                    var identity = new ClaimsIdentity(claims, "UserCookie");
                     AuthenticationManager.SignIn(identity);
 
                     return RedirectToAction("Index", "Home");
@@ -219,7 +226,7 @@ namespace Project_Recruiment_Huce.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
-            AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+            AuthenticationManager.SignOut("UserCookie");
             return RedirectToAction("Index", "Home");
         }
 
@@ -228,7 +235,7 @@ namespace Project_Recruiment_Huce.Controllers
         [AllowAnonymous]
         public ActionResult LogOffGet()
         {
-            AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+            AuthenticationManager.SignOut("UserCookie");
             return RedirectToAction("Login", "Account");
         }
 
