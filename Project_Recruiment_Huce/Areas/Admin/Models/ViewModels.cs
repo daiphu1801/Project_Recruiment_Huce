@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Web;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Models
 {
-    // Helper utilities shared by Admin pages
+    /// <summary>
+    /// Helper utilities shared by Admin pages
+    /// </summary>
     public static class AdminUiHelpers
     {
         public static string FormatMoney(decimal? amount)
@@ -21,24 +22,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         }
     }
 
-    // ViewModels
-    public class AccountListVm { public int AccountId { get; set; } public string Username { get; set; } public string Email { get; set; } public string Phone { get; set; } public string Role { get; set; } public bool Active { get; set; } public DateTime CreatedAt { get; set; } public string PhotoUrl { get; set; } }
-    public class CompanyListVm { public int CompanyId { get; set; } public string CompanyName { get; set; } public string TaxCode { get; set; } public string Industry { get; set; } public string Phone { get; set; } public string CompanyEmail { get; set; } public bool Active { get; set; } public DateTime CreatedAt { get; set; } }
-    public class RecruiterListVm { public int RecruiterId { get; set; } public string FullName { get; set; } public string CompanyName { get; set; } public string PositionTitle { get; set; } public string WorkEmail { get; set; } public string Phone { get; set; } public DateTime CreatedAt { get; set; } public bool Active { get; set; } }
-    public class CandidateListVm { public int CandidateId { get; set; } public string FullName { get; set; } public string Email { get; set; } public string Phone { get; set; } public DateTime? BirthDate { get; set; } public string Gender { get; set; } public DateTime CreatedAt { get; set; } public bool Active { get; set; } }
-    public class WorkExperienceVm { public int ExperienceId { get; set; } public string CandidateName { get; set; } public string CompanyName { get; set; } public string JobTitle { get; set; } public DateTime StartDate { get; set; } public DateTime? EndDate { get; set; } }
-    public class CertificateListVm { public int CertificateId { get; set; } public string CertificateName { get; set; } public string Issuer { get; set; } public string Industry { get; set; } public string Major { get; set; } }
-    public class CandidateCertificateVm { public int CandidateCertificateId { get; set; } public string CandidateName { get; set; } public string CertificateName { get; set; } public DateTime? IssuedDate { get; set; } public DateTime? ExpiredDate { get; set; } public string ScoreText { get; set; } }
-    public class JobPostListVm { public int JobId { get; set; } public string JobCode { get; set; } public string Title { get; set; } public string CompanyName { get; set; } public string RecruiterName { get; set; } public decimal? SalaryMin { get; set; } public decimal? SalaryMax { get; set; } public string SalaryUnit { get; set; } public string Employment { get; set; } public DateTime? Deadline { get; set; } public string Status { get; set; } public DateTime PostedAt { get; set; } }
-    public class JobPostDetailVm { public int DetailId { get; set; } public int JobId { get; set; } public string Industry { get; set; } public string Major { get; set; } public int YearsExperience { get; set; } public string EducationLevel { get; set; } public string Gender { get; set; } public int? AgeFrom { get; set; } public int? AgeTo { get; set; } }
-    public class ApplicationListVm { public int ApplicationId { get; set; } public string CandidateName { get; set; } public string JobTitle { get; set; } public DateTime AppliedAt { get; set; } public string AppStatus { get; set; } }
-    public class TransactionListVm { public int TransactionId { get; set; } public string TransactionNo { get; set; } public string AccountEmail { get; set; } public decimal Amount { get; set; } public string Method { get; set; } public string Status { get; set; } public DateTime TransactedAt { get; set; } }
-    public class BankCardListVm { public int CardId { get; set; } public string CompanyName { get; set; } public string MaskedNumber { get; set; } public string BankName { get; set; } public bool Active { get; set; } }
-    public class PendingPaymentVm { public int PendingId { get; set; } public string CompanyName { get; set; } public decimal AmountDue { get; set; } public DateTime? DueDate { get; set; } public string Status { get; set; } }
-    public class PaymentHistoryVm { public int PaymentId { get; set; } public string CompanyName { get; set; } public decimal Amount { get; set; } public string PaymentMethod { get; set; } public DateTime PaymentDate { get; set; } public string Status { get; set; } }
-    public class PhotoVm { public int PhotoId { get; set; } public string FileName { get; set; } public string FilePath { get; set; } public int? SizeKB { get; set; } public string MimeType { get; set; } public DateTime UploadedAt { get; set; } }
-
-    // Dashboard
+    /// <summary>
+    /// ViewModel cho Dashboard Admin
+    /// </summary>
     public class DashboardVm
     {
         public int Accounts { get; set; }
@@ -53,6 +39,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public List<int> ApplicationsWeekly { get; set; }
     }
 
+    /// <summary>
+    /// ViewModel cho Profile Admin
+    /// </summary>
     public class ProfileVm
     {
         public int AccountId { get; set; }
@@ -62,53 +51,4 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string Role { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
-
-    // Admin Account CRUD ViewModels
-    public class CreateAccountVm
-    {
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
-        [System.ComponentModel.DataAnnotations.StringLength(100, ErrorMessage = "Tên đăng nhập tối đa 100 ký tự")]
-        public string Username { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập email")]
-        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Email không hợp lệ")]
-        public string Email { get; set; }
-
-        [System.ComponentModel.DataAnnotations.StringLength(20)]
-        public string Phone { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng chọn vai trò")]
-        public string Role { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
-        [System.ComponentModel.DataAnnotations.StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự")]
-        public string Password { get; set; }
-
-        public HttpPostedFileBase PhotoFile { get; set; }
-    }
-
-    public class EditAccountVm
-    {
-        public int AccountId { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
-        [System.ComponentModel.DataAnnotations.StringLength(100, ErrorMessage = "Tên đăng nhập tối đa 100 ký tự")]
-        public string Username { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập email")]
-        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Email không hợp lệ")]
-        public string Email { get; set; }
-
-        [System.ComponentModel.DataAnnotations.StringLength(20)]
-        public string Phone { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng chọn vai trò")]
-        public string Role { get; set; }
-
-        public bool Active { get; set; }
-        public string CurrentPhotoUrl { get; set; }
-        public HttpPostedFileBase PhotoFile { get; set; }
-    }
 }
-
-
