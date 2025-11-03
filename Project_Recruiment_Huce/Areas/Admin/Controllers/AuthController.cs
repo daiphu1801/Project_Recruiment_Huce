@@ -224,7 +224,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         //
         // POST: /Admin/Auth/LogOff
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
             AuthenticationManager.SignOut("AdminCookie");
