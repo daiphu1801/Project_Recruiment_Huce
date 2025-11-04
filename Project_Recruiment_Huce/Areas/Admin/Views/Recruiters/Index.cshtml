@@ -1,5 +1,9 @@
 @model List<Project_Recruiment_Huce.Areas.Admin.Models.RecruiterListVm>
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+@{
+  ViewBag.AddUrl = Url.Action("Create");
+  ViewBag.AddLabel = "Thêm nhà tuyển dụng";
+}
 @Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
 
 <div class="card mb-4">
@@ -9,17 +13,27 @@
         <th>Họ tên</th><th>Công ty</th><th>Chức danh</th><th>Email công việc</th><th>SĐT</th><th>Ngày tạo</th><th>Hoạt động</th><th></th>
       </tr></thead>
       <tbody>
-      @foreach (var item in Model) {
+      @if (Model != null && Model.Any()) {
+      foreach (var item in Model) {
         <tr>
           <td>@item.FullName</td>
-          <td>@item.CompanyName</td>
-          <td>@item.PositionTitle</td>
-          <td>@item.WorkEmail</td>
-          <td>@item.Phone</td>
-          <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
-          <td>@(item.Active ? "Yes" : "No")</td>
-          <td><a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = item.RecruiterId })"><i class="bi bi-eye me-1"></i>Chi tiết</a></td>
+          <td>@(item.CompanyName ?? "-")</td>
+          <td>@(item.PositionTitle ?? "-")</td>
+          <td>@(item.WorkEmail ?? "-")</td>
+          <td>@(item.Phone ?? "-")</td>
+          <td>@(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</td>
+          <td>@(item.ActiveFlag == 1 ? "Yes" : "No")</td>
+          <td class="text-end" style="white-space:nowrap;">
+            @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string,string>{
+              {"Details", Url.Action("Details", new { id = item.RecruiterId })},
+              {"Edit", Url.Action("Edit", new { id = item.RecruiterId })},
+              {"Delete", Url.Action("Delete", new { id = item.RecruiterId })}
+            })
+          </td>
         </tr>
+      }
+      } else {
+        <tr><td colspan="8" class="text-center text-muted">Không có dữ liệu</td></tr>
       }
       </tbody>
     </table>

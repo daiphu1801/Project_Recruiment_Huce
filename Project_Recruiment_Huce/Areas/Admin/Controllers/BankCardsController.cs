@@ -6,6 +6,8 @@ using Project_Recruiment_Huce.Areas.Admin.Models;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
+    // NOTE: This controller uses MockData as a template/base.
+    // Team members should follow AccountsController pattern to implement CRUD with database.
     public class BankCardsController : AdminBaseController
     {
         public ActionResult Index(int? companyId)

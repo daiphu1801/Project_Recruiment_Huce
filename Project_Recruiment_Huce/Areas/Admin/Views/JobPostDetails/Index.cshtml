@@ -5,18 +5,25 @@
   <div class="card-body table-responsive p-0">
     <table class="table table-hover">
       <thead><tr>
-        <th>Ngành</th><th>Chuyên môn</th><th>Kinh nghiệm (năm)</th><th>Học vấn</th><th>Giới tính</th><th>Độ tuổi</th>
+        <th>Ngành</th><th>Chuyên môn</th><th>Kinh nghiệm (năm)</th><th>Học vấn</th><th>Kỹ năng</th><th>Số lượng</th><th>Giới tính</th><th>Độ tuổi</th><th>Trạng thái</th>
       </tr></thead>
       <tbody>
-      @foreach (var item in Model) {
+      @if (Model != null && Model.Any()) {
+      foreach (var item in Model) {
         <tr>
           <td>@item.Industry</td>
-          <td>@item.Major</td>
-          <td>@item.YearsExperience</td>
-          <td>@item.EducationLevel</td>
-          <td>@item.Gender</td>
-          <td>@(item.AgeFrom.HasValue ? item.AgeFrom.Value.ToString() : "") - @(item.AgeTo.HasValue ? item.AgeTo.Value.ToString() : "")</td>
+          <td>@(item.Major ?? "-")</td>
+          <td>@(item.YearsExperience?.ToString() ?? "-")</td>
+          <td>@(item.EducationLevel ?? "-")</td>
+          <td>@(item.Skills ?? "-")</td>
+          <td>@(item.Headcount?.ToString() ?? "-")</td>
+          <td>@(item.GenderRequirement ?? "-")</td>
+          <td>@(item.AgeFrom.HasValue && item.AgeTo.HasValue ? $"{item.AgeFrom.Value} - {item.AgeTo.Value}" : item.AgeFrom.HasValue ? $"Từ {item.AgeFrom.Value}" : item.AgeTo.HasValue ? $"Đến {item.AgeTo.Value}" : "-")</td>
+          <td>@(item.Status ?? "-")</td>
         </tr>
+      }
+      } else {
+        <tr><td colspan="9" class="text-center text-muted">Không có dữ liệu</td></tr>
       }
       </tbody>
     </table>

@@ -8,12 +8,12 @@
       <div class="card-body">
         <div class="row mb-2"><div class="col-4 text-secondary">ID</div><div class="col-8">@Model.CompanyId</div></div>
         <div class="row mb-2"><div class="col-4 text-secondary">Tên công ty</div><div class="col-8">@Model.CompanyName</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">MST</div><div class="col-8">@Model.TaxCode</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Lĩnh vực</div><div class="col-8">@Model.Industry</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">SĐT</div><div class="col-8">@Model.Phone</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Email</div><div class="col-8">@Model.CompanyEmail</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@(Model.Active ? "Hoạt động" : "Tạm khóa")</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@Model.CreatedAt.ToString("dd/MM/yyyy")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Mã số thuế</div><div class="col-8">@(Model.TaxCode ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Website</div><div class="col-8">@if (!string.IsNullOrEmpty(Model.Website)) { <a href="@Model.Website" target="_blank">@Model.Website</a> } else { <text>-</text> }</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Địa chỉ</div><div class="col-8">@(Model.Address ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Logo Photo ID</div><div class="col-8">@(Model.LogoPhotoId?.ToString() ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@(Model.ActiveFlag == 1 ? "Hoạt động" : "Tạm khóa")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</div></div>
       </div>
     </div>
   </div>

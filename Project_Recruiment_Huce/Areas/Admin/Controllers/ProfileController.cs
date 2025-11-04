@@ -19,14 +19,14 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
             var idClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             int accountId = idClaim != null ? int.Parse(idClaim.Value) : 0;
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 db.ObjectTrackingEnabled = false;
-                var acc = db.Accounts.FirstOrDefault(a => a.AccountId == accountId);
+                var acc = db.Accounts.FirstOrDefault(a => a.AccountID == accountId);
                 if (acc == null) return HttpNotFound();
                 var vm = new ProfileVm
                 {
-                    AccountId = acc.AccountId,
+                    AccountId = acc.AccountID,
                     Username = acc.Username,
                     Email = acc.Email,
                     Phone = acc.Phone,

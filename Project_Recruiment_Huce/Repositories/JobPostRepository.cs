@@ -6,9 +6,9 @@ namespace Project_Recruiment_Huce.Repositories
 {
     public class JobPostRepository
     {
-        private readonly JOBPROTAL_ENDataContext _db;
+        private readonly JOBPORTAL_ENDataContext _db;
 
-        public JobPostRepository(JOBPROTAL_ENDataContext db)
+        public JobPostRepository(JOBPORTAL_ENDataContext db)
         {
             _db = db;
         }
@@ -24,7 +24,7 @@ namespace Project_Recruiment_Huce.Repositories
 
         public JobPost GetWithDetails(int jobId)
         {
-            var job = _db.JobPosts.FirstOrDefault(j => j.JobId == jobId);
+            var job = _db.JobPosts.FirstOrDefault(j => j.JobPostID == jobId);
             if (job == null) return null;
             return job;
         }
@@ -40,12 +40,12 @@ namespace Project_Recruiment_Huce.Repositories
             {
                 var jobIds = _db.JobPostDetails
                     .Where(d => d.Industry == industry)
-                    .Select(d => d.JobId);
-                query = query.Where(j => jobIds.Contains(j.JobId));
+                    .Select(d => d.JobPostID);
+                query = query.Where(j => jobIds.Contains(j.JobPostID));
             }
             if (!string.IsNullOrWhiteSpace(employment))
             {
-                query = query.Where(j => j.Employment == employment);
+                query = query.Where(j => j.EmploymentType == employment);
             }
             return query.OrderByDescending(j => j.PostedAt).ToList();
         }

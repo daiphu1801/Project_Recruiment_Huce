@@ -3,17 +3,21 @@ using System;
 namespace Project_Recruiment_Huce.Areas.Admin.Models
 {
     /// <summary>
-    /// ViewModel cho danh sách giao dịch
+    /// ViewModel cho danh sách giao dịch (Transaction table)
     /// </summary>
     public class TransactionListVm
     {
         public int TransactionId { get; set; }
-        public string TransactionNo { get; set; }
-        public string AccountEmail { get; set; }
-        public decimal Amount { get; set; }
-        public string Method { get; set; }
+        public int? AccountId { get; set; }
+        public decimal? Amount { get; set; }
+        public string PaymentMethod { get; set; }
         public string Status { get; set; }
-        public DateTime TransactedAt { get; set; }
+        public DateTime? TransactedAt { get; set; }
+        public string Description { get; set; }
+        
+        // Helper properties for display (from related Account table)
+        public string AccountEmail { get; set; }
+        public string TransactionNo { get; set; } // Generated or from external system
     }
 
     /// <summary>
@@ -22,10 +26,19 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
     public class BankCardListVm
     {
         public int CardId { get; set; }
-        public string CompanyName { get; set; }
-        public string MaskedNumber { get; set; }
+        public int CompanyId { get; set; }
+        public string CardNumber { get; set; } // Full number (will be masked in display)
         public string BankName { get; set; }
-        public bool Active { get; set; }
+        public string CardHolderName { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+        public byte? ActiveFlag { get; set; } // 1 = active, 0 = inactive
+        
+        // Helper properties for display (from related Company table)
+        public string CompanyName { get; set; }
+        
+        // Helper property for display
+        public bool Active => ActiveFlag == 1;
+        public string MaskedNumber => AdminUiHelpers.Mask(CardNumber ?? string.Empty);
     }
 
     /// <summary>
@@ -34,10 +47,14 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
     public class PendingPaymentVm
     {
         public int PendingId { get; set; }
-        public string CompanyName { get; set; }
+        public int CompanyId { get; set; }
         public decimal AmountDue { get; set; }
         public DateTime? DueDate { get; set; }
         public string Status { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        
+        // Helper property for display (from related Company table)
+        public string CompanyName { get; set; }
     }
 
     /// <summary>
@@ -46,11 +63,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
     public class PaymentHistoryVm
     {
         public int PaymentId { get; set; }
-        public string CompanyName { get; set; }
+        public int CompanyId { get; set; }
         public decimal Amount { get; set; }
         public string PaymentMethod { get; set; }
-        public DateTime PaymentDate { get; set; }
+        public DateTime? PaymentDate { get; set; }
         public string Status { get; set; }
+        public string Description { get; set; }
+        
+        // Helper property for display (from related Company table)
+        public string CompanyName { get; set; }
     }
 }
 

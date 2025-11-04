@@ -37,7 +37,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 return View("loginAd", model);
             }
 
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 // Normalize input (allow username OR email)
                 var input = (model.EmailOrUsername ?? string.Empty).Trim();
@@ -53,8 +53,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View("loginAd", model);
                 }
 
-                // Xác thực mật khẩu
-                if (!PasswordHelper.VerifyPassword(model.Password, user.PasswordHash))
+                // Xác thực mật khẩu (hỗ trợ cả account có salt và không có salt)
+                if (!(string.IsNullOrEmpty(user.Salt) 
+                    ? PasswordHelper.VerifyPassword(model.Password, user.PasswordHash) 
+                    : PasswordHelper.VerifyPassword(model.Password, user.PasswordHash, user.Salt)))
                 {
                     ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
                     return View("loginAd", model);
@@ -63,7 +65,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // Create claims identity for OWIN authentication (Admin Cookie)
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.AccountId.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.AccountID.ToString()),
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
                     new Claim("VaiTro", user.Role),
@@ -123,7 +125,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
             try
             {
-                using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
                 {
                     // Check if Username already exists
                     if (db.Accounts.Any(a => a.Username == model.TenDangNhap))
@@ -157,6 +159,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         return View("registerAd", model);
                     }
 
+                    // Generate salt and hash password
+                    string salt = PasswordHelper.GenerateSalt();
+                    string passwordHash = PasswordHelper.HashPassword(model.Password, salt);
+
                     // Create new Admin Account
                     // FORCE Role = "Admin" - không phụ thuộc vào model.VaiTro
                     var newAccount = new Account
@@ -165,7 +171,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         Email = email,
                         Phone = model.SoDienThoai,
                         Role = "Admin", // HARDCODE: Luôn là Admin cho admin area
-                        PasswordHash = PasswordHelper.HashPassword(model.Password),
+                        PasswordHash = passwordHash,
+                        Salt = salt,
                         CreatedAt = DateTime.Now,
                         ActiveFlag = 1
                     };
@@ -180,7 +187,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, newAccount);
                     
                     // Verify Role đã được lưu đúng trong database
-                    var savedAccount = db.Accounts.FirstOrDefault(a => a.AccountId == newAccount.AccountId);
+                    var savedAccount = db.Accounts.FirstOrDefault(a => a.AccountID == newAccount.AccountID);
                     if (savedAccount == null || savedAccount.Role != "Admin")
                     {
                         var actualRole = savedAccount != null ? savedAccount.Role : "NULL";
@@ -190,7 +197,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     // Create Admin profile
                     db.Admins.InsertOnSubmit(new Project_Recruiment_Huce.Models.Admin
                     {
-                        AccountId = newAccount.AccountId,
+                        AccountID = newAccount.AccountID,
                         FullName = model.TenDangNhap,
                         ContactEmail = email,
                         CreatedAt = DateTime.Now,
@@ -201,7 +208,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     // Auto login after registration (Admin Cookie)
                     var claims = new List<Claim>
                     {
-                        new Claim(ClaimTypes.NameIdentifier, newAccount.AccountId.ToString()),
+                        new Claim(ClaimTypes.NameIdentifier, newAccount.AccountID.ToString()),
                         new Claim(ClaimTypes.Name, newAccount.Username),
                         new Claim(ClaimTypes.Email, newAccount.Email ?? string.Empty),
                         new Claim("VaiTro", newAccount.Role),

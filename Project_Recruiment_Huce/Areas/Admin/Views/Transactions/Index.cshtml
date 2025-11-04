@@ -19,9 +19,9 @@
           <td>@item.TransactionNo</td>
           <td>@item.AccountEmail</td>
           <td>@AdminUiHelpers.FormatMoney(item.Amount) đ</td>
-          <td>@item.Method</td>
+          <td>@item.PaymentMethod</td>
           <td>@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(item.Status, "Transactions"))</td>
-          <td>@item.TransactedAt.ToString("dd/MM/yyyy")</td>
+          <td>@(item.TransactedAt.HasValue ? item.TransactedAt.Value.ToString("dd/MM/yyyy") : "")</td>
           <td><a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = item.TransactionId })"><i class="fa fa-eye"></i></a></td>
         </tr>
       }

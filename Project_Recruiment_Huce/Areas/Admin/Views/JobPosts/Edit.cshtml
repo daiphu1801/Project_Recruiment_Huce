@@ -1,0 +1,136 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.JobPostListVm
+@{
+    ViewBag.Title = "Sửa tin tuyển dụng";
+}
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0"><i class="bi bi-pencil-square"></i> Chỉnh sửa tin tuyển dụng</h5>
+  </div>
+  <div class="card-body">
+    @if (!ViewData.ModelState.IsValid)
+    {
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+          {
+            <li>@error.ErrorMessage</li>
+          }
+        </ul>
+      </div>
+    }
+
+    @using (Html.BeginForm("Edit", "JobPosts", FormMethod.Post))
+    {
+      @Html.AntiForgeryToken()
+      @Html.HiddenFor(m => m.JobId)
+      
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            @Html.LabelFor(m => m.JobCode, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.JobCode, new { @class = "form-control", placeholder = "Nhập mã công việc" })
+            @Html.ValidationMessageFor(m => m.JobCode, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.Title, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Title, new { @class = "form-control", placeholder = "Nhập tiêu đề công việc" })
+            @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.CompanyId, "Công ty", new { @class = "form-label" })
+            @Html.DropDownListFor(m => m.CompanyId, ViewBag.CompanyOptions as SelectList, "-- Chọn công ty --", new { @class = "form-select" })
+            @Html.ValidationMessageFor(m => m.CompanyId, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.RecruiterId, "Nhà tuyển dụng", new { @class = "form-label" })
+            @Html.DropDownListFor(m => m.RecruiterId, ViewBag.RecruiterOptions as SelectList, "-- Chọn nhà tuyển dụng --", new { @class = "form-select" })
+            @Html.ValidationMessageFor(m => m.RecruiterId, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.LocationText, "Địa điểm", new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.LocationText, new { @class = "form-control", placeholder = "VD: TP.HCM, Hà Nội" })
+            @Html.ValidationMessageFor(m => m.LocationText, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.Description, "Mô tả công việc", new { @class = "form-label" })
+            @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = "4", placeholder = "Nhập mô tả công việc" })
+            @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.Requirements, "Yêu cầu", new { @class = "form-label" })
+            @Html.TextAreaFor(m => m.Requirements, new { @class = "form-control", rows = "4", placeholder = "Nhập yêu cầu công việc" })
+            @Html.ValidationMessageFor(m => m.Requirements, "", new { @class = "text-danger" })
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            @Html.LabelFor(m => m.Employment, "Hình thức", new { @class = "form-label" })
+            @Html.DropDownListFor(m => m.Employment, ViewBag.EmploymentOptions as SelectList, "-- Chọn hình thức --", new { @class = "form-select" })
+            @Html.ValidationMessageFor(m => m.Employment, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                @Html.LabelFor(m => m.SalaryMin, "Lương tối thiểu", new { @class = "form-label" })
+                @Html.TextBoxFor(m => m.SalaryMin, new { @class = "form-control", type = "number", placeholder = "VD: 15000000" })
+                @Html.ValidationMessageFor(m => m.SalaryMin, "", new { @class = "text-danger" })
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                @Html.LabelFor(m => m.SalaryMax, "Lương tối đa", new { @class = "form-label" })
+                @Html.TextBoxFor(m => m.SalaryMax, new { @class = "form-control", type = "number", placeholder = "VD: 30000000" })
+                @Html.ValidationMessageFor(m => m.SalaryMax, "", new { @class = "text-danger" })
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.SalaryUnit, "Đơn vị lương", new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.SalaryUnit, new { @class = "form-control", placeholder = "VD: VND, USD" })
+            @Html.ValidationMessageFor(m => m.SalaryUnit, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.Deadline, "Hạn nộp", new { @class = "form-label" })
+            @if (Model.Deadline.HasValue)
+            {
+              @Html.TextBoxFor(m => m.Deadline, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+            }
+            else
+            {
+              @Html.TextBoxFor(m => m.Deadline, new { @class = "form-control", type = "date" })
+            }
+            @Html.ValidationMessageFor(m => m.Deadline, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.Status, "Trạng thái", new { @class = "form-label" })
+            @Html.DropDownListFor(m => m.Status, ViewBag.StatusOptions as SelectList, "-- Chọn trạng thái --", new { @class = "form-select" })
+            @Html.ValidationMessageFor(m => m.Status, "", new { @class = "text-danger" })
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+          <i class="bi bi-x-circle"></i> Hủy
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-save"></i> Cập nhật
+        </button>
+      </div>
+    }
+  </div>
+</div>
+

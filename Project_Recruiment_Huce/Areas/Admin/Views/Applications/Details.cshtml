@@ -9,7 +9,7 @@
         <div class="row mb-2"><div class="col-4 text-secondary">ID</div><div class="col-8">@Model.ApplicationId</div></div>
         <div class="row mb-2"><div class="col-4 text-secondary">Ứng viên</div><div class="col-8">@Model.CandidateName</div></div>
         <div class="row mb-2"><div class="col-4 text-secondary">Công việc</div><div class="col-8">@Model.JobTitle</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Nộp lúc</div><div class="col-8">@Model.AppliedAt.ToString("dd/MM/yyyy")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Nộp lúc</div><div class="col-8">@(Model.AppliedAt.HasValue ? Model.AppliedAt.Value.ToString("dd/MM/yyyy") : "")</div></div>
         <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(Model.AppStatus, "Applications"))</div></div>
       </div>
     </div>

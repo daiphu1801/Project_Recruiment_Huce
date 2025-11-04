@@ -1,0 +1,66 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.ApplicationListVm
+@{
+    ViewBag.Title = "Xóa hồ sơ ứng tuyển";
+}
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle"></i> Bạn có chắc chắn muốn xóa hồ sơ ứng tuyển này?
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0"><i class="bi bi-trash"></i> Xác nhận xóa hồ sơ ứng tuyển</h5>
+  </div>
+  <div class="card-body">
+    <table class="table table-borderless">
+      <tr>
+        <th width="150">ID:</th>
+        <td>@Model.ApplicationId</td>
+      </tr>
+      <tr>
+        <th>Ứng viên:</th>
+        <td>@Model.CandidateName</td>
+      </tr>
+      <tr>
+        <th>Công việc:</th>
+        <td>@Model.JobTitle</td>
+      </tr>
+      <tr>
+        <th>Trạng thái:</th>
+        <td>@Model.AppStatus</td>
+      </tr>
+      <tr>
+        <th>Nộp lúc:</th>
+        <td>@(Model.AppliedAt?.ToString("dd/MM/yyyy") ?? "-")</td>
+      </tr>
+      @if (!string.IsNullOrEmpty(Model.Note))
+      {
+        <tr>
+          <th>Ghi chú:</th>
+          <td>@Model.Note</td>
+        </tr>
+      }
+    </table>
+
+    @using (Html.BeginForm("Delete", "Applications", FormMethod.Post))
+    {
+      @Html.AntiForgeryToken()
+      @Html.Hidden("id", Model.ApplicationId)
+      
+      <div class="alert alert-danger mt-3">
+        <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác.
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+          <i class="bi bi-arrow-left"></i> Hủy
+        </a>
+        <button type="submit" class="btn btn-danger">
+          <i class="bi bi-trash"></i> Xác nhận xóa
+        </button>
+      </div>
+    }
+  </div>
+</div>
+

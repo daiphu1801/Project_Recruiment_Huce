@@ -11,6 +11,11 @@ using Project_Recruiment_Huce.Models;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
+    /// <summary>
+    /// Base CRUD Controller - Template for implementing other controllers with database.
+    /// This controller demonstrates full CRUD operations (Create, Read, Update, Delete) 
+    /// using JOBPORTAL_ENDataContext. Other controllers should follow this pattern.
+    /// </summary>
     public class AccountsController : AdminBaseController
     {
         // GET: Admin/Accounts
@@ -22,7 +27,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 new Tuple<string, string>("Tài khoản", null)
             };
 
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 var query = db.Accounts.AsQueryable();
 
@@ -45,14 +50,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // Convert to ViewModel
                 var accounts = query.Select(a => new AccountListVm
                 {
-                    AccountId = a.AccountId,
+                    AccountId = a.AccountID,
                     Username = a.Username,
                     Email = a.Email,
                     Phone = a.Phone,
                     Role = a.Role,
-                    Active = (a.ActiveFlag ?? 0) == 1,
-                    CreatedAt = a.CreatedAt ?? DateTime.Now,
-                    PhotoUrl = a.Photo != null ? a.Photo.FilePath : null
+                    ActiveFlag = a.ActiveFlag,
+                    CreatedAt = a.CreatedAt,
+                    PhotoId = a.PhotoID,
+                    PhotoUrl = a.ProfilePhoto != null ? a.ProfilePhoto.FilePath : null
                 }).ToList();
 
                 ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
@@ -63,28 +69,29 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         // GET: Admin/Accounts/Details/5
         public ActionResult Details(int id)
         {
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var account = db.Accounts.FirstOrDefault(a => a.AccountId == id);
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == id);
                 if (account == null) return HttpNotFound();
 
                 var vm = new AccountListVm
                 {
-                    AccountId = account.AccountId,
+                    AccountId = account.AccountID,
                     Username = account.Username,
                     Email = account.Email,
                     Phone = account.Phone,
                     Role = account.Role,
-                    Active = (account.ActiveFlag ?? 0) == 1,
-                    CreatedAt = account.CreatedAt ?? DateTime.Now,
-                    PhotoUrl = account.Photo != null ? account.Photo.FilePath : null
+                    ActiveFlag = account.ActiveFlag,
+                    CreatedAt = account.CreatedAt,
+                    PhotoId = account.PhotoID,
+                    PhotoUrl = account.ProfilePhoto != null ? account.ProfilePhoto.FilePath : null
                 };
 
                 ViewBag.Title = "Chi tiết tài khoản";
                 ViewBag.Breadcrumbs = new List<Tuple<string, string>>
                 {
                     new Tuple<string, string>("Tài khoản", Url.Action("Index")),
-                    new Tuple<string, string>($"#{account.AccountId}", null)
+                    new Tuple<string, string>($"#{account.AccountID}", null)
                 };
 
                 return View(vm);
@@ -116,7 +123,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 return View(model);
             }
 
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 // Check duplicate username
                 if (db.Accounts.Any(a => a.Username == model.Username))
@@ -141,6 +148,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     photoId = SavePhoto(model.PhotoFile);
                 }
 
+                // Generate salt and hash password
+                string salt = PasswordHelper.GenerateSalt();
+                string passwordHash = PasswordHelper.HashPassword(model.Password, salt);
+
                 // Create account
                 var account = new Account
                 {
@@ -148,10 +159,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Email = model.Email,
                     Phone = model.Phone,
                     Role = model.Role,
-                    PasswordHash = PasswordHelper.HashPassword(model.Password),
+                    PasswordHash = passwordHash,
+                    Salt = salt,
                     ActiveFlag = 1,
                     CreatedAt = DateTime.Now,
-                    PhotoId = photoId
+                    PhotoID = photoId
                 };
 
                 db.Accounts.InsertOnSubmit(account);
@@ -165,27 +177,27 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         // GET: Admin/Accounts/Edit/5
         public ActionResult Edit(int id)
         {
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var account = db.Accounts.FirstOrDefault(a => a.AccountId == id);
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == id);
                 if (account == null) return HttpNotFound();
 
                 var vm = new EditAccountVm
                 {
-                    AccountId = account.AccountId,
-                    Username = account.Username,
-                    Email = account.Email,
-                    Phone = account.Phone,
-                    Role = account.Role,
-                    Active = (account.ActiveFlag ?? 0) == 1,
-                    CurrentPhotoUrl = account.Photo != null ? account.Photo.FilePath : null
+                    AccountId = account.AccountID,
+                    Username = account.Username ?? string.Empty,
+                    Email = account.Email ?? string.Empty,
+                    Phone = account.Phone ?? string.Empty,
+                    Role = account.Role ?? string.Empty,
+                    ActiveFlag = account.ActiveFlag,
+                    CurrentPhotoId = account.PhotoID ?? 0
                 };
 
                 ViewBag.Title = "Sửa tài khoản";
                 ViewBag.Breadcrumbs = new List<Tuple<string, string>>
                 {
                     new Tuple<string, string>("Tài khoản", Url.Action("Index")),
-                    new Tuple<string, string>($"#{account.AccountId}", null)
+                    new Tuple<string, string>($"#{account.AccountID}", null)
                 };
 
                 ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
@@ -204,26 +216,26 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 return View(model);
             }
 
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var account = db.Accounts.FirstOrDefault(a => a.AccountId == model.AccountId);
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == model.AccountId);
                 if (account == null) return HttpNotFound();
 
                 // Check duplicate username (except current account)
-                if (db.Accounts.Any(a => a.Username == model.Username && a.AccountId != model.AccountId))
+                if (db.Accounts.Any(a => a.Username == model.Username && a.AccountID != model.AccountId))
                 {
                     ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
                     ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
-                    model.CurrentPhotoUrl = account.Photo != null ? account.Photo.FilePath : null;
+                        model.CurrentPhotoId = account.PhotoID;
                     return View(model);
                 }
 
                 // Check duplicate email (except current account)
-                if (db.Accounts.Any(a => a.Email.ToLower() == model.Email.ToLower() && a.AccountId != model.AccountId))
+                if (db.Accounts.Any(a => a.Email.ToLower() == model.Email.ToLower() && a.AccountID != model.AccountId))
                 {
                     ModelState.AddModelError("Email", "Email đã được sử dụng");
                     ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
-                    model.CurrentPhotoUrl = account.Photo != null ? account.Photo.FilePath : null;
+                        model.CurrentPhotoId = account.PhotoID;
                     return View(model);
                 }
 
@@ -234,11 +246,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     if (newPhotoId.HasValue)
                     {
                         // Delete old photo if exists
-                        if (account.PhotoId.HasValue)
+                        if (account.PhotoID.HasValue)
                         {
-                            DeletePhoto(account.PhotoId.Value);
+                            DeletePhoto(account.PhotoID.Value);
                         }
-                        account.PhotoId = newPhotoId;
+                        account.PhotoID = newPhotoId;
                     }
                 }
 
@@ -247,7 +259,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 account.Email = model.Email;
                 account.Phone = model.Phone;
                 account.Role = model.Role;
-                account.ActiveFlag = (byte)(model.Active ? 1 : 0);
+                account.ActiveFlag = model.ActiveFlag;
 
                 db.SubmitChanges();
 
@@ -259,28 +271,29 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         // GET: Admin/Accounts/Delete/5
         public ActionResult Delete(int id)
         {
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var account = db.Accounts.FirstOrDefault(a => a.AccountId == id);
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == id);
                 if (account == null) return HttpNotFound();
 
                 var vm = new AccountListVm
                 {
-                    AccountId = account.AccountId,
+                    AccountId = account.AccountID,
                     Username = account.Username,
                     Email = account.Email,
                     Phone = account.Phone,
                     Role = account.Role,
-                    Active = (account.ActiveFlag ?? 0) == 1,
-                    CreatedAt = account.CreatedAt ?? DateTime.Now,
-                    PhotoUrl = account.Photo != null ? account.Photo.FilePath : null
+                    ActiveFlag = account.ActiveFlag,
+                    CreatedAt = account.CreatedAt,
+                    PhotoId = account.PhotoID,
+                    PhotoUrl = account.ProfilePhoto != null ? account.ProfilePhoto.FilePath : null
                 };
 
                 ViewBag.Title = "Xóa tài khoản";
                 ViewBag.Breadcrumbs = new List<Tuple<string, string>>
                 {
                     new Tuple<string, string>("Tài khoản", Url.Action("Index")),
-                    new Tuple<string, string>($"#{account.AccountId}", null)
+                    new Tuple<string, string>($"#{account.AccountID}", null)
                 };
 
                 return View(vm);
@@ -292,15 +305,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var account = db.Accounts.FirstOrDefault(a => a.AccountId == id);
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == id);
                 if (account == null) return HttpNotFound();
 
                 // Delete photo if exists
-                if (account.PhotoId.HasValue)
+                if (account.PhotoID.HasValue)
                 {
-                    DeletePhoto(account.PhotoId.Value);
+                    DeletePhoto(account.PhotoID.Value);
                 }
 
                 db.Accounts.DeleteOnSubmit(account);
@@ -347,21 +360,21 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var fullPath = Path.Combine(uploadPath, fileName);
                 file.SaveAs(fullPath);
 
-                // Save to database
-                using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                // Save to database - ProfilePhotos table
+                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
                 {
-                    var photo = new Photo
+                    var photo = new ProfilePhoto
                     {
                         FileName = file.FileName,
                         FilePath = "/Content/Uploads/Photos/" + fileName,
-                        SizeKB = file.ContentLength / 1024,
-                        MimeType = file.ContentType,
+                        FileSizeKB = file.ContentLength / 1024,
+                        FileFormat = fileExt.Replace(".", ""),
                         UploadedAt = DateTime.Now
                     };
 
-                    db.Photos.InsertOnSubmit(photo);
+                    db.ProfilePhotos.InsertOnSubmit(photo);
                     db.SubmitChanges();
-                    return photo.PhotoId;
+                    return photo.PhotoID;
                 }
             }
             catch (Exception ex)
@@ -371,14 +384,14 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
-        // Helper: Delete photo
+        // Helper: Delete photo from ProfilePhotos
         private void DeletePhoto(int photoId)
         {
             try
             {
-                using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
                 {
-                    var photo = db.Photos.FirstOrDefault(p => p.PhotoId == photoId);
+                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId);
                     if (photo == null) return;
 
                     // Delete physical file
@@ -389,7 +402,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
 
                     // Delete database record
-                    db.Photos.DeleteOnSubmit(photo);
+                    db.ProfilePhotos.DeleteOnSubmit(photo);
                     db.SubmitChanges();
                 }
             }

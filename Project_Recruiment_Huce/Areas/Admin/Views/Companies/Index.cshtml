@@ -1,35 +1,55 @@
 @model List<Project_Recruiment_Huce.Areas.Admin.Models.CompanyListVm>
-@section Toolbar {
-  @{ ViewBag.AddUrl = Url.Action("Create"); ViewBag.AddLabel = "Thêm công ty"; }
-  @Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+@{
+  ViewBag.AddUrl = Url.Action("Create");
+  ViewBag.AddLabel = "Thêm công ty";
 }
+@Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
 
-@section TableHead {
-  <tr>
-    <th>Tên công ty</th><th>Mã số thuế</th><th>Lĩnh vực</th><th>SĐT</th><th>Email</th><th>Hoạt động</th><th>Ngày tạo</th><th></th>
-  </tr>
-}
-
-@section TableBody {
-  @foreach (var item in Model) {
-    <tr>
-      <td>@item.CompanyName</td>
-      <td>@item.TaxCode</td>
-      <td>@item.Industry</td>
-      <td>@item.Phone</td>
-      <td>@item.CompanyEmail</td>
-      <td>@(item.Active ? "Yes" : "No")</td>
-      <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
-      <td class="text-end" style="white-space:nowrap;">
-        @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string,string>{
-          {"Details", Url.Action("Details", new { id = item.CompanyId })},
-          {"Edit", Url.Action("Edit", new { id = item.CompanyId })},
-          {"Delete", Url.Action("Delete", new { id = item.CompanyId })}
-        })
-      </td>
-    </tr>
-  }
-}
+<div class="card mb-4">
+  <div class="card-body table-responsive p-0">
+    <table class="table table-hover">
+      <thead><tr>
+        <th>Logo</th><th>Tên công ty</th><th>Mã số thuế</th><th>Website</th><th>Địa chỉ</th><th>Hoạt động</th><th>Ngày tạo</th><th></th>
+      </tr></thead>
+      <tbody>
+      @if (Model != null && Model.Any()) {
+      foreach (var item in Model) {
+        <tr>
+          <td>
+            @if (item.LogoPhotoId.HasValue)
+            {
+              <img src="@Url.Content("~/Content/images/logo_mailchimp.svg")" alt="@item.CompanyName" style="width: 40px; height: 40px; object-fit: contain;" />
+            }
+            else
+            {
+              <div class="bg-secondary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px;">
+                <i class="bi bi-building"></i>
+              </div>
+            }
+          </td>
+          <td>@item.CompanyName</td>
+          <td>@(item.TaxCode ?? "-")</td>
+          <td>@if (!string.IsNullOrEmpty(item.Website)) { <a href="@item.Website" target="_blank">@item.Website</a> } else { <text>-</text> }</td>
+          <td>@(item.Address ?? "-")</td>
+          <td>@(item.ActiveFlag == 1 ? "Yes" : "No")</td>
+          <td>@(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</td>
+          <td class="text-end" style="white-space:nowrap;">
+            @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string,string>{
+              {"Details", Url.Action("Details", new { id = item.CompanyId })},
+              {"Edit", Url.Action("Edit", new { id = item.CompanyId })},
+              {"Delete", Url.Action("Delete", new { id = item.CompanyId })}
+            })
+          </td>
+        </tr>
+      }
+      } else {
+        <tr><td colspan="8" class="text-center text-muted">Không có dữ liệu</td></tr>
+      }
+      </tbody>
+    </table>
+  </div>
+</div>
 
 @Html.Partial("~/Areas/Admin/Views/Shared/_Pagination.cshtml", new { PageIndex = 1, TotalPages = 1, BaseUrl = Url.Action("Index", new { q = Request["q"] }) })
 

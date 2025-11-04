@@ -1,5 +1,9 @@
 @model List<Project_Recruiment_Huce.Areas.Admin.Models.ApplicationListVm>
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+@{
+  ViewBag.AddUrl = Url.Action("Create");
+  ViewBag.AddLabel = "Thêm hồ sơ ứng tuyển";
+}
 @Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
 
 <div class="card mb-4">
@@ -9,14 +13,24 @@
         <th>Ứng viên</th><th>Công việc</th><th>Nộp lúc</th><th>Trạng thái</th><th></th>
       </tr></thead>
       <tbody>
-      @foreach (var item in Model) {
+      @if (Model != null && Model.Any()) {
+      foreach (var item in Model) {
         <tr>
           <td>@item.CandidateName</td>
           <td>@item.JobTitle</td>
-          <td>@item.AppliedAt.ToString("dd/MM/yyyy")</td>
+          <td>@(item.AppliedAt.HasValue ? item.AppliedAt.Value.ToString("dd/MM/yyyy") : "")</td>
           <td>@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(item.AppStatus, "Applications"))</td>
-          <td><a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = item.ApplicationId })"><i class="bi bi-eye me-1"></i>Chi tiết</a></td>
+          <td class="text-end" style="white-space:nowrap;">
+            @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string,string>{
+              {"Details", Url.Action("Details", new { id = item.ApplicationId })},
+              {"Edit", Url.Action("Edit", new { id = item.ApplicationId })},
+              {"Delete", Url.Action("Delete", new { id = item.ApplicationId })}
+            })
+          </td>
         </tr>
+      }
+      } else {
+        <tr><td colspan="5" class="text-center text-muted">Không có dữ liệu</td></tr>
       }
       </tbody>
     </table>
