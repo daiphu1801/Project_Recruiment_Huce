@@ -1,0 +1,18 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.CertificateListVm
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><h5 class="card-title">Thông tin chứng chỉ</h5></div>
+      <div class="card-body">
+        <div class="row mb-2"><div class="col-4 text-secondary">ID</div><div class="col-8">@Model.CertificateId</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Tên chứng chỉ</div><div class="col-8">@(Model.CertificateName ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Tổ chức</div><div class="col-8">@(Model.Issuer ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Lĩnh vực</div><div class="col-8">@(Model.Industry ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Chuyên ngành</div><div class="col-8">@(Model.Major ?? "-")</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+

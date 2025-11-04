@@ -94,11 +94,11 @@
                       var idClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) : null;
                       if (idClaim != null) {
                         var accId = int.Parse(idClaim.Value);
-                        using (var mdb = new Project_Recruiment_Huce.Models.JOBPROTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString)) {
+                        using (var mdb = new Project_Recruiment_Huce.Models.JOBPORTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString)) {
                           mdb.ObjectTrackingEnabled = false;
-                          var acc = mdb.Accounts.FirstOrDefault(a => a.AccountId == accId);
-                          if (acc != null && acc.PhotoId.HasValue) {
-                            var photo = mdb.Photos.FirstOrDefault(p => p.PhotoId == acc.PhotoId.Value);
+                          var acc = mdb.Accounts.FirstOrDefault(a => a.AccountID == accId);
+                          if (acc != null && acc.PhotoID.HasValue) {
+                            var photo = mdb.ProfilePhotos.FirstOrDefault(p => p.PhotoID == acc.PhotoID.Value);
                             if (photo != null) { mAvatarUrl = Url.Content(photo.FilePath); }
                           }
                         }
@@ -151,11 +151,11 @@
                       var idClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) : null;
                       if (idClaim != null) {
                         var accId = int.Parse(idClaim.Value);
-                        using (var navdb = new Project_Recruiment_Huce.Models.JOBPROTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString)) {
+                        using (var navdb = new Project_Recruiment_Huce.Models.JOBPORTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString)) {
                           navdb.ObjectTrackingEnabled = false;
-                          var acc = navdb.Accounts.FirstOrDefault(a => a.AccountId == accId);
-                          if (acc != null && acc.PhotoId.HasValue) {
-                            var photo = navdb.Photos.FirstOrDefault(p => p.PhotoId == acc.PhotoId.Value);
+                          var acc = navdb.Accounts.FirstOrDefault(a => a.AccountID == accId);
+                          if (acc != null && acc.PhotoID.HasValue) {
+                            var photo = navdb.ProfilePhotos.FirstOrDefault(p => p.PhotoID == acc.PhotoID.Value);
                             if (photo != null) { avatarUrl = Url.Content(photo.FilePath); }
                           }
                         }

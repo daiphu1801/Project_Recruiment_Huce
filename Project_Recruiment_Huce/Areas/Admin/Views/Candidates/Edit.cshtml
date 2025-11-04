@@ -1,0 +1,88 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.CandidateListVm
+@{
+    ViewBag.Title = "Sửa ứng viên";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0"><i class="bi bi-pencil-square"></i> Sửa ứng viên</h5>
+  </div>
+  <div class="card-body">
+    @if (!ViewData.ModelState.IsValid)
+    {
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+          {
+            <li>@error.ErrorMessage</li>
+          }
+        </ul>
+      </div>
+    }
+
+    @using (Html.BeginForm("Edit", "Candidates", FormMethod.Post))
+    {
+      @Html.AntiForgeryToken()
+      @Html.HiddenFor(m => m.CandidateId)
+      
+      <div class="row">
+        <div class="col-md-8">
+          <div class="mb-3">
+            @Html.LabelFor(m => m.AccountId, new { @class = "form-label" })
+            @Html.DropDownListFor(m => m.AccountId, ViewBag.AccountOptions as SelectList, "-- Chọn tài khoản --", new { @class = "form-select" })
+            @Html.ValidationMessageFor(m => m.AccountId, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.FullName, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Nhập họ tên" })
+            @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.DateOfBirth, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.DateOfBirth, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+            @Html.ValidationMessageFor(m => m.DateOfBirth, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.Gender, new { @class = "form-label" })
+            @Html.DropDownListFor(m => m.Gender, new SelectList(new[] { "Male", "Female", "Other" }), "-- Chọn giới tính --", new { @class = "form-select" })
+            @Html.ValidationMessageFor(m => m.Gender, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.Phone, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
+            @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.PhotoId, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.PhotoId, new { @class = "form-control", type = "number", placeholder = "Photo ID (tùy chọn)" })
+            @Html.ValidationMessageFor(m => m.PhotoId, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check">
+              @Html.CheckBoxFor(m => m.Active, new { @class = "form-check-input" })
+              @Html.LabelFor(m => m.Active, new { @class = "form-check-label" })
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+          <i class="bi bi-x-circle"></i> Hủy
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-save"></i> Cập nhật
+        </button>
+      </div>
+    }
+  </div>
+</div>
+

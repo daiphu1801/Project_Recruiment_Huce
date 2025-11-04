@@ -6,9 +6,9 @@ namespace Project_Recruiment_Huce.Repositories
 {
     public class AccountRepository
     {
-        private readonly JOBPROTAL_ENDataContext _db;
+        private readonly JOBPORTAL_ENDataContext _db;
 
-        public AccountRepository(JOBPROTAL_ENDataContext db)
+        public AccountRepository(JOBPORTAL_ENDataContext db)
         {
             _db = db;
         }

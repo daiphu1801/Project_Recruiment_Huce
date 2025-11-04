@@ -41,7 +41,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return View(model);
             }
 
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 // Normalize input (allow username OR email)
                 var input = (model.EmailOrUsername ?? string.Empty).Trim();
@@ -50,7 +50,9 @@ namespace Project_Recruiment_Huce.Controllers
                 var user = db.Accounts.FirstOrDefault(a =>
                     (isEmail ? a.Email.ToLower() == lower : a.Username == input) && a.ActiveFlag == 1);
 
-                if (user != null && PasswordHelper.VerifyPassword(model.Password, user.PasswordHash))
+                if (user != null && (string.IsNullOrEmpty(user.Salt) 
+                    ? PasswordHelper.VerifyPassword(model.Password, user.PasswordHash) 
+                    : PasswordHelper.VerifyPassword(model.Password, user.PasswordHash, user.Salt)))
                 {
                     // Reject Admin users from main site login
                     if (user.Role == "Admin")
@@ -62,7 +64,7 @@ namespace Project_Recruiment_Huce.Controllers
                     // Create claims identity for OWIN authentication (User Cookie)
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.AccountId.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.AccountID.ToString()),
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Email, user.Email),
                     new Claim("VaiTro", user.Role),
@@ -124,7 +126,7 @@ namespace Project_Recruiment_Huce.Controllers
         {
             if (ModelState.IsValid)
             {
-                using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
                 {
                     // Check if Username already exists
                     if (db.Accounts.Any(a => a.Username == model.TenDangNhap))
@@ -152,21 +154,17 @@ namespace Project_Recruiment_Huce.Controllers
                         return View(model);
                     }
 
-                    // Validate VaiTro -> Role mapping to new schema (hide Admin from public registration)
-                    var validVaiTro = new[] { "CongTy", "NhaTuyenDung", "NguoiUngTuyen" };
+                    // Validate VaiTro -> Role mapping to new schema (Company is now a profile, not an account type)
+                    var validVaiTro = new[] { "NhaTuyenDung", "NguoiUngTuyen" };
                     if (!validVaiTro.Contains(model.VaiTro))
                     {
                         ModelState.AddModelError("VaiTro", "Vai trò không hợp lệ.");
                         return View(model);
                     }
 
-                    // Map roles from old labels to new schema values (no C# 8 switch for compatibility)
+                    // Map roles from old labels to new schema values (Company removed - it's now a profile only)
                     string mappedRole;
-                    if (model.VaiTro == "CongTy")
-                    {
-                        mappedRole = "Company";
-                    }
-                    else if (model.VaiTro == "NhaTuyenDung")
+                    if (model.VaiTro == "NhaTuyenDung")
                     {
                         mappedRole = "Recruiter";
                     }
@@ -176,8 +174,12 @@ namespace Project_Recruiment_Huce.Controllers
                     }
                     else
                     {
-                        mappedRole = "Candidate";
+                        mappedRole = "Candidate"; // Default to Candidate
                     }
+
+                    // Generate salt and hash password
+                    string salt = PasswordHelper.GenerateSalt();
+                    string passwordHash = PasswordHelper.HashPassword(model.Password, salt);
 
                     // Create new Account
                     var newAccount = new Account
@@ -186,7 +188,8 @@ namespace Project_Recruiment_Huce.Controllers
                         Email = email,
                         Phone = model.SoDienThoai,
                         Role = mappedRole,
-                        PasswordHash = PasswordHelper.HashPassword(model.Password),
+                        PasswordHash = passwordHash,
+                        Salt = salt,
                         CreatedAt = DateTime.Now,
                         ActiveFlag = 1
                     };
@@ -197,7 +200,7 @@ namespace Project_Recruiment_Huce.Controllers
                     // Auto login after registration (User Cookie)
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.NameIdentifier, newAccount.AccountId.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, newAccount.AccountID.ToString()),
                     new Claim(ClaimTypes.Name, newAccount.Username),
                     new Claim(ClaimTypes.Email, newAccount.Email),
                     new Claim("VaiTro", newAccount.Role),

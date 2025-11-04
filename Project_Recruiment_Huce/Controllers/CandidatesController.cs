@@ -29,14 +29,14 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var candidate = db.Candidates.FirstOrDefault(c => c.AccountId == accountId.Value);
+                var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 if (candidate == null)
                 {
                     candidate = new Candidate
                     {
-                        AccountId = accountId.Value,
+                        AccountID = accountId.Value,
                         FullName = User.Identity.Name,
                         Gender = "Nam",
                         CreatedAt = DateTime.Now,
@@ -62,12 +62,12 @@ namespace Project_Recruiment_Huce.Controllers
 
             // Do not return early on invalid model; we still allow saving avatar
 
-            using (var db = new JOBPROTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var candidate = db.Candidates.FirstOrDefault(c => c.AccountId == accountId.Value);
+                var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 if (candidate == null)
                 {
-                    candidate = new Candidate { AccountId = accountId.Value, FullName = User.Identity.Name, Gender = "Nam", CreatedAt = DateTime.Now, ActiveFlag = 1 };
+                    candidate = new Candidate { AccountID = accountId.Value, FullName = User.Identity.Name, Gender = "Nam", CreatedAt = DateTime.Now, ActiveFlag = 1 };
                     db.Candidates.InsertOnSubmit(candidate);
                 }
 
@@ -80,13 +80,18 @@ namespace Project_Recruiment_Huce.Controllers
                     candidate.Phone = form.Phone;
                     candidate.Email = form.Email;
                     candidate.Address = form.Address;
-                    if (!string.IsNullOrEmpty(form.About) && form.About.Length > 500)
+                    // Note: Candidate has Summary property (not About) - max 500 chars
+                    // If form.Summary is provided, use it; otherwise keep existing value
+                    if (!string.IsNullOrEmpty(form.Summary))
                     {
-                        candidate.About = form.About.Substring(0, 500);
-                    }
-                    else
-                    {
-                        candidate.About = form.About;
+                        if (form.Summary.Length > 500)
+                        {
+                            candidate.Summary = form.Summary.Substring(0, 500);
+                        }
+                        else
+                        {
+                            candidate.Summary = form.Summary;
+                        }
                     }
                 }
 
@@ -117,23 +122,23 @@ namespace Project_Recruiment_Huce.Controllers
                         avatar.SaveAs(physicalPath);
 
                         var relativePath = $"~/Content/uploads/candidate/{safeFileName}";
-                        var photo = new Photo
+                        var photo = new ProfilePhoto
                         {
                             FileName = safeFileName,
                             FilePath = relativePath,
-                            SizeKB = (int)Math.Round(avatar.ContentLength / 1024.0),
-                            MimeType = avatar.ContentType,
+                            FileSizeKB = (int)Math.Round(avatar.ContentLength / 1024.0),
+                            FileFormat = ext.Replace(".", "").ToLower(),
                             UploadedAt = DateTime.UtcNow
                         };
-                        db.Photos.InsertOnSubmit(photo);
+                        db.ProfilePhotos.InsertOnSubmit(photo);
                         db.SubmitChanges();
 
                         // Link to both candidate and account
-                        candidate.PhotoId = photo.PhotoId;
-                        var account = db.Accounts.FirstOrDefault(a => a.AccountId == accountId.Value);
+                        candidate.PhotoID = photo.PhotoID;
+                        var account = db.Accounts.FirstOrDefault(a => a.AccountID == accountId.Value);
                         if (account != null)
                         {
-                            account.PhotoId = photo.PhotoId;
+                            account.PhotoID = photo.PhotoID;
                         }
                     }
                     else

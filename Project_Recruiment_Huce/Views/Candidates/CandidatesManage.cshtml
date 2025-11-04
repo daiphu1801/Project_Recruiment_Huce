@@ -84,11 +84,11 @@
                   var idClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) : null;
                   if (idClaim != null) {
                     var accId = int.Parse(idClaim.Value);
-                    using (var vdb = new Project_Recruiment_Huce.Models.JOBPROTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString)) {
+                    using (var vdb = new Project_Recruiment_Huce.Models.JOBPORTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString)) {
                       vdb.ObjectTrackingEnabled = false;
-                      var acc = vdb.Accounts.FirstOrDefault(a => a.AccountId == accId);
-                      if (acc != null && acc.PhotoId.HasValue) {
-                        var photo = vdb.Photos.FirstOrDefault(p => p.PhotoId == acc.PhotoId.Value);
+                      var acc = vdb.Accounts.FirstOrDefault(a => a.AccountID == accId);
+                      if (acc != null && acc.PhotoID.HasValue) {
+                        var photo = vdb.ProfilePhotos.FirstOrDefault(p => p.PhotoID == acc.PhotoID.Value);
                         if (photo != null) { avatarUrl = Url.Content(photo.FilePath); }
                       }
                     }

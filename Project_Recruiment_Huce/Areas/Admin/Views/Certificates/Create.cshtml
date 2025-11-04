@@ -1,0 +1,63 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.CertificateListVm
+@{
+    ViewBag.Title = "Thêm chứng chỉ mới";
+}
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0"><i class="bi bi-award"></i> Tạo chứng chỉ mới</h5>
+  </div>
+  <div class="card-body">
+    @if (!ViewData.ModelState.IsValid)
+    {
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+          {
+            <li>@error.ErrorMessage</li>
+          }
+        </ul>
+      </div>
+    }
+
+    @using (Html.BeginForm("Create", "Certificates", FormMethod.Post))
+    {
+      @Html.AntiForgeryToken()
+      
+      <div class="mb-3">
+        @Html.LabelFor(m => m.CertificateName, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.CertificateName, new { @class = "form-control", placeholder = "Nhập tên chứng chỉ" })
+        @Html.ValidationMessageFor(m => m.CertificateName, "", new { @class = "text-danger" })
+      </div>
+
+      <div class="mb-3">
+        @Html.LabelFor(m => m.Issuer, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Issuer, new { @class = "form-control", placeholder = "Nhập tổ chức cấp" })
+        @Html.ValidationMessageFor(m => m.Issuer, "", new { @class = "text-danger" })
+      </div>
+
+      <div class="mb-3">
+        @Html.LabelFor(m => m.Industry, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Industry, new { @class = "form-control", placeholder = "Nhập lĩnh vực" })
+        @Html.ValidationMessageFor(m => m.Industry, "", new { @class = "text-danger" })
+      </div>
+
+      <div class="mb-3">
+        @Html.LabelFor(m => m.Major, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Major, new { @class = "form-control", placeholder = "Nhập chuyên ngành" })
+        @Html.ValidationMessageFor(m => m.Major, "", new { @class = "text-danger" })
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+          <i class="bi bi-x-circle"></i> Hủy
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-save"></i> Tạo chứng chỉ
+        </button>
+      </div>
+    }
+  </div>
+</div>
+

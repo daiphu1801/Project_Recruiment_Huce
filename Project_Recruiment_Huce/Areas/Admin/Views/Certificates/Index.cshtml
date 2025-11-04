@@ -1,21 +1,36 @@
 @model List<Project_Recruiment_Huce.Areas.Admin.Models.CertificateListVm>
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+@{
+  ViewBag.AddUrl = Url.Action("Create");
+  ViewBag.AddLabel = "Thêm chứng chỉ";
+}
 @Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
 
 <div class="card mb-4">
   <div class="card-body table-responsive p-0">
     <table class="table table-hover">
       <thead><tr>
-        <th>Tên chứng chỉ</th><th>Tổ chức</th><th>Lĩnh vực</th><th>Chuyên ngành</th>
+        <th>Tên chứng chỉ</th><th>Tổ chức</th><th>Lĩnh vực</th><th>Chuyên ngành</th><th></th>
       </tr></thead>
       <tbody>
-      @foreach (var item in Model) {
+      @if (Model != null && Model.Any()) {
+      foreach (var item in Model) {
         <tr>
           <td>@item.CertificateName</td>
           <td>@item.Issuer</td>
           <td>@item.Industry</td>
           <td>@item.Major</td>
+          <td class="text-end" style="white-space:nowrap;">
+            @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string,string>{
+              {"Details", Url.Action("Details", new { id = item.CertificateId })},
+              {"Edit", Url.Action("Edit", new { id = item.CertificateId })},
+              {"Delete", Url.Action("Delete", new { id = item.CertificateId })}
+            })
+          </td>
         </tr>
+      }
+      } else {
+        <tr><td colspan="5" class="text-center text-muted">Không có dữ liệu</td></tr>
       }
       </tbody>
     </table>

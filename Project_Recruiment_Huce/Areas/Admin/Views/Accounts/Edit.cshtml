@@ -68,9 +68,12 @@
             </div>
             <div class="card-body text-center">
               <div id="photoPreview" class="mb-3">
-                @if (!string.IsNullOrEmpty(Model.CurrentPhotoUrl))
+                @if (Model.CurrentPhotoId.HasValue)
                 {
-                  <img src="@Model.CurrentPhotoUrl" alt="@Model.Username" class="rounded-circle mx-auto d-block" style="width: 200px; height: 200px; object-fit: cover;" />
+                  <div class="text-muted mb-2">Photo ID: @Model.CurrentPhotoId</div>
+                  <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white mx-auto" style="width: 200px; height: 200px;">
+                    <i class="bi bi-image" style="font-size: 60px;"></i>
+                  </div>
                 }
                 else
                 {

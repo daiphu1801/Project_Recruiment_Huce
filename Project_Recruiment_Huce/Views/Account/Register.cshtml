@@ -58,8 +58,7 @@
                 {
                     new SelectListItem { Text = "-- Chọn vai trò --", Value = "" },
                     new SelectListItem { Text = "Người ứng tuyển", Value = "NguoiUngTuyen" },
-                    new SelectListItem { Text = "Nhà tuyển dụng", Value = "NhaTuyenDung" },
-                    new SelectListItem { Text = "Công ty", Value = "CongTy" }
+                    new SelectListItem { Text = "Nhà tuyển dụng", Value = "NhaTuyenDung" }
                 }, "Value", "Text"), new { @class = "form-control" })
                 @Html.ValidationMessageFor(m => m.VaiTro, "", new { @class = "text-danger" })
               </div>

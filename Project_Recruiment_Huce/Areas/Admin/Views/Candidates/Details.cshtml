@@ -7,12 +7,15 @@
       <div class="card-header"><h5 class="card-title">Thông tin ứng viên</h5></div>
       <div class="card-body">
         <div class="row mb-2"><div class="col-4 text-secondary">ID</div><div class="col-8">@Model.CandidateId</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Họ tên</div><div class="col-8">@Model.FullName</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Email</div><div class="col-8">@Model.Email</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">SĐT</div><div class="col-8">@Model.Phone</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Ngày sinh</div><div class="col-8">@(Model.BirthDate.HasValue ? Model.BirthDate.Value.ToString("dd/MM/yyyy") : "")</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Giới tính</div><div class="col-8">@Model.Gender</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@Model.CreatedAt.ToString("dd/MM/yyyy")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Account ID</div><div class="col-8">@Model.AccountId</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Họ tên</div><div class="col-8">@(Model.FullName ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Email</div><div class="col-8">@(Model.Email ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">SĐT</div><div class="col-8">@(Model.Phone ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Ngày sinh</div><div class="col-8">@(Model.DateOfBirth?.ToString("dd/MM/yyyy") ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Giới tính</div><div class="col-8">@(Model.Gender ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Photo ID</div><div class="col-8">@(Model.PhotoId?.ToString() ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@(Model.ActiveFlag == 1 ? "Hoạt động" : "Tạm khóa")</div></div>
       </div>
     </div>
   </div>

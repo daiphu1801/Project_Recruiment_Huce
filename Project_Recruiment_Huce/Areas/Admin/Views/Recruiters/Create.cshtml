@@ -1,0 +1,87 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.RecruiterListVm
+@{
+    ViewBag.Title = "Thêm nhà tuyển dụng mới";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0"><i class="bi bi-person-plus"></i> Tạo nhà tuyển dụng mới</h5>
+  </div>
+  <div class="card-body">
+    @if (!ViewData.ModelState.IsValid)
+    {
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+          {
+            <li>@error.ErrorMessage</li>
+          }
+        </ul>
+      </div>
+    }
+
+    @using (Html.BeginForm("Create", "Recruiters", FormMethod.Post))
+    {
+      @Html.AntiForgeryToken()
+      
+      <div class="row">
+        <div class="col-md-8">
+          <div class="mb-3">
+            @Html.LabelFor(m => m.AccountId, new { @class = "form-label" })
+            @Html.DropDownListFor(m => m.AccountId, ViewBag.AccountOptions as SelectList, "-- Chọn tài khoản --", new { @class = "form-select" })
+            @Html.ValidationMessageFor(m => m.AccountId, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.CompanyId, new { @class = "form-label" })
+            @Html.DropDownListFor(m => m.CompanyId, ViewBag.CompanyOptions as SelectList, "-- Chọn công ty --", new { @class = "form-select" })
+            @Html.ValidationMessageFor(m => m.CompanyId, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.FullName, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Nhập họ tên" })
+            @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.PositionTitle, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.PositionTitle, new { @class = "form-control", placeholder = "Nhập chức danh" })
+            @Html.ValidationMessageFor(m => m.PositionTitle, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.WorkEmail, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.WorkEmail, new { @class = "form-control", type = "email", placeholder = "Nhập email công việc" })
+            @Html.ValidationMessageFor(m => m.WorkEmail, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            @Html.LabelFor(m => m.Phone, new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
+            @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check">
+              @Html.CheckBoxFor(m => m.Active, new { @class = "form-check-input" })
+              @Html.LabelFor(m => m.Active, new { @class = "form-check-label" })
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+          <i class="bi bi-x-circle"></i> Hủy
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-save"></i> Tạo nhà tuyển dụng
+        </button>
+      </div>
+    }
+  </div>
+</div>
+

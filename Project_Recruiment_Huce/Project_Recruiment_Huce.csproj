@@ -179,23 +179,17 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
-    <Compile Include="Models\ManageViewModels.cs" />
-    <Compile Include="Models\JOBPROTAL_EN.designer.cs">
+    <Compile Include="Models\JOBPORTAL_EN.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>JOBPROTAL_EN.dbml</DependentUpon>
+      <DependentUpon>JOBPORTAL_EN.dbml</DependentUpon>
     </Compile>
+    <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Helpers\PasswordHelper.cs" />
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\JobPostRepository.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Models\JOBPROTAL_EN.dbml">
-      <Generator>MSLinqToSqlGenerator</Generator>
-      <LastGenOutput>JOBPROTAL_EN.designer.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\Admin\css\adminlte.css" />
@@ -270,8 +264,13 @@
     <Content Include="Content\Admin\css\adminlte.rtl.min.css.map" />
     <Content Include="Scripts\Admin\js\adminlte.js.map" />
     <Content Include="Scripts\Admin\js\adminlte.min.js.map" />
-    <None Include="Models\JOBPROTAL_EN.dbml.layout">
-      <DependentUpon>JOBPROTAL_EN.dbml</DependentUpon>
+    <Content Include="Models\JOBPORTAL_EN.dbml">
+      <Generator>MSLinqToSQLGenerator</Generator>
+      <LastGenOutput>JOBPORTAL_EN.designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Include="Models\JOBPORTAL_EN.dbml.layout">
+      <DependentUpon>JOBPORTAL_EN.dbml</DependentUpon>
     </None>
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
@@ -372,8 +371,6 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
     <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
-   
   </Target>
-  
   <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
 </Project>

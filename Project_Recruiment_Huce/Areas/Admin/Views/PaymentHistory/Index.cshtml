@@ -13,7 +13,7 @@
         <td>@item.CompanyName</td>
         <td>@AdminUiHelpers.FormatMoney(item.Amount) đ</td>
         <td>@item.PaymentMethod</td>
-        <td>@item.PaymentDate.ToString("dd/MM/yyyy")</td>
+        <td>@(item.PaymentDate.HasValue ? item.PaymentDate.Value.ToString("dd/MM/yyyy") : "")</td>
         <td>@item.Status</td>
         <td><a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = item.PaymentId })"><i class="bi bi-eye me-1"></i>Chi tiết</a></td>
       </tr>}

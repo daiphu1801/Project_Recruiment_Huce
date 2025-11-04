@@ -18,7 +18,7 @@
           <td>
             @if (!string.IsNullOrEmpty(item.PhotoUrl))
             {
-              <img src="@item.PhotoUrl" alt="@item.Username" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
+              <img src="@Url.Content(item.PhotoUrl)" alt="@item.Username" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
             }
             else
             {
@@ -29,10 +29,10 @@
           </td>
           <td>@item.Username</td>
           <td>@item.Email</td>
-          <td>@item.Phone</td>
+          <td>@(item.Phone ?? "-")</td>
           <td>@item.Role</td>
-          <td>@(item.Active ? "Yes" : "No")</td>
-          <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
+          <td>@(item.ActiveFlag == 1 ? "Yes" : "No")</td>
+          <td>@(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</td>
           <td class="text-end" style="white-space:nowrap;">
             @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string,string>{
               {"Details", Url.Action("Details", new { id = item.AccountId })},
