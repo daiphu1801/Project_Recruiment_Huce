@@ -1,0 +1,149 @@
+@model Project_Recruiment_Huce.Models.Companies.CompanyManageViewModel
+@{
+  ViewBag.Title = "Quản lý công ty";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-7">
+        <h1 class="text-white font-weight-bold">Quản lý công ty</h1>
+        <div class="custom-breadcrumbs">
+          <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+          <span class="text-white"><strong>Công ty</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="site-section">
+  <div class="container">
+    <div class="row mb-5">
+      <div class="col-lg-12">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        @using (Html.BeginForm("CompaniesManage", "Companies", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "company-form" }))
+        {
+          @Html.AntiForgeryToken()
+          @Html.HiddenFor(m => m.CompanyID)
+
+          <h3 class="text-black mb-5 border-bottom pb-2">Thông tin công ty</h3>
+
+          <div class="form-group">
+            <label for="CompanyName">Tên công ty <span class="text-danger">*</span></label>
+            @Html.TextBoxFor(m => m.CompanyName, new { @class = "form-control", placeholder = "Ví dụ: Công ty TNHH ABC" })
+            @Html.ValidationMessageFor(m => m.CompanyName, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="TaxCode">Mã số thuế</label>
+              @Html.TextBoxFor(m => m.TaxCode, new { @class = "form-control", placeholder = "0123456789" })
+              @Html.ValidationMessageFor(m => m.TaxCode, "", new { @class = "text-danger" })
+            </div>
+            <div class="form-group col-md-6">
+              <label for="Industry">Lĩnh vực hoạt động</label>
+              @Html.TextBoxFor(m => m.Industry, new { @class = "form-control", placeholder = "Ví dụ: Công nghệ thông tin" })
+              @Html.ValidationMessageFor(m => m.Industry, "", new { @class = "text-danger" })
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="Address">Địa chỉ</label>
+            @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố" })
+            @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="Phone">Số điện thoại</label>
+              @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "090..." })
+              @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+            </div>
+            <div class="form-group col-md-6">
+              <label for="CompanyEmail">Email công ty</label>
+              @Html.TextBoxFor(m => m.CompanyEmail, new { @class = "form-control", type = "email", placeholder = "contact@company.com" })
+              @Html.ValidationMessageFor(m => m.CompanyEmail, "", new { @class = "text-danger" })
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="Website">Website</label>
+            @Html.TextBoxFor(m => m.Website, new { @class = "form-control", placeholder = "https://www.company.com" })
+            @Html.ValidationMessageFor(m => m.Website, "", new { @class = "text-danger" })
+          </div>
+
+          <div class="form-group">
+            <label for="Description">Mô tả công ty</label>
+            @Html.TextAreaFor(m => m.Description, new { @class = "form-control", id = "description-editor", rows = "10", placeholder = "Mô tả về công ty, văn hóa, môi trường làm việc..." })
+            @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+            <small class="form-text text-muted">Bạn có thể sử dụng các công cụ định dạng để tạo mô tả đẹp mắt</small>
+          </div>
+
+          <div class="text-right">
+            <button type="submit" class="btn btn-primary btn-md">Lưu thông tin công ty</button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quill Editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<script>
+    // Initialize Quill editor for Description
+    var quill = new Quill('#description-editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['blockquote', 'code-block'],
+                ['link'],
+                ['clean']
+            ]
+        },
+        placeholder: 'Mô tả về công ty, văn hóa, môi trường làm việc...'
+    });
+
+    // Set initial content if exists
+    @if (Model != null && !string.IsNullOrEmpty(Model.Description))
+    {
+        <text>
+        var initialHtml = @Html.Raw(Json.Encode(Model.Description));
+        quill.root.innerHTML = initialHtml;
+        </text>
+    }
+
+    // Update hidden field before form submit
+    document.getElementById('company-form').addEventListener('submit', function(e) {
+        var descriptionInput = document.getElementById('description-editor');
+        var htmlContent = quill.root.innerHTML;
+        descriptionInput.value = htmlContent;
+    });
+</script>
+

@@ -1,0 +1,215 @@
+@model IEnumerable<Project_Recruiment_Huce.Models.Candidates.ResumeFileViewModel>
+
+@{
+    ViewBag.Title = "Quản lý CV";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Quản lý CV</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Quản lý CV</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="site-section">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-12">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                }
+
+                <div class="mb-4">
+                    <h2 class="mb-3">Danh sách CV của tôi</h2>
+                    
+                    <!-- Upload Form -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Upload CV mới</h5>
+                        </div>
+                        <div class="card-body">
+                            @using (Html.BeginForm("UploadResume", "ResumeFiles", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-inline" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <div class="form-group mr-3 mb-2">
+                                    <label for="title" class="mr-2">Tiêu đề CV:</label>
+                                    <input type="text" name="title" id="title" class="form-control" placeholder="Ví dụ: CV Frontend Developer" />
+                                </div>
+                                <div class="form-group mr-3 mb-2">
+                                    <label for="resumeFile" class="mr-2">Chọn file:</label>
+                                    <input type="file" name="resumeFile" id="resumeFile" class="form-control-file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif" required />
+                                </div>
+                                <button type="submit" class="btn btn-primary mb-2">
+                                    <span class="icon-upload mr-1"></span>Upload CV
+                                </button>
+                            }
+                            <small class="form-text text-muted mt-2">
+                                Hỗ trợ định dạng: PDF, DOC, DOCX, PNG, JPG, JPEG, GIF. Kích thước tối đa: 10MB
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CV List -->
+                @if (Model != null && Model.Any())
+                {
+                    <div class="row">
+                        @foreach (var resume in Model)
+                        {
+                            <div class="col-md-4 col-lg-3 mb-4">
+                                <div class="card h-100 resume-card">
+                                    <div class="card-body text-center">
+                                        <!-- File Icon/Preview -->
+                                        <div class="mb-3" style="height: 200px; width: 100%; overflow: hidden; border-radius: 8px; border: 1px solid #e0e0e0; background-color: #fff; position: relative;">
+                                            @if (resume.FileExtension == ".pdf")
+                                            {
+                                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);">
+                                                    <i class="icon-file-pdf" style="font-size: 64px; color: #dc3545;"></i>
+                                                </div>
+                                            }
+                                            else if (resume.FileExtension == ".doc" || resume.FileExtension == ".docx")
+                                            {
+                                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);">
+                                                    <i class="icon-file-word" style="font-size: 64px; color: #007bff;"></i>
+                                                </div>
+                                            }
+                                            else if (resume.FileExtension == ".png" || resume.FileExtension == ".jpg" || resume.FileExtension == ".jpeg" || resume.FileExtension == ".gif")
+                                            {
+                                                <img src="@Url.Content("~" + resume.FilePath)" alt="@resume.DisplayName" style="width: 100%; height: 100%; object-fit: cover; object-position: top center;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                                <div style="height: 100%; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);">
+                                                    <i class="icon-image" style="font-size: 64px; color: #28a745;"></i>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);">
+                                                    <i class="icon-file" style="font-size: 64px; color: #6c757d;"></i>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <!-- Title -->
+                                        <h6 class="card-title mb-2" style="min-height: 40px; display: flex; align-items: center; justify-content: center;">
+                                            @resume.DisplayName
+                                        </h6>
+
+                                        <!-- Upload Date -->
+                                        <p class="text-muted small mb-3">
+                                            <span class="icon-calendar mr-1"></span>
+                                            @(resume.UploadedAt?.ToString("dd/MM/yyyy") ?? "N/A")
+                                        </p>
+
+                                        <!-- Actions -->
+                                        <div class="btn-group-vertical w-100" role="group">
+                                            <a href="@Url.Content("~" + resume.FilePath)" target="_blank" class="btn btn-sm btn-outline-primary mb-2">
+                                                <span class="icon-eye mr-1"></span>Xem
+                                            </a>
+                                            <a href="@Url.Content("~" + resume.FilePath)" download class="btn btn-sm btn-outline-success mb-2">
+                                                <span class="icon-download mr-1"></span>Tải xuống
+                                            </a>
+                                            
+                                            <!-- Edit Modal Trigger -->
+                                            <button type="button" class="btn btn-sm btn-outline-secondary mb-2" data-toggle="modal" data-target="#editModal_@resume.ResumeFileID">
+                                                <span class="icon-edit mr-1"></span>Đổi tên
+                                            </button>
+
+                                            <!-- Delete Form -->
+                                            @using (Html.BeginForm("DeleteResume", "ResumeFiles", FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bạn có chắc chắn muốn xóa CV này?');" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                @Html.Hidden("id", resume.ResumeFileID)
+                                                <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                                    <span class="icon-trash mr-1"></span>Xóa
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Edit Modal -->
+                                <div class="modal fade" id="editModal_@resume.ResumeFileID" tabindex="-1" role="dialog">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Đổi tên CV</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            @using (Html.BeginForm("EditResume", "ResumeFiles", FormMethod.Post))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                @Html.Hidden("id", resume.ResumeFileID)
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <label for="title_@resume.ResumeFileID">Tên CV:</label>
+                                                        <input type="text" name="title" id="title_@resume.ResumeFileID" class="form-control" value="@resume.DisplayName" required />
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-primary">Lưu</button>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <p class="mb-0">Bạn chưa có CV nào. Hãy upload CV đầu tiên của bạn!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .resume-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .resume-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .resume-card .card-title {
+        word-break: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+</style>
+

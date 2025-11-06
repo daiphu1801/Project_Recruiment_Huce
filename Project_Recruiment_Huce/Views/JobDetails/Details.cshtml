@@ -1,0 +1,239 @@
+@model Project_Recruiment_Huce.Models.Jobs.JobDetailsViewModel
+
+@{
+    ViewBag.Title = "Chi tiết việc làm";
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-7">
+        <h1 class="text-white font-weight-bold">@(Model?.Title ?? "Chi tiết việc làm")</h1>
+        <div class="custom-breadcrumbs">
+          <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+          <a href="@Url.Action("JobsListing","Jobs")">Việc làm</a> <span class="mx-2 slash">/</span>
+          <span class="text-white"><strong>@(Model?.Title ?? "Chi tiết việc làm")</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="site-section">
+  <div class="container">
+    <div class="row align-items-center mb-5">
+      <div class="col-lg-8 mb-4 mb-lg-0">
+        <div class="d-flex align-items-center">
+          <div class="border p-2 d-inline-block mr-3 rounded">
+            <img src="@(Model?.LogoUrl ?? Url.Content("~/Content/images/job_logo_1.jpg"))" alt="@(Model?.CompanyName ?? "N/A")">
+          </div>
+          <div>
+            <h2>@(Model?.Title ?? "")</h2>
+            <div>
+              <span class="ml-0 mr-2 mb-2"><span class="icon-briefcase mr-2"></span>@(Model?.CompanyName ?? "N/A")</span>
+              @if (!string.IsNullOrEmpty(Model?.Location))
+              {
+                <span class="m-2"><span class="icon-room mr-2"></span>@Model.Location</span>
+              }
+              @if (!string.IsNullOrEmpty(Model?.EmploymentTypeDisplay))
+              {
+                <span class="m-2"><span class="icon-clock-o mr-2"></span><span class="text-primary">@Model.EmploymentTypeDisplay</span></span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="row">
+          @{
+            var roleClaim = User.Identity.IsAuthenticated ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro") : null;
+            bool isCandidate = roleClaim != null && roleClaim.Value == "Candidate";
+          }
+          @if (isCandidate && Model != null && (Model.Status == "Published" || string.IsNullOrEmpty(Model.Status)))
+          {
+            <div class="col-6">
+              <a href="#" class="btn btn-block btn-primary btn-md">Ứng tuyển ngay</a>
+            </div>
+            <div class="col-6">
+              <a href="#" class="btn btn-block btn-secondary btn-md">Lưu việc làm</a>
+            </div>
+          }
+          else if (isCandidate && Model != null && (Model.Status == "Closed" || Model.Status == "Expired"))
+          {
+            <div class="col-12">
+              <div class="alert alert-warning">
+                <strong>Tin tuyển dụng này đã @(Model.Status == "Closed" ? "đóng" : "hết hạn")</strong>
+                <p class="mb-0">Hiện tại không nhận đơn ứng tuyển mới.</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="mb-5">
+          @if (!string.IsNullOrEmpty(Model?.Description))
+          {
+            <h3 class="h5 d-flex align-items-center mb-4"><span class="icon-align-left mr-3"></span>Mô tả công việc</h3>
+            <div class="job-description">
+              @Html.Raw(Model.Description)
+            </div>
+          }
+        </div>
+
+        <div class="mb-5">
+          @if (!string.IsNullOrEmpty(Model?.Requirements))
+          {
+            <h3 class="h5 d-flex align-items-center mb-4"><span class="icon-rocket mr-3"></span>Yêu cầu</h3>
+            <div class="job-requirements">
+              @Html.Raw(Model.Requirements)
+            </div>
+          }
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="bg-light p-3 border rounded mb-4">
+          <h3 class="text-primary  mt-3 h5 pl-3 mb-3 ">Tóm tắt công việc</h3>
+          <ul class="list-unstyled pl-3 mb-0">
+            @if (Model?.PostedAt.HasValue ?? false)
+            {
+              <li class="mb-2"><strong class="text-black">Ngày đăng:</strong> @Model.PostedAt.Value.ToString("dd/MM/yyyy")</li>
+            }
+            @if (!string.IsNullOrEmpty(Model?.EmploymentTypeDisplay))
+            {
+              <li class="mb-2"><strong class="text-black">Hình thức làm việc:</strong> @Model.EmploymentTypeDisplay</li>
+            }
+            @if (!string.IsNullOrEmpty(Model?.Location))
+            {
+              <li class="mb-2"><strong class="text-black">Địa điểm:</strong> @Model.Location</li>
+            }
+            @if (!string.IsNullOrEmpty(Model?.SalaryRange))
+            {
+              <li class="mb-2"><strong class="text-black">Lương:</strong> @Model.SalaryRange</li>
+            }
+            @if (Model?.ApplicationDeadline.HasValue ?? false)
+            {
+              bool isExpired = Model.ApplicationDeadline.Value < DateTime.Now;
+              <li class="mb-2">
+                <strong class="text-black">Hạn nộp hồ sơ:</strong> 
+                @Model.ApplicationDeadline.Value.ToString("dd/MM/yyyy")
+                @if (isExpired)
+                {
+                  <span class="badge badge-danger ml-2">Đã hết hạn</span>
+                }
+              </li>
+            }
+            @if (!string.IsNullOrEmpty(Model?.JobCode))
+            {
+              <li class="mb-2"><strong class="text-black">Mã công việc:</strong> @Model.JobCode</li>
+            }
+          </ul>
+        </div>
+
+        <div class="bg-light p-3 border rounded">
+          <h3 class="text-primary  mt-3 h5 pl-3 mb-3 ">Chia sẻ</h3>
+          <div class="px-3">
+            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-facebook"></span></a>
+            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-twitter"></span></a>
+            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-linkedin"></span></a>
+            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-pinterest"></span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="site-section" id="next">
+  <div class="container">
+
+    @{
+      var relatedJobs = ViewBag.RelatedJobs as IEnumerable<Project_Recruiment_Huce.Models.Jobs.RelatedJobViewModel>;
+    }
+    
+    @if (relatedJobs != null && relatedJobs.Any())
+    {
+      <div class="row mb-5 justify-content-center">
+        <div class="col-md-7 text-center">
+          <h2 class="section-title mb-2">Việc làm liên quan</h2>
+        </div>
+      </div>
+      
+      <ul class="job-listings mb-5">
+        @foreach (var job in relatedJobs)
+        {
+          string badgeClass = "badge-success";
+          if (!string.IsNullOrEmpty(job.EmploymentType))
+          {
+            string empType = job.EmploymentType.ToLower();
+            if (empType == "part-time" || empType == "part time")
+            {
+              badgeClass = "badge-danger";
+            }
+          }
+          
+          <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
+            <a href="@Url.Action("Details","JobDetails", new { id = job.JobPostID })"></a>
+            <div class="job-listing-logo">
+              <img src="@job.LogoUrl" alt="@job.CompanyName" class="img-fluid">
+            </div>
+
+            <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
+              <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
+                <h2>@job.Title</h2>
+                <strong>@job.CompanyName</strong>
+              </div>
+              <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
+                @if (!string.IsNullOrEmpty(job.Location))
+                {
+                  <span class="icon-room"></span> @job.Location
+                }
+              </div>
+              <div class="job-listing-meta">
+                @if (!string.IsNullOrEmpty(job.EmploymentTypeDisplay))
+                {
+                  <span class="badge @badgeClass">@job.EmploymentTypeDisplay</span>
+                }
+              </div>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+
+  </div>
+</section>
+
+<section class="bg-light pt-5 testimony-full">
+    <div class="owl-carousel single-carousel">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-6 align-self-center text-center text-lg-left">
+            <blockquote>
+              <p>&ldquo;Soluta quasi cum delectus eum facilis recusandae nesciunt molestias accusantium libero dolores repellat id in dolorem laborum ad modi qui at quas dolorum voluptatem voluptatum repudiandae.&rdquo;</p>
+              <p><cite> &mdash; Corey Woods, @@Dribbble</cite></p>
+            </blockquote>
+          </div>
+          <div class="col-lg-6 align-self-end text-center text-lg-right">
+            <img src="@Url.Content("~/Content/images/person_transparent_2.png")" alt="Image" class="img-fluid mb-0">
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-6 align-self-center text-center text-lg-left">
+            <blockquote>
+              <p>&ldquo;Soluta quasi cum delectus eum facilis recusandae nesciunt molestias accusantium libero dolores repellat id in dolorem laborum ad modi qui at quas dolorum voluptatem voluptatum repudiandae.&rdquo;</p>
+              <p><cite> &mdash; Corey Woods, @@Dribbble</cite></p>
+            </blockquote>
+          </div>
+          <div class="col-lg-6 align-self-end text-center text-lg-right">
+            <img src="@Url.Content("~/Content/images/person_transparent_2.png")" alt="Image" class="img-fluid mb-0">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
