@@ -1,6 +1,6 @@
-@model Project_Recruiment_Huce.Models.Candidate
+@model Project_Recruiment_Huce.Models.Candidates.CandidateManageViewModel
 @{
-  ViewBag.Title = "Manage Profile";
+  ViewBag.Title = "Quản lý hồ sơ";
   Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -17,15 +17,15 @@
     (function () {
       var about = new Quill('#about-editor', { theme: 'snow' });
       // initialize with server value
-      var aboutHidden = document.getElementById('About');
-      if (aboutHidden && aboutHidden.value) {
-        about.root.innerHTML = aboutHidden.value;
+      var summaryHidden = document.getElementById('Summary');
+      if (summaryHidden && summaryHidden.value) {
+        about.root.innerHTML = summaryHidden.value;
       }
       // sync on submit
       var form = document.getElementById('candidate-form');
       if (form) {
         form.addEventListener('submit', function () {
-          document.getElementById('About').value = about.root.innerHTML;
+          document.getElementById('Summary').value = about.root.innerHTML;
         });
       }
 
@@ -53,10 +53,10 @@
   <div class="container">
     <div class="row">
       <div class="col-md-7">
-        <h1 class="text-white font-weight-bold">Manage Profile</h1>
+        <h1 class="text-white font-weight-bold">Quản lý hồ sơ</h1>
         <div class="custom-breadcrumbs">
-          <a href="@Url.Action("Index","Home")">Home</a> <span class="mx-2 slash">/</span>
-          <span class="text-white"><strong>Manage</strong></span>
+          <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+          <span class="text-white"><strong>Quản lý hồ sơ</strong></span>
         </div>
       </div>
     </div>
@@ -74,7 +74,7 @@
         {
           @Html.AntiForgeryToken()
           @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
-          <h3 class="text-black mb-5 border-bottom pb-2">Personal Details</h3>
+          <h3 class="text-black mb-5 border-bottom pb-2">Thông tin cá nhân</h3>
 
           <div class="form-row align-items-center mb-4">
             <div class="col-md-2 text-center mb-3 mb-md-0">
@@ -98,33 +98,33 @@
               <img id="avatarPreview" src="@(avatarUrl ?? Url.Content("~/Content/images/person_1.jpg"))" alt="avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover;" />
             </div>
             <div class="col-md-10">
-              <label class="d-block">Upload Avatar</label>
+              <label class="d-block">Tải ảnh đại diện</label>
               <label class="btn btn-success btn-md btn-file mb-0">
-                Browse File<input id="avatarInput" type="file" name="avatar" accept="image/*" hidden>
+                Chọn file<input id="avatarInput" type="file" name="avatar" accept="image/*" hidden>
               </label>
               <small id="avatarFileName" class="text-muted ml-2"></small>
-              <small class="text-muted ml-2">JPG/PNG up to 2MB.</small>
+              <small class="text-muted ml-2">JPG/PNG tối đa 2MB.</small>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group col-md-6">
-              <label for="FullName">Full Name</label>
-              @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "e.g. John Doe" })
+              <label for="FullName">Họ và tên</label>
+              @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Ví dụ: Nguyễn Văn A" })
             </div>
             <div class="form-group col-md-3">
-              <label for="BirthDate">Birth Date</label>
+              <label for="BirthDate">Ngày sinh</label>
               @Html.TextBoxFor(m => m.BirthDate, new { @class = "form-control", type = "date" })
             </div>
             <div class="form-group col-md-3">
-              <label for="Gender">Gender</label>
-              @Html.DropDownListFor(m => m.Gender, new SelectList(new[] { new { Text = "Nam", Value = "Nam" }, new { Text = "Nu", Value = "Nữ" } }, "Value", "Text", Model?.Gender), new { @class = "form-control" })
+              <label for="Gender">Giới tính</label>
+              @Html.DropDownListFor(m => m.Gender, new SelectList(new[] { new { Text = "Nam", Value = "Nam" }, new { Text = "Nữ", Value = "Nữ" } }, "Value", "Text", Model?.Gender), new { @class = "form-control" })
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group col-md-4">
-              <label for="Phone">Phone</label>
+              <label for="Phone">Số điện thoại</label>
               @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "090..." })
             </div>
             <div class="form-group col-md-4">
@@ -132,20 +132,20 @@
               @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", placeholder = "you@domain.com" })
             </div>
             <div class="form-group col-md-4">
-              <label for="Address">Address</label>
-              @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "City, Country" })
+              <label for="Address">Địa chỉ</label>
+              @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Thành phố, Quốc gia" })
             </div>
           </div>
 
-          <h3 class="text-black my-5 border-bottom pb-2">About</h3>
+          <h3 class="text-black my-5 border-bottom pb-2">Giới thiệu</h3>
 
           <div class="form-group">
             <div id="about-editor" class="editor"></div>
-            @Html.HiddenFor(m => m.About, new { id = "About" })
+            @Html.HiddenFor(m => m.Summary, new { id = "Summary" })
           </div>
 
           <div class="text-right">
-            <button type="submit" class="btn btn-primary btn-md">Save Profile</button>
+            <button type="submit" class="btn btn-primary btn-md">Lưu hồ sơ</button>
           </div>
         }
       </div>

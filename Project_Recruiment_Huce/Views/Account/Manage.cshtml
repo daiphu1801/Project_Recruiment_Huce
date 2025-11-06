@@ -30,17 +30,12 @@
             <p>Bạn đang đăng nhập với vai trò <strong>Candidate</strong>.</p>
             <a href="@Url.Action("CandidatesManage","Candidates")" class="btn btn-primary">Chỉnh sửa hồ sơ ứng viên</a>
           }
-          else if (role == "Company")
-          {
-            <p>Bạn đang đăng nhập với vai trò <strong>Company</strong>.</p>
-            <a href="@Url.Action("JobsCreate","Jobs")" class="btn btn-outline-primary">Đăng tin tuyển dụng</a>
-            <span class="text-muted d-block mt-2">Trang quản lý hồ sơ công ty sẽ được bổ sung.</span>
-          }
           else if (role == "Recruiter")
           {
             <p>Bạn đang đăng nhập với vai trò <strong>Recruiter</strong>.</p>
+            <a href="@Url.Action("RecruitersManage","Recruiters")" class="btn btn-outline-primary">Quản lý hồ sơ</a>
+            <a href="@Url.Action("CompaniesManage","Companies")" class="btn btn-outline-primary">Quản lý công ty</a>
             <a href="@Url.Action("JobsCreate","Jobs")" class="btn btn-outline-primary">Đăng tin tuyển dụng</a>
-            <span class="text-muted d-block mt-2">Trang quản lý hồ sơ nhà tuyển dụng sẽ được bổ sung.</span>
           }
           else if (role == "Admin")
           {

@@ -11,6 +11,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Models.Accounts;
 using Project_Recruiment_Huce.Helpers;
 
 namespace Project_Recruiment_Huce.Controllers
