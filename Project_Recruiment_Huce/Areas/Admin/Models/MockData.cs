@@ -20,20 +20,21 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
 
         private static readonly Lazy<List<CompanyListVm>> _companies = new Lazy<List<CompanyListVm>>(() => new List<CompanyListVm>
         {
-            new CompanyListVm{ CompanyId=1, CompanyName="Alpha Co.", TaxCode="01010101", Website="https://alpha.vn", Address="123 Đường ABC, Quận 1, TP.HCM", LogoPhotoId=3, ActiveFlag=1, CreatedAt=DateTime.Today.AddMonths(-3)},
-            new CompanyListVm{ CompanyId=2, CompanyName="Beta Ltd", TaxCode="02020202", Website="https://beta.vn", Address="456 Đường XYZ, Quận 2, TP.HCM", LogoPhotoId=null, ActiveFlag=1, CreatedAt=DateTime.Today.AddMonths(-2)},
-            new CompanyListVm{ CompanyId=3, CompanyName="Gamma Technology", TaxCode="03030303", Website="https://gamma.vn", Address="789 Đường DEF, Quận 3, TP.HCM", LogoPhotoId=null, ActiveFlag=1, CreatedAt=DateTime.Today.AddMonths(-1)},
-            new CompanyListVm{ CompanyId=4, CompanyName="Delta Solutions", TaxCode="04040404", Website="https://delta.vn", Address="321 Đường GHI, Quận 1, Hà Nội", LogoPhotoId=null, ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-20)},
-            new CompanyListVm{ CompanyId=5, CompanyName="Epsilon Corporation", TaxCode="05050505", Website="https://epsilon.vn", Address="654 Đường JKL, Quận 5, TP.HCM", LogoPhotoId=null, ActiveFlag=0, CreatedAt=DateTime.Today.AddDays(-15)},
+            new CompanyListVm{ CompanyId=1, CompanyName="Alpha Co.", TaxCode="01010101", Industry="Công nghệ thông tin", Address="123 Đường ABC, Quận 1, TP.HCM", Phone="0901234567", CompanyEmail="contact@alpha.vn", Website="https://alpha.vn", Description="Chuyên phát triển phần mềm quản lý doanh nghiệp và giải pháp điện toán đám mây.", CreatedAt=DateTime.Today.AddMonths(-3), ActiveFlag=1},
+            new CompanyListVm{ CompanyId=2, CompanyName="Beta Ltd", TaxCode="02020202", Industry="Thương mại điện tử", Address="456 Đường XYZ, Quận 2, TP.HCM", Phone="0912345678", CompanyEmail="info@beta.vn", Website="https://beta.vn", Description="Cung cấp nền tảng thương mại điện tử và giải pháp bán hàng trực tuyến.", CreatedAt=DateTime.Today.AddMonths(-2), ActiveFlag=1},
+            new CompanyListVm{ CompanyId=3, CompanyName="Gamma Technology", TaxCode="03030303", Industry="Điện tử - Viễn thông", Address="789 Đường DEF, Quận 3, TP.HCM", Phone="0923456789", CompanyEmail="support@gamma.vn", Website="https://gamma.vn", Description="Nhà cung cấp thiết bị và dịch vụ viễn thông hàng đầu Việt Nam.", CreatedAt=DateTime.Today.AddMonths(-1), ActiveFlag=1},
+            new CompanyListVm{ CompanyId=4, CompanyName="Delta Solutions", TaxCode="04040404", Industry="Tư vấn doanh nghiệp", Address="321 Đường GHI, Quận Hoàn Kiếm, Hà Nội", Phone="0934567890", CompanyEmail="info@delta.vn", Website="https://delta.vn", Description="Cung cấp dịch vụ tư vấn chiến lược, tài chính và quản trị doanh nghiệp.", CreatedAt=DateTime.Today.AddDays(-20), ActiveFlag=1},
+            new CompanyListVm{ CompanyId=5, CompanyName="Epsilon Corporation", TaxCode="05050505", Industry="Sản xuất và phân phối", Address="654 Đường JKL, Quận 5, TP.HCM", Phone="0945678901", CompanyEmail="contact@epsilon.vn", Website="https://epsilon.vn", Description="Doanh nghiệp chuyên sản xuất thiết bị công nghiệp và phân phối linh kiện cơ khí.", CreatedAt=DateTime.Today.AddDays(-15), ActiveFlag=0},
         });
+
 
         private static readonly Lazy<List<RecruiterListVm>> _recruiters = new Lazy<List<RecruiterListVm>>(() => new List<RecruiterListVm>
         {
-            new RecruiterListVm{ RecruiterId=1, AccountId=2, CompanyId=1, FullName="Nguyen Van A", CompanyName="Alpha Co.", PositionTitle="HR Lead", WorkEmail="a@alpha.vn", Phone="0909123123", ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-20)},
-            new RecruiterListVm{ RecruiterId=2, AccountId=3, CompanyId=2, FullName="Tran Thi B", CompanyName="Beta Ltd", PositionTitle="HR", WorkEmail="b@beta.vn", Phone="0909345345", ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-15)},
-            new RecruiterListVm{ RecruiterId=3, AccountId=2, CompanyId=3, FullName="Le Van C", CompanyName="Gamma Technology", PositionTitle="Senior HR", WorkEmail="c@gamma.vn", Phone="0909456789", ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-10)},
-            new RecruiterListVm{ RecruiterId=4, AccountId=3, CompanyId=4, FullName="Pham Thi D", CompanyName="Delta Solutions", PositionTitle="HR Manager", WorkEmail="d@delta.vn", Phone="0909567890", ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-8)},
-            new RecruiterListVm{ RecruiterId=5, AccountId=2, CompanyId=1, FullName="Hoang Van E", CompanyName="Alpha Co.", PositionTitle="Recruiter", WorkEmail="e@alpha.vn", Phone="0909678901", ActiveFlag=0, CreatedAt=DateTime.Today.AddDays(-5)},
+            new RecruiterListVm{ RecruiterId=1, AccountId=2, CompanyId=1, FullName="Nguyen Van A", CompanyName="Alpha Co.", PositionTitle="HR Lead", CompanyEmail="a@alpha.vn", Phone="0909123123", ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-20)},
+            new RecruiterListVm{ RecruiterId=2, AccountId=3, CompanyId=2, FullName="Tran Thi B", CompanyName="Beta Ltd", PositionTitle="HR", CompanyEmail="b@beta.vn", Phone="0909345345", ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-15)},
+            new RecruiterListVm{ RecruiterId=3, AccountId=2, CompanyId=3, FullName="Le Van C", CompanyName="Gamma Technology", PositionTitle="Senior HR", CompanyEmail="c@gamma.vn", Phone="0909456789", ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-10)},
+            new RecruiterListVm{ RecruiterId=4, AccountId=3, CompanyId=4, FullName="Pham Thi D", CompanyName="Delta Solutions", PositionTitle="HR Manager", CompanyEmail="d@delta.vn", Phone="0909567890", ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-8)},
+            new RecruiterListVm{ RecruiterId=5, AccountId=2, CompanyId=1, FullName="Hoang Van E", CompanyName="Alpha Co.", PositionTitle="Recruiter", CompanyEmail="e@alpha.vn", Phone="0909678901", ActiveFlag=0, CreatedAt=DateTime.Today.AddDays(-5)},
         });
 
         private static readonly Lazy<List<CandidateListVm>> _candidates = new Lazy<List<CandidateListVm>>(() => new List<CandidateListVm>
