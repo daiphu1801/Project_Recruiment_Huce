@@ -10,6 +10,7 @@ using System.Configuration;
 using System.Globalization;
 using Project_Recruiment_Huce.Helpers;
 using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Models.Accounts;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
