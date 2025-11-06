@@ -174,6 +174,7 @@
                     @if (navRoleClaim != null && navRoleClaim.Value == "Candidate")
                     {
                       <a class="dropdown-item" href="@Url.Action("CandidatesManage", "Candidates")">Hồ sơ của tôi</a>
+                      <a class="dropdown-item" href="@Url.Action("MyResumes", "ResumeFiles")">Quản lý CV</a>
                       <a class="dropdown-item" href="@Url.Action("MyApplications", "Candidates")">Đơn ứng tuyển</a>
                       <div class="dropdown-divider"></div>
                     }

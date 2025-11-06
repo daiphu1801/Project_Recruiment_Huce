@@ -22,6 +22,7 @@ namespace Project_Recruiment_Huce.Models.Jobs
         public string SalaryRange { get; set; }
         public DateTime? PostedAt { get; set; }
         public DateTime? ApplicationDeadline { get; set; }
+        public string Status { get; set; }
         public string LogoUrl { get; set; }
     }
 
@@ -46,6 +47,7 @@ namespace Project_Recruiment_Huce.Models.Jobs
         public DateTime? PostedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? ApplicationDeadline { get; set; }
+        public string Status { get; set; }
         public string LogoUrl { get; set; }
     }
 

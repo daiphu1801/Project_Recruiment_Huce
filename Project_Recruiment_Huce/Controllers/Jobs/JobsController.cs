@@ -61,6 +61,7 @@ namespace Project_Recruiment_Huce.Controllers
                 SalaryRange = FormatSalaryRange(job.SalaryFrom, job.SalaryTo, job.SalaryCurrency),
                 PostedAt = job.PostedAt,
                 ApplicationDeadline = job.ApplicationDeadline,
+                Status = job.Status,
                 LogoUrl = "/Content/images/job_logo_1.jpg"
             };
         }
@@ -489,6 +490,64 @@ namespace Project_Recruiment_Huce.Controllers
                 db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Đăng tin tuyển dụng thành công!";
+                return RedirectToAction("MyJobs", "Jobs");
+            }
+        }
+
+        /// <summary>
+        /// POST: Jobs/CloseJob
+        /// Đóng hoặc hết hạn tin tuyển dụng
+        /// </summary>
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CloseJob(int? id, string status = "Closed")
+        {
+            var accountId = GetCurrentAccountId();
+            if (accountId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var recruiterId = GetCurrentRecruiterId(accountId);
+            if (recruiterId == null)
+            {
+                TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để thực hiện thao tác này.";
+                return RedirectToAction("MyJobs", "Jobs");
+            }
+
+            if (!id.HasValue)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng.";
+                return RedirectToAction("MyJobs", "Jobs");
+            }
+
+            // Validate status values
+            if (status != "Closed" && status != "Expired")
+            {
+                status = "Closed";
+            }
+
+            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
+            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            {
+                // Get job and verify it belongs to this recruiter
+                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
+                
+                if (job == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng hoặc bạn không có quyền thực hiện thao tác này.";
+                    return RedirectToAction("MyJobs", "Jobs");
+                }
+
+                // Update status
+                job.Status = status;
+                job.UpdatedAt = DateTime.Now;
+                
+                db.SubmitChanges();
+
+                string statusText = status == "Closed" ? "đóng" : "hết hạn";
+                TempData["SuccessMessage"] = $"Đã {statusText} tin tuyển dụng thành công!";
                 return RedirectToAction("MyJobs", "Jobs");
             }
         }

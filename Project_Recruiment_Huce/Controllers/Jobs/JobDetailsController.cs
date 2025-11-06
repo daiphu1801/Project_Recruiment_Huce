@@ -36,6 +36,7 @@ namespace Project_Recruiment_Huce.Controllers
                 PostedAt = job.PostedAt,
                 UpdatedAt = job.UpdatedAt,
                 ApplicationDeadline = job.ApplicationDeadline,
+                Status = job.Status,
                 LogoUrl = "/Content/images/job_logo_1.jpg"
             };
         }
@@ -129,7 +130,8 @@ namespace Project_Recruiment_Huce.Controllers
                 loadOptions.LoadWith<JobPost>(j => j.Recruiter);
                 db.LoadOptions = loadOptions;
 
-                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.Status == "Published");
+                // Allow viewing job details even if status is not Published (for recruiters to see their closed jobs)
+                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value);
 
                 if (job == null)
                 {
