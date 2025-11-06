@@ -1,0 +1,44 @@
+﻿@model Project_Recruiment_Huce.Areas.Admin.Models.PhotoVm
+@{
+    ViewBag.Title = "Thêm Ảnh mới";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-image"></i> Thêm ảnh mới</h5>
+    </div>
+
+    <div class="card-body">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @using (Html.BeginForm("Create", "Photos", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            <!-- IMPORTANT: name phải khớp với PhotoVm.FileUpload -->
+            <div class="mb-3 text-center">
+                <label class="form-label fw-bold">Chọn ảnh</label><br />
+                <input type="file" name="FileUpload" class="form-control" accept="image/*" required />
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-3">
+                <a href="@Url.Action("Index", "Photos")" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-upload"></i> Tải lên
+                </button>
+            </div>
+        }
+    </div>
+</div>
