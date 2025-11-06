@@ -1,82 +1,44 @@
-@model Project_Recruiment_Huce.Areas.Admin.Models.CompanyListVm
-@{
-    ViewBag.Title = "Sửa công ty";
-    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
-}
+@model List<Project_Recruiment_Huce.Areas.Admin.Models.CompanyListVm>
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+@{
+  ViewBag.AddUrl = Url.Action("Create");
+  ViewBag.AddLabel = "Thêm công ty";
+}
+@Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
 
-<div class="card">
-  <div class="card-header">
-    <h5 class="card-title mb-0"><i class="bi bi-pencil-square"></i> Sửa công ty</h5>
-  </div>
-  <div class="card-body">
-    @if (!ViewData.ModelState.IsValid)
-    {
-      <div class="alert alert-danger">
-        <ul class="mb-0">
-          @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-          {
-            <li>@error.ErrorMessage</li>
-          }
-        </ul>
-      </div>
-    }
-
-    @using (Html.BeginForm("Edit", "Companies", FormMethod.Post))
-    {
-      @Html.AntiForgeryToken()
-      @Html.HiddenFor(m => m.CompanyId)
-      
-      <div class="row">
-        <div class="col-md-8">
-          <div class="mb-3">
-            @Html.LabelFor(m => m.CompanyName, new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.CompanyName, new { @class = "form-control", placeholder = "Nhập tên công ty" })
-            @Html.ValidationMessageFor(m => m.CompanyName, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.TaxCode, new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.TaxCode, new { @class = "form-control", placeholder = "Nhập mã số thuế" })
-            @Html.ValidationMessageFor(m => m.TaxCode, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.Website, new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.Website, new { @class = "form-control", type = "url", placeholder = "https://example.com" })
-            @Html.ValidationMessageFor(m => m.Website, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.Address, new { @class = "form-label" })
-            @Html.TextAreaFor(m => m.Address, new { @class = "form-control", rows = 3, placeholder = "Nhập địa chỉ" })
-            @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.LogoPhotoId, new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.LogoPhotoId, new { @class = "form-control", type = "number", placeholder = "Photo ID (tùy chọn)" })
-            @Html.ValidationMessageFor(m => m.LogoPhotoId, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            <div class="form-check">
-              @Html.CheckBoxFor(m => m.Active, new { @class = "form-check-input" })
-              @Html.LabelFor(m => m.Active, new { @class = "form-check-label" })
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="d-flex justify-content-end gap-2 mt-3">
-        <a href="@Url.Action("Index")" class="btn btn-secondary">
-          <i class="bi bi-x-circle"></i> Hủy
-        </a>
-        <button type="submit" class="btn btn-primary">
-          <i class="bi bi-save"></i> Cập nhật
-        </button>
-      </div>
-    }
+<div class="card mb-4">
+  <div class="card-body table-responsive p-0">
+    <table class="table table-hover">
+      <thead><tr>
+        <th>Tên công ty</th><th>Mã số thuế</th><th>Website</th><th>Địa chỉ</th><th>Hoạt động</th><th>Ngày tạo</th><th></th>
+      </tr></thead>
+      <tbody>
+      @if (Model != null && Model.Any()) {
+      foreach (var item in Model) {
+        <tr>
+          <td>@item.CompanyName</td>
+          <td>@(item.TaxCode ?? "-")</td>
+          <td>@if (!string.IsNullOrEmpty(item.Website)) { <a href="@item.Website" target="_blank">@item.Website</a> } else { <text>-</text> }</td>
+          <td>@(item.Address ?? "-")</td>
+          <td>@(item.ActiveFlag == 1 ? "Yes" : "No")</td>
+          <td>@(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</td>
+          <td class="text-end" style="white-space:nowrap;">
+            @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string,string>{
+              {"Details", Url.Action("Details", new { id = item.CompanyId })},
+              {"Edit", Url.Action("Edit", new { id = item.CompanyId })},
+              {"Delete", Url.Action("Delete", new { id = item.CompanyId })}
+            })
+          </td>
+        </tr>
+      }
+      } else {
+        <tr><td colspan="8" class="text-center text-muted">Không có dữ liệu</td></tr>
+      }
+      </tbody>
+    </table>
   </div>
 </div>
+
+@Html.Partial("~/Areas/Admin/Views/Shared/_Pagination.cshtml", new { PageIndex = 1, TotalPages = 1, BaseUrl = Url.Action("Index", new { q = Request["q"] }) })
+
 
