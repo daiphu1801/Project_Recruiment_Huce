@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Web;
 using System.Web.Mvc;
 
 namespace Project_Recruiment_Huce.Models.Companies
@@ -44,6 +45,12 @@ namespace Project_Recruiment_Huce.Models.Companies
         [Display(Name = "Mô tả công ty")]
         [AllowHtml]
         public string Description { get; set; }
+
+        [Display(Name = "Logo công ty")]
+        public HttpPostedFileBase Logo { get; set; }
+
+        public int? PhotoID { get; set; }
+        public string LogoUrl { get; set; }
     }
 }
 

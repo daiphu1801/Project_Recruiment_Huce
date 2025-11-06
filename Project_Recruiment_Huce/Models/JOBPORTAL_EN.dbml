@@ -147,6 +147,7 @@
       <Column Name="Description" Type="System.String" DbType="NVarChar(1000)" CanBeNull="true" />
       <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
       <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="PhotoID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="Company_JobPost" Member="JobPosts" ThisKey="CompanyID" OtherKey="CompanyID" Type="JobPost" />
       <Association Name="Company_Recruiter" Member="Recruiters" ThisKey="CompanyID" OtherKey="CompanyID" Type="Recruiter" />
     </Type>

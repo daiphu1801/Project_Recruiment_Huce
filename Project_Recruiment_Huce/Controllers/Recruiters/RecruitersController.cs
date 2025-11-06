@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Web;
@@ -44,6 +45,9 @@ namespace Project_Recruiment_Huce.Controllers
                     db.Recruiters.InsertOnSubmit(recruiter);
                     db.SubmitChanges();
                 }
+
+                // Note: Avatar is loaded from Account in the view (same as Candidate)
+                // No need to set ViewBag.AvatarUrl here
 
                 return View(recruiter);
             }
@@ -97,11 +101,65 @@ namespace Project_Recruiment_Huce.Controllers
                     existingRecruiter.CompanyID = recruiter.CompanyID;
                 }
 
-                // Handle avatar upload if provided
+                // Handle avatar upload if provided (same as Candidate - only save to Account.PhotoID)
                 if (avatar != null && avatar.ContentLength > 0)
                 {
-                    // TODO: Implement avatar upload logic similar to CandidatesController
-                    // For now, just save the file info
+                    var allowedExts = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                    var ext = Path.GetExtension(avatar.FileName)?.ToLower();
+                    
+                    if (ext != null && allowedExts.Contains(ext))
+                    {
+                        // Get account to check for old photo
+                        var account = db.Accounts.FirstOrDefault(a => a.AccountID == accountId.Value);
+                        
+                        // Delete old photo if exists (from Account.PhotoID)
+                        if (account != null && account.PhotoID.HasValue)
+                        {
+                            var oldPhoto = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == account.PhotoID.Value);
+                            if (oldPhoto != null)
+                            {
+                                var oldFilePath = Server.MapPath("~" + oldPhoto.FilePath);
+                                if (System.IO.File.Exists(oldFilePath))
+                                {
+                                    System.IO.File.Delete(oldFilePath);
+                                }
+                                db.ProfilePhotos.DeleteOnSubmit(oldPhoto);
+                            }
+                        }
+                        
+                        // Save new avatar
+                        var uploadsRoot = Server.MapPath("~/Content/uploads/recruiter/");
+                        if (!Directory.Exists(uploadsRoot))
+                        {
+                            Directory.CreateDirectory(uploadsRoot);
+                        }
+                        
+                        var safeFileName = $"avatar_{accountId.Value}_{DateTime.UtcNow:yyyyMMddHHmmssfff}{ext}";
+                        var physicalPath = Path.Combine(uploadsRoot, safeFileName);
+                        avatar.SaveAs(physicalPath);
+                        
+                        var relativePath = $"~/Content/uploads/recruiter/{safeFileName}";
+                        var photo = new ProfilePhoto
+                        {
+                            FileName = safeFileName,
+                            FilePath = relativePath,
+                            FileSizeKB = (int)Math.Round(avatar.ContentLength / 1024.0),
+                            FileFormat = ext.Replace(".", "").ToLower(),
+                            UploadedAt = DateTime.UtcNow
+                        };
+                        db.ProfilePhotos.InsertOnSubmit(photo);
+                        db.SubmitChanges();
+                        
+                        // Link only to Account (same as Candidate)
+                        if (account != null)
+                        {
+                            account.PhotoID = photo.PhotoID;
+                        }
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Chỉ chấp nhận file ảnh (JPG, PNG, GIF, WEBP).");
+                    }
                 }
 
                 // Submit changes using LINQ to SQL

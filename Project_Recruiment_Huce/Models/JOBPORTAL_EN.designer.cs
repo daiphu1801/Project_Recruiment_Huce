@@ -3237,6 +3237,8 @@ namespace Project_Recruiment_Huce.Models
 		
 		private System.Nullable<byte> _ActiveFlag;
 		
+		private System.Nullable<int> _PhotoID;
+		
 		private EntitySet<JobPost> _JobPosts;
 		
 		private EntitySet<Recruiter> _Recruiters;
@@ -3267,6 +3269,8 @@ namespace Project_Recruiment_Huce.Models
     partial void OnCreatedAtChanged();
     partial void OnActiveFlagChanging(System.Nullable<byte> value);
     partial void OnActiveFlagChanged();
+    partial void OnPhotoIDChanging(System.Nullable<int> value);
+    partial void OnPhotoIDChanged();
     #endregion
 		
 		public Company()
@@ -3492,6 +3496,26 @@ namespace Project_Recruiment_Huce.Models
 					this._ActiveFlag = value;
 					this.SendPropertyChanged("ActiveFlag");
 					this.OnActiveFlagChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PhotoID", DbType="Int")]
+		public System.Nullable<int> PhotoID
+		{
+			get
+			{
+				return this._PhotoID;
+			}
+			set
+			{
+				if ((this._PhotoID != value))
+				{
+					this.OnPhotoIDChanging(value);
+					this.SendPropertyChanging();
+					this._PhotoID = value;
+					this.SendPropertyChanged("PhotoID");
+					this.OnPhotoIDChanged();
 				}
 			}
 		}

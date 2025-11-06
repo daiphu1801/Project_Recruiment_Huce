@@ -42,7 +42,7 @@
             </div>
         }
 
-        @using (Html.BeginForm("RecruitersManage", "Recruiters", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "recruiter-form" }))
+        @using (Html.BeginForm("RecruitersManage", "Recruiters", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "recruiter-form", enctype = "multipart/form-data" }))
         {
           @Html.AntiForgeryToken()
           @Html.HiddenFor(m => m.RecruiterID)
@@ -52,6 +52,38 @@
           @Html.HiddenFor(m => m.ActiveFlag)
 
           <h3 class="text-black mb-5 border-bottom pb-2">Thông tin nhà tuyển dụng</h3>
+
+          <!-- Avatar Upload Section -->
+          <div class="form-row align-items-center mb-4">
+            <div class="col-md-2 text-center mb-3 mb-md-0">
+              @{ 
+                string avatarUrl = null; 
+                try {
+                  var idClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) : null;
+                  if (idClaim != null) {
+                    var accId = int.Parse(idClaim.Value);
+                    using (var vdb = new Project_Recruiment_Huce.Models.JOBPORTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString)) {
+                      vdb.ObjectTrackingEnabled = false;
+                      var acc = vdb.Accounts.FirstOrDefault(a => a.AccountID == accId);
+                      if (acc != null && acc.PhotoID.HasValue) {
+                        var photo = vdb.ProfilePhotos.FirstOrDefault(p => p.PhotoID == acc.PhotoID.Value);
+                        if (photo != null) { avatarUrl = Url.Content(photo.FilePath); }
+                      }
+                    }
+                  }
+                } catch { }
+              }
+              <img id="avatarPreview" src="@(avatarUrl ?? Url.Content("~/Content/images/person_1.jpg"))" alt="avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover;" />
+            </div>
+            <div class="col-md-10">
+              <label class="d-block">Tải ảnh đại diện</label>
+              <label class="btn btn-success btn-md btn-file mb-0">
+                Chọn file<input id="avatarInput" type="file" name="avatar" accept="image/*" hidden>
+              </label>
+              <small id="avatarFileName" class="text-muted ml-2"></small>
+              <small class="text-muted ml-2">JPG/PNG tối đa 5MB.</small>
+            </div>
+          </div>
 
           <div class="form-row">
             <div class="form-group col-md-6">
@@ -85,4 +117,31 @@
   </div>
 </section>
 
+<script>
+  // Avatar preview functionality (same as CandidatesManage)
+  document.addEventListener('DOMContentLoaded', function() {
+    var avatarInput = document.getElementById('avatarInput');
+    var avatarPreview = document.getElementById('avatarPreview');
+    var avatarFileName = document.getElementById('avatarFileName');
+    
+    if (avatarInput && avatarPreview) {
+      avatarInput.addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+          // Update file name display
+          if (avatarFileName) {
+            avatarFileName.textContent = file.name;
+          }
+          
+          // Preview image
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            avatarPreview.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  });
+</script>
 

@@ -42,12 +42,27 @@
             </div>
         }
 
-        @using (Html.BeginForm("CompaniesManage", "Companies", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "company-form" }))
+        @using (Html.BeginForm("CompaniesManage", "Companies", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "company-form", enctype = "multipart/form-data" }))
         {
           @Html.AntiForgeryToken()
           @Html.HiddenFor(m => m.CompanyID)
 
           <h3 class="text-black mb-5 border-bottom pb-2">Thông tin công ty</h3>
+
+          <!-- Logo Upload Section -->
+          <div class="form-group">
+            <label for="Logo">Logo công ty</label>
+            @if (!string.IsNullOrEmpty(Model?.LogoUrl))
+            {
+              <div class="mb-3">
+                <img src="@Url.Content("~" + Model.LogoUrl)" alt="Logo công ty" style="max-width: 200px; max-height: 200px; border: 1px solid #ddd; border-radius: 4px; padding: 5px;" />
+                <p class="text-muted small mt-2">Logo hiện tại</p>
+              </div>
+            }
+            <input type="file" name="Logo" id="Logo" accept="image/*" class="form-control-file" />
+            <small class="form-text text-muted">Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif, webp), tối đa 5MB</small>
+            @Html.ValidationMessageFor(m => m.Logo, "", new { @class = "text-danger" })
+          </div>
 
           <div class="form-group">
             <label for="CompanyName">Tên công ty <span class="text-danger">*</span></label>
