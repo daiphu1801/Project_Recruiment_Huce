@@ -37,6 +37,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return recruiter?.RecruiterID;
             }
         }
+
         /// <summary>
         /// Map JobPost entity to JobListingItemViewModel
         /// </summary>
@@ -44,6 +45,21 @@ namespace Project_Recruiment_Huce.Controllers
         {
             string companyName = job.Company != null ? job.Company.CompanyName : 
                                 (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
+            
+            // Get company logo URL
+            string logoUrl = "/Content/images/job_logo_1.jpg"; // Default logo
+            if (job.Company?.PhotoID.HasValue == true)
+            {
+                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
+                using (var db = new JOBPORTAL_ENDataContext(connectionString))
+                {
+                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == job.Company.PhotoID.Value);
+                    if (photo != null && !string.IsNullOrEmpty(photo.FilePath))
+                    {
+                        logoUrl = photo.FilePath;
+                    }
+                }
+            }
             
             return new JobListingItemViewModel
             {
@@ -62,7 +78,7 @@ namespace Project_Recruiment_Huce.Controllers
                 PostedAt = job.PostedAt,
                 ApplicationDeadline = job.ApplicationDeadline,
                 Status = job.Status,
-                LogoUrl = "/Content/images/job_logo_1.jpg"
+                LogoUrl = logoUrl
             };
         }
 
