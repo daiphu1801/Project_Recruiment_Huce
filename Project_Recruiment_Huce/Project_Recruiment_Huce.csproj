@@ -173,6 +173,7 @@
     <!-- User -->
     <Compile Include="Controllers\Accounts\AccountController.cs" />
     <Compile Include="Controllers\Candidates\CandidatesController.cs" />
+    <Compile Include="Controllers\Candidates\ResumeFilesController.cs" />
     <Compile Include="Controllers\Recruiters\RecruitersController.cs" />
     <Compile Include="Controllers\Companies\CompaniesController.cs" />
     <Compile Include="Controllers\Jobs\JobsController.cs" />
@@ -185,6 +186,7 @@
     <Compile Include="Models\Accounts\ManageViewModels.cs" />
     <Compile Include="Models\Candidates\CandidateManageViewModel.cs" />
     <Compile Include="Models\Candidates\ApplicationListViewModel.cs" />
+    <Compile Include="Models\Candidates\ResumeFileViewModel.cs" />
     <Compile Include="Models\Companies\CompanyManageViewModel.cs" />
     <Compile Include="Models\Jobs\JobViewModels.cs" />
     <Compile Include="Models\Jobs\JobCreateViewModel.cs" />

@@ -207,9 +207,25 @@
                         <a href="@Url.Action("Details","JobDetails", new { id = job.JobPostID })" class="btn btn-sm btn-outline-primary">
                             <span class="icon-eye mr-1"></span>Xem chi tiết
                         </a>
-                        <a href="@Url.Action("Edit","JobsCreate", new { id = job.JobPostID })" class="btn btn-sm btn-outline-secondary">
-                            <span class="icon-edit mr-1"></span>Chỉnh sửa
-                        </a>
+                        @if (job.Status == "Published")
+                        {
+                            <a href="@Url.Action("Edit","JobsCreate", new { id = job.JobPostID })" class="btn btn-sm btn-outline-secondary">
+                                <span class="icon-edit mr-1"></span>Chỉnh sửa
+                            </a>
+                            using (Html.BeginForm("CloseJob", "Jobs", FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bạn có chắc chắn muốn đóng tin tuyển dụng này? Candidates sẽ không thể ứng tuyển nữa.');" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("id", job.JobPostID)
+                                @Html.Hidden("status", "Closed")
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <span class="icon-close mr-1"></span>Đóng tin
+                                </button>
+                            }
+                        }
+                        else if (job.Status == "Closed" || job.Status == "Expired")
+                        {
+                            <span class="badge badge-danger ml-2">@(job.Status == "Closed" ? "Đã đóng" : "Đã hết hạn")</span>
+                        }
                     </div>
                 </div>
             }

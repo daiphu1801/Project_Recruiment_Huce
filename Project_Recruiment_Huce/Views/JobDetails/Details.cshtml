@@ -45,12 +45,28 @@
       </div>
       <div class="col-lg-4">
         <div class="row">
-          <div class="col-6">
-            <a href="#" class="btn btn-block btn-primary btn-md">Ứng tuyển ngay</a>
-          </div>
-          <div class="col-6">
-            <a href="#" class="btn btn-block btn-secondary btn-md">Lưu việc làm</a>
-          </div>
+          @{
+            var roleClaim = User.Identity.IsAuthenticated ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro") : null;
+            bool isCandidate = roleClaim != null && roleClaim.Value == "Candidate";
+          }
+          @if (isCandidate && Model != null && (Model.Status == "Published" || string.IsNullOrEmpty(Model.Status)))
+          {
+            <div class="col-6">
+              <a href="#" class="btn btn-block btn-primary btn-md">Ứng tuyển ngay</a>
+            </div>
+            <div class="col-6">
+              <a href="#" class="btn btn-block btn-secondary btn-md">Lưu việc làm</a>
+            </div>
+          }
+          else if (isCandidate && Model != null && (Model.Status == "Closed" || Model.Status == "Expired"))
+          {
+            <div class="col-12">
+              <div class="alert alert-warning">
+                <strong>Tin tuyển dụng này đã @(Model.Status == "Closed" ? "đóng" : "hết hạn")</strong>
+                <p class="mb-0">Hiện tại không nhận đơn ứng tuyển mới.</p>
+              </div>
+            </div>
+          }
         </div>
       </div>
     </div>
