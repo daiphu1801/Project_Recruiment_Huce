@@ -269,6 +269,8 @@
       <LastGenOutput>JOBPORTAL_EN.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="Areas\Admin\Views\Photos\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\Photos\Delete.cshtml" />
     <None Include="Models\JOBPORTAL_EN.dbml.layout">
       <DependentUpon>JOBPORTAL_EN.dbml</DependentUpon>
     </None>
