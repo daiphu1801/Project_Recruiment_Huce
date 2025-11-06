@@ -188,6 +188,7 @@
     <Compile Include="Models\Candidates\ApplicationListViewModel.cs" />
     <Compile Include="Models\Candidates\ResumeFileViewModel.cs" />
     <Compile Include="Models\Companies\CompanyManageViewModel.cs" />
+    <Compile Include="Models\Home\HomeIndexViewModel.cs" />
     <Compile Include="Models\Jobs\JobViewModels.cs" />
     <Compile Include="Models\Jobs\JobCreateViewModel.cs" />
     <Compile Include="Models\JOBPORTAL_EN.designer.cs">

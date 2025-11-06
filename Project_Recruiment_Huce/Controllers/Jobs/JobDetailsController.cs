@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Linq;
 using System.Web.Mvc;
+using System.Configuration;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Jobs;
 
@@ -17,6 +18,21 @@ namespace Project_Recruiment_Huce.Controllers
         {
             string companyName = job.Company != null ? job.Company.CompanyName : 
                                 (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
+            
+            // Get company logo URL
+            string logoUrl = "/Content/images/job_logo_1.jpg"; // Default logo
+            if (job.Company?.PhotoID.HasValue == true)
+            {
+                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
+                using (var db = new JOBPORTAL_ENDataContext(connectionString))
+                {
+                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == job.Company.PhotoID.Value);
+                    if (photo != null && !string.IsNullOrEmpty(photo.FilePath))
+                    {
+                        logoUrl = photo.FilePath;
+                    }
+                }
+            }
             
             return new JobDetailsViewModel
             {
@@ -37,7 +53,7 @@ namespace Project_Recruiment_Huce.Controllers
                 UpdatedAt = job.UpdatedAt,
                 ApplicationDeadline = job.ApplicationDeadline,
                 Status = job.Status,
-                LogoUrl = "/Content/images/job_logo_1.jpg"
+                LogoUrl = logoUrl
             };
         }
 
@@ -48,6 +64,21 @@ namespace Project_Recruiment_Huce.Controllers
         {
             string companyName = job.Company != null ? job.Company.CompanyName : 
                                 (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
+            
+            // Get company logo URL
+            string logoUrl = "/Content/images/job_logo_1.jpg"; // Default logo
+            if (job.Company?.PhotoID.HasValue == true)
+            {
+                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
+                using (var db = new JOBPORTAL_ENDataContext(connectionString))
+                {
+                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == job.Company.PhotoID.Value);
+                    if (photo != null && !string.IsNullOrEmpty(photo.FilePath))
+                    {
+                        logoUrl = photo.FilePath;
+                    }
+                }
+            }
             
             return new RelatedJobViewModel
             {
@@ -62,7 +93,7 @@ namespace Project_Recruiment_Huce.Controllers
                 SalaryCurrency = job.SalaryCurrency,
                 SalaryRange = FormatSalaryRange(job.SalaryFrom, job.SalaryTo, job.SalaryCurrency),
                 PostedAt = job.PostedAt,
-                LogoUrl = "/Content/images/job_logo_1.jpg"
+                LogoUrl = logoUrl
             };
         }
 
