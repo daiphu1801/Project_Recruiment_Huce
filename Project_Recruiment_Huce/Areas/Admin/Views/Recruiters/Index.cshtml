@@ -10,7 +10,7 @@
   <div class="card-body table-responsive p-0">
     <table class="table table-hover">
       <thead><tr>
-        <th>Họ tên</th><th>Công ty</th><th>Chức danh</th><th>Email công việc</th><th>SĐT</th><th>Ngày tạo</th><th>Hoạt động</th><th></th>
+        <th>Họ tên</th><th>Công ty</th><th>Chức danh</th><th>Email</th><th>SĐT</th><th>Ngày tạo</th><th>Hoạt động</th><th></th>
       </tr></thead>
       <tbody>
       @if (Model != null && Model.Any()) {
@@ -19,7 +19,7 @@
           <td>@item.FullName</td>
           <td>@(item.CompanyName ?? "-")</td>
           <td>@(item.PositionTitle ?? "-")</td>
-          <td>@(item.WorkEmail ?? "-")</td>
+          <td>@(item.CompanyEmail ?? "-")</td>
           <td>@(item.Phone ?? "-")</td>
           <td>@(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</td>
           <td>@(item.ActiveFlag == 1 ? "Yes" : "No")</td>

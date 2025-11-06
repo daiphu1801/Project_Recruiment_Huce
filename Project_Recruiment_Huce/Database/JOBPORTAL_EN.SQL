@@ -167,7 +167,7 @@ CREATE TABLE Candidates (
     FullName        NVARCHAR(100) NOT NULL,           -- Họ tên
     BirthDate       DATE NULL,                        -- Ngày sinh
     Gender          NVARCHAR(10) NOT NULL             -- Giới tính (Male/Female)
-                     CHECK (Gender IN (N'Male', N'Female')),
+                     CHECK (Gender IN (N'Nam', N'Nữ')),
     Phone           NVARCHAR(15) NULL,                -- Số điện thoại
     Email           NVARCHAR(100) NULL,               -- Email
     Address         NVARCHAR(255) NULL,               -- Địa chỉ
@@ -530,6 +530,142 @@ GO
 CREATE INDEX IX_JobPosts_PostedAt ON JobPosts(PostedAt);
 GO
 
+USE JOBPORTAL_EN;
+GO
+SET NOCOUNT ON;
+
+-- 0) Gỡ index phụ thuộc (nếu có) trước
+IF EXISTS (SELECT 1 FROM sys.indexes 
+           WHERE name = 'IX_JobPosts_PostedAt' 
+             AND object_id = OBJECT_ID('dbo.JobPosts'))
+BEGIN
+    PRINT 'Dropping index IX_JobPosts_PostedAt...';
+    DROP INDEX IX_JobPosts_PostedAt ON dbo.JobPosts;
+END
+GO
+
+-- 1) Danh sách các cột datetime cần đổi sang datetime2(7) + giữ default GETDATE()
+DECLARE @Cols TABLE(
+    SchemaName sysname NOT NULL DEFAULT 'dbo',
+    TableName  sysname NOT NULL,
+    ColumnName sysname NOT NULL,
+    DefaultExpression nvarchar(200) NOT NULL  -- để tạo lại default
+);
+
+INSERT INTO @Cols (TableName, ColumnName, DefaultExpression)
+VALUES
+-- ProfilePhotos
+('ProfilePhotos', 'UploadedAt',       N'GETDATE()'),
+-- Accounts
+('Accounts',      'CreatedAt',        N'GETDATE()'),
+-- Admins
+('Admins',        'CreatedAt',        N'GETDATE()'),
+-- Companies
+('Companies',     'CreatedAt',        N'GETDATE()'),
+-- Recruiters
+('Recruiters',    'CreatedAt',        N'GETDATE()'),
+-- BankCards
+('BankCards',     'CreatedAt',        N'GETDATE()'),
+-- PaymentHistory
+('PaymentHistory','PaidAt',           N'GETDATE()'),
+-- PostingHistory
+('PostingHistory','PostedAt',         N'GETDATE()'),
+-- Candidates
+('Candidates',    'CreatedAt',        N'GETDATE()'),
+-- ResumeFiles
+('ResumeFiles',   'UploadedAt',       N'GETDATE()'),
+-- WorkExperiences
+('WorkExperiences','CreatedAt',       N'GETDATE()'),
+-- Educations
+('Educations',    'UploadedAt',       N'GETDATE()'),
+-- CandidateCertificates
+('CandidateCertificates','UploadedAt',N'GETDATE()'),
+-- CertificateImages
+('CertificateImages','UploadedAt',    N'GETDATE()'),
+-- JobPosts
+('JobPosts',      'PostedAt',         N'GETDATE()'),
+('JobPosts',      'UpdatedAt',        N'GETDATE()'),
+-- Applications
+('Applications',  'AppliedAt',        N'GETDATE()'),
+('Applications',  'UpdatedAt',        N'GETDATE()'),
+-- Transactions
+('Transactions',  'TransactionDate',  N'GETDATE()'),
+('Transactions',  'UpdatedAt',        N'GETDATE()');
+
+DECLARE 
+    @Schema sysname, @Tbl sysname, @Col sysname, @DefExpr nvarchar(200),
+    @objId int, @colId int, @dcName sysname,
+    @sql nvarchar(max), @defName sysname;
+
+DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
+    SELECT SchemaName, TableName, ColumnName, DefaultExpression FROM @Cols;
+OPEN cur;
+FETCH NEXT FROM cur INTO @Schema, @Tbl, @Col, @DefExpr;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    SET @objId = OBJECT_ID(QUOTENAME(@Schema) + N'.' + QUOTENAME(@Tbl));
+    IF @objId IS NULL
+    BEGIN
+        PRINT 'Skip: table not found ' + @Schema + '.' + @Tbl;
+        FETCH NEXT FROM cur INTO @Schema, @Tbl, @Col, @DefExpr;
+        CONTINUE;
+    END
+
+    SELECT @colId = column_id 
+    FROM sys.columns 
+    WHERE object_id = @objId AND name = @Col;
+
+    IF @colId IS NULL
+    BEGIN
+        PRINT 'Skip: column not found ' + @Schema + '.' + @Tbl + '.' + @Col;
+        FETCH NEXT FROM cur INTO @Schema, @Tbl, @Col, @DefExpr;
+        CONTINUE;
+    END
+
+    -- 1.1) Tìm & drop DEFAULT constraint nếu có
+    SELECT @dcName = dc.name
+    FROM sys.default_constraints dc
+    WHERE dc.parent_object_id = @objId
+      AND dc.parent_column_id = @colId;
+
+    IF @dcName IS NOT NULL
+    BEGIN
+        SET @sql = N'ALTER TABLE ' + QUOTENAME(@Schema) + N'.' + QUOTENAME(@Tbl)
+                 + N' DROP CONSTRAINT ' + QUOTENAME(@dcName) + N';';
+        PRINT 'Dropping default constraint ' + @dcName + ' on ' + @Schema + '.' + @Tbl + '.' + @Col;
+        EXEC (@sql);
+    END
+
+    -- 1.2) Đổi kiểu cột -> DATETIME2(7) (cho phép NULL để an toàn)
+    SET @sql = N'ALTER TABLE ' + QUOTENAME(@Schema) + N'.' + QUOTENAME(@Tbl)
+             + N' ALTER COLUMN ' + QUOTENAME(@Col) + N' DATETIME2(7) NULL;';
+    PRINT 'Altering column ' + @Schema + '.' + @Tbl + '.' + @Col + ' to DATETIME2(7)';
+    EXEC (@sql);
+
+    -- 1.3) Tạo lại DEFAULT constraint có tên chuẩn
+    SET @defName = N'DF_' + @Tbl + N'_' + @Col;
+    -- Nếu tên này đã tồn tại (hiếm), thêm hậu tố ngẫu nhiên
+    IF EXISTS (SELECT 1 FROM sys.default_constraints WHERE name = @defName)
+        SET @defName = @defName + '_' + CONVERT(varchar(8), ABS(CHECKSUM(NEWID())));
+
+    SET @sql = N'ALTER TABLE ' + QUOTENAME(@Schema) + N'.' + QUOTENAME(@Tbl)
+             + N' ADD CONSTRAINT ' + QUOTENAME(@defName) 
+             + N' DEFAULT (' + @DefExpr + N') FOR ' + QUOTENAME(@Col) + N';';
+    PRINT 'Adding default ' + @defName + ' on ' + @Schema + '.' + @Tbl + '.' + @Col;
+    EXEC (@sql);
+
+    FETCH NEXT FROM cur INTO @Schema, @Tbl, @Col, @DefExpr;
+END
+CLOSE cur; DEALLOCATE cur;
+GO
+
+-- 2) Tạo lại index đã gỡ
+PRINT 'Re-creating index IX_JobPosts_PostedAt...';
+CREATE INDEX IX_JobPosts_PostedAt ON dbo.JobPosts(PostedAt);
+GO
+
+PRINT 'All datetime columns converted to DATETIME2(7) and defaults/index restored.';
 
 -- Kết thúc: In thông báo
 PRINT 'WEBVER2 (English) schema created successfully.';

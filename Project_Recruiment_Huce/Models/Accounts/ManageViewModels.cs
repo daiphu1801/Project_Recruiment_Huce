@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 
-namespace Project_Recruiment_Huce.Models
+namespace Project_Recruiment_Huce.Models.Accounts
 {
     public class IndexViewModel
     {

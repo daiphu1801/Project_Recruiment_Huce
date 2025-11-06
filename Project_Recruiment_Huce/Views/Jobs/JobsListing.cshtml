@@ -1,6 +1,7 @@
+@model IEnumerable<Project_Recruiment_Huce.Models.Jobs.JobListingItemViewModel>
 
 @{
-    ViewBag.Title = "Jobs Listing";
+    ViewBag.Title = "Danh sách việc làm";
 }
 
   <section class="section-hero home-section overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
@@ -9,40 +10,40 @@
         <div class="row align-items-center justify-content-center">
           <div class="col-md-12">
             <div class="mb-5 text-center">
-              <h1 class="text-white font-weight-bold">The Easiest Way To Get Your Dream Job</h1>
-              <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cupiditate, quas fugit ex!</p>
+              <h1 class="text-white font-weight-bold">Cách Dễ Dàng Nhất Để Tìm Công Việc Mơ Ước</h1>
+              <p>Tìm kiếm và ứng tuyển công việc phù hợp với bạn một cách nhanh chóng và hiệu quả.</p>
             </div>
-            <form method="post" class="search-jobs-form">
+            @using (Html.BeginForm("JobsListing", "Jobs", FormMethod.Get, new { @class = "search-jobs-form" }))
+            {
               <div class="row mb-5">
                 <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                  <input type="text" class="form-control form-control-lg" placeholder="Job title, Company...">
+                  <input type="text" name="keyword" class="form-control form-control-lg" placeholder="Tên công việc, Công ty..." value="@ViewBag.Keyword">
                 </div>
                 <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                  <select class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Select Region">
-                    <option>Anywhere</option>
-                    <option>San Francisco</option>
-                    <option>Palo Alto</option>
-                    <option>New York</option>
-                    <option>Manhattan</option>
-                    <option>Ontario</option>
-                    <option>Toronto</option>
-                    <option>Kansas</option>
-                    <option>Mountain View</option>
+                  <select name="location" class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Chọn khu vực">
+                    <option value="">Bất kỳ đâu</option>
+                    <option value="Hà Nội" @(ViewBag.Location == "Hà Nội" ? "selected" : "")>Hà Nội</option>
+                    <option value="Hồ Chí Minh" @(ViewBag.Location == "Hồ Chí Minh" ? "selected" : "")>Hồ Chí Minh</option>
+                    <option value="Đà Nẵng" @(ViewBag.Location == "Đà Nẵng" ? "selected" : "")>Đà Nẵng</option>
+                    <option value="Hải Phòng" @(ViewBag.Location == "Hải Phòng" ? "selected" : "")>Hải Phòng</option>
+                    <option value="Cần Thơ" @(ViewBag.Location == "Cần Thơ" ? "selected" : "")>Cần Thơ</option>
                   </select>
                 </div>
                 <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                  <select class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Select Job Type">
-                    <option>Part Time</option>
-                    <option>Full Time</option>
+                  <select name="employmentType" class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Chọn loại công việc">
+                    <option value="">Tất cả</option>
+                    <option value="Bán thời gian" @(ViewBag.EmploymentType == "Bán thời gian" ? "selected" : "")>Bán thời gian</option>
+                    <option value="Toàn thời gian" @(ViewBag.EmploymentType == "Toàn thời gian" ? "selected" : "")>Toàn thời gian</option>
                   </select>
                 </div>
                 <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                  <button type="submit" class="btn btn-primary btn-lg btn-block text-white btn-search"><span class="icon-search icon mr-2"></span>Search Job</button>
+                  <button type="submit" class="btn btn-primary btn-lg btn-block text-white btn-search"><span class="icon-search icon mr-2"></span>Tìm kiếm</button>
                 </div>
               </div>
+            }
               <div class="row">
                 <div class="col-md-12 popular-keywords">
-                  <h3>Trending Keywords:</h3>
+                  <h3>Từ khóa phổ biến:</h3>
                   <ul class="keywords list-unstyled m-0 p-0">
                     <li><a href="#" class="">UI Designer</a></li>
                     <li><a href="#" class="">Python</a></li>
@@ -66,172 +67,97 @@
 
         <div class="row mb-5 justify-content-center">
           <div class="col-md-7 text-center">
-            <h2 class="section-title mb-2">43,167 Job Listed</h2>
+            <h2 class="section-title mb-2">@(ViewBag.TotalItems ?? 0) Việc làm đã đăng</h2>
           </div>
         </div>
         
-        <ul class="job-listings mb-5">
-          <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-            <a href="job-single.html"></a>
-            <div class="job-listing-logo">
-              <img src="@Url.Content("~/Content/images/job_logo_1.jpg")" alt="Image" class="img-fluid">
-            </div>
+        @if (Model != null && Model.Any())
+        {
+          <ul class="job-listings mb-5">
+            @foreach (var job in Model)
+            {
+              string badgeClass = "badge-success";
+              if (!string.IsNullOrEmpty(job.EmploymentType))
+              {
+                string empType = job.EmploymentType.ToLower();
+                if (empType == "part-time" || empType == "part time")
+                {
+                  badgeClass = "badge-danger";
+                }
+              }
+              
+              <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
+                <a href="@Url.Action("Details","JobDetails", new { id = job.JobPostID })"></a>
+                <div class="job-listing-logo">
+                  <img src="@job.LogoUrl" alt="@job.CompanyName" class="img-fluid">
+                </div>
 
-            <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
-              <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
-                <h2>Product Designer</h2>
-                <strong>Adidas</strong>
-              </div>
-              <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
-                <span class="icon-room"></span> New York, New York
-              </div>
-              <div class="job-listing-meta">
-                <span class="badge badge-danger">Part Time</span>
-              </div>
-            </div>
-            
-          </li>
-          <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-            <a href="@Url.Action("JobsDetails","Jobs", new { id = 1 })"></a>
-            <div class="job-listing-logo">
-              <img src="@Url.Content("~/Content/images/job_logo_2.jpg")" alt="Image" class="img-fluid">
-            </div>
-
-            <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
-              <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
-                <h2>Digital Marketing Director</h2>
-                <strong>Sprint</strong>
-              </div>
-              <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
-                <span class="icon-room"></span> Overland Park, Kansas 
-              </div>
-              <div class="job-listing-meta">
-                <span class="badge badge-success">Full Time</span>
-              </div>
-            </div>
-          </li>
-
-          <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-            <a href="@Url.Action("JobsDetails","Jobs", new { id = 2 })"></a>
-            <div class="job-listing-logo">
-              <img src="@Url.Content("~/Content/images/job_logo_3.jpg")" alt="Image" class="img-fluid">
-            </div>
-
-            <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
-              <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
-                <h2>Back-end Engineer (Python)</h2>
-                <strong>Amazon</strong>
-              </div>
-              <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
-                <span class="icon-room"></span> Overland Park, Kansas 
-              </div>
-              <div class="job-listing-meta">
-                <span class="badge badge-success">Full Time</span>
-              </div>
-            </div>
-          </li>
-
-          <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-            <a href="job-single.html"></a>
-            <div class="job-listing-logo">
-              <img src="@Url.Content("~/Content/images/job_logo_4.jpg")" alt="Image" class="img-fluid">
-            </div>
-
-            <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
-              <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
-                <h2>Senior Art Director</h2>
-                <strong>Microsoft</strong>
-              </div>
-              <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
-                <span class="icon-room"></span> Anywhere 
-              </div>
-              <div class="job-listing-meta">
-                <span class="badge badge-success">Full Time</span>
-              </div>
-            </div>
-          </li>
-
-          <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-            <a href="job-single.html"></a>
-            <div class="job-listing-logo">
-              <img src="@Url.Content("~/Content/images/job_logo_5.jpg")" alt="Image" class="img-fluid">
-            </div>
-
-            <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
-              <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
-                <h2>Product Designer</h2>
-                <strong>Puma</strong>
-              </div>
-              <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
-                <span class="icon-room"></span> San Mateo, CA 
-              </div>
-              <div class="job-listing-meta">
-                <span class="badge badge-success">Full Time</span>
-              </div>
-            </div>
-          </li>
-          <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-            <a href="job-single.html"></a>
-            <div class="job-listing-logo">
-              <img src="@Url.Content("~/Content/images/job_logo_1.jpg")" alt="Image" class="img-fluid">
-            </div>
-
-            <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
-              <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
-                <h2>Product Designer</h2>
-                <strong>Adidas</strong>
-              </div>
-              <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
-                <span class="icon-room"></span> New York, New York
-              </div>
-              <div class="job-listing-meta">
-                <span class="badge badge-danger">Part Time</span>
-              </div>
-            </div>
-            
-          </li>
-          <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-            <a href="job-single.html"></a>
-            <div class="job-listing-logo">
-              <img src="@Url.Content("~/Content/images/job_logo_2.jpg")" alt="Image" class="img-fluid">
-            </div>
-
-            <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
-              <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
-                <h2>Digital Marketing Director</h2>
-                <strong>Sprint</strong>
-              </div>
-              <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
-                <span class="icon-room"></span> Overland Park, Kansas 
-              </div>
-              <div class="job-listing-meta">
-                <span class="badge badge-success">Full Time</span>
-              </div>
-            </div>
-          </li>
-
-          
-
-          
-        </ul>
-
-        <div class="row pagination-wrap">
-          <div class="col-md-6 text-center text-md-left mb-4 mb-md-0">
-            <span>Showing 1-7 Of 43,167 Jobs</span>
+                <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
+                  <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
+                    <h2>@job.Title</h2>
+                    <strong>@job.CompanyName</strong>
+                  </div>
+                  <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
+                    @if (!string.IsNullOrEmpty(job.Location))
+                    {
+                      <span class="icon-room"></span> @job.Location
+                    }
+                  </div>
+                  <div class="job-listing-meta">
+                    @if (!string.IsNullOrEmpty(job.EmploymentTypeDisplay))
+                    {
+                      <span class="badge @badgeClass">@job.EmploymentTypeDisplay</span>
+                    }
+                  </div>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+        else
+        {
+          <div class="text-center py-5">
+            <p class="lead">Không tìm thấy việc làm nào phù hợp với tiêu chí của bạn.</p>
           </div>
-          <div class="col-md-6 text-center text-md-right">
-            <div class="custom-pagination ml-auto">
-              <a href="#" class="prev">Prev</a>
-              <div class="d-inline-block">
-              <a href="#" class="active">1</a>
-              <a href="#">2</a>
-              <a href="#">3</a>
-              <a href="#">4</a>
+        }
+
+        @if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
+        {
+          <div class="row pagination-wrap">
+            <div class="col-md-6 text-center text-md-left mb-4 mb-md-0">
+              @{
+                int startItem = ((ViewBag.CurrentPage - 1) * 10) + 1;
+                int endItem = Math.Min(ViewBag.CurrentPage * 10, ViewBag.TotalItems);
+              }
+              <span>Hiển thị @startItem-@endItem trong @ViewBag.TotalItems việc làm</span>
+            </div>
+            <div class="col-md-6 text-center text-md-right">
+              <div class="custom-pagination ml-auto">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                  <a href="@Url.Action("JobsListing", "Jobs", new { keyword = ViewBag.Keyword, location = ViewBag.Location, employmentType = ViewBag.EmploymentType, page = ViewBag.CurrentPage - 1 })" class="prev">Trước</a>
+                }
+                <div class="d-inline-block">
+                  @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                  {
+                    if (i == ViewBag.CurrentPage)
+                    {
+                      <a href="#" class="active">@i</a>
+                    }
+                    else
+                    {
+                      <a href="@Url.Action("JobsListing", "Jobs", new { keyword = ViewBag.Keyword, location = ViewBag.Location, employmentType = ViewBag.EmploymentType, page = i })">@i</a>
+                    }
+                  }
+                </div>
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                  <a href="@Url.Action("JobsListing", "Jobs", new { keyword = ViewBag.Keyword, location = ViewBag.Location, employmentType = ViewBag.EmploymentType, page = ViewBag.CurrentPage + 1 })" class="next">Sau</a>
+                }
               </div>
-              <a href="#" class="next">Next</a>
             </div>
           </div>
-        </div>
+        }
 
       </div>
     </section>
@@ -240,11 +166,11 @@
       <div class="container">
         <div class="row align-items-center">
           <div class="col-md-8">
-            <h2 class="text-white">Looking For A Job?</h2>
-            <p class="mb-0 text-white lead">Lorem ipsum dolor sit amet consectetur adipisicing elit tempora adipisci impedit.</p>
+            <h2 class="text-white">Đang tìm việc?</h2>
+            <p class="mb-0 text-white lead">Tham gia JobBoard ngay hôm nay để tìm công việc mơ ước của bạn.</p>
           </div>
           <div class="col-md-3 ml-auto">
-            <a href="@Url.Action("Register","Account")" class="btn btn-warning btn-block btn-lg">Sign Up</a>
+            <a href="@Url.Action("Register","Account")" class="btn btn-warning btn-block btn-lg">Đăng ký</a>
           </div>
         </div>
       </div>

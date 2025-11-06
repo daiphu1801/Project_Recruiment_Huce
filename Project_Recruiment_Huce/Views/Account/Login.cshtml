@@ -1,4 +1,4 @@
-﻿@using Project_Recruiment_Huce.Models
+﻿@using Project_Recruiment_Huce.Models.Accounts
 @model LoginViewModel
 @{
     ViewBag.Title = "Đăng nhập";
@@ -8,10 +8,10 @@
   <div class="container">
     <div class="row">
       <div class="col-md-7">
-        <h1 class="text-white font-weight-bold">Sign Up/Login</h1>
+        <h1 class="text-white font-weight-bold">Đăng nhập</h1>
         <div class="custom-breadcrumbs">
-          <a href="@Url.Action("Index", "Home")">Home</a> <span class="mx-2 slash">/</span>
-          <span class="text-white"><strong>Log In</strong></span>
+          <a href="@Url.Action("Index", "Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+          <span class="text-white"><strong>Đăng nhập</strong></span>
         </div>
       </div>
     </div>
@@ -22,7 +22,7 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-lg-6">
-        <h2 class="mb-4">Log In To JobBoard</h2>
+        <h2 class="mb-4">Đăng nhập vào JobBoard</h2>
         @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form", @class = "p-4 border rounded" }))
         {
             @Html.AntiForgeryToken()

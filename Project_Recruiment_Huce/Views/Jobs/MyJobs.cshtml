@@ -1,0 +1,285 @@
+@model IEnumerable<Project_Recruiment_Huce.Models.Jobs.JobListingItemViewModel>
+
+@{
+    ViewBag.Title = "Tin tuyển dụng của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .job-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s;
+        }
+        .job-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .job-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .job-title-link {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .job-title-link:hover {
+            text-decoration: underline;
+        }
+        .job-status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .status-published {
+            background-color: #28a745;
+            color: white;
+        }
+        .status-closed {
+            background-color: #dc3545;
+            color: white;
+        }
+        .status-draft {
+            background-color: #6c757d;
+            color: white;
+        }
+        .job-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+        .job-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .job-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+    </style>
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Tin tuyển dụng của tôi</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("RecruitersManage","Recruiters")">Hồ sơ của tôi</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Tin tuyển dụng</strong></span>
+                </div>
+                @if (ViewBag.TotalItems != null)
+                {
+                    <div class="mt-3">
+                        <span class="text-white" style="font-size: 1rem; opacity: 0.9;">
+                            <i class="icon-briefcase mr-2"></i>Tổng cộng: @ViewBag.TotalItems tin tuyển dụng
+                            @if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
+                            {
+                                <span class="ml-3">
+                                    <i class="icon-layer mr-2"></i>Trang @ViewBag.CurrentPage / @ViewBag.TotalPages
+                                </span>
+                            }
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="site-section">
+    <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        <div class="row mb-4">
+            <div class="col-md-12 text-right">
+                <a href="@Url.Action("JobsCreate","Jobs")" class="btn btn-primary">
+                    <span class="icon-plus mr-2"></span>Đăng tin tuyển dụng mới
+                </a>
+            </div>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            foreach (var job in Model)
+            {
+                <div class="job-card">
+                    <div class="job-card-header">
+                        <div>
+                            <a href="@Url.Action("Details","JobDetails", new { id = job.JobPostID })" class="job-title-link">
+                                @job.Title
+                            </a>
+                            @if (!string.IsNullOrEmpty(job.JobCode))
+                            {
+                                <span class="text-muted ml-2">(@job.JobCode)</span>
+                            }
+                        </div>
+                        @if (job.PostedAt.HasValue)
+                        {
+                            <span class="text-muted" style="font-size: 0.875rem;">
+                                Đăng ngày: @job.PostedAt.Value.ToString("dd/MM/yyyy")
+                            </span>
+                        }
+                    </div>
+
+                    <div class="job-meta">
+                        @if (!string.IsNullOrEmpty(job.CompanyName))
+                        {
+                            <div class="job-meta-item">
+                                <span class="icon-briefcase mr-2"></span>
+                                <span>@job.CompanyName</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(job.Location))
+                        {
+                            <div class="job-meta-item">
+                                <span class="icon-room mr-2"></span>
+                                <span>@job.Location</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(job.EmploymentTypeDisplay))
+                        {
+                            <div class="job-meta-item">
+                                <span class="icon-clock-o mr-2"></span>
+                                <span>@job.EmploymentTypeDisplay</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(job.SalaryRange))
+                        {
+                            <div class="job-meta-item">
+                                <span class="icon-money mr-2"></span>
+                                <span>@job.SalaryRange</span>
+                            </div>
+                        }
+                        @if (job.ApplicationDeadline.HasValue)
+                        {
+                            bool isExpired = job.ApplicationDeadline.Value < DateTime.Now;
+                            <div class="job-meta-item">
+                                <span class="icon-calendar mr-2"></span>
+                                <span>Hạn nộp: @job.ApplicationDeadline.Value.ToString("dd/MM/yyyy")</span>
+                                @if (isExpired)
+                                {
+                                    <span class="badge badge-danger ml-2">Đã hết hạn</span>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(job.Description))
+                    {
+                        <div class="job-description-preview mb-3" style="color: #666; max-height: 100px; overflow: hidden;">
+                            @Project_Recruiment_Huce.Helpers.HtmlSanitizerHelper.GetPreviewText(job.Description, 200)
+                        </div>
+                    }
+
+                    <div class="job-actions">
+                        <a href="@Url.Action("Details","JobDetails", new { id = job.JobPostID })" class="btn btn-sm btn-outline-primary">
+                            <span class="icon-eye mr-1"></span>Xem chi tiết
+                        </a>
+                        @if (job.Status == "Published")
+                        {
+                            <a href="@Url.Action("Edit","JobsCreate", new { id = job.JobPostID })" class="btn btn-sm btn-outline-secondary">
+                                <span class="icon-edit mr-1"></span>Chỉnh sửa
+                            </a>
+                            using (Html.BeginForm("CloseJob", "Jobs", FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bạn có chắc chắn muốn đóng tin tuyển dụng này? Candidates sẽ không thể ứng tuyển nữa.');" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("id", job.JobPostID)
+                                @Html.Hidden("status", "Closed")
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <span class="icon-close mr-1"></span>Đóng tin
+                                </button>
+                            }
+                        }
+                        else if (job.Status == "Closed" || job.Status == "Expired")
+                        {
+                            <span class="badge badge-danger ml-2">@(job.Status == "Closed" ? "Đã đóng" : "Đã hết hạn")</span>
+                        }
+                    </div>
+                </div>
+            }
+        }
+
+        @if (Model != null && Model.Any() && ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
+        {
+            <div class="row pagination-wrap">
+                    <div class="col-md-6 text-center text-md-left mb-4 mb-md-0">
+                        @{
+                            int startItem = ((ViewBag.CurrentPage - 1) * 10) + 1;
+                            int endItem = Math.Min(ViewBag.CurrentPage * 10, ViewBag.TotalItems);
+                        }
+                        <span>Hiển thị @startItem-@endItem trong @ViewBag.TotalItems tin tuyển dụng</span>
+                    </div>
+                    <div class="col-md-6 text-center text-md-right">
+                        <div class="custom-pagination ml-auto">
+                            @if (ViewBag.CurrentPage > 1)
+                            {
+                                <a href="@Url.Action("MyJobs", "Jobs", new { page = ViewBag.CurrentPage - 1 })" class="prev">Trước</a>
+                            }
+                            <div class="d-inline-block">
+                                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                                {
+                                    if (i == ViewBag.CurrentPage)
+                                    {
+                                        <a href="#" class="active">@i</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="@Url.Action("MyJobs", "Jobs", new { page = i })">@i</a>
+                                    }
+                                }
+                            </div>
+                            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                            {
+                                <a href="@Url.Action("MyJobs", "Jobs", new { page = ViewBag.CurrentPage + 1 })" class="next">Sau</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <h3 class="mb-3">Chưa có tin tuyển dụng nào</h3>
+                <p class="lead mb-4">Bạn chưa đăng tin tuyển dụng nào. Hãy bắt đầu đăng tin đầu tiên của bạn!</p>
+                <a href="@Url.Action("JobsCreate","Jobs")" class="btn btn-primary btn-lg">
+                    <span class="icon-plus mr-2"></span>Đăng tin tuyển dụng mới
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+

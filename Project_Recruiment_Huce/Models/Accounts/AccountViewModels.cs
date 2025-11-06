@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
 
-namespace Project_Recruiment_Huce.Models
+namespace Project_Recruiment_Huce.Models.Accounts
 {
     public class ExternalLoginConfirmationViewModel
     {
@@ -93,7 +95,7 @@ namespace Project_Recruiment_Huce.Models
 
         [DataType(DataType.Password)]
         [Display(Name = "Xác nhận mật khẩu")]
-        [Compare("Password", ErrorMessage = "Mật khẩu và xác nhận mật khẩu không khớp.")]
+        [System.ComponentModel.DataAnnotations.Compare("Password", ErrorMessage = "Mật khẩu và xác nhận mật khẩu không khớp.")]
         public string ConfirmPassword { get; set; }
     }
 
@@ -112,7 +114,7 @@ namespace Project_Recruiment_Huce.Models
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [System.ComponentModel.DataAnnotations.Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
         public string Code { get; set; }

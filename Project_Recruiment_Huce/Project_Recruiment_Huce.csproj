@@ -171,23 +171,34 @@
     <!-- Admin Area -->
     <Compile Include="Areas\Admin\**\*.cs" />
     <!-- User -->
-    <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\JobsController.cs" />
+    <Compile Include="Controllers\Accounts\AccountController.cs" />
+    <Compile Include="Controllers\Candidates\CandidatesController.cs" />
+    <Compile Include="Controllers\Candidates\ResumeFilesController.cs" />
+    <Compile Include="Controllers\Recruiters\RecruitersController.cs" />
+    <Compile Include="Controllers\Companies\CompaniesController.cs" />
+    <Compile Include="Controllers\Jobs\JobsController.cs" />
+    <Compile Include="Controllers\Jobs\JobDetailsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\CandidatesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\Accounts\AccountViewModels.cs" />
+    <Compile Include="Models\Accounts\ManageViewModels.cs" />
+    <Compile Include="Models\Candidates\CandidateManageViewModel.cs" />
+    <Compile Include="Models\Candidates\ApplicationListViewModel.cs" />
+    <Compile Include="Models\Candidates\ResumeFileViewModel.cs" />
+    <Compile Include="Models\Companies\CompanyManageViewModel.cs" />
+    <Compile Include="Models\Jobs\JobViewModels.cs" />
+    <Compile Include="Models\Jobs\JobCreateViewModel.cs" />
     <Compile Include="Models\JOBPORTAL_EN.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>JOBPORTAL_EN.dbml</DependentUpon>
     </Compile>
-    <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Helpers\PasswordHelper.cs" />
+    <Compile Include="Helpers\HtmlSanitizerHelper.cs" />
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\JobPostRepository.cs" />
   </ItemGroup>
@@ -305,6 +316,8 @@
     <Content Include="Views\Account\Register.cshtml" />
     <Content Include="Views\Account\Manage.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
+    <Content Include="Views\Candidates\MyApplications.cshtml" />
+    <Content Include="Views\Candidates\CandidatesManage.cshtml" /> 
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
