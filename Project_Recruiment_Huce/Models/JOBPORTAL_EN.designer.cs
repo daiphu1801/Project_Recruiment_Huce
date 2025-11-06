@@ -489,7 +489,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> CreatedAt
 		{
 			get
@@ -1024,7 +1024,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> CreatedAt
 		{
 			get
@@ -1247,7 +1247,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> CreatedAt
 		{
 			get
@@ -1449,7 +1449,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AppliedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AppliedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> AppliedAt
 		{
 			get
@@ -1549,7 +1549,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UpdatedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UpdatedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> UpdatedAt
 		{
 			get
@@ -1854,7 +1854,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> CreatedAt
 		{
 			get
@@ -2159,7 +2159,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UploadedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UploadedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> UploadedAt
 		{
 			get
@@ -2580,7 +2580,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> CreatedAt
 		{
 			get
@@ -2924,7 +2924,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UploadedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UploadedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> UploadedAt
 		{
 			get
@@ -3456,7 +3456,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> CreatedAt
 		{
 			get
@@ -3835,7 +3835,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UploadedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UploadedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> UploadedAt
 		{
 			get
@@ -4661,7 +4661,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PostedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PostedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> PostedAt
 		{
 			get
@@ -4681,7 +4681,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UpdatedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UpdatedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> UpdatedAt
 		{
 			get
@@ -4997,7 +4997,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PaidAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PaidAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> PaidAt
 		{
 			get
@@ -5450,7 +5450,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PostedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PostedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> PostedAt
 		{
 			get
@@ -5743,7 +5743,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UploadedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UploadedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> UploadedAt
 		{
 			get
@@ -5833,6 +5833,8 @@ namespace Project_Recruiment_Huce.Models
 		
 		private System.Nullable<byte> _ActiveFlag;
 		
+		private System.Data.Linq.Binary _RowVer;
+		
 		private EntitySet<BankCard> _BankCards;
 		
 		private EntitySet<JobPost> _JobPosts;
@@ -5869,6 +5871,8 @@ namespace Project_Recruiment_Huce.Models
     partial void OnCreatedAtChanged();
     partial void OnActiveFlagChanging(System.Nullable<byte> value);
     partial void OnActiveFlagChanged();
+    partial void OnRowVerChanging(System.Data.Linq.Binary value);
+    partial void OnRowVerChanged();
     #endregion
 		
 		public Recruiter()
@@ -5883,7 +5887,7 @@ namespace Project_Recruiment_Huce.Models
 			OnCreated();
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RecruiterID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RecruiterID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true, UpdateCheck=UpdateCheck.Never)]
 		public int RecruiterID
 		{
 			get
@@ -5903,7 +5907,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AccountID", DbType="Int NOT NULL")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AccountID", DbType="Int NOT NULL", UpdateCheck=UpdateCheck.Never)]
 		public int AccountID
 		{
 			get
@@ -5927,7 +5931,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyID", DbType="Int")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyID", DbType="Int", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<int> CompanyID
 		{
 			get
@@ -5951,7 +5955,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FullName", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FullName", DbType="NVarChar(100) NOT NULL", CanBeNull=false, UpdateCheck=UpdateCheck.Never)]
 		public string FullName
 		{
 			get
@@ -5971,7 +5975,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PositionTitle", DbType="NVarChar(100)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PositionTitle", DbType="NVarChar(100)", UpdateCheck=UpdateCheck.Never)]
 		public string PositionTitle
 		{
 			get
@@ -5991,7 +5995,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyEmail", DbType="NVarChar(150)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyEmail", DbType="NVarChar(150)", UpdateCheck=UpdateCheck.Never)]
 		public string CompanyEmail
 		{
 			get
@@ -6011,7 +6015,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Phone", DbType="NVarChar(20)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Phone", DbType="NVarChar(20)", UpdateCheck=UpdateCheck.Never)]
 		public string Phone
 		{
 			get
@@ -6031,7 +6035,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<System.DateTime> CreatedAt
 		{
 			get
@@ -6051,7 +6055,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActiveFlag", DbType="TinyInt")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActiveFlag", DbType="TinyInt", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<byte> ActiveFlag
 		{
 			get
@@ -6067,6 +6071,26 @@ namespace Project_Recruiment_Huce.Models
 					this._ActiveFlag = value;
 					this.SendPropertyChanged("ActiveFlag");
 					this.OnActiveFlagChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RowVer", AutoSync=AutoSync.Always, DbType="rowversion NOT NULL", CanBeNull=false, IsDbGenerated=true, IsVersion=true, UpdateCheck=UpdateCheck.Never)]
+		public System.Data.Linq.Binary RowVer
+		{
+			get
+			{
+				return this._RowVer;
+			}
+			set
+			{
+				if ((this._RowVer != value))
+				{
+					this.OnRowVerChanging(value);
+					this.SendPropertyChanging();
+					this._RowVer = value;
+					this.SendPropertyChanged("RowVer");
+					this.OnRowVerChanged();
 				}
 			}
 		}
@@ -6409,7 +6433,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UploadedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UploadedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> UploadedAt
 		{
 			get
@@ -6688,7 +6712,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_TransactionDate", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_TransactionDate", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> TransactionDate
 		{
 			get
@@ -6728,7 +6752,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UpdatedAt", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UpdatedAt", DbType="DateTime2")]
 		public System.Nullable<System.DateTime> UpdatedAt
 		{
 			get
