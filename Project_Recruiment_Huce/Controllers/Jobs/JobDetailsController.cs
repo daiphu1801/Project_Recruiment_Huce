@@ -184,8 +184,29 @@ namespace Project_Recruiment_Huce.Controllers
                 var jobDetailsViewModel = MapToJobDetails(job);
                 var relatedJobsViewModels = relatedJobs.Select(j => MapToRelatedJob(j)).ToList();
 
-                ViewBag.RelatedJobs = relatedJobsViewModels;
+                // Check if job is saved by current candidate
+                bool isJobSaved = false;
+                if (User.Identity.IsAuthenticated)
+                {
+                    var roleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro");
+                    if (roleClaim != null && roleClaim.Value == "Candidate")
+                    {
+                        var accountIdClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                        if (accountIdClaim != null && int.TryParse(accountIdClaim.Value, out int accountId))
+                        {
+                            var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId);
+                            if (candidate != null)
+                            {
+                                isJobSaved = db.SavedJobs
+                                    .Any(sj => sj.CandidateID == candidate.CandidateID && 
+                                              sj.JobPostID == id.Value);
+                            }
+                        }
+                    }
+                }
 
+                ViewBag.RelatedJobs = relatedJobsViewModels;
+                ViewBag.IsJobSaved = isJobSaved;
                 return View(jobDetailsViewModel);
             }
         }

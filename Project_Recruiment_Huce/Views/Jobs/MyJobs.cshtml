@@ -207,12 +207,25 @@
                         <a href="@Url.Action("Details","JobDetails", new { id = job.JobPostID })" class="btn btn-sm btn-outline-primary">
                             <span class="icon-eye mr-1"></span>Xem chi tiết
                         </a>
+                        <a href="@Url.Action("MyApplications", "RecruitersApplication", new { jobId = job.JobPostID })" class="btn btn-sm btn-outline-info">
+                            <span class="icon-file-text mr-1"></span>Đơn ứng tuyển
+                        </a>
                         @if (job.Status == "Published")
                         {
-                            <a href="@Url.Action("Edit","JobsCreate", new { id = job.JobPostID })" class="btn btn-sm btn-outline-secondary">
+                            <a href="@Url.Action("Edit","Jobs", new { id = job.JobPostID })" class="btn btn-sm btn-outline-secondary">
                                 <span class="icon-edit mr-1"></span>Chỉnh sửa
                             </a>
-                            using (Html.BeginForm("CloseJob", "Jobs", FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bạn có chắc chắn muốn đóng tin tuyển dụng này? Candidates sẽ không thể ứng tuyển nữa.');" }))
+                            if (job.PendingApplicationsCount > 0)
+                            {
+                                <div class="alert alert-warning d-inline-block mb-0 ml-2" style="padding: 5px 10px; font-size: 0.875rem;">
+                                    <i class="icon-warning mr-1"></i>
+                                    <strong>Cảnh báo:</strong> Có @job.PendingApplicationsCount hồ sơ ứng viên đang trong quá trình xử lý. Vui lòng xử lý hết trước khi đóng tin.
+                                </div>
+                            }
+                            string confirmMessage = job.PendingApplicationsCount > 0 
+                                ? string.Format("Cảnh báo: Có {0} hồ sơ ứng viên đang trong quá trình xử lý. Bạn có chắc chắn muốn đóng tin tuyển dụng này? Candidates sẽ không thể ứng tuyển nữa.", job.PendingApplicationsCount)
+                                : "Bạn có chắc chắn muốn đóng tin tuyển dụng này? Candidates sẽ không thể ứng tuyển nữa.";
+                            using (Html.BeginForm("CloseJob", "Jobs", FormMethod.Post, new { @class = "d-inline", onsubmit = string.Format("return confirm('{0}');", confirmMessage.Replace("'", "\\'")) }))
                             {
                                 @Html.AntiForgeryToken()
                                 @Html.Hidden("id", job.JobPostID)
@@ -222,18 +235,37 @@
                                 </button>
                             }
                         }
-                        else if (job.Status == "Closed" || job.Status == "Expired")
+                        else if (job.Status == "Closed")
                         {
-                            <span class="badge badge-danger ml-2">@(job.Status == "Closed" ? "Đã đóng" : "Đã hết hạn")</span>
+                            <span class="badge badge-danger ml-2">Đã đóng</span>
+                            bool canReopen = true;
+                            bool deadlinePassed = job.ApplicationDeadline.HasValue && job.ApplicationDeadline.Value < DateTime.Now.Date;
+                            string reopenConfirmMessage = deadlinePassed 
+                                ? "Hạn nộp hồ sơ đã qua. Bạn sẽ được chuyển đến trang chỉnh sửa để cập nhật hạn nộp mới. Bạn có muốn tiếp tục?" 
+                                : "Bạn có chắc chắn muốn mở lại tin tuyển dụng này?";
+                            if (canReopen)
+                            {
+                                using (Html.BeginForm("ReopenJob", "Jobs", FormMethod.Post, new { @class = "d-inline", onsubmit = string.Format("return confirm('{0}');", reopenConfirmMessage.Replace("'", "\\'")) }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    @Html.Hidden("id", job.JobPostID)
+                                    <button type="submit" class="btn btn-sm btn-outline-success ml-2">
+                                        <span class="icon-check mr-1"></span>Mở lại tin
+                                    </button>
+                                }
+                            }
+                        }
+                        else if (job.Status == "Expired")
+                        {
+                            <span class="badge badge-danger ml-2">Đã hết hạn</span>
                         }
                     </div>
                 </div>
             }
-        }
 
-        @if (Model != null && Model.Any() && ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
-        {
-            <div class="row pagination-wrap">
+            if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
+            {
+                <div class="row pagination-wrap">
                     <div class="col-md-6 text-center text-md-left mb-4 mb-md-0">
                         @{
                             int startItem = ((ViewBag.CurrentPage - 1) * 10) + 1;

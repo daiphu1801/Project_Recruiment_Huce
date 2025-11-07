@@ -472,4 +472,51 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Companies_PhotoID' AN
     CREATE INDEX IX_Companies_PhotoID ON dbo.Companies(PhotoID);
 GO
 
+-- SavedJobs
+CREATE TABLE dbo.SavedJobs (
+    SavedJobID  INT IDENTITY(1,1) PRIMARY KEY,
+    CandidateID INT NOT NULL,
+    JobPostID   INT NOT NULL,
+    SavedAt     DATETIME2(0) NOT NULL DEFAULT SYSUTCDATETIME(),
+    Note        NVARCHAR(500) NULL,
+    CONSTRAINT UQ_SavedJobs_Candidate_Job UNIQUE (CandidateID, JobPostID),
+    CONSTRAINT FK_SavedJobs_Candidates FOREIGN KEY (CandidateID)
+        REFERENCES dbo.Candidates(CandidateID)
+        ON DELETE CASCADE,
+    CONSTRAINT FK_SavedJobs_JobPosts FOREIGN KEY (JobPostID)
+        REFERENCES dbo.JobPosts(JobPostID)
+        ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX IX_SavedJobs_Candidate_SavedAt
+    ON dbo.SavedJobs(CandidateID, SavedAt DESC);
+GO
+
+CREATE INDEX IX_SavedJobs_JobPost
+    ON dbo.SavedJobs(JobPostID);
+GO
+
+-- TRIGGER: Delete SavedJobs when JobPosts is closed
+CREATE TRIGGER dbo.trg_JobPosts_DeleteSavedWhenClosed
+ON dbo.JobPosts
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Chỉ xử lý khi Status thực sự thay đổi
+    IF UPDATE(Status)
+    BEGIN
+        DELETE sj
+        FROM dbo.SavedJobs sj
+        INNER JOIN inserted i ON sj.JobPostID = i.JobPostID
+        INNER JOIN deleted d ON d.JobPostID = i.JobPostID
+        WHERE (d.Status IS NULL OR d.Status NOT IN (N'Closed', N'Expired', N'Archived'))
+          AND i.Status IN (N'Closed', N'Expired', N'Archived');
+    END
+END;
+GO
+
+
 PRINT 'JOBPORTAL_EN schema created with Companies.PhotoID (FK -> ProfilePhotos). Done.';

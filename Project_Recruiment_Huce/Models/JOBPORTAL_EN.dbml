@@ -110,6 +110,7 @@
       <Association Name="Candidate_CandidateCertificate" Member="CandidateCertificates" ThisKey="CandidateID" OtherKey="CandidateID" Type="CandidateCertificate" />
       <Association Name="Candidate_Education" Member="Educations" ThisKey="CandidateID" OtherKey="CandidateID" Type="Education" />
       <Association Name="Candidate_ResumeFile" Member="ResumeFiles" ThisKey="CandidateID" OtherKey="CandidateID" Type="ResumeFile" />
+      <Association Name="Candidate_SavedJob" Member="SavedJobs" ThisKey="CandidateID" OtherKey="CandidateID" Type="SavedJob" />
       <Association Name="Account_Candidate" Member="Account" ThisKey="AccountID" OtherKey="AccountID" Type="Account" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
@@ -150,6 +151,7 @@
       <Column Name="PhotoID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="Company_JobPost" Member="JobPosts" ThisKey="CompanyID" OtherKey="CompanyID" Type="JobPost" />
       <Association Name="Company_Recruiter" Member="Recruiters" ThisKey="CompanyID" OtherKey="CompanyID" Type="Recruiter" />
+      <Association Name="ProfilePhoto_Company" Member="ProfilePhoto" ThisKey="PhotoID" OtherKey="PhotoID" Type="ProfilePhoto" IsForeignKey="true" DeleteRule="SET NULL" />
     </Type>
   </Table>
   <Table Name="dbo.Educations" Member="Educations">
@@ -206,6 +208,7 @@
       <Association Name="JobPost_Application" Member="Applications" ThisKey="JobPostID" OtherKey="JobPostID" Type="Application" />
       <Association Name="JobPost_JobPostDetail" Member="JobPostDetails" ThisKey="JobPostID" OtherKey="JobPostID" Type="JobPostDetail" />
       <Association Name="JobPost_PostingHistory" Member="PostingHistories" ThisKey="JobPostID" OtherKey="JobPostID" Type="PostingHistory" />
+      <Association Name="JobPost_SavedJob" Member="SavedJobs" ThisKey="JobPostID" OtherKey="JobPostID" Type="SavedJob" />
       <Association Name="Company_JobPost" Member="Company" ThisKey="CompanyID" OtherKey="CompanyID" Type="Company" IsForeignKey="true" />
       <Association Name="Recruiter_JobPost" Member="Recruiter" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="Recruiter" IsForeignKey="true" />
     </Type>
@@ -254,6 +257,7 @@
       <Column Name="FileFormat" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Column Name="UploadedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
       <Association Name="ProfilePhoto_Account" Member="Accounts" ThisKey="PhotoID" OtherKey="PhotoID" Type="Account" />
+      <Association Name="ProfilePhoto_Company" Member="Companies" ThisKey="PhotoID" OtherKey="PhotoID" Type="Company" />
     </Type>
   </Table>
   <Table Name="dbo.Recruiters" Member="Recruiters">
@@ -285,6 +289,17 @@
       <Column Name="FilePath" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
       <Column Name="UploadedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
       <Association Name="Candidate_ResumeFile" Member="Candidate" ThisKey="CandidateID" OtherKey="CandidateID" Type="Candidate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.SavedJobs" Member="SavedJobs">
+    <Type Name="SavedJob">
+      <Column Name="SavedJobID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="CandidateID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="JobPostID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="SavedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="Note" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
+      <Association Name="Candidate_SavedJob" Member="Candidate" ThisKey="CandidateID" OtherKey="CandidateID" Type="Candidate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="JobPost_SavedJob" Member="JobPost" ThisKey="JobPostID" OtherKey="JobPostID" Type="JobPost" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
   <Table Name="dbo.Transactions" Member="Transactions">

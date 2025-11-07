@@ -1,7 +1,6 @@
 @model Project_Recruiment_Huce.Models.Jobs.JobCreateViewModel
 @{
-    bool isEditMode = ViewBag.IsEditMode != null && (bool)ViewBag.IsEditMode;
-    ViewBag.Title = isEditMode ? "Chỉnh sửa tin tuyển dụng" : "Đăng tin tuyển dụng";
+    ViewBag.Title = "Chỉnh sửa tin tuyển dụng";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -14,11 +13,11 @@
     <div class="container">
         <div class="row">
             <div class="col-md-7">
-                <h1 class="text-white font-weight-bold">@(isEditMode ? "Chỉnh sửa tin tuyển dụng" : "Đăng tin tuyển dụng")</h1>
+                <h1 class="text-white font-weight-bold">Chỉnh sửa tin tuyển dụng</h1>
                 <div class="custom-breadcrumbs">
                     <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
                     <a href="@Url.Action("MyJobs","Jobs")">Tin tuyển dụng của tôi</a> <span class="mx-2 slash">/</span>
-                    <span class="text-white"><strong>@(isEditMode ? "Chỉnh sửa" : "Đăng tin tuyển dụng")</strong></span>
+                    <span class="text-white"><strong>Chỉnh sửa</strong></span>
                 </div>
             </div>
         </div>
@@ -49,11 +48,11 @@
                     </div>
                 }
 
-                @using (Html.BeginForm(isEditMode ? "Edit" : "JobsCreate", "Jobs", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "job-create-form" }))
+                @using (Html.BeginForm("Edit", "Jobs", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "job-edit-form" }))
                 {
                     @Html.AntiForgeryToken()
                     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-                    if (isEditMode && ViewBag.JobPostID != null)
+                    if (ViewBag.JobPostID != null)
                     {
                         <input type="hidden" name="id" value="@ViewBag.JobPostID" />
                     }
@@ -109,7 +108,7 @@
 
                     <div class="form-group">
                         <label for="ApplicationDeadline">Hạn nộp hồ sơ</label>
-                        @Html.TextBoxFor(m => m.ApplicationDeadline, new { @class = "form-control", type = "date" })
+                        @Html.TextBoxFor(m => m.ApplicationDeadline, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
                         @Html.ValidationMessageFor(m => m.ApplicationDeadline, "", new { @class = "text-danger" })
                     </div>
 
@@ -201,7 +200,7 @@
 
                     <div class="text-right mt-4">
                         <a href="@Url.Action("MyJobs", "Jobs")" class="btn btn-secondary btn-md mr-2">Hủy</a>
-                        <button type="submit" class="btn btn-primary btn-md">@(isEditMode ? "Cập nhật tin tuyển dụng" : "Đăng tin tuyển dụng")</button>
+                        <button type="submit" class="btn btn-primary btn-md">Cập nhật tin tuyển dụng</button>
                     </div>
                 }
             </div>
@@ -281,7 +280,7 @@
     }
 
     // Update textarea fields before form submit
-    document.getElementById('job-create-form').addEventListener('submit', function(e) {
+    document.getElementById('job-edit-form').addEventListener('submit', function(e) {
         // Prevent default submission to ensure values are set
         e.preventDefault();
         

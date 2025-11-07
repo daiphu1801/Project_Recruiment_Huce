@@ -44,6 +44,44 @@ namespace Project_Recruiment_Huce.Controllers
                 // Get total jobs count
                 var totalJobsCount = db.JobPosts.Count(j => j.Status == "Published");
 
+                // Get distinct locations from published jobs for filter dropdown
+                var locations = db.JobPosts
+                    .Where(j => j.Status == "Published" && j.Location != null)
+                    .Select(j => j.Location)
+                    .ToList()
+                    .Where(l => !string.IsNullOrEmpty(l))
+                    .Distinct()
+                    .OrderBy(l => l)
+                    .ToList();
+
+                // Get popular keywords (most common words in job titles)
+                var popularKeywords = new List<string>();
+                try
+                {
+                    var jobTitles = db.JobPosts
+                        .Where(j => j.Status == "Published" && j.Title != null)
+                        .Select(j => j.Title)
+                        .ToList()
+                        .Where(t => !string.IsNullOrEmpty(t))
+                        .ToList();
+                    
+                    var keywords = jobTitles
+                        .SelectMany(title => title.Split(new[] { ' ', ',', '.', '-', '_', '/', '\\' }, StringSplitOptions.RemoveEmptyEntries))
+                        .Where(word => word.Length > 3 && !word.All(char.IsDigit))
+                        .GroupBy(word => word.ToLower())
+                        .OrderByDescending(g => g.Count())
+                        .Take(10)
+                        .Select(g => g.Key)
+                        .ToList();
+                    
+                    popularKeywords = keywords;
+                }
+                catch
+                {
+                    // Fallback to default keywords if extraction fails
+                    popularKeywords = new List<string> { "Developer", "Designer", "Manager", "Engineer", "Analyst" };
+                }
+
                 var viewModel = new HomeIndexViewModel
                 {
                     TotalCandidates = totalCandidates,
@@ -53,6 +91,9 @@ namespace Project_Recruiment_Huce.Controllers
                     RecentJobs = jobViewModels,
                     TotalJobsCount = totalJobsCount
                 };
+
+                ViewBag.Locations = locations;
+                ViewBag.PopularKeywords = popularKeywords;
 
                 return View(viewModel);
             }

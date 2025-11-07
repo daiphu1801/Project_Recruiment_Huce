@@ -174,7 +174,9 @@
     <Compile Include="Controllers\Accounts\AccountController.cs" />
     <Compile Include="Controllers\Candidates\CandidatesController.cs" />
     <Compile Include="Controllers\Candidates\ResumeFilesController.cs" />
+    <Compile Include="Controllers\Candidates\SavedJobsController.cs" />
     <Compile Include="Controllers\Recruiters\RecruitersController.cs" />
+    <Compile Include="Controllers\Recruiters\RecruitersApplicationController.cs" />
     <Compile Include="Controllers\Companies\CompaniesController.cs" />
     <Compile Include="Controllers\Jobs\JobsController.cs" />
     <Compile Include="Controllers\Jobs\JobDetailsController.cs" />
@@ -186,8 +188,11 @@
     <Compile Include="Models\Accounts\ManageViewModels.cs" />
     <Compile Include="Models\Candidates\CandidateManageViewModel.cs" />
     <Compile Include="Models\Candidates\ApplicationListViewModel.cs" />
+    <Compile Include="Models\Candidates\ApplicationApplyViewModel.cs" />
     <Compile Include="Models\Candidates\ResumeFileViewModel.cs" />
+    <Compile Include="Models\Candidates\SavedJobViewModel.cs" />
     <Compile Include="Models\Companies\CompanyManageViewModel.cs" />
+    <Compile Include="Models\Recruiters\RecruiterApplicationViewModel.cs" />
     <Compile Include="Models\Home\HomeIndexViewModel.cs" />
     <Compile Include="Models\Jobs\JobViewModels.cs" />
     <Compile Include="Models\Jobs\JobCreateViewModel.cs" />
@@ -278,8 +283,8 @@
     <Content Include="Scripts\Admin\js\adminlte.min.js.map" />
     <Content Include="Models\JOBPORTAL_EN.dbml">
       <Generator>MSLinqToSQLGenerator</Generator>
-      <LastGenOutput>JOBPORTAL_EN.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>JOBPORTAL_EN1.designer.cs</LastGenOutput>
     </Content>
     <Content Include="Areas\Admin\Views\Photos\Create.cshtml" />
     <Content Include="Areas\Admin\Views\Photos\Delete.cshtml" />
@@ -318,7 +323,8 @@
     <Content Include="Views\Account\Manage.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Candidates\MyApplications.cshtml" />
-    <Content Include="Views\Candidates\CandidatesManage.cshtml" /> 
+    <Content Include="Views\Candidates\CandidatesManage.cshtml" />
+    <Content Include="Views\SavedJobs\MySavedJobs.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
