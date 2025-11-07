@@ -130,19 +130,23 @@
             <ul class="site-menu js-clone-nav d-none d-xl-block ml-0 pl-0">
               <li><a href="@Url.Action("Index","Home")" class="nav-link">Trang chủ</a></li>
               <li><a href="@Url.Action("About","Home")">Giới thiệu</a></li>
-              <li class="has-children">
-                <a href="@Url.Action("JobsListing","Jobs")">Việc làm</a>
-                <ul class="dropdown">
-                  @{ var roleClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro") : null; }
-                  @if (Request.IsAuthenticated && roleClaim != null && roleClaim.Value == "Recruiter")
-                  {
+              @{ var roleClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro") : null; }
+              @if (Request.IsAuthenticated && roleClaim != null && roleClaim.Value == "Recruiter")
+              {
+                <li class="has-children">
+                  <a href="@Url.Action("JobsListing","Jobs")">Việc làm</a>
+                  <ul class="dropdown">
                     <li><a href="@Url.Action("JobsCreate","Jobs")" style="display: flex; align-items: center;">
                       <span class="icon-plus mr-3" style="width: 20px; text-align: center; color: #28a745;"></span>
                       <span>Đăng tin tuyển dụng</span>
                     </a></li>
-                  }
-                </ul>
-              </li>
+                  </ul>
+                </li>
+              }
+              else
+              {
+                <li><a href="@Url.Action("JobsListing","Jobs")">Việc làm</a></li>
+              }
               @if (Request.IsAuthenticated && roleClaim != null)
               {
                 if (roleClaim.Value == "Candidate")
