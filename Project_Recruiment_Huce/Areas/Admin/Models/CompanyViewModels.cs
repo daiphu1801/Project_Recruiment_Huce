@@ -153,5 +153,3 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         }
     }
 }
-
-
