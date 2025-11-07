@@ -214,7 +214,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     CompanyEmail = company.CompanyEmail ?? string.Empty,
                     Website = company.Website ?? string.Empty,
                     Description = company.Description ?? string.Empty,
-                    ActiveFlag = company.ActiveFlag
+                    ActiveFlag = company.ActiveFlag,
+                    Active = company.ActiveFlag == 1
                 };
 
                 ViewBag.Title = "Sửa công ty";
@@ -235,6 +236,12 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             // Validate model first
             if (!ModelState.IsValid)
             {
+                // Re-populate ViewBag if needed and ensure Active is set
+                var companyForActive = db.Companies.FirstOrDefault(c => c.CompanyID == model.CompanyId);
+                if (companyForActive != null)
+                {
+                    model.ActiveFlag = companyForActive.ActiveFlag;
+                }
                 return View(model);
             }
 
@@ -299,7 +306,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 company.CompanyEmail = model.CompanyEmail;
                 company.Website = model.Website;
                 company.Description = model.Description;
-                company.ActiveFlag = model.ActiveFlag;
+                company.ActiveFlag = model.Active ? (byte)1 : (byte)0;
 
                 db.SubmitChanges();
 
@@ -360,3 +367,4 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         }
     }
 }
+
