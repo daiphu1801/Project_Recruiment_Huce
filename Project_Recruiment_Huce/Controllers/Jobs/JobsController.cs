@@ -41,7 +41,7 @@ namespace Project_Recruiment_Huce.Controllers
         /// <summary>
         /// Map JobPost entity to JobListingItemViewModel
         /// </summary>
-        private JobListingItemViewModel MapToJobListingItem(JobPost job)
+        private JobListingItemViewModel MapToJobListingItem(JobPost job, JOBPORTAL_ENDataContext db = null)
         {
             string companyName = job.Company != null ? job.Company.CompanyName : 
                                 (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
@@ -51,14 +51,26 @@ namespace Project_Recruiment_Huce.Controllers
             if (job.Company?.PhotoID.HasValue == true)
             {
                 var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-                using (var db = new JOBPORTAL_ENDataContext(connectionString))
+                using (var logoDb = new JOBPORTAL_ENDataContext(connectionString))
                 {
-                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == job.Company.PhotoID.Value);
+                    var photo = logoDb.ProfilePhotos.FirstOrDefault(p => p.PhotoID == job.Company.PhotoID.Value);
                     if (photo != null && !string.IsNullOrEmpty(photo.FilePath))
                     {
                         logoUrl = photo.FilePath;
                     }
                 }
+            }
+            
+            // Calculate pending applications count if db context is provided
+            int pendingCount = 0;
+            if (db != null)
+            {
+                var pendingStatuses = new[] { "Under review", "Interview", "Offered" };
+                pendingCount = db.Applications
+                    .Where(a => a.JobPostID == job.JobPostID && 
+                               a.Status != null && 
+                               pendingStatuses.Contains(a.Status))
+                    .Count();
             }
             
             return new JobListingItemViewModel
@@ -78,7 +90,8 @@ namespace Project_Recruiment_Huce.Controllers
                 PostedAt = job.PostedAt,
                 ApplicationDeadline = job.ApplicationDeadline,
                 Status = job.Status,
-                LogoUrl = logoUrl
+                LogoUrl = logoUrl,
+                PendingApplicationsCount = pendingCount
             };
         }
 
@@ -240,8 +253,8 @@ namespace Project_Recruiment_Huce.Controllers
                     .Take(pageSize)
                     .ToList();
 
-                // Map to ViewModels
-                var jobViewModels = pagedJobs.Select(j => MapToJobListingItem(j)).ToList();
+                // Map to ViewModels with db context for pending applications count
+                var jobViewModels = pagedJobs.Select(j => MapToJobListingItem(j, db)).ToList();
 
                 ViewBag.TotalItems = totalItems;
                 ViewBag.CurrentPage = pageNumber;
@@ -511,6 +524,274 @@ namespace Project_Recruiment_Huce.Controllers
         }
 
         /// <summary>
+        /// GET: Jobs/Edit
+        /// Hiển thị form chỉnh sửa tin tuyển dụng
+        /// </summary>
+        [Authorize]
+        [HttpGet]
+        public ActionResult Edit(int? id)
+        {
+            var accountId = GetCurrentAccountId();
+            if (accountId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var recruiterId = GetCurrentRecruiterId(accountId);
+            if (recruiterId == null)
+            {
+                TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để chỉnh sửa tin tuyển dụng.";
+                return RedirectToAction("RecruitersManage", "Recruiters");
+            }
+
+            if (!id.HasValue)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng.";
+                return RedirectToAction("MyJobs", "Jobs");
+            }
+
+            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
+            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            {
+                db.ObjectTrackingEnabled = false;
+
+                // Load job and verify it belongs to this recruiter
+                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
+                if (job == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng hoặc bạn không có quyền chỉnh sửa tin này.";
+                    return RedirectToAction("MyJobs", "Jobs");
+                }
+
+                // Load job details
+                var jobDetail = db.JobPostDetails.FirstOrDefault(jd => jd.JobPostID == job.JobPostID);
+
+                // Convert employment type from database format to Vietnamese
+                string employmentType = job.EmploymentType;
+                if (!string.IsNullOrWhiteSpace(employmentType))
+                {
+                    if (employmentType == "Part-time")
+                        employmentType = "Bán thời gian";
+                    else if (employmentType == "Full-time")
+                        employmentType = "Toàn thời gian";
+                }
+
+                // Map to ViewModel
+                var viewModel = new JobCreateViewModel
+                {
+                    Title = job.Title,
+                    Description = job.Description,
+                    Requirements = job.Requirements,
+                    SalaryFrom = job.SalaryFrom,
+                    SalaryTo = job.SalaryTo,
+                    SalaryCurrency = job.SalaryCurrency ?? "VND",
+                    Location = job.Location,
+                    EmploymentType = employmentType,
+                    ApplicationDeadline = job.ApplicationDeadline,
+                    JobCode = job.JobCode,
+                    CompanyID = job.CompanyID,
+                    Industry = jobDetail?.Industry,
+                    Major = jobDetail?.Major,
+                    YearsExperience = jobDetail?.YearsExperience,
+                    DegreeRequired = jobDetail?.DegreeRequired,
+                    Skills = jobDetail?.Skills,
+                    Headcount = jobDetail?.Headcount ?? 1,
+                    GenderRequirement = jobDetail?.GenderRequirement ?? "Not required",
+                    AgeFrom = jobDetail?.AgeFrom,
+                    AgeTo = jobDetail?.AgeTo
+                };
+
+                // Load companies for dropdown
+                var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
+                ViewBag.Companies = companies.Select(c => new SelectListItem
+                {
+                    Value = c.CompanyID.ToString(),
+                    Text = c.CompanyName,
+                    Selected = c.CompanyID == job.CompanyID
+                }).ToList();
+
+                ViewBag.JobPostID = job.JobPostID;
+
+                return View(viewModel);
+            }
+        }
+
+        /// <summary>
+        /// POST: Jobs/Edit
+        /// Cập nhật tin tuyển dụng
+        /// </summary>
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int? id, JobCreateViewModel viewModel)
+        {
+            var accountId = GetCurrentAccountId();
+            if (accountId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var recruiterId = GetCurrentRecruiterId(accountId);
+            if (recruiterId == null)
+            {
+                TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để chỉnh sửa tin tuyển dụng.";
+                return RedirectToAction("RecruitersManage", "Recruiters");
+            }
+
+            if (!id.HasValue)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng.";
+                return RedirectToAction("MyJobs", "Jobs");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Reload companies for dropdown
+                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
+                using (var db = new JOBPORTAL_ENDataContext(connectionString))
+                {
+                    var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
+                    ViewBag.Companies = companies.Select(c => new SelectListItem
+                    {
+                        Value = c.CompanyID.ToString(),
+                        Text = c.CompanyName
+                    }).ToList();
+                }
+                ViewBag.JobPostID = id.Value;
+                return View(viewModel);
+            }
+
+            var connectionString2 = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
+            using (var db = new JOBPORTAL_ENDataContext(connectionString2))
+            {
+                // Get job and verify it belongs to this recruiter
+                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
+                if (job == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng hoặc bạn không có quyền chỉnh sửa tin này.";
+                    return RedirectToAction("MyJobs", "Jobs");
+                }
+
+                // Validate SalaryTo >= SalaryFrom
+                if (viewModel.SalaryFrom.HasValue && viewModel.SalaryTo.HasValue && viewModel.SalaryTo < viewModel.SalaryFrom)
+                {
+                    ModelState.AddModelError("SalaryTo", "Lương đến phải lớn hơn hoặc bằng lương từ");
+                    var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
+                    ViewBag.Companies = companies.Select(c => new SelectListItem
+                    {
+                        Value = c.CompanyID.ToString(),
+                        Text = c.CompanyName
+                    }).ToList();
+                    ViewBag.JobPostID = id.Value;
+                    return View(viewModel);
+                }
+
+                // Validate AgeTo >= AgeFrom
+                if (viewModel.AgeFrom.HasValue && viewModel.AgeTo.HasValue && viewModel.AgeTo < viewModel.AgeFrom)
+                {
+                    ModelState.AddModelError("AgeTo", "Độ tuổi đến phải lớn hơn hoặc bằng độ tuổi từ");
+                    var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
+                    ViewBag.Companies = companies.Select(c => new SelectListItem
+                    {
+                        Value = c.CompanyID.ToString(),
+                        Text = c.CompanyName
+                    }).ToList();
+                    ViewBag.JobPostID = id.Value;
+                    return View(viewModel);
+                }
+
+                // Sanitize HTML content
+                string sanitizedDescription = null;
+                if (!string.IsNullOrWhiteSpace(viewModel.Description))
+                {
+                    string rawDescription = viewModel.Description.Trim();
+                    if (!string.IsNullOrEmpty(rawDescription))
+                    {
+                        sanitizedDescription = HtmlSanitizerHelper.Sanitize(rawDescription);
+                        if (string.IsNullOrWhiteSpace(sanitizedDescription))
+                        {
+                            sanitizedDescription = rawDescription;
+                        }
+                    }
+                }
+
+                string sanitizedRequirements = null;
+                if (!string.IsNullOrWhiteSpace(viewModel.Requirements))
+                {
+                    string rawRequirements = viewModel.Requirements.Trim();
+                    if (!string.IsNullOrEmpty(rawRequirements))
+                    {
+                        sanitizedRequirements = HtmlSanitizerHelper.Sanitize(rawRequirements);
+                        if (string.IsNullOrWhiteSpace(sanitizedRequirements))
+                        {
+                            sanitizedRequirements = rawRequirements;
+                        }
+                    }
+                }
+
+                // Convert employment type from Vietnamese to database format
+                string employmentType = viewModel.EmploymentType;
+                if (!string.IsNullOrWhiteSpace(employmentType))
+                {
+                    if (employmentType == "Bán thời gian")
+                        employmentType = "Part-time";
+                    else if (employmentType == "Toàn thời gian")
+                        employmentType = "Full-time";
+                }
+
+                // Update JobPost
+                job.Title = viewModel.Title;
+                job.Description = sanitizedDescription;
+                job.Requirements = sanitizedRequirements;
+                job.SalaryFrom = viewModel.SalaryFrom;
+                job.SalaryTo = viewModel.SalaryTo;
+                job.SalaryCurrency = viewModel.SalaryCurrency ?? "VND";
+                job.Location = viewModel.Location;
+                job.EmploymentType = employmentType;
+                job.ApplicationDeadline = viewModel.ApplicationDeadline;
+                job.UpdatedAt = DateTime.Now;
+                // Keep existing PostedAt if it exists, otherwise set to now
+                if (!job.PostedAt.HasValue)
+                {
+                    job.PostedAt = DateTime.Now;
+                }
+
+                db.SubmitChanges();
+
+                // Update or create JobPostDetail
+                var jobDetail = db.JobPostDetails.FirstOrDefault(jd => jd.JobPostID == job.JobPostID);
+                if (jobDetail == null)
+                {
+                    jobDetail = new JobPostDetail
+                    {
+                        JobPostID = job.JobPostID,
+                        Status = job.Status ?? "Published"
+                    };
+                    db.JobPostDetails.InsertOnSubmit(jobDetail);
+                }
+
+                string sanitizedSkills = string.IsNullOrWhiteSpace(viewModel.Skills)
+                    ? null
+                    : HtmlSanitizerHelper.Sanitize(viewModel.Skills);
+
+                jobDetail.Industry = viewModel.Industry ?? "Khác";
+                jobDetail.Major = viewModel.Major;
+                jobDetail.YearsExperience = viewModel.YearsExperience ?? 0;
+                jobDetail.DegreeRequired = viewModel.DegreeRequired;
+                jobDetail.Skills = sanitizedSkills;
+                jobDetail.Headcount = viewModel.Headcount ?? 1;
+                jobDetail.GenderRequirement = viewModel.GenderRequirement ?? "Not required";
+                jobDetail.AgeFrom = viewModel.AgeFrom;
+                jobDetail.AgeTo = viewModel.AgeTo;
+
+                db.SubmitChanges();
+
+                TempData["SuccessMessage"] = "Cập nhật tin tuyển dụng thành công!";
+                return RedirectToAction("MyJobs", "Jobs");
+            }
+        }
+
+        /// <summary>
         /// POST: Jobs/CloseJob
         /// Đóng hoặc hết hạn tin tuyển dụng
         /// </summary>
@@ -556,6 +837,20 @@ namespace Project_Recruiment_Huce.Controllers
                     return RedirectToAction("MyJobs", "Jobs");
                 }
 
+                // Kiểm tra xem có hồ sơ ứng viên đang trong quá trình xử lý không
+                var pendingStatuses = new[] { "Under review", "Interview", "Offered" };
+                var pendingApplications = db.Applications
+                    .Where(a => a.JobPostID == id.Value && 
+                               a.Status != null && 
+                               pendingStatuses.Contains(a.Status))
+                    .Count();
+
+                if (pendingApplications > 0)
+                {
+                    TempData["ErrorMessage"] = $"Không thể đóng tin tuyển dụng này. Vui lòng xử lý hết {pendingApplications} hồ sơ ứng viên đang trong quá trình xử lý (Đang xem xét, Phỏng vấn, hoặc Đã đề xuất) trước khi đóng tin.";
+                    return RedirectToAction("MyJobs", "Jobs");
+                }
+
                 // Update status
                 job.Status = status;
                 job.UpdatedAt = DateTime.Now;
@@ -567,6 +862,92 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyJobs", "Jobs");
             }
         }
+
+        /// <summary>
+        /// POST: Jobs/ReopenJob
+        /// Mở lại tin tuyển dụng đã đóng
+        /// </summary>
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ReopenJob(int? id)
+        {
+            var accountId = GetCurrentAccountId();
+            if (accountId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var recruiterId = GetCurrentRecruiterId(accountId);
+            if (recruiterId == null)
+            {
+                TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để thực hiện thao tác này.";
+                return RedirectToAction("MyJobs", "Jobs");
+            }
+
+            if (!id.HasValue)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng.";
+                return RedirectToAction("MyJobs", "Jobs");
+            }
+
+            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
+            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            {
+                // Get job and verify it belongs to this recruiter
+                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
+                
+                if (job == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng hoặc bạn không có quyền thực hiện thao tác này.";
+                    return RedirectToAction("MyJobs", "Jobs");
+                }
+
+                // Chỉ cho phép mở lại tin có status "Closed", không cho phép mở lại "Expired"
+                if (job.Status != "Closed")
+                {
+                    if (job.Status == "Expired")
+                    {
+                        TempData["ErrorMessage"] = "Không thể mở lại tin đã hết hạn. Vui lòng tạo tin tuyển dụng mới hoặc cập nhật hạn nộp trước khi mở lại.";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Chỉ có thể mở lại tin tuyển dụng đã đóng.";
+                    }
+                    return RedirectToAction("MyJobs", "Jobs");
+                }
+
+                // Kiểm tra ApplicationDeadline - nếu đã quá hạn, cần cảnh báo
+                bool isDeadlinePassed = job.ApplicationDeadline.HasValue && 
+                                       job.ApplicationDeadline.Value < DateTime.Now.Date;
+
+                if (isDeadlinePassed)
+                {
+                    // Vẫn cho phép mở lại nhưng cảnh báo cần cập nhật deadline
+                    // Có thể tự động cập nhật deadline thêm 30 ngày hoặc yêu cầu user cập nhật
+                    // Ở đây ta sẽ cảnh báo và yêu cầu user cập nhật deadline
+                    TempData["WarningMessage"] = "Hạn nộp hồ sơ đã qua. Vui lòng cập nhật hạn nộp mới trước khi mở lại tin tuyển dụng.";
+                    // Redirect đến trang edit để cập nhật deadline
+                    return RedirectToAction("Edit", "JobsCreate", new { id = job.JobPostID });
+                }
+
+                // Update status to Published
+                job.Status = "Published";
+                job.UpdatedAt = DateTime.Now;
+                
+                // Nếu PostedAt chưa có, set nó
+                if (!job.PostedAt.HasValue)
+                {
+                    job.PostedAt = DateTime.Now;
+                }
+                
+                db.SubmitChanges();
+
+                TempData["SuccessMessage"] = "Đã mở lại tin tuyển dụng thành công!";
+                return RedirectToAction("MyJobs", "Jobs");
+            }
+        }
+
     }
 }
 

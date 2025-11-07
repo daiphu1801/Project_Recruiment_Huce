@@ -13,28 +13,61 @@
               <h1 class="text-white font-weight-bold">Cách Dễ Dàng Nhất Để Tìm Công Việc Mơ Ước</h1>
               <p>Tìm kiếm và ứng tuyển công việc phù hợp với bạn một cách nhanh chóng và hiệu quả.</p>
             </div>
-            <form method="post" class="search-jobs-form">
+            <form method="get" action="@Url.Action("JobsListing", "Jobs")" class="search-jobs-form">
               <div class="row mb-5">
                 <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                  <input type="text" class="form-control form-control-lg" placeholder="Tên công việc, Công ty...">
+                  <input type="text" name="keyword" id="keyword" class="form-control form-control-lg" placeholder="Tên công việc, Công ty..." value="@Request.QueryString["keyword"]">
                 </div>
                 <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                  <select class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Chọn khu vực">
-                    <option>Bất kỳ đâu</option>
-                    <option>Hà Nội</option>
-                    <option>Hồ Chí Minh</option>
-                    <option>Đà Nẵng</option>
-                    <option>Hải Phòng</option>
-                    <option>Cần Thơ</option>
-                    <option>An Giang</option>
-                    <option>Bà Rịa - Vũng Tàu</option>
-                    <option>Bình Dương</option>
+                  <select name="location" id="location" class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Chọn khu vực">
+                    <option value="">Bất kỳ đâu</option>
+                    @if (ViewBag.Locations != null)
+                    {
+                      foreach (var loc in (List<string>)ViewBag.Locations)
+                      {
+                        var isSelected = Request.QueryString["location"] == loc;
+                        if (isSelected)
+                        {
+                          <option value="@loc" selected>@loc</option>
+                        }
+                        else
+                        {
+                          <option value="@loc">@loc</option>
+                        }
+                      }
+                    }
+                    else
+                    {
+                      <option>Hà Nội</option>
+                      <option>Hồ Chí Minh</option>
+                      <option>Đà Nẵng</option>
+                      <option>Hải Phòng</option>
+                      <option>Cần Thơ</option>
+                    }
                   </select>
                 </div>
                 <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                  <select class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Chọn loại công việc">
-                    <option>Bán thời gian</option>
-                    <option>Toàn thời gian</option>
+                  <select name="employmentType" id="employmentType" class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Chọn loại công việc">
+                    <option value="">Tất cả</option>
+                    @{
+                      var selectedEmpType = Request.QueryString["employmentType"];
+                    }
+                    @if (selectedEmpType == "Bán thời gian")
+                    {
+                      <option value="Bán thời gian" selected>Bán thời gian</option>
+                    }
+                    else
+                    {
+                      <option value="Bán thời gian">Bán thời gian</option>
+                    }
+                    @if (selectedEmpType == "Toàn thời gian")
+                    {
+                      <option value="Toàn thời gian" selected>Toàn thời gian</option>
+                    }
+                    else
+                    {
+                      <option value="Toàn thời gian">Toàn thời gian</option>
+                    }
                   </select>
                 </div>
                 <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
@@ -45,9 +78,19 @@
                 <div class="col-md-12 popular-keywords">
                   <h3>Từ khóa phổ biến:</h3>
                   <ul class="keywords list-unstyled m-0 p-0">
-                    <li><a href="#" class="">UI Designer</a></li>
-                    <li><a href="#" class="">Python</a></li>
-                    <li><a href="#" class="">Developer</a></li>
+                    @if (ViewBag.PopularKeywords != null && ((List<string>)ViewBag.PopularKeywords).Any())
+                    {
+                      foreach (var keyword in ((List<string>)ViewBag.PopularKeywords).Take(5))
+                      {
+                        <li><a href="@Url.Action("JobsListing", "Jobs", new { keyword = keyword })" class="">@keyword</a></li>
+                      }
+                    }
+                    else
+                    {
+                      <li><a href="@Url.Action("JobsListing", "Jobs", new { keyword = "Developer" })" class="">Developer</a></li>
+                      <li><a href="@Url.Action("JobsListing", "Jobs", new { keyword = "Designer" })" class="">Designer</a></li>
+                      <li><a href="@Url.Action("JobsListing", "Jobs", new { keyword = "Manager" })" class="">Manager</a></li>
+                    }
                   </ul>
                 </div>
               </div>
@@ -303,3 +346,14 @@
         </div>
       </div>
     </section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Khởi tạo lại selectpicker để hiển thị giá trị đã chọn
+            if (typeof $().selectpicker !== 'undefined') {
+                $('.selectpicker').selectpicker('refresh');
+            }
+        });
+    </script>
+}
