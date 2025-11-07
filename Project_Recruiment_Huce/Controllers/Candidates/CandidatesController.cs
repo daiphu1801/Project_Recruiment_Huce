@@ -301,6 +301,266 @@ namespace Project_Recruiment_Huce.Controllers
 
             return "Thỏa thuận";
         }
+
+        /// <summary>
+        /// GET: Candidates/Apply
+        /// Hiển thị form ứng tuyển
+        /// </summary>
+        [HttpGet]
+        public ActionResult Apply(int? jobId)
+        {
+            var accountId = GetCurrentAccountId();
+            if (accountId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!jobId.HasValue)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy công việc.";
+                return RedirectToAction("JobsListing", "Jobs");
+            }
+
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            {
+                // Load related entities
+                var loadOptions = new System.Data.Linq.DataLoadOptions();
+                loadOptions.LoadWith<JobPost>(j => j.Company);
+                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
+                loadOptions.LoadWith<Recruiter>(r => r.Company);
+                db.LoadOptions = loadOptions;
+
+                // Get job post
+                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == jobId.Value);
+                if (job == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy công việc.";
+                    return RedirectToAction("JobsListing", "Jobs");
+                }
+
+                // Check if job is still open
+                if (job.Status != "Published")
+                {
+                    TempData["ErrorMessage"] = "Công việc này không còn nhận đơn ứng tuyển.";
+                    return RedirectToAction("Details", "JobDetails", new { id = jobId.Value });
+                }
+
+                // Check deadline
+                if (job.ApplicationDeadline.HasValue && job.ApplicationDeadline.Value < DateTime.Now.Date)
+                {
+                    TempData["ErrorMessage"] = "Hạn nộp hồ sơ đã qua.";
+                    return RedirectToAction("Details", "JobDetails", new { id = jobId.Value });
+                }
+
+                // Get candidate
+                var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
+                if (candidate == null)
+                {
+                    TempData["ErrorMessage"] = "Vui lòng hoàn thiện hồ sơ trước khi ứng tuyển.";
+                    return RedirectToAction("CandidatesManage");
+                }
+
+                // Check if already applied
+                var existingApplication = db.Applications.FirstOrDefault(a => a.CandidateID == candidate.CandidateID && a.JobPostID == jobId.Value);
+                if (existingApplication != null)
+                {
+                    TempData["WarningMessage"] = "Bạn đã ứng tuyển công việc này rồi.";
+                    return RedirectToAction("Details", "JobDetails", new { id = jobId.Value });
+                }
+
+                // Get candidate photo
+                string photoUrl = "/Content/images/person_1.jpg";
+                if (candidate.PhotoID.HasValue)
+                {
+                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == candidate.PhotoID.Value);
+                    if (photo != null && !string.IsNullOrEmpty(photo.FilePath))
+                    {
+                        photoUrl = photo.FilePath;
+                    }
+                }
+
+                // Get available resumes
+                var resumeFiles = db.ResumeFiles
+                    .Where(rf => rf.CandidateID == candidate.CandidateID)
+                    .OrderByDescending(rf => rf.UploadedAt)
+                    .ToList();
+
+                var availableResumes = resumeFiles.Select(rf => new ResumeFileViewModel
+                {
+                    ResumeFileID = rf.ResumeFileID,
+                    CandidateID = rf.CandidateID,
+                    FileName = rf.FileName,
+                    FilePath = rf.FilePath,
+                    UploadedAt = rf.UploadedAt,
+                    FileExtension = Path.GetExtension(rf.FileName ?? "")?.ToLower() ?? "",
+                    DisplayName = string.IsNullOrEmpty(rf.FileName) ? "CV không tên" : Path.GetFileNameWithoutExtension(rf.FileName)
+                }).ToList();
+
+                // Get company name
+                string companyName = job.Company != null ? job.Company.CompanyName :
+                                   (job.Recruiter?.Company != null ? job.Recruiter.Company.CompanyName : "N/A");
+
+                // Build ViewModel
+                var viewModel = new ApplicationApplyViewModel
+                {
+                    JobPostID = job.JobPostID,
+                    JobTitle = job.Title,
+                    CompanyName = companyName,
+                    Location = job.Location,
+                    SalaryRange = FormatSalaryRange(job.SalaryFrom, job.SalaryTo, job.SalaryCurrency),
+                    ApplicationDeadline = job.ApplicationDeadline,
+                    CandidateID = candidate.CandidateID,
+                    FullName = candidate.FullName,
+                    BirthDate = candidate.BirthDate,
+                    Gender = candidate.Gender,
+                    Phone = candidate.Phone,
+                    Email = candidate.Email,
+                    Address = candidate.Address,
+                    Summary = candidate.Summary,
+                    PhotoUrl = photoUrl,
+                    AvailableResumes = availableResumes
+                };
+
+                return View(viewModel);
+            }
+        }
+
+        /// <summary>
+        /// POST: Candidates/Apply
+        /// Xử lý form ứng tuyển
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Apply(ApplicationApplyViewModel viewModel, HttpPostedFileBase newResumeFile)
+        {
+            var accountId = GetCurrentAccountId();
+            if (accountId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Reload data for view
+                return Apply(viewModel.JobPostID);
+            }
+
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            {
+                // Get candidate
+                var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
+                if (candidate == null)
+                {
+                    TempData["ErrorMessage"] = "Vui lòng hoàn thiện hồ sơ trước khi ứng tuyển.";
+                    return RedirectToAction("CandidatesManage");
+                }
+
+                // Get job post
+                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == viewModel.JobPostID);
+                if (job == null || job.Status != "Published")
+                {
+                    TempData["ErrorMessage"] = "Công việc này không còn nhận đơn ứng tuyển.";
+                    return RedirectToAction("JobsListing", "Jobs");
+                }
+
+                // Check if already applied
+                var existingApplication = db.Applications.FirstOrDefault(a => a.CandidateID == candidate.CandidateID && a.JobPostID == viewModel.JobPostID);
+                if (existingApplication != null)
+                {
+                    TempData["WarningMessage"] = "Bạn đã ứng tuyển công việc này rồi.";
+                    return RedirectToAction("Details", "JobDetails", new { id = viewModel.JobPostID });
+                }
+
+                string resumeFilePath = null;
+
+                // Handle CV selection or upload
+                if (viewModel.SelectedResumeFileID.HasValue)
+                {
+                    // Use existing resume
+                    var selectedResume = db.ResumeFiles.FirstOrDefault(rf => rf.ResumeFileID == viewModel.SelectedResumeFileID.Value && rf.CandidateID == candidate.CandidateID);
+                    if (selectedResume != null)
+                    {
+                        resumeFilePath = selectedResume.FilePath;
+                    }
+                }
+                else if (newResumeFile != null && newResumeFile.ContentLength > 0)
+                {
+                    // Upload new resume
+                    var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg", ".gif" };
+                    var fileExtension = Path.GetExtension(newResumeFile.FileName)?.ToLower();
+                    if (string.IsNullOrEmpty(fileExtension) || !allowedExtensions.Contains(fileExtension))
+                    {
+                        ModelState.AddModelError("NewResumeFile", "Chỉ cho phép upload file PDF, DOC, DOCX, PNG, JPG, JPEG, GIF.");
+                        return Apply(viewModel.JobPostID);
+                    }
+
+                    const int maxSize = 10 * 1024 * 1024; // 10MB
+                    if (newResumeFile.ContentLength > maxSize)
+                    {
+                        ModelState.AddModelError("NewResumeFile", "File không được vượt quá 10MB.");
+                        return Apply(viewModel.JobPostID);
+                    }
+
+                    try
+                    {
+                        // Create upload directory
+                        var uploadsRoot = Server.MapPath("~/Content/uploads/resumes/");
+                        if (!Directory.Exists(uploadsRoot))
+                        {
+                            Directory.CreateDirectory(uploadsRoot);
+                        }
+
+                        // Generate unique filename
+                        var safeFileName = $"CV_{candidate.CandidateID}_{DateTime.UtcNow:yyyyMMddHHmmssfff}{fileExtension}";
+                        var physicalPath = Path.Combine(uploadsRoot, safeFileName);
+                        newResumeFile.SaveAs(physicalPath);
+
+                        // Save to database
+                        var relativePath = $"/Content/uploads/resumes/{safeFileName}";
+                        var resumeFileEntity = new ResumeFile
+                        {
+                            CandidateID = candidate.CandidateID,
+                            FileName = string.IsNullOrWhiteSpace(viewModel.NewResumeTitle) ? newResumeFile.FileName : viewModel.NewResumeTitle + fileExtension,
+                            FilePath = relativePath,
+                            UploadedAt = DateTime.Now
+                        };
+
+                        db.ResumeFiles.InsertOnSubmit(resumeFileEntity);
+                        db.SubmitChanges();
+
+                        resumeFilePath = relativePath;
+                    }
+                    catch (Exception ex)
+                    {
+                        ModelState.AddModelError("NewResumeFile", "Lỗi khi upload CV: " + ex.Message);
+                        return Apply(viewModel.JobPostID);
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Vui lòng chọn CV từ danh sách hoặc tải CV mới lên.");
+                    return Apply(viewModel.JobPostID);
+                }
+
+                // Create application
+                var application = new Application
+                {
+                    CandidateID = candidate.CandidateID,
+                    JobPostID = viewModel.JobPostID,
+                    AppliedAt = DateTime.Now,
+                    Status = "Under review",
+                    ResumeFilePath = resumeFilePath,
+                    Note = viewModel.Note,
+                    UpdatedAt = DateTime.Now
+                };
+
+                db.Applications.InsertOnSubmit(application);
+                db.SubmitChanges();
+
+                TempData["SuccessMessage"] = "Ứng tuyển thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.";
+                return RedirectToAction("Details", "JobDetails", new { id = viewModel.JobPostID });
+            }
+        }
     }
 }
 

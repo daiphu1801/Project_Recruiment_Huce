@@ -52,10 +52,19 @@
           @if (isCandidate && Model != null && (Model.Status == "Published" || string.IsNullOrEmpty(Model.Status)))
           {
             <div class="col-6">
-              <a href="#" class="btn btn-block btn-primary btn-md">Ứng tuyển ngay</a>
+              <a href="@Url.Action("Apply", "Candidates", new { jobId = Model.JobPostID })" class="btn btn-block btn-primary btn-md">Ứng tuyển ngay</a>
             </div>
             <div class="col-6">
-              <a href="#" class="btn btn-block btn-secondary btn-md">Lưu việc làm</a>
+              @{
+                bool isSaved = ViewBag.IsJobSaved != null && (bool)ViewBag.IsJobSaved;
+              }
+              <button type="button" 
+                      class="btn btn-block @(isSaved ? "btn-warning" : "btn-secondary") btn-md btn-save-job" 
+                      data-job-id="@Model.JobPostID"
+                      data-is-saved="@(isSaved ? "true" : "false")">
+                <span class="icon @(isSaved ? "icon-star" : "icon-star-empty") mr-1"></span>
+                <span class="save-text">@(isSaved ? "Đã lưu" : "Lưu việc làm")</span>
+              </button>
             </div>
           }
           else if (isCandidate && Model != null && (Model.Status == "Closed" || Model.Status == "Expired"))
@@ -236,4 +245,98 @@
       </div>
     </div>
   </section>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Get anti-forgery token
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            
+            // Handle save/unsave job button
+            $('.btn-save-job').on('click', function() {
+                var btn = $(this);
+                var jobId = btn.data('job-id');
+                var isSaved = btn.data('is-saved') === 'true' || btn.data('is-saved') === true;
+                var originalText = btn.find('.save-text').text();
+                var originalClass = btn.attr('class');
+
+                // Disable button during request
+                btn.prop('disabled', true);
+                btn.find('.save-text').text('Đang xử lý...');
+
+                var url = isSaved ? '@Url.Action("UnsaveJob", "SavedJobs")' : '@Url.Action("SaveJob", "SavedJobs")';
+                var action = isSaved ? 'unsave' : 'save';
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    data: {
+                        jobPostId: jobId,
+                        __RequestVerificationToken: token
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Show success notification
+                            showNotification(response.message, 'success');
+
+                            // Update button state
+                            if (isSaved) {
+                                // Changed from saved to unsaved
+                                btn.removeClass('btn-warning').addClass('btn-secondary');
+                                btn.find('.icon').removeClass('icon-star').addClass('icon-star-empty');
+                                btn.find('.save-text').text('Lưu việc làm');
+                                btn.data('is-saved', 'false');
+                            } else {
+                                // Changed from unsaved to saved
+                                btn.removeClass('btn-secondary').addClass('btn-warning');
+                                btn.find('.icon').removeClass('icon-star-empty').addClass('icon-star');
+                                btn.find('.save-text').text('Đã lưu');
+                                btn.data('is-saved', 'true');
+                            }
+                        } else {
+                            showNotification(response.message, 'error');
+                            // Restore original state
+                            btn.find('.save-text').text(originalText);
+                        }
+                    },
+                    error: function() {
+                        showNotification('Có lỗi xảy ra. Vui lòng thử lại.', 'error');
+                        btn.find('.save-text').text(originalText);
+                    },
+                    complete: function() {
+                        btn.prop('disabled', false);
+                    }
+                });
+            });
+
+            function showNotification(message, type) {
+                var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                var alertHtml = '<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">' +
+                    message +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                    '<span aria-hidden="true">&times;</span>' +
+                    '</button>' +
+                    '</div>';
+                
+                // Remove existing notifications
+                $('.alert[role="alert"]').remove();
+                
+                // Add new notification
+                $('body').append(alertHtml);
+                
+                // Auto dismiss after 3 seconds
+                setTimeout(function() {
+                    $('.alert[role="alert"]').fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                }, 3000);
+            }
+        });
+    </script>
+}
 

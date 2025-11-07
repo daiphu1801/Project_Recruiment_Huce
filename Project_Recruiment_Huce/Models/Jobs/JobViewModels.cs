@@ -24,6 +24,7 @@ namespace Project_Recruiment_Huce.Models.Jobs
         public DateTime? ApplicationDeadline { get; set; }
         public string Status { get; set; }
         public string LogoUrl { get; set; }
+        public int PendingApplicationsCount { get; set; }
     }
 
     /// <summary>

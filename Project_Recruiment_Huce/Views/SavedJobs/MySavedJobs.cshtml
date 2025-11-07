@@ -1,0 +1,402 @@
+@model IEnumerable<Project_Recruiment_Huce.Models.Candidates.SavedJobViewModel>
+
+@{
+    ViewBag.Title = "Công việc đã lưu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .saved-job-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s ease;
+            background: #fff;
+            position: relative;
+        }
+        .saved-job-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .saved-job-card.expired {
+            opacity: 0.7;
+            border-left: 4px solid #dc3545;
+        }
+        .job-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .job-title a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .job-title a:hover {
+            text-decoration: underline;
+        }
+        .company-name {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+        .job-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .job-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .job-meta-item .icon {
+            color: #999;
+        }
+        .saved-date {
+            color: #999;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+        .job-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .stats-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #007bff;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+    </style>
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Công việc đã lưu</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("CandidatesManage","Candidates")">Hồ sơ của tôi</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Công việc đã lưu</strong></span>
+                </div>
+                @if (ViewBag.TotalItems != null)
+                {
+                    <div class="mt-3">
+                        <span class="text-white" style="font-size: 1rem; opacity: 0.9;">
+                            <span class="icon-bookmark mr-2"></span>Tổng cộng: @ViewBag.TotalItems công việc đã lưu
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="site-section">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-12">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                }
+
+                <!-- Search and Filter Section -->
+                <div class="filter-section">
+                    @using (Html.BeginForm("MySavedJobs", "SavedJobs", FormMethod.Get, new { @class = "form-inline" }))
+                    {
+                        <div class="row">
+                            <div class="col-md-4 mb-3 mb-md-0">
+                                <label for="keyword" class="mr-2">Tìm kiếm:</label>
+                                <input type="text" name="keyword" id="keyword" class="form-control w-100" 
+                                       placeholder="Tên công việc, công ty..." value="@ViewBag.Keyword">
+                            </div>
+                            <div class="col-md-3 mb-3 mb-md-0">
+                                <label for="location" class="mr-2">Khu vực:</label>
+                                <select name="location" id="location" class="form-control w-100">
+                                    <option value="">Tất cả</option>
+                                    @if (ViewBag.Locations != null)
+                                    {
+                                        foreach (var loc in (List<string>)ViewBag.Locations)
+                                        {
+                                            var isSelected = ViewBag.Location != null && ViewBag.Location == loc;
+                                            if (isSelected)
+                                            {
+                                                <option value="@loc" selected>@loc</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@loc">@loc</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3 mb-md-0">
+                                <label for="sortBy" class="mr-2">Sắp xếp:</label>
+                                <select name="sortBy" id="sortBy" class="form-control w-100">
+                                    <option value="savedDate" @(ViewBag.SortBy == "savedDate" ? "selected" : "")>Ngày lưu (mới nhất)</option>
+                                    <option value="title" @(ViewBag.SortBy == "title" ? "selected" : "")>Tên công việc (A-Z)</option>
+                                    <option value="company" @(ViewBag.SortBy == "company" ? "selected" : "")>Tên công ty (A-Z)</option>
+                                    <option value="deadline" @(ViewBag.SortBy == "deadline" ? "selected" : "")>Hạn nộp (sớm nhất)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="d-block">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <span class="icon-search mr-1"></span>Tìm kiếm
+                                </button>
+                            </div>
+                        </div>
+                        if (!string.IsNullOrWhiteSpace(ViewBag.Keyword as string) || !string.IsNullOrWhiteSpace(ViewBag.Location as string))
+                        {
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <a href="@Url.Action("MySavedJobs")" class="btn btn-sm btn-outline-secondary">
+                                        <span class="icon-close mr-1"></span>Xóa bộ lọc
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                @if (Model != null && Model.Any())
+                {
+                    <div class="mb-3">
+                        <h3>Danh sách công việc đã lưu 
+                            @if (ViewBag.TotalItems != null)
+                            {
+                                <span class="stats-badge">@ViewBag.TotalItems công việc</span>
+                            }
+                        </h3>
+                        <p class="text-muted">Các công việc bạn đã lưu để xem lại sau. Công việc đã đóng sẽ tự động bị xóa khỏi danh sách.</p>
+                    </div>
+
+                    foreach (var savedJob in Model)
+                    {
+                        <div class="saved-job-card @(savedJob.IsExpired ? "expired" : "")">
+                            <div class="row">
+                                <div class="col-md-2 text-center mb-3 mb-md-0">
+                                    <img src="@Url.Content(savedJob.LogoUrl)" alt="@savedJob.CompanyName" class="img-fluid" style="max-width: 100px; max-height: 100px; object-fit: contain;">
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="job-title">
+                                        <a href="@Url.Action("Details","JobDetails", new { id = savedJob.JobPostID })">@savedJob.Title</a>
+                                    </div>
+                                    <div class="company-name">
+                                        <span class="icon-briefcase mr-1"></span>@savedJob.CompanyName
+                                    </div>
+                                    
+                                    <div class="job-meta">
+                                        @if (!string.IsNullOrEmpty(savedJob.Location))
+                                        {
+                                            <div class="job-meta-item">
+                                                <span class="icon-room"></span>
+                                                <span>@savedJob.Location</span>
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(savedJob.SalaryRange))
+                                        {
+                                            <div class="job-meta-item">
+                                                <span class="icon-money"></span>
+                                                <span>@savedJob.SalaryRange</span>
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(savedJob.EmploymentTypeDisplay))
+                                        {
+                                            <div class="job-meta-item">
+                                                @if (savedJob.EmploymentTypeDisplay == "Bán thời gian")
+                                                {
+                                                    <span class="badge badge-danger">@savedJob.EmploymentTypeDisplay</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-success">@savedJob.EmploymentTypeDisplay</span>
+                                                }
+                                            </div>
+                                        }
+                                        @if (savedJob.ApplicationDeadline.HasValue)
+                                        {
+                                            <div class="job-meta-item">
+                                                <span class="icon-calendar"></span>
+                                                <span>Hạn nộp: @savedJob.ApplicationDeadline.Value.ToString("dd/MM/yyyy")</span>
+                                                @if (savedJob.IsExpired)
+                                                {
+                                                    <span class="badge badge-danger ml-2">Đã hết hạn</span>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div class="saved-date">
+                                        <span class="icon-bookmark mr-1"></span>
+                                        Đã lưu: @savedJob.SavedAt.ToString("dd/MM/yyyy HH:mm")
+                                    </div>
+                                </div>
+                                <div class="col-md-2 text-right">
+                                    <div class="job-actions flex-column">
+                                        <a href="@Url.Action("Details","JobDetails", new { id = savedJob.JobPostID })" class="btn btn-sm btn-primary mb-2 w-100">
+                                            <span class="icon-eye mr-1"></span>Xem chi tiết
+                                        </a>
+                                        <a href="@Url.Action("Apply", "Candidates", new { jobId = savedJob.JobPostID })" class="btn btn-sm btn-success mb-2 w-100">
+                                            <span class="icon-paper-plane mr-1"></span>Ứng tuyển
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger btn-unsave-job w-100" data-job-id="@savedJob.JobPostID">
+                                            <span class="icon-trash mr-1"></span>Bỏ lưu
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
+                    {
+                        <div class="pagination-wrap mt-5">
+                            <div class="row">
+                                <div class="col-md-6 text-center text-md-left mb-4 mb-md-0">
+                                    <span>Hiển thị @((ViewBag.CurrentPage - 1) * 10 + 1) - @(Math.Min(ViewBag.CurrentPage * 10, ViewBag.TotalItems)) trong tổng số @ViewBag.TotalItems công việc</span>
+                                </div>
+                                <div class="col-md-6 text-center text-md-right">
+                                    <div class="custom-pagination">
+                                        @if (ViewBag.CurrentPage > 1)
+                                        {
+                                            <a href="@Url.Action("MySavedJobs", new { keyword = ViewBag.Keyword, location = ViewBag.Location, sortBy = ViewBag.SortBy, page = ViewBag.CurrentPage - 1 })" class="prev">« Trước</a>
+                                        }
+                                        
+                                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                                        {
+                                            if (i == ViewBag.CurrentPage)
+                                            {
+                                                <span class="active">@i</span>
+                                            }
+                                            else if (i == 1 || i == ViewBag.TotalPages || (i >= ViewBag.CurrentPage - 2 && i <= ViewBag.CurrentPage + 2))
+                                            {
+                                                <a href="@Url.Action("MySavedJobs", new { keyword = ViewBag.Keyword, location = ViewBag.Location, sortBy = ViewBag.SortBy, page = i })">@i</a>
+                                            }
+                                            else if (i == ViewBag.CurrentPage - 3 || i == ViewBag.CurrentPage + 3)
+                                            {
+                                                <span>...</span>
+                                            }
+                                        }
+                                        
+                                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                                        {
+                                            <a href="@Url.Action("MySavedJobs", new { keyword = ViewBag.Keyword, location = ViewBag.Location, sortBy = ViewBag.SortBy, page = ViewBag.CurrentPage + 1 })" class="next">Sau »</a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <h5>Bạn chưa lưu công việc nào</h5>
+                        <p class="mb-0">Hãy duyệt các công việc và lưu những công việc bạn quan tâm để xem lại sau.</p>
+                        <a href="@Url.Action("JobsListing", "Jobs")" class="btn btn-primary mt-3">Xem danh sách việc làm</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            
+            // Handle unsave job
+            $('.btn-unsave-job').on('click', function() {
+                var btn = $(this);
+                var jobId = btn.data('job-id');
+                var jobCard = btn.closest('.saved-job-card');
+
+                if (!confirm('Bạn có chắc chắn muốn bỏ lưu công việc này?')) {
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("UnsaveJob", "SavedJobs")',
+                    type: 'POST',
+                    data: {
+                        jobPostId: jobId,
+                        __RequestVerificationToken: token
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showNotification(response.message, 'success');
+                            jobCard.fadeOut(300, function() {
+                                $(this).remove();
+                                // Check if list is empty
+                                if ($('.saved-job-card').length === 0) {
+                                    location.reload();
+                                }
+                            });
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        showNotification('Có lỗi xảy ra. Vui lòng thử lại.', 'error');
+                    }
+                });
+            });
+
+            function showNotification(message, type) {
+                var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                var alertHtml = '<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">' +
+                    message +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                    '<span aria-hidden="true">&times;</span>' +
+                    '</button>' +
+                    '</div>';
+                
+                $('.alert[role="alert"]').remove();
+                $('body').append(alertHtml);
+                
+                setTimeout(function() {
+                    $('.alert[role="alert"]').fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                }, 3000);
+            }
+        });
+    </script>
+}

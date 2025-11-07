@@ -87,9 +87,13 @@
                                         <div class="mb-3" style="height: 200px; width: 100%; overflow: hidden; border-radius: 8px; border: 1px solid #e0e0e0; background-color: #fff; position: relative;">
                                             @if (resume.FileExtension == ".pdf")
                                             {
-                                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);">
-                                                    <i class="icon-file-pdf" style="font-size: 64px; color: #dc3545;"></i>
-                                                </div>
+                                                var pdfUrl = Url.Content("~" + resume.FilePath) + "#toolbar=0&navpanes=0&scrollbar=0";
+                                                <iframe src="@pdfUrl" 
+                                                        style="width: 100%; height: 100%; border: none; overflow: hidden !important; pointer-events: none;"
+                                                        scrolling="no"
+                                                        frameborder="0"
+                                                        allow="fullscreen">
+                                                </iframe>
                                             }
                                             else if (resume.FileExtension == ".doc" || resume.FileExtension == ".docx")
                                             {
@@ -99,10 +103,11 @@
                                             }
                                             else if (resume.FileExtension == ".png" || resume.FileExtension == ".jpg" || resume.FileExtension == ".jpeg" || resume.FileExtension == ".gif")
                                             {
-                                                <img src="@Url.Content("~" + resume.FilePath)" alt="@resume.DisplayName" style="width: 100%; height: 100%; object-fit: cover; object-position: top center;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                                                <div style="height: 100%; display: none; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);">
-                                                    <i class="icon-image" style="font-size: 64px; color: #28a745;"></i>
-                                                </div>
+                                                <iframe src="@Url.Content("~" + resume.FilePath)" 
+                                                        style="width: 100%; height: 100%; border: none; overflow: hidden !important; pointer-events: none;"
+                                                        scrolling="no"
+                                                        frameborder="0">
+                                                </iframe>
                                             }
                                             else
                                             {
@@ -211,5 +216,53 @@
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
     }
+
+    /* Ẩn scrollbar và tắt scroll cho iframe */
+    .resume-card iframe {
+        overflow: hidden !important;
+        scrollbar-width: none !important; /* Firefox */
+        -ms-overflow-style: none !important; /* IE and Edge */
+    }
+
+    .resume-card iframe::-webkit-scrollbar {
+        display: none !important; /* Chrome, Safari, Opera */
+    }
+
+    /* Đảm bảo container không scroll */
+    .resume-card .mb-3 {
+        overflow: hidden !important;
+    }
 </style>
+
+@section Scripts {
+    <script>
+        // Đảm bảo iframe không scroll và ẩn scrollbar
+        document.addEventListener('DOMContentLoaded', function() {
+            var iframes = document.querySelectorAll('.resume-card iframe');
+            iframes.forEach(function(iframe) {
+                // Tắt scroll cho iframe
+                iframe.setAttribute('scrolling', 'no');
+                
+                // Thử ẩn scrollbar trong iframe content (nếu có quyền truy cập)
+                iframe.onload = function() {
+                    try {
+                        var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        if (iframeDoc) {
+                            iframeDoc.body.style.overflow = 'hidden';
+                            iframeDoc.documentElement.style.overflow = 'hidden';
+                            // Ẩn scrollbar
+                            iframeDoc.body.style.scrollbarWidth = 'none';
+                            iframeDoc.body.style.msOverflowStyle = 'none';
+                            if (iframeDoc.body.style.webkitOverflowScrolling !== undefined) {
+                                iframeDoc.body.style.webkitOverflowScrolling = 'auto';
+                            }
+                        }
+                    } catch (e) {
+                        // Cross-origin hoặc không có quyền truy cập, bỏ qua
+                    }
+                };
+            });
+        });
+    </script>
+}
 

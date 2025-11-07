@@ -20,6 +20,82 @@
 
     <!-- MAIN CSS -->
     <link rel="stylesheet" href="~/Content/css/style.css">    
+    <style>
+      /* Enhanced Dropdown Menu Styling */
+      .dropdown-menu.dropdown-menu-right .dropdown-item {
+        border-radius: 4px;
+        margin: 2px 8px;
+      }
+      .dropdown-menu.dropdown-menu-right .dropdown-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(4px);
+      }
+      .dropdown-menu.dropdown-menu-right .dropdown-item:active,
+      .dropdown-menu.dropdown-menu-right .dropdown-item:focus {
+        background-color: #e9ecef;
+        opacity: 0.95;
+        outline: none;
+        box-shadow: none;
+      }
+      .dropdown-menu.dropdown-menu-right button.dropdown-item:hover {
+        background-color: #fff5f5;
+        color: #dc3545 !important;
+      }
+      .dropdown-menu.dropdown-menu-right button.dropdown-item:active,
+      .dropdown-menu.dropdown-menu-right button.dropdown-item:focus {
+        background-color: #ffe0e0;
+        opacity: 0.95;
+        outline: none;
+        box-shadow: none;
+      }
+      /* Mobile dropdown styling */
+      .site-menu .dropdown li a:hover {
+        background-color: #f8f9fa;
+        padding-left: 24px;
+      }
+      .site-menu .dropdown li a:active,
+      .site-menu .dropdown li a:focus {
+        opacity: 0.95;
+        outline: none;
+      }
+      .site-menu .dropdown li a {
+        transition: all 0.2s ease;
+      }
+      /* Enhanced Navigation Dropdown Styling */
+      .site-menu .has-children .dropdown {
+        min-width: 220px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 8px 0;
+        margin-top: 8px;
+        border: none;
+        background: #fff;
+      }
+      .site-menu .has-children .dropdown li {
+        margin: 0;
+      }
+      .site-menu .has-children .dropdown li a {
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        border-radius: 4px;
+        margin: 2px 8px;
+        transition: all 0.2s ease;
+        color: #333;
+      }
+      .site-menu .has-children .dropdown li a:hover {
+        background-color: #f8f9fa;
+        transform: translateX(4px);
+        color: #007bff;
+      }
+      .site-menu .has-children .dropdown li a:active,
+      .site-menu .has-children .dropdown li a:focus {
+        background-color: #e9ecef;
+        opacity: 0.95;
+        outline: none;
+        color: #007bff;
+      }
+    </style>
   </head>
   @RenderSection("Styles", required: false)
   <body id="top">
@@ -60,7 +136,10 @@
                   @{ var roleClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro") : null; }
                   @if (Request.IsAuthenticated && roleClaim != null && roleClaim.Value == "Recruiter")
                   {
-                    <li><a href="@Url.Action("JobsCreate","Jobs")">Đăng tin tuyển dụng</a></li>
+                    <li><a href="@Url.Action("JobsCreate","Jobs")" style="display: flex; align-items: center;">
+                      <span class="icon-plus mr-3" style="width: 20px; text-align: center; color: #28a745;"></span>
+                      <span>Đăng tin tuyển dụng</span>
+                    </a></li>
                   }
                 </ul>
               </li>
@@ -75,10 +154,22 @@
                   <li class="has-children">
                     <a href="#">Quản lý</a>
                     <ul class="dropdown">
-                      <li><a href="@Url.Action("RecruitersManage","Recruiters")">Hồ sơ của tôi</a></li>
-                      <li><a href="@Url.Action("CompaniesManage","Companies")">Quản lý công ty</a></li>
-                      <li><a href="@Url.Action("MyJobs","Jobs")">Tin tuyển dụng của tôi</a></li>
-                      <li><a href="@Url.Action("MyApplications","Jobs")">Đơn ứng tuyển</a></li>
+                      <li><a href="@Url.Action("RecruitersManage","Recruiters")" style="display: flex; align-items: center;">
+                        <span class="icon-user mr-3" style="width: 20px; text-align: center; color: #007bff;"></span>
+                        <span>Hồ sơ của tôi</span>
+                      </a></li>
+                      <li><a href="@Url.Action("CompaniesManage","Companies")" style="display: flex; align-items: center;">
+                        <span class="icon-line-briefcase mr-3" style="width: 20px; text-align: center; color: #6f42c1;"></span>
+                        <span>Quản lý công ty</span>
+                      </a></li>
+                      <li><a href="@Url.Action("MyJobs","Jobs")" style="display: flex; align-items: center;">
+                        <span class="icon-line-documents mr-3" style="width: 20px; text-align: center; color: #fd7e14;"></span>
+                        <span>Tin tuyển dụng của tôi</span>
+                      </a></li>
+                      <li><a href="@Url.Action("MyApplications","RecruitersApplication")" style="display: flex; align-items: center;">
+                        <span class="icon-list mr-3" style="width: 20px; text-align: center; color: #17a2b8;"></span>
+                        <span>Đơn ứng tuyển</span>
+                      </a></li>
                     </ul>
                   </li>
                 }
@@ -114,21 +205,53 @@
                     @{ var mobileRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro"); }
                     @if (mobileRoleClaim != null && mobileRoleClaim.Value == "Candidate")
                     {
-                      <li><a href="@Url.Action("CandidatesManage", "Candidates")">Hồ sơ của tôi</a></li>
-                      <li><a href="@Url.Action("MyApplications", "Candidates")">Đơn ứng tuyển</a></li>
+                      <li><a href="@Url.Action("CandidatesManage", "Candidates")" style="display: flex; align-items: center; padding: 12px 20px;">
+                        <span class="icon-user mr-3" style="width: 20px; text-align: center; color: #007bff;"></span>
+                        <span>Hồ sơ của tôi</span>
+                      </a></li>
+                      <li><a href="@Url.Action("MyResumes", "ResumeFiles")" style="display: flex; align-items: center; padding: 12px 20px;">
+                        <span class="icon-line-document mr-3" style="width: 20px; text-align: center; color: #28a745;"></span>
+                        <span>Quản lý CV</span>
+                      </a></li>
+                      <li><a href="@Url.Action("MySavedJobs", "SavedJobs")" style="display: flex; align-items: center; padding: 12px 20px;">
+                        <span class="icon-bookmark mr-3" style="width: 20px; text-align: center; color: #ffc107;"></span>
+                        <span>Công việc đã lưu</span>
+                      </a></li>
+                      <li><a href="@Url.Action("MyApplications", "Candidates")" style="display: flex; align-items: center; padding: 12px 20px;">
+                        <span class="icon-envelope-o mr-3" style="width: 20px; text-align: center; color: #17a2b8;"></span>
+                        <span>Đơn ứng tuyển</span>
+                      </a></li>
                     }
                     else if (mobileRoleClaim != null && mobileRoleClaim.Value == "Recruiter")
                     {
-                      <li><a href="@Url.Action("RecruitersManage", "Recruiters")">Hồ sơ của tôi</a></li>
-                      <li><a href="@Url.Action("CompaniesManage", "Companies")">Quản lý công ty</a></li>
-                      <li><a href="@Url.Action("MyJobs", "Jobs")">Tin tuyển dụng của tôi</a></li>
-                      <li><a href="@Url.Action("MyApplications", "Jobs")">Đơn ứng tuyển</a></li>
+                      <li><a href="@Url.Action("RecruitersManage", "Recruiters")" style="display: flex; align-items: center; padding: 12px 20px;">
+                        <span class="icon-user mr-3" style="width: 20px; text-align: center; color: #007bff;"></span>
+                        <span>Hồ sơ của tôi</span>
+                      </a></li>
+                      <li><a href="@Url.Action("CompaniesManage", "Companies")" style="display: flex; align-items: center; padding: 12px 20px;">
+                        <span class="icon-line-briefcase mr-3" style="width: 20px; text-align: center; color: #6f42c1;"></span>
+                        <span>Quản lý công ty</span>
+                      </a></li>
+                      <li><a href="@Url.Action("MyJobs", "Jobs")" style="display: flex; align-items: center; padding: 12px 20px;">
+                        <span class="icon-line-documents mr-3" style="width: 20px; text-align: center; color: #fd7e14;"></span>
+                        <span>Tin tuyển dụng của tôi</span>
+                      </a></li>
+                      <li><a href="@Url.Action("MyApplications", "RecruitersApplication")" style="display: flex; align-items: center; padding: 12px 20px;">
+                        <span class="icon-list mr-3" style="width: 20px; text-align: center; color: #17a2b8;"></span>
+                        <span>Đơn ứng tuyển</span>
+                      </a></li>
                     }
                     else
                     {
-                      <li><a href="@Url.Action("Manage", "Account")">Quản lý</a></li>
+                      <li><a href="@Url.Action("Manage", "Account")" style="display: flex; align-items: center; padding: 12px 20px;">
+                        <span class="icon-cog mr-3" style="width: 20px; text-align: center; color: #6c757d;"></span>
+                        <span>Quản lý</span>
+                      </a></li>
                     }
-                    <li><a href="@Url.Action("LogOffGet", "Account")">Đăng xuất</a></li>
+                    <li><a href="@Url.Action("LogOffGet", "Account")" style="display: flex; align-items: center; padding: 12px 20px; color: #dc3545;">
+                      <span class="icon-power-off mr-3" style="width: 20px; text-align: center;"></span>
+                      <span>Đăng xuất</span>
+                    </a></li>
                   </ul>
                 </li>
               }
@@ -169,32 +292,63 @@
                   <a href="#" class="btn btn-primary border-width-2 dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <img src="@(avatarUrl ?? Url.Content("~/Content/images/person_1.jpg"))" alt="avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-right:8px;" /> @User.Identity.Name
                   </a>
-                  <div class="dropdown-menu dropdown-menu-right">
+                  <div class="dropdown-menu dropdown-menu-right" style="min-width: 220px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 8px 0; margin-top: 8px;">
                     @{ var navRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro"); }
                     @if (navRoleClaim != null && navRoleClaim.Value == "Candidate")
                     {
-                      <a class="dropdown-item" href="@Url.Action("CandidatesManage", "Candidates")">Hồ sơ của tôi</a>
-                      <a class="dropdown-item" href="@Url.Action("MyResumes", "ResumeFiles")">Quản lý CV</a>
-                      <a class="dropdown-item" href="@Url.Action("MyApplications", "Candidates")">Đơn ứng tuyển</a>
-                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="@Url.Action("CandidatesManage", "Candidates")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
+                        <span class="icon-user mr-3" style="width: 20px; text-align: center; color: #007bff;"></span>
+                        <span>Hồ sơ của tôi</span>
+                      </a>
+                      <a class="dropdown-item" href="@Url.Action("MyResumes", "ResumeFiles")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
+                        <span class="icon-line-document mr-3" style="width: 20px; text-align: center; color: #28a745;"></span>
+                        <span>Quản lý CV</span>
+                      </a>
+                      <a class="dropdown-item" href="@Url.Action("MySavedJobs", "SavedJobs")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
+                        <span class="icon-bookmark mr-3" style="width: 20px; text-align: center; color: #ffc107;"></span>
+                        <span>Công việc đã lưu</span>
+                      </a>
+                      <a class="dropdown-item" href="@Url.Action("MyApplications", "Candidates")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
+                        <span class="icon-envelope-o mr-3" style="width: 20px; text-align: center; color: #17a2b8;"></span>
+                        <span>Đơn ứng tuyển</span>
+                      </a>
+                      <div class="dropdown-divider" style="margin: 8px 0;"></div>
                     }
                     else if (navRoleClaim != null && navRoleClaim.Value == "Recruiter")
                     {
-                      <a class="dropdown-item" href="@Url.Action("RecruitersManage", "Recruiters")">Hồ sơ của tôi</a>
-                      <a class="dropdown-item" href="@Url.Action("CompaniesManage", "Companies")">Quản lý công ty</a>
-                      <a class="dropdown-item" href="@Url.Action("MyJobs", "Jobs")">Tin tuyển dụng của tôi</a>
-                      <a class="dropdown-item" href="@Url.Action("MyApplications", "Jobs")">Đơn ứng tuyển</a>
-                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="@Url.Action("RecruitersManage", "Recruiters")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
+                        <span class="icon-user mr-3" style="width: 20px; text-align: center; color: #007bff;"></span>
+                        <span>Hồ sơ của tôi</span>
+                      </a>
+                      <a class="dropdown-item" href="@Url.Action("CompaniesManage", "Companies")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
+                        <span class="icon-line-briefcase mr-3" style="width: 20px; text-align: center; color: #6f42c1;"></span>
+                        <span>Quản lý công ty</span>
+                      </a>
+                      <a class="dropdown-item" href="@Url.Action("MyJobs", "Jobs")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
+                        <span class="icon-line-documents mr-3" style="width: 20px; text-align: center; color: #fd7e14;"></span>
+                        <span>Tin tuyển dụng của tôi</span>
+                      </a>
+                      <a class="dropdown-item" href="@Url.Action("MyApplications", "RecruitersApplication")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
+                        <span class="icon-list mr-3" style="width: 20px; text-align: center; color: #17a2b8;"></span>
+                        <span>Đơn ứng tuyển</span>
+                      </a>
+                      <div class="dropdown-divider" style="margin: 8px 0;"></div>
                     }
                     else
                     {
-                      <a class="dropdown-item" href="@Url.Action("Manage", "Account")">Quản lý</a>
-                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="@Url.Action("Manage", "Account")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
+                        <span class="icon-cog mr-3" style="width: 20px; text-align: center; color: #6c757d;"></span>
+                        <span>Quản lý</span>
+                      </a>
+                      <div class="dropdown-divider" style="margin: 8px 0;"></div>
                     }
                     @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
                     {
                       @Html.AntiForgeryToken()
-                      <button type="submit" class="dropdown-item">Đăng xuất</button>
+                      <button type="submit" class="dropdown-item" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s; width: 100%; border: none; background: none; text-align: left; color: #dc3545;">
+                        <span class="icon-power-off mr-3" style="width: 20px; text-align: center;"></span>
+                        <span>Đăng xuất</span>
+                      </button>
                     }
                   </div>
                 </div>

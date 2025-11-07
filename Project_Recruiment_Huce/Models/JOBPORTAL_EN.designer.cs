@@ -87,6 +87,9 @@ namespace Project_Recruiment_Huce.Models
     partial void InsertResumeFile(ResumeFile instance);
     partial void UpdateResumeFile(ResumeFile instance);
     partial void DeleteResumeFile(ResumeFile instance);
+    partial void InsertSavedJob(SavedJob instance);
+    partial void UpdateSavedJob(SavedJob instance);
+    partial void DeleteSavedJob(SavedJob instance);
     partial void InsertTransaction(Transaction instance);
     partial void UpdateTransaction(Transaction instance);
     partial void DeleteTransaction(Transaction instance);
@@ -265,6 +268,14 @@ namespace Project_Recruiment_Huce.Models
 			get
 			{
 				return this.GetTable<ResumeFile>();
+			}
+		}
+		
+		public System.Data.Linq.Table<SavedJob> SavedJobs
+		{
+			get
+			{
+				return this.GetTable<SavedJob>();
 			}
 		}
 		
@@ -2333,6 +2344,8 @@ namespace Project_Recruiment_Huce.Models
 		
 		private EntitySet<ResumeFile> _ResumeFiles;
 		
+		private EntitySet<SavedJob> _SavedJobs;
+		
 		private EntityRef<Account> _Account;
 		
     #region Extensibility Method Definitions
@@ -2372,6 +2385,7 @@ namespace Project_Recruiment_Huce.Models
 			this._CandidateCertificates = new EntitySet<CandidateCertificate>(new Action<CandidateCertificate>(this.attach_CandidateCertificates), new Action<CandidateCertificate>(this.detach_CandidateCertificates));
 			this._Educations = new EntitySet<Education>(new Action<Education>(this.attach_Educations), new Action<Education>(this.detach_Educations));
 			this._ResumeFiles = new EntitySet<ResumeFile>(new Action<ResumeFile>(this.attach_ResumeFiles), new Action<ResumeFile>(this.detach_ResumeFiles));
+			this._SavedJobs = new EntitySet<SavedJob>(new Action<SavedJob>(this.attach_SavedJobs), new Action<SavedJob>(this.detach_SavedJobs));
 			this._Account = default(EntityRef<Account>);
 			OnCreated();
 		}
@@ -2685,6 +2699,19 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Candidate_SavedJob", Storage="_SavedJobs", ThisKey="CandidateID", OtherKey="CandidateID")]
+		public EntitySet<SavedJob> SavedJobs
+		{
+			get
+			{
+				return this._SavedJobs;
+			}
+			set
+			{
+				this._SavedJobs.Assign(value);
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Candidate", Storage="_Account", ThisKey="AccountID", OtherKey="AccountID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
 		public Account Account
 		{
@@ -2794,6 +2821,18 @@ namespace Project_Recruiment_Huce.Models
 		}
 		
 		private void detach_ResumeFiles(ResumeFile entity)
+		{
+			this.SendPropertyChanging();
+			entity.Candidate = null;
+		}
+		
+		private void attach_SavedJobs(SavedJob entity)
+		{
+			this.SendPropertyChanging();
+			entity.Candidate = this;
+		}
+		
+		private void detach_SavedJobs(SavedJob entity)
 		{
 			this.SendPropertyChanging();
 			entity.Candidate = null;
@@ -3243,6 +3282,8 @@ namespace Project_Recruiment_Huce.Models
 		
 		private EntitySet<Recruiter> _Recruiters;
 		
+		private EntityRef<ProfilePhoto> _ProfilePhoto;
+		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -3277,6 +3318,7 @@ namespace Project_Recruiment_Huce.Models
 		{
 			this._JobPosts = new EntitySet<JobPost>(new Action<JobPost>(this.attach_JobPosts), new Action<JobPost>(this.detach_JobPosts));
 			this._Recruiters = new EntitySet<Recruiter>(new Action<Recruiter>(this.attach_Recruiters), new Action<Recruiter>(this.detach_Recruiters));
+			this._ProfilePhoto = default(EntityRef<ProfilePhoto>);
 			OnCreated();
 		}
 		
@@ -3511,6 +3553,10 @@ namespace Project_Recruiment_Huce.Models
 			{
 				if ((this._PhotoID != value))
 				{
+					if (this._ProfilePhoto.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
 					this.OnPhotoIDChanging(value);
 					this.SendPropertyChanging();
 					this._PhotoID = value;
@@ -3543,6 +3589,40 @@ namespace Project_Recruiment_Huce.Models
 			set
 			{
 				this._Recruiters.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="ProfilePhoto_Company", Storage="_ProfilePhoto", ThisKey="PhotoID", OtherKey="PhotoID", IsForeignKey=true, DeleteRule="SET NULL")]
+		public ProfilePhoto ProfilePhoto
+		{
+			get
+			{
+				return this._ProfilePhoto.Entity;
+			}
+			set
+			{
+				ProfilePhoto previousValue = this._ProfilePhoto.Entity;
+				if (((previousValue != value) 
+							|| (this._ProfilePhoto.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._ProfilePhoto.Entity = null;
+						previousValue.Companies.Remove(this);
+					}
+					this._ProfilePhoto.Entity = value;
+					if ((value != null))
+					{
+						value.Companies.Add(this);
+						this._PhotoID = value.PhotoID;
+					}
+					else
+					{
+						this._PhotoID = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("ProfilePhoto");
+				}
 			}
 		}
 		
@@ -4345,6 +4425,8 @@ namespace Project_Recruiment_Huce.Models
 		
 		private EntitySet<PostingHistory> _PostingHistories;
 		
+		private EntitySet<SavedJob> _SavedJobs;
+		
 		private EntityRef<Company> _Company;
 		
 		private EntityRef<Recruiter> _Recruiter;
@@ -4392,6 +4474,7 @@ namespace Project_Recruiment_Huce.Models
 			this._Applications = new EntitySet<Application>(new Action<Application>(this.attach_Applications), new Action<Application>(this.detach_Applications));
 			this._JobPostDetails = new EntitySet<JobPostDetail>(new Action<JobPostDetail>(this.attach_JobPostDetails), new Action<JobPostDetail>(this.detach_JobPostDetails));
 			this._PostingHistories = new EntitySet<PostingHistory>(new Action<PostingHistory>(this.attach_PostingHistories), new Action<PostingHistory>(this.detach_PostingHistories));
+			this._SavedJobs = new EntitySet<SavedJob>(new Action<SavedJob>(this.attach_SavedJobs), new Action<SavedJob>(this.detach_SavedJobs));
 			this._Company = default(EntityRef<Company>);
 			this._Recruiter = default(EntityRef<Recruiter>);
 			OnCreated();
@@ -4764,6 +4847,19 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="JobPost_SavedJob", Storage="_SavedJobs", ThisKey="JobPostID", OtherKey="JobPostID")]
+		public EntitySet<SavedJob> SavedJobs
+		{
+			get
+			{
+				return this._SavedJobs;
+			}
+			set
+			{
+				this._SavedJobs.Assign(value);
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Company_JobPost", Storage="_Company", ThisKey="CompanyID", OtherKey="CompanyID", IsForeignKey=true)]
 		public Company Company
 		{
@@ -4883,6 +4979,18 @@ namespace Project_Recruiment_Huce.Models
 		}
 		
 		private void detach_PostingHistories(PostingHistory entity)
+		{
+			this.SendPropertyChanging();
+			entity.JobPost = null;
+		}
+		
+		private void attach_SavedJobs(SavedJob entity)
+		{
+			this.SendPropertyChanging();
+			entity.JobPost = this;
+		}
+		
+		private void detach_SavedJobs(SavedJob entity)
 		{
 			this.SendPropertyChanging();
 			entity.JobPost = null;
@@ -5643,6 +5751,8 @@ namespace Project_Recruiment_Huce.Models
 		
 		private EntitySet<Account> _Accounts;
 		
+		private EntitySet<Company> _Companies;
+		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -5664,6 +5774,7 @@ namespace Project_Recruiment_Huce.Models
 		public ProfilePhoto()
 		{
 			this._Accounts = new EntitySet<Account>(new Action<Account>(this.attach_Accounts), new Action<Account>(this.detach_Accounts));
+			this._Companies = new EntitySet<Company>(new Action<Company>(this.attach_Companies), new Action<Company>(this.detach_Companies));
 			OnCreated();
 		}
 		
@@ -5800,6 +5911,19 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="ProfilePhoto_Company", Storage="_Companies", ThisKey="PhotoID", OtherKey="PhotoID")]
+		public EntitySet<Company> Companies
+		{
+			get
+			{
+				return this._Companies;
+			}
+			set
+			{
+				this._Companies.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -5827,6 +5951,18 @@ namespace Project_Recruiment_Huce.Models
 		}
 		
 		private void detach_Accounts(Account entity)
+		{
+			this.SendPropertyChanging();
+			entity.ProfilePhoto = null;
+		}
+		
+		private void attach_Companies(Company entity)
+		{
+			this.SendPropertyChanging();
+			entity.ProfilePhoto = this;
+		}
+		
+		private void detach_Companies(Company entity)
 		{
 			this.SendPropertyChanging();
 			entity.ProfilePhoto = null;
@@ -6507,6 +6643,246 @@ namespace Project_Recruiment_Huce.Models
 						this._CandidateID = default(int);
 					}
 					this.SendPropertyChanged("Candidate");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.SavedJobs")]
+	public partial class SavedJob : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _SavedJobID;
+		
+		private int _CandidateID;
+		
+		private int _JobPostID;
+		
+		private System.DateTime _SavedAt;
+		
+		private string _Note;
+		
+		private EntityRef<Candidate> _Candidate;
+		
+		private EntityRef<JobPost> _JobPost;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnSavedJobIDChanging(int value);
+    partial void OnSavedJobIDChanged();
+    partial void OnCandidateIDChanging(int value);
+    partial void OnCandidateIDChanged();
+    partial void OnJobPostIDChanging(int value);
+    partial void OnJobPostIDChanged();
+    partial void OnSavedAtChanging(System.DateTime value);
+    partial void OnSavedAtChanged();
+    partial void OnNoteChanging(string value);
+    partial void OnNoteChanged();
+    #endregion
+		
+		public SavedJob()
+		{
+			this._Candidate = default(EntityRef<Candidate>);
+			this._JobPost = default(EntityRef<JobPost>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SavedJobID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int SavedJobID
+		{
+			get
+			{
+				return this._SavedJobID;
+			}
+			set
+			{
+				if ((this._SavedJobID != value))
+				{
+					this.OnSavedJobIDChanging(value);
+					this.SendPropertyChanging();
+					this._SavedJobID = value;
+					this.SendPropertyChanged("SavedJobID");
+					this.OnSavedJobIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CandidateID", DbType="Int NOT NULL")]
+		public int CandidateID
+		{
+			get
+			{
+				return this._CandidateID;
+			}
+			set
+			{
+				if ((this._CandidateID != value))
+				{
+					if (this._Candidate.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnCandidateIDChanging(value);
+					this.SendPropertyChanging();
+					this._CandidateID = value;
+					this.SendPropertyChanged("CandidateID");
+					this.OnCandidateIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_JobPostID", DbType="Int NOT NULL")]
+		public int JobPostID
+		{
+			get
+			{
+				return this._JobPostID;
+			}
+			set
+			{
+				if ((this._JobPostID != value))
+				{
+					if (this._JobPost.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnJobPostIDChanging(value);
+					this.SendPropertyChanging();
+					this._JobPostID = value;
+					this.SendPropertyChanged("JobPostID");
+					this.OnJobPostIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SavedAt", DbType="DateTime2 NOT NULL")]
+		public System.DateTime SavedAt
+		{
+			get
+			{
+				return this._SavedAt;
+			}
+			set
+			{
+				if ((this._SavedAt != value))
+				{
+					this.OnSavedAtChanging(value);
+					this.SendPropertyChanging();
+					this._SavedAt = value;
+					this.SendPropertyChanged("SavedAt");
+					this.OnSavedAtChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Note", DbType="NVarChar(500)")]
+		public string Note
+		{
+			get
+			{
+				return this._Note;
+			}
+			set
+			{
+				if ((this._Note != value))
+				{
+					this.OnNoteChanging(value);
+					this.SendPropertyChanging();
+					this._Note = value;
+					this.SendPropertyChanged("Note");
+					this.OnNoteChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Candidate_SavedJob", Storage="_Candidate", ThisKey="CandidateID", OtherKey="CandidateID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		public Candidate Candidate
+		{
+			get
+			{
+				return this._Candidate.Entity;
+			}
+			set
+			{
+				Candidate previousValue = this._Candidate.Entity;
+				if (((previousValue != value) 
+							|| (this._Candidate.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Candidate.Entity = null;
+						previousValue.SavedJobs.Remove(this);
+					}
+					this._Candidate.Entity = value;
+					if ((value != null))
+					{
+						value.SavedJobs.Add(this);
+						this._CandidateID = value.CandidateID;
+					}
+					else
+					{
+						this._CandidateID = default(int);
+					}
+					this.SendPropertyChanged("Candidate");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="JobPost_SavedJob", Storage="_JobPost", ThisKey="JobPostID", OtherKey="JobPostID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		public JobPost JobPost
+		{
+			get
+			{
+				return this._JobPost.Entity;
+			}
+			set
+			{
+				JobPost previousValue = this._JobPost.Entity;
+				if (((previousValue != value) 
+							|| (this._JobPost.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._JobPost.Entity = null;
+						previousValue.SavedJobs.Remove(this);
+					}
+					this._JobPost.Entity = value;
+					if ((value != null))
+					{
+						value.SavedJobs.Add(this);
+						this._JobPostID = value.JobPostID;
+					}
+					else
+					{
+						this._JobPostID = default(int);
+					}
+					this.SendPropertyChanged("JobPost");
 				}
 			}
 		}

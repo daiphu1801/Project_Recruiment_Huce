@@ -1,0 +1,237 @@
+@model IEnumerable<Project_Recruiment_Huce.Models.Recruiters.RecruiterApplicationViewModel>
+
+@{
+    ViewBag.Title = "Đơn ứng tuyển";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Đơn ứng tuyển</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("RecruitersManage","Recruiters")">Hồ sơ của tôi</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Đơn ứng tuyển</strong></span>
+                </div>
+                @if (ViewBag.TotalItems != null)
+                {
+                    <div class="mt-3">
+                        <span class="text-white" style="font-size: 1rem; opacity: 0.9;">
+                            <i class="icon-file-text mr-2"></i>Tổng cộng: @ViewBag.TotalItems đơn ứng tuyển
+                            @if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
+                            {
+                                <span class="ml-3">
+                                    <i class="icon-layer mr-2"></i>Trang @ViewBag.CurrentPage / @ViewBag.TotalPages
+                                </span>
+                            }
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="site-section">
+    <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        <!-- Filter Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                @using (Html.BeginForm("MyApplications", "RecruitersApplication", FormMethod.Get, new { @class = "form-inline" }))
+                {
+                    <div class="row">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <label for="jobId" class="mr-2">Lọc theo công việc:</label>
+                            @Html.DropDownList("jobId", ViewBag.Jobs as SelectList, "Tất cả công việc", new { @class = "form-control", @id = "jobId" })
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <label for="status" class="mr-2">Lọc theo trạng thái:</label>
+                            @Html.DropDownList("status", ViewBag.StatusOptions as SelectList, new { @class = "form-control", @id = "status" })
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-end flex-nowrap" style="height: 100%;">
+                                <button type="submit" class="btn btn-primary mr-2" style="white-space: nowrap;">
+                                    <i class="icon-filter mr-1"></i>Lọc
+                                </button>
+                                <a href="@Url.Action("MyApplications", "RecruitersApplication")" class="btn btn-secondary" style="white-space: nowrap;">
+                                    <i class="icon-refresh mr-1"></i>Xóa bộ lọc
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Applications List -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="row">
+                @foreach (var app in Model)
+                {
+                    <div class="col-md-12 mb-4">
+                        <div class="card application-card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5 class="card-title mb-3">
+                                            <a href="@Url.Action("ApplicationDetails", "RecruitersApplication", new { id = app.ApplicationID })" class="text-primary">
+                                                @app.CandidateName
+                                            </a>
+                                        </h5>
+                                        <div class="application-info mb-3">
+                                            <p class="mb-2">
+                                                <strong><i class="icon-briefcase mr-2"></i>Công việc:</strong>
+                                                <a href="@Url.Action("Details", "JobDetails", new { id = app.JobPostID })" class="text-info">
+                                                    @app.JobTitle
+                                                </a>
+                                                @if (!string.IsNullOrEmpty(app.JobCode))
+                                                {
+                                                    <span class="text-muted">(@app.JobCode)</span>
+                                                }
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong><i class="icon-building mr-2"></i>Công ty:</strong> @app.CompanyName
+                                            </p>
+                                            @if (!string.IsNullOrEmpty(app.CandidateEmail))
+                                            {
+                                                <p class="mb-2">
+                                                    <strong><i class="icon-envelope mr-2"></i>Email:</strong> @app.CandidateEmail
+                                                </p>
+                                            }
+                                            @if (!string.IsNullOrEmpty(app.CandidatePhone))
+                                            {
+                                                <p class="mb-2">
+                                                    <strong><i class="icon-phone mr-2"></i>Điện thoại:</strong> @app.CandidatePhone
+                                                </p>
+                                            }
+                                            @if (app.AppliedAt.HasValue)
+                                            {
+                                                <p class="mb-2">
+                                                    <strong><i class="icon-calendar mr-2"></i>Ngày ứng tuyển:</strong> 
+                                                    @app.AppliedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                                </p>
+                                            }
+                                            @if (app.UpdatedAt.HasValue)
+                                            {
+                                                <p class="mb-2">
+                                                    <strong><i class="icon-clock-o mr-2"></i>Cập nhật lúc:</strong> 
+                                                    @app.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                                </p>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-right">
+                                        <div class="mb-3">
+                                            <span class="badge @app.StatusBadgeClass badge-lg">@app.StatusDisplay</span>
+                                        </div>
+                                        <div class="application-actions">
+                                            <a href="@Url.Action("ApplicationDetails", "RecruitersApplication", new { id = app.ApplicationID })" class="btn btn-sm btn-outline-primary mb-2">
+                                                <i class="icon-eye mr-1"></i>Xem chi tiết
+                                            </a>
+                                            <a href="@Url.Action("UpdateApplicationStatus", "RecruitersApplication", new { id = app.ApplicationID })" class="btn btn-sm btn-outline-success mb-2">
+                                                <i class="icon-edit mr-1"></i>Cập nhật trạng thái
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
+            {
+                <div class="row pagination-wrap">
+                    <div class="col-md-6 text-center text-md-left mb-4 mb-md-0">
+                        @{
+                            int startItem = ((ViewBag.CurrentPage - 1) * 10) + 1;
+                            int endItem = Math.Min(ViewBag.CurrentPage * 10, ViewBag.TotalItems);
+                        }
+                        <span>Hiển thị @startItem-@endItem trong @ViewBag.TotalItems đơn ứng tuyển</span>
+                    </div>
+                    <div class="col-md-6 text-center text-md-right">
+                        <div class="custom-pagination ml-auto">
+                            @if (ViewBag.CurrentPage > 1)
+                            {
+                                <a href="@Url.Action("MyApplications", "RecruitersApplication", new { jobId = ViewBag.JobId, status = ViewBag.Status, page = ViewBag.CurrentPage - 1 })" class="prev">Trước</a>
+                            }
+                            <div class="d-inline-block">
+                                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                                {
+                                    if (i == ViewBag.CurrentPage)
+                                    {
+                                        <a href="#" class="active">@i</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="@Url.Action("MyApplications", "RecruitersApplication", new { jobId = ViewBag.JobId, status = ViewBag.Status, page = i })">@i</a>
+                                    }
+                                }
+                            </div>
+                            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                            {
+                                <a href="@Url.Action("MyApplications", "RecruitersApplication", new { jobId = ViewBag.JobId, status = ViewBag.Status, page = ViewBag.CurrentPage + 1 })" class="next">Sau</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <h3 class="mb-3">Chưa có đơn ứng tuyển nào</h3>
+                <p class="lead mb-4">Hiện tại chưa có ứng viên nào ứng tuyển vào các công việc của bạn.</p>
+                <a href="@Url.Action("MyJobs", "Jobs")" class="btn btn-primary btn-lg">
+                    <i class="icon-briefcase mr-2"></i>Xem tin tuyển dụng của tôi
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        .application-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            transition: box-shadow 0.3s;
+        }
+        .application-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .badge-lg {
+            font-size: 1rem;
+            padding: 8px 16px;
+        }
+        .application-info p {
+            margin-bottom: 5px;
+        }
+    </style>
+}
+

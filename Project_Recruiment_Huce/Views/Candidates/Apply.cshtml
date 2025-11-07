@@ -1,0 +1,330 @@
+@model Project_Recruiment_Huce.Models.Candidates.ApplicationApplyViewModel
+@{
+    ViewBag.Title = "Ứng tuyển";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Ứng tuyển: @Model.JobTitle</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("JobsListing","Jobs")">Việc làm</a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("Details","JobDetails", new { id = Model.JobPostID })">Chi tiết</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Ứng tuyển</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="site-section">
+    <div class="container">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        @if (TempData["WarningMessage"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                @TempData["WarningMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Job Information Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="icon-briefcase mr-2"></i>Thông tin công việc</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">@Model.JobTitle</h5>
+                        <p class="card-text">
+                            <strong><i class="icon-building mr-2"></i>Công ty:</strong> @Model.CompanyName<br>
+                            @if (!string.IsNullOrEmpty(Model.Location))
+                            {
+                                <strong><i class="icon-room mr-2"></i>Địa điểm:</strong> @Model.Location<br>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.SalaryRange))
+                            {
+                                <strong><i class="icon-money mr-2"></i>Lương:</strong> @Model.SalaryRange<br>
+                            }
+                            @if (Model.ApplicationDeadline.HasValue)
+                            {
+                                <strong><i class="icon-calendar mr-2"></i>Hạn nộp:</strong> @Model.ApplicationDeadline.Value.ToString("dd/MM/yyyy")
+                            }
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Candidate Profile Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h4 class="mb-0"><i class="icon-user mr-2"></i>Hồ sơ của bạn</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center mb-3">
+                                <img src="@Url.Content(Model.PhotoUrl)" alt="@Model.FullName" class="img-fluid rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                            </div>
+                            <div class="col-md-9">
+                                <h5>@Model.FullName</h5>
+                                <p class="mb-2">
+                                    @if (Model.BirthDate.HasValue)
+                                    {
+                                        <strong>Ngày sinh:</strong> @Model.BirthDate.Value.ToString("dd/MM/yyyy")<br>
+                                    }
+                                    <strong>Giới tính:</strong> @Model.Gender<br>
+                                    @if (!string.IsNullOrEmpty(Model.Phone))
+                                    {
+                                        <strong>Điện thoại:</strong> @Model.Phone<br>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.Email))
+                                    {
+                                        <strong>Email:</strong> @Model.Email<br>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.Address))
+                                    {
+                                        <strong>Địa chỉ:</strong> @Model.Address<br>
+                                    }
+                                </p>
+                                @if (!string.IsNullOrEmpty(Model.Summary))
+                                {
+                                    <div class="mt-2">
+                                        <strong>Giới thiệu:</strong>
+                                        <div class="text-muted">@Html.Raw(Model.Summary)</div>
+                                    </div>
+                                }
+                                <div class="mt-3">
+                                    <a href="@Url.Action("CandidatesManage", "Candidates")" class="btn btn-sm btn-outline-primary">
+                                        <i class="icon-edit mr-1"></i>Cập nhật hồ sơ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Application Form -->
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0"><i class="icon-file-text mr-2"></i>Chọn CV để ứng tuyển</h4>
+                    </div>
+                    <div class="card-body">
+                        @using (Html.BeginForm("Apply", "Candidates", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.HiddenFor(m => m.JobPostID)
+                            @Html.HiddenFor(m => m.CandidateID)
+
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                            <!-- Select Existing Resume -->
+                            <div class="form-group">
+                                <label class="form-label font-weight-bold">Chọn CV từ danh sách của bạn:</label>
+                                @if (Model.AvailableResumes != null && Model.AvailableResumes.Any())
+                                {
+                                    <div class="list-group">
+                                        @foreach (var resume in Model.AvailableResumes)
+                                        {
+                                            <label class="list-group-item">
+                                                <input type="radio" name="SelectedResumeFileID" value="@resume.ResumeFileID" class="mr-2 resume-radio" 
+                                                       @(Model.SelectedResumeFileID == resume.ResumeFileID ? "checked" : "")>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>@resume.DisplayName</strong>
+                                                        <small class="text-muted d-block">
+                                                            <i class="icon-calendar mr-1"></i>
+                                                            @(resume.UploadedAt.HasValue ? resume.UploadedAt.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")
+                                                        </small>
+                                                    </div>
+                                                    <div>
+                                                        <a href="@Url.Content(resume.FilePath)" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                            <i class="icon-eye mr-1"></i>Xem
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="icon-info mr-2"></i>Bạn chưa có CV nào. Vui lòng tải CV mới lên bên dưới.
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="text-center my-4">
+                                <strong class="text-muted">HOẶC</strong>
+                            </div>
+
+                            <!-- Upload New Resume -->
+                            <div class="form-group">
+                                <label class="form-label font-weight-bold">Tải CV mới lên từ máy tính:</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="newResumeFile" name="newResumeFile" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif">
+                                    <label class="custom-file-label" for="newResumeFile">Chọn file CV (PDF, DOC, DOCX, PNG, JPG, JPEG, GIF - tối đa 10MB)</label>
+                                </div>
+                                @Html.ValidationMessageFor(m => m.NewResumeFile, "", new { @class = "text-danger" })
+                                <small class="form-text text-muted">File sẽ được lưu vào quản lý CV của bạn để sử dụng cho các lần ứng tuyển sau.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="NewResumeTitle" class="form-label">Tên CV (tùy chọn):</label>
+                                @Html.TextBoxFor(m => m.NewResumeTitle, new { @class = "form-control", placeholder = "VD: CV Frontend Developer 2024" })
+                                @Html.ValidationMessageFor(m => m.NewResumeTitle, "", new { @class = "text-danger" })
+                            </div>
+
+                            <!-- Note -->
+                            <div class="form-group">
+                                <label for="Note" class="form-label">Ghi chú cho nhà tuyển dụng (tùy chọn):</label>
+                                @Html.TextAreaFor(m => m.Note, new { @class = "form-control", rows = "4", placeholder = "Viết thêm thông tin bạn muốn nhà tuyển dụng biết..." })
+                                @Html.ValidationMessageFor(m => m.Note, "", new { @class = "text-danger" })
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="form-group mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                    <i class="icon-check mr-2"></i>Gửi đơn ứng tuyển
+                                </button>
+                                <a href="@Url.Action("Details", "JobDetails", new { id = Model.JobPostID })" class="btn btn-secondary btn-block mt-2">
+                                    <i class="icon-arrow-left mr-2"></i>Quay lại
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="icon-info mr-2"></i>Lưu ý</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <i class="icon-check text-success mr-2"></i>
+                                <strong>Chọn CV phù hợp:</strong> Chọn CV phù hợp nhất với công việc bạn đang ứng tuyển.
+                            </li>
+                            <li class="mb-3">
+                                <i class="icon-check text-success mr-2"></i>
+                                <strong>Tải CV mới:</strong> CV mới sẽ được lưu vào quản lý CV để bạn có thể sử dụng lại.
+                            </li>
+                            <li class="mb-3">
+                                <i class="icon-check text-success mr-2"></i>
+                                <strong>Ghi chú:</strong> Thêm ghi chú để làm nổi bật ứng tuyển của bạn.
+                            </li>
+                            <li class="mb-3">
+                                <i class="icon-check text-success mr-2"></i>
+                                <strong>Quản lý CV:</strong> 
+                                <a href="@Url.Action("MyResumes", "ResumeFiles")" target="_blank">Quản lý CV của tôi</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="icon-briefcase mr-2"></i>Thông tin công việc</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Vị trí:</strong> @Model.JobTitle</p>
+                        <p><strong>Công ty:</strong> @Model.CompanyName</p>
+                        @if (!string.IsNullOrEmpty(Model.Location))
+                        {
+                            <p><strong>Địa điểm:</strong> @Model.Location</p>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.SalaryRange))
+                        {
+                            <p><strong>Lương:</strong> @Model.SalaryRange</p>
+                        }
+                        <a href="@Url.Action("Details", "JobDetails", new { id = Model.JobPostID })" class="btn btn-sm btn-outline-primary btn-block mt-3">
+                            <i class="icon-eye mr-1"></i>Xem chi tiết công việc
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Update custom file input label
+            $('#newResumeFile').on('change', function() {
+                var fileName = $(this).val().split('\\').pop();
+                $(this).next('.custom-file-label').html(fileName || 'Chọn file CV (PDF, DOC, DOCX, PNG, JPG, JPEG, GIF - tối đa 10MB)');
+                
+                // When file is selected, uncheck all radio buttons
+                if ($(this).val()) {
+                    $('.resume-radio').prop('checked', false);
+                }
+            });
+
+            // Handle radio button selection
+            $('.resume-radio').on('change', function() {
+                if ($(this).is(':checked')) {
+                    // Clear file input when CV is selected
+                    $('#newResumeFile').val('');
+                    $('#newResumeFile').next('.custom-file-label').html('Chọn file CV (PDF, DOC, DOCX, PNG, JPG, JPEG, GIF - tối đa 10MB)');
+                    $('#NewResumeTitle').val('');
+                }
+            });
+
+            // Allow clicking on file input even when disabled (by clicking the label)
+            $('.custom-file-label').on('click', function() {
+                // If a radio is checked, uncheck it first
+                if ($('.resume-radio:checked').length > 0) {
+                    $('.resume-radio:checked').prop('checked', false);
+                }
+                // Enable file input
+                $('#newResumeFile').prop('disabled', false);
+                $('#NewResumeTitle').prop('disabled', false);
+            });
+
+            // Enable file input when clicking on the upload section
+            $('.custom-file').on('click', function(e) {
+                // If clicking on the label or input area
+                if ($(e.target).is('.custom-file-label') || $(e.target).is('.custom-file-input')) {
+                    // Uncheck any selected radio
+                    if ($('.resume-radio:checked').length > 0) {
+                        $('.resume-radio:checked').prop('checked', false);
+                    }
+                    // Ensure file input is enabled
+                    $('#newResumeFile').prop('disabled', false);
+                    $('#NewResumeTitle').prop('disabled', false);
+                }
+            });
+
+            // Form validation
+            $('form').on('submit', function(e) {
+                var hasSelectedResume = $('.resume-radio:checked').length > 0;
+                var hasNewFile = $('#newResumeFile').val() !== '';
+                
+                if (!hasSelectedResume && !hasNewFile) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn CV từ danh sách hoặc tải CV mới lên.');
+                    return false;
+                }
+            });
+        });
+    </script>
+}
+
