@@ -19,7 +19,7 @@
                   <input type="text" name="keyword" id="keyword" class="form-control form-control-lg" placeholder="Tên công việc, Công ty..." value="@Request.QueryString["keyword"]">
                 </div>
                 <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                  <select name="location" id="location" class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Chọn khu vực">
+                  <select name="location" id="location" class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" data-container="body" data-dropup-auto="false" title="Chọn khu vực">
                     <option value="">Bất kỳ đâu</option>
                     @if (ViewBag.Locations != null)
                     {
@@ -47,26 +47,23 @@
                   </select>
                 </div>
                 <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                  <select name="employmentType" id="employmentType" class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Chọn loại công việc">
+                  <select name="employmentType" id="employmentType" class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" data-container="body" data-dropup-auto="false" title="Chọn loại công việc">
                     <option value="">Tất cả</option>
                     @{
                       var selectedEmpType = Request.QueryString["employmentType"];
+                      var employmentTypeOptions = new[]
+                      {
+                        "Bán thời gian",
+                        "Toàn thời gian",
+                        "Thực tập",
+                        "Hợp đồng",
+                        "Làm việc từ xa"
+                      };
                     }
-                    @if (selectedEmpType == "Bán thời gian")
+                    @foreach (var option in employmentTypeOptions)
                     {
-                      <option value="Bán thời gian" selected>Bán thời gian</option>
-                    }
-                    else
-                    {
-                      <option value="Bán thời gian">Bán thời gian</option>
-                    }
-                    @if (selectedEmpType == "Toàn thời gian")
-                    {
-                      <option value="Toàn thời gian" selected>Toàn thời gian</option>
-                    }
-                    else
-                    {
-                      <option value="Toàn thời gian">Toàn thời gian</option>
+                      var isSelected = string.Equals(selectedEmpType, option, StringComparison.OrdinalIgnoreCase);
+                      <option value="@option" @(isSelected ? "selected" : "")>@option</option>
                     }
                   </select>
                 </div>
@@ -301,11 +298,11 @@
               <div class="col-lg-6 align-self-center text-center text-lg-left">
                 <blockquote>
                   <p>&ldquo;JobBoard đã giúp tôi tìm được công việc mơ ước một cách nhanh chóng và dễ dàng. Giao diện thân thiện và hệ thống tìm kiếm thông minh giúp tôi nhanh chóng tìm thấy những cơ hội phù hợp với kỹ năng của mình.&rdquo;</p>
-                  <p><cite> &mdash; Nguyễn Văn A, Ứng viên</cite></p>
+                  <p><cite> &mdash; Nguyễn Minh Tiến, Ứng viên</cite></p>
                 </blockquote>
               </div>
               <div class="col-lg-6 align-self-end text-center text-lg-right">
-                <img src="@Url.Content("~/Content/images/person_transparent_2.png")" alt="Phản hồi từ ứng viên" class="img-fluid mb-0">
+                <img src="@Url.Content("~/Content/images/ảnh_bìa_4-Photoroom.png")" alt="Phản hồi từ ứng viên" class="img-fluid mb-0">
               </div>
             </div>
           </div>
@@ -319,7 +316,7 @@
                 </blockquote>
               </div>
               <div class="col-lg-6 align-self-end text-center text-lg-right">
-                <img src="@Url.Content("~/Content/images/person_transparent.png")" alt="Phản hồi từ nhà tuyển dụng" class="img-fluid mb-0">
+                <img src="@Url.Content("~/Content/images/ảnh_bìa_3-Photoroom.png")" alt="Phản hồi từ nhà tuyển dụng" class="img-fluid mb-0">
               </div>
             </div>
           </div>
@@ -332,13 +329,13 @@
       <div class="container">
         <div class="row">
           <div class="col-md-6 align-self-center text-center text-md-left mb-5 mb-md-0">
-            <h2 class="text-white">Tải Ứng Dụng Di Động</h2>
-            <p class="mb-5 lead text-white">Tìm kiếm và ứng tuyển việc làm mọi lúc, mọi nơi với ứng dụng JobBoard trên điện thoại. Trải nghiệm tuyệt vời và tiện lợi ngay trong tầm tay bạn.</p>
+            <h2 class="text-white">Dễ Dàng Sử Dụng Trên Điện Thoại</h2>
+            <p class="mb-5 lead text-white">JobBoard hoạt động mượt mà trên mọi thiết bị. Bạn có thể tìm kiếm việc làm, ứng tuyển và theo dõi hành trình nghề nghiệp của mình ngay trên smartphone.</p>
             <p class="mb-0">
-              <a href="#" class="btn btn-dark btn-md px-4 border-width-2"><span class="icon-apple mr-3"></span>App Store</a>
-              <a href="#" class="btn btn-dark btn-md px-4 border-width-2"><span class="icon-android mr-3"></span>Play Store</a>
+              <a href="@Url.Action("JobsListing", "Jobs")" class="btn btn-warning btn-md px-4 border-width-2"><span class="icon-search mr-3"></span>Khám phá việc làm</a>
+              <a href="@Url.Action("Register", "Account")" class="btn btn-outline-light btn-md px-4 border-width-2 mt-3 mt-md-0"><span class="icon-person_add mr-3"></span>Đăng ký miễn phí</a>
             </p>
-            <p class="mt-3 text-white-50 small">* Ứng dụng đang trong quá trình phát triển, sắp ra mắt!</p>
+            <p class="mt-3 text-white-50 small">* Không cần cài đặt ứng dụng – chỉ cần mở JobBoard trên trình duyệt điện thoại.</p>
           </div>
           <div class="col-md-6 ml-auto align-self-end">
             <img src="@Url.Content("~/Content/images/apps.png")" alt="Ứng dụng JobBoard" class="img-fluid">

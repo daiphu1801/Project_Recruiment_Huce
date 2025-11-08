@@ -21,6 +21,36 @@
 
 <section class="site-section">
   <div class="container">
+    @if (TempData["SuccessMessage"] != null)
+    {
+      <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-top: 20px;">
+        <i class="icon-check-circle mr-2"></i>
+        <strong>Thành công!</strong> @TempData["SuccessMessage"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+      <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-top: 20px;">
+        <i class="icon-exclamation-circle mr-2"></i>
+        <strong>Lỗi!</strong> @TempData["ErrorMessage"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    }
+    @if (TempData["WarningMessage"] != null)
+    {
+      <div class="alert alert-warning alert-dismissible fade show" role="alert" style="margin-top: 20px;">
+        <i class="icon-warning mr-2"></i>
+        <strong>Cảnh báo!</strong> @TempData["WarningMessage"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    }
     <div class="row align-items-center mb-5">
       <div class="col-lg-8 mb-4 mb-lg-0">
         <div class="d-flex align-items-center">
@@ -220,12 +250,12 @@
         <div class="row">
           <div class="col-lg-6 align-self-center text-center text-lg-left">
             <blockquote>
-              <p>&ldquo;Soluta quasi cum delectus eum facilis recusandae nesciunt molestias accusantium libero dolores repellat id in dolorem laborum ad modi qui at quas dolorum voluptatem voluptatum repudiandae.&rdquo;</p>
-              <p><cite> &mdash; Corey Woods, @@Dribbble</cite></p>
+              <p>&ldquo;JobBoard đã giúp tôi tìm được công việc mơ ước một cách nhanh chóng và dễ dàng. Giao diện thân thiện và hệ thống tìm kiếm thông minh giúp tôi nhanh chóng tìm thấy những cơ hội phù hợp với kỹ năng của mình.&rdquo;</p>
+              <p><cite> &mdash; Bùi Đại Phú, Ứng viên</cite></p>
             </blockquote>
           </div>
           <div class="col-lg-6 align-self-end text-center text-lg-right">
-            <img src="@Url.Content("~/Content/images/person_transparent_2.png")" alt="Image" class="img-fluid mb-0">
+            <img src="@Url.Content("~/Content/images/ảnh_bìa-removebg-preview.png")" alt="Phản hồi từ ứng viên" class="img-fluid mb-0">
           </div>
         </div>
       </div>
@@ -234,12 +264,12 @@
         <div class="row">
           <div class="col-lg-6 align-self-center text-center text-lg-left">
             <blockquote>
-              <p>&ldquo;Soluta quasi cum delectus eum facilis recusandae nesciunt molestias accusantium libero dolores repellat id in dolorem laborum ad modi qui at quas dolorum voluptatem voluptatum repudiandae.&rdquo;</p>
-              <p><cite> &mdash; Corey Woods, @@Dribbble</cite></p>
+              <p>&ldquo;Là một nhà tuyển dụng, tôi rất hài lòng với JobBoard. Hệ thống giúp chúng tôi tiếp cận được nhiều ứng viên chất lượng và quản lý quy trình tuyển dụng một cách hiệu quả. Đây thực sự là công cụ tuyển dụng tốt nhất mà chúng tôi từng sử dụng.&rdquo;</p>
+              <p><cite> &mdash; Nguyễn Minh Tiến, Nhà tuyển dụng</cite></p>
             </blockquote>
           </div>
           <div class="col-lg-6 align-self-end text-center text-lg-right">
-            <img src="@Url.Content("~/Content/images/person_transparent_2.png")" alt="Image" class="img-fluid mb-0">
+            <img src="@Url.Content("~/Content/images/ảnh_bìa_2-removebg-preview-Photoroom.png")" alt="Phản hồi từ nhà tuyển dụng" class="img-fluid mb-0">
           </div>
         </div>
       </div>

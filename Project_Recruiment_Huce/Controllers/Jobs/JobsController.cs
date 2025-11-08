@@ -100,16 +100,27 @@ namespace Project_Recruiment_Huce.Controllers
         /// </summary>
         private string GetEmploymentTypeDisplay(string employmentType)
         {
-            if (string.IsNullOrEmpty(employmentType))
-                return "";
+            if (string.IsNullOrWhiteSpace(employmentType))
+                return string.Empty;
 
-            string empType = employmentType.ToLower();
-            if (empType == "part-time" || empType == "part time")
-                return "Bán thời gian";
-            else if (empType == "full-time" || empType == "full time")
-                return "Toàn thời gian";
-            else
-                return employmentType;
+            var mapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "part-time", "Bán thời gian" },
+                { "part time", "Bán thời gian" },
+                { "full-time", "Toàn thời gian" },
+                { "full time", "Toàn thời gian" },
+                { "internship", "Thực tập" },
+                { "contract", "Hợp đồng" },
+                { "remote", "Làm việc từ xa" }
+            };
+
+            var normalized = employmentType.Trim();
+            if (mapping.TryGetValue(normalized, out var display))
+            {
+                return display;
+            }
+
+            return employmentType;
         }
 
         /// <summary>
@@ -170,9 +181,24 @@ namespace Project_Recruiment_Huce.Controllers
                 // Filter by employment type
                 if (!string.IsNullOrWhiteSpace(employmentType))
                 {
-                    string dbValue = employmentType == "Bán thời gian" ? "Part-time" : 
-                                   employmentType == "Toàn thời gian" ? "Full-time" : employmentType;
-                    query = query.Where(j => j.EmploymentType == dbValue);
+                    var selectedEmploymentType = employmentType.Trim();
+                    var employmentTypeLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "Bán thời gian", "Part-time" },
+                        { "Toàn thời gian", "Full-time" },
+                        { "Thực tập", "Internship" },
+                        { "Hợp đồng", "Contract" },
+                        { "Làm việc từ xa", "Remote" }
+                    };
+
+                    if (employmentTypeLookup.TryGetValue(selectedEmploymentType, out var dbValue))
+                    {
+                        query = query.Where(j => j.EmploymentType == dbValue);
+                    }
+                    else
+                    {
+                        query = query.Where(j => j.EmploymentType == selectedEmploymentType);
+                    }
                 }
 
                 // Pagination
