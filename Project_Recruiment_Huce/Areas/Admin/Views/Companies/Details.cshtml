@@ -21,15 +21,31 @@
                     { <text>-</text>}
                     </div>
                 </div>
-                <div class="row mb-2"><div class="col-4 text-secondary">Description</div><div class="col-8">@Model.Description</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Mô tả</div><div class="col-8">@Model.Description</div></div>
                 <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@(Model.ActiveFlag == 1 ? "Hoạt động" : "Tạm khóa")</div></div>
                 <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Photo ID</div><div class="col-8">@(Model.PhotoId?.ToString() ?? "-")</div></div>
             </div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card">
-            <div class="card-header"><h6 class="mb-0">Liên quan</h6></div>
+            <div class="card-header"><h6 class="mb-0">Logo</h6></div>
+            <div class="card-body text-center">
+                @if (!string.IsNullOrEmpty(Model.PhotoUrl))
+                {
+                    <img src="@Url.Content(Model.PhotoUrl)" alt="@Model.CompanyName" class="img-fluid rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white mx-auto mb-3" style="width: 200px; height: 200px;">
+                        <i class="bi bi-person" style="font-size: 80px;"></i>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-header"><h6 class="mb-0">Liên kết</h6></div>
             <div class="card-body">
                 <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","Recruiters", new { area="Admin", companyId = Model.CompanyId })">Nhà tuyển dụng</a>
                 <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","JobPosts", new { area="Admin", companyId = Model.CompanyId })">Tin tuyển dụng</a>
