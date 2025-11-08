@@ -345,16 +345,27 @@ namespace Project_Recruiment_Huce.Controllers
         /// </summary>
         private string GetEmploymentTypeDisplay(string employmentType)
         {
-            if (string.IsNullOrEmpty(employmentType))
-                return "";
+            if (string.IsNullOrWhiteSpace(employmentType))
+                return string.Empty;
 
-            string empType = employmentType.ToLower();
-            if (empType == "part-time" || empType == "part time")
-                return "Bán thời gian";
-            else if (empType == "full-time" || empType == "full time")
-                return "Toàn thời gian";
-            else
-                return employmentType;
+            var mapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "part-time", "Bán thời gian" },
+                { "part time", "Bán thời gian" },
+                { "full-time", "Toàn thời gian" },
+                { "full time", "Toàn thời gian" },
+                { "internship", "Thực tập" },
+                { "contract", "Hợp đồng" },
+                { "remote", "Làm việc từ xa" }
+            };
+
+            var normalized = employmentType.Trim();
+            if (mapping.TryGetValue(normalized, out var display))
+            {
+                return display;
+            }
+
+            return employmentType;
         }
 
         /// <summary>
