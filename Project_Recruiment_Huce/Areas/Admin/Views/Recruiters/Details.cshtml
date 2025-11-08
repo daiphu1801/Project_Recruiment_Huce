@@ -2,31 +2,47 @@
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
 
 <div class="row">
-  <div class="col-md-8">
-    <div class="card">
-      <div class="card-header"><h5 class="card-title">Thông tin nhà tuyển dụng</h5></div>
-      <div class="card-body">
-        <div class="row mb-2"><div class="col-4 text-secondary">ID</div><div class="col-8">@Model.RecruiterId</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Account ID</div><div class="col-8">@Model.AccountId</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Company ID</div><div class="col-8">@Model.CompanyId</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Họ tên</div><div class="col-8">@(Model.FullName ?? "-")</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Công ty</div><div class="col-8">@(Model.CompanyName ?? "-")</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Chức danh</div><div class="col-8">@(Model.PositionTitle ?? "-")</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Email công việc</div><div class="col-8">@(Model.CompanyEmail ?? "-")</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">SĐT</div><div class="col-8">@(Model.Phone ?? "-")</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@(Model.ActiveFlag == 1 ? "Hoạt động" : "Tạm khóa")</div></div>
-      </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header"><h5 class="card-title">Thông tin nhà tuyển dụng</h5></div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-4 text-secondary">ID</div><div class="col-8">@Model.RecruiterId</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Account ID</div><div class="col-8">@Model.AccountId</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Company ID</div><div class="col-8">@Model.CompanyId</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Họ tên</div><div class="col-8">@(Model.FullName ?? "-")</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Công ty</div><div class="col-8">@(Model.CompanyName ?? "-")</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Chức danh</div><div class="col-8">@(Model.PositionTitle ?? "-")</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Email công việc</div><div class="col-8">@(Model.CompanyEmail ?? "-")</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">SĐT</div><div class="col-8">@(Model.Phone ?? "-")</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@(Model.ActiveFlag == 1 ? "Hoạt động" : "Tạm khóa")</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Photo ID</div><div class="col-8">@(Model.PhotoId?.ToString() ?? "-")</div></div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card"><div class="card-header"><h6 class="mb-0">Liên quan</h6></div>
-      <div class="card-body">
-        <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Details","Companies", new { area="Admin", id = 1 })">Công ty</a>
-        <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","JobPosts", new { area="Admin", recruiterId = Model.RecruiterId })">Tin tuyển dụng</a>
-      </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header"><h6 class="mb-0">Ảnh đại diện</h6></div>
+            <div class="card-body text-center">
+                @if (!string.IsNullOrEmpty(Model.PhotoUrl))
+                {
+                    <img src="@Url.Content(Model.PhotoUrl)" alt="@Model.FullName" class="img-fluid rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white mx-auto mb-3" style="width: 200px; height: 200px;">
+                        <i class="bi bi-person" style="font-size: 80px;"></i>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card">
+                <div class="card-header"><h6 class="mb-0">Liên quan</h6></div>
+                <div class="card-body">
+                    <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Details","Companies", new { area="Admin", id = 1 })">Công ty</a>
+                    <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","JobPosts", new { area="Admin", recruiterId = Model.RecruiterId })">Tin tuyển dụng</a>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
-
-

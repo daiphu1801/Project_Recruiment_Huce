@@ -22,7 +22,7 @@
             </div>
         }
 
-        @using (Html.BeginForm("Edit", "Recruiters", new { area = "Admin" }, FormMethod.Post))
+        @using (Html.BeginForm("Edit", "Recruiters", new { area = "Admin" }, FormMethod.Post, new { enctype = "multipart/form-data" }))
         {
             @Html.AntiForgeryToken()
             @Html.HiddenFor(m => m.RecruiterId)
@@ -55,7 +55,7 @@
 
                     <div class="mb-3">
                         @Html.LabelFor(m => m.CompanyEmail, new { @class = "form-label" })
-                        @Html.TextBoxFor(m => m.CompanyEmail, new { @class = "form-control", type = "email", placeholder = "Nhập email công việc" })
+                        @Html.TextBoxFor(m => m.CompanyEmail, new { @class = "form-control", type = "email", placeholder = "Nhập email" })
                         @Html.ValidationMessageFor(m => m.CompanyEmail, "", new { @class = "text-danger" })
                     </div>
 
@@ -65,10 +65,37 @@
                         @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
                     </div>
 
-                    <div class="mb-3">
-                        <div class="form-check">
-                            @Html.CheckBoxFor(m => m.Active, new { @class = "form-check-input" })
-                            @Html.LabelFor(m => m.Active, new { @class = "form-check-label" })
+                    <div class="mb-3 form-check">
+                        @Html.CheckBoxFor(m => m.Active, new { @class = "form-check-input" })
+                        <label class="form-check-label" for="Active">
+                            Tài khoản hoạt động
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Ảnh đại diện</h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <div id="photoPreview" class="mb-3">
+                                @if (!string.IsNullOrEmpty(Model.CurrentPhotoUrl))
+                                {
+                                    <img src="@Model.CurrentPhotoUrl" alt="Current Photo" class="rounded-circle mx-auto d-block" style="width: 200px; height: 200px; object-fit: cover;" id="currentPhoto" />
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white mx-auto" style="width: 200px; height: 200px;">
+                                        <i class="bi bi-camera" style="font-size: 60px;"></i>
+                                    </div>
+                                }
+                            </div>
+                            <div class="mb-3">
+                                @Html.LabelFor(m => m.PhotoFile, new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.PhotoFile, new { @class = "form-control", type = "file", accept = "image/*" })
+                            </div>
+                            <small class="text-muted">Để trống nếu không muốn thay đổi ảnh</small>
                         </div>
                     </div>
                 </div>
@@ -85,3 +112,27 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.getElementById('PhotoFile').addEventListener('change', function (e) {
+            var file = e.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'rounded-circle mx-auto d-block';
+                    img.style.width = '200px';
+                    img.style.height = '200px';
+                    img.style.objectFit = 'cover';
+
+                    var preview = document.getElementById('photoPreview');
+                    preview.innerHTML = '';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}

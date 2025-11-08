@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Web;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Models
 {
@@ -46,6 +47,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
             get => ActiveFlag == 1;
             set => ActiveFlag = value ? (byte?)1 : (byte?)0;
         }
+        public int? PhotoId { get; set; }
+        public string PhotoUrl { get; set; }
     }
     public class CreateCompanyVm
     {
@@ -97,6 +100,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
             get => ActiveFlag == 1;
             set => ActiveFlag = value ? (byte?)1 : (byte?)0;
         }
+        public HttpPostedFileBase PhotoFile { get; set; }
     }
 
     public class EditCompanyVm
@@ -151,5 +155,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
             get => ActiveFlag == 1;
             set => ActiveFlag = value ? (byte?)1 : (byte?)0;
         }
+        public int? CurrentPhotoId { get; set; }
+        public string CurrentPhotoUrl { get; set; }
+        public HttpPostedFileBase PhotoFile { get; set; }
     }
 }
