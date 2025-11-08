@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Web;
 using System.Xml.Linq;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Models
@@ -32,7 +33,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
 
         [Display(Name = "Ngày tạo")]
         public DateTime? CreatedAt { get; set; }
-                
+
         public byte? ActiveFlag { get; set; } // 1 = active, 0 = inactive
 
         // Helper properties for display (from related tables)
@@ -45,6 +46,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
             get => ActiveFlag == 1;
             set => ActiveFlag = value ? (byte?)1 : (byte?)0;
         }
+        public int? PhotoId { get; set; }
+        public string PhotoUrl { get; set; }
     }
 
     public class CreateRecruiterVm
@@ -74,7 +77,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Display(Name = "Số điện thoại")]
         [StringLength(20)]
         public string Phone { get; set; }
-                
+
         public byte? ActiveFlag { get; set; }
 
         [Display(Name = "Hoạt động")]
@@ -83,6 +86,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
             get => ActiveFlag == 1;
             set => ActiveFlag = value ? (byte?)1 : (byte?)0;
         }
+        public HttpPostedFileBase PhotoFile { get; set; }
     }
 
     public class EditRecruiterVm
@@ -114,7 +118,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Display(Name = "Số điện thoại")]
         [StringLength(20)]
         public string Phone { get; set; }
-                
+
         public byte? ActiveFlag { get; set; }
 
         [Display(Name = "Hoạt động")]
@@ -123,5 +127,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
             get => ActiveFlag == 1;
             set => ActiveFlag = value ? (byte?)1 : (byte?)0;
         }
+        public int? CurrentPhotoId { get; set; }
+        public string CurrentPhotoUrl { get; set; }
+        public HttpPostedFileBase PhotoFile { get; set; }
     }
 }
