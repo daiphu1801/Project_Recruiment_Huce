@@ -1,136 +1,453 @@
-@model Project_Recruiment_Huce.Areas.Admin.Models.JobPostListVm
+@model Project_Recruiment_Huce.Areas.Admin.Models.JobPostEditVm
 @{
-    ViewBag.Title = "Sửa tin tuyển dụng";
+    // Dòng này đã được kiểm tra và chuẩn hóa ký tự
+    ViewBag.Title = "Chỉnh sửa tin tuyển dụng";
 }
+
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
 
-<div class="card">
-  <div class="card-header">
-    <h5 class="card-title mb-0"><i class="bi bi-pencil-square"></i> Chỉnh sửa tin tuyển dụng</h5>
-  </div>
-  <div class="card-body">
-    @if (!ViewData.ModelState.IsValid)
-    {
-      <div class="alert alert-danger">
-        <ul class="mb-0">
-          @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-          {
-            <li>@error.ErrorMessage</li>
-          }
-        </ul>
-      </div>
-    }
-
-    @using (Html.BeginForm("Edit", "JobPosts", FormMethod.Post))
-    {
-      @Html.AntiForgeryToken()
-      @Html.HiddenFor(m => m.JobId)
-      
-      <div class="row">
-        <div class="col-md-6">
-          <div class="mb-3">
-            @Html.LabelFor(m => m.JobCode, new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.JobCode, new { @class = "form-control", placeholder = "Nhập mã công việc" })
-            @Html.ValidationMessageFor(m => m.JobCode, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.Title, new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.Title, new { @class = "form-control", placeholder = "Nhập tiêu đề công việc" })
-            @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.CompanyId, "Công ty", new { @class = "form-label" })
-            @Html.DropDownListFor(m => m.CompanyId, ViewBag.CompanyOptions as SelectList, "-- Chọn công ty --", new { @class = "form-select" })
-            @Html.ValidationMessageFor(m => m.CompanyId, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.RecruiterId, "Nhà tuyển dụng", new { @class = "form-label" })
-            @Html.DropDownListFor(m => m.RecruiterId, ViewBag.RecruiterOptions as SelectList, "-- Chọn nhà tuyển dụng --", new { @class = "form-select" })
-            @Html.ValidationMessageFor(m => m.RecruiterId, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.LocationText, "Địa điểm", new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.LocationText, new { @class = "form-control", placeholder = "VD: TP.HCM, Hà Nội" })
-            @Html.ValidationMessageFor(m => m.LocationText, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.Description, "Mô tả công việc", new { @class = "form-label" })
-            @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = "4", placeholder = "Nhập mô tả công việc" })
-            @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.Requirements, "Yêu cầu", new { @class = "form-label" })
-            @Html.TextAreaFor(m => m.Requirements, new { @class = "form-control", rows = "4", placeholder = "Nhập yêu cầu công việc" })
-            @Html.ValidationMessageFor(m => m.Requirements, "", new { @class = "text-danger" })
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="mb-3">
-            @Html.LabelFor(m => m.Employment, "Hình thức", new { @class = "form-label" })
-            @Html.DropDownListFor(m => m.Employment, ViewBag.EmploymentOptions as SelectList, "-- Chọn hình thức --", new { @class = "form-select" })
-            @Html.ValidationMessageFor(m => m.Employment, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="row">
-            <div class="col-md-6">
-              <div class="mb-3">
-                @Html.LabelFor(m => m.SalaryMin, "Lương tối thiểu", new { @class = "form-label" })
-                @Html.TextBoxFor(m => m.SalaryMin, new { @class = "form-control", type = "number", placeholder = "VD: 15000000" })
-                @Html.ValidationMessageFor(m => m.SalaryMin, "", new { @class = "text-danger" })
-              </div>
+<div class="card shadow-sm">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-pencil-square"></i> Chỉnh sửa tin tuyển dụng #@Model.JobPostID
+        </h5>
+    </div>
+    <div class="card-body">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong><i class="bi bi-exclamation-triangle-fill"></i> Vui lòng kiểm tra lại thông tin:</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <div class="col-md-6">
-              <div class="mb-3">
-                @Html.LabelFor(m => m.SalaryMax, "Lương tối đa", new { @class = "form-label" })
-                @Html.TextBoxFor(m => m.SalaryMax, new { @class = "form-control", type = "number", placeholder = "VD: 30000000" })
-                @Html.ValidationMessageFor(m => m.SalaryMax, "", new { @class = "text-danger" })
-              </div>
+        }
+
+        @using (Html.BeginForm("Edit", "JobPosts", FormMethod.Post, new { @class = "needs-validation", id = "editJobPostForm" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.JobPostID)
+            @Html.HiddenFor(m => m.PostedAt)
+
+            <div class="row g-4">
+                <!-- PHẦN BÊN TRÁI -->
+                <div class="col-lg-6">
+                    <h6 class="text-warning border-bottom pb-2 mb-3">
+                        <i class="bi bi-info-circle"></i> Thông tin cơ bản
+                    </h6>
+
+                    <!-- Mã công việc -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Mã công việc <span class="text-danger">*</span>
+                        </label>
+                        @Html.TextBoxFor(m => m.JobCode, new
+                        {
+                            @class = "form-control",
+                            placeholder = "VD: JOB-2024-001"
+                        })
+                        @Html.ValidationMessageFor(m => m.JobCode, "", new { @class = "text-danger small mt-1 d-block" })
+                    </div>
+
+                    <!-- Tiêu đề -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Tiêu đề công việc <span class="text-danger">*</span>
+                        </label>
+                        @Html.TextBoxFor(m => m.Title, new
+                        {
+                            @class = "form-control",
+                            placeholder = "VD: Tuyển dụng Lập trình viên .NET"
+                        })
+                        @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger small mt-1 d-block" })
+                    </div>
+
+                    <!-- Công ty -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Công ty <span class="text-danger">*</span>
+                        </label>
+                        @Html.DropDownListFor(m => m.CompanyID,
+                            ViewBag.CompanyOptions as SelectList,
+                            "-- Chọn công ty --",
+                            new { @class = "form-select" })
+                        @Html.ValidationMessageFor(m => m.CompanyID, "", new { @class = "text-danger small mt-1 d-block" })
+                    </div>
+
+                    <!-- Nhà tuyển dụng -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Nhà tuyển dụng <span class="text-danger">*</span>
+                        </label>
+                        @Html.DropDownListFor(m => m.RecruiterID,
+                            ViewBag.RecruiterOptions as SelectList,
+                            "-- Chọn nhà tuyển dụng --",
+                            new { @class = "form-select" })
+                        @Html.ValidationMessageFor(m => m.RecruiterID, "", new { @class = "text-danger small mt-1 d-block" })
+                    </div>
+
+                    <!-- Địa điểm -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Địa điểm làm việc <span class="text-danger">*</span>
+                        </label>
+                        @Html.TextBoxFor(m => m.Location, new
+                        {
+                            @class = "form-control",
+                            placeholder = "VD: Hà Nội, TP.HCM, Đà Nẵng"
+                        })
+                        @Html.ValidationMessageFor(m => m.Location, "", new { @class = "text-danger small mt-1 d-block" })
+                    </div>
+
+                    <!-- Loại hình công việc -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Loại hình công việc <span class="text-danger">*</span>
+                        </label>
+                        @Html.DropDownListFor(m => m.EmploymentType,
+                            new SelectList(new[] {
+                                "Full-time",
+                                "Part-time",
+                                "Contract",
+                                "Internship",
+                                "Freelance"
+                            }, Model.EmploymentType),
+                            "-- Chọn loại hình --",
+                            new { @class = "form-select" })
+                        @Html.ValidationMessageFor(m => m.EmploymentType, "", new { @class = "text-danger small mt-1 d-block" })
+                    </div>
+
+                    <!-- Mô tả công việc -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Mô tả công việc <span class="text-danger">*</span>
+                        </label>
+                        @Html.TextAreaFor(m => m.Description, new
+                        {
+                            @class = "form-control",
+                            rows = "6",
+                            placeholder = "Nhập mô tả chi tiết về công việc, trách nhiệm, quyền lợi..."
+                        })
+                        @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger small mt-1 d-block" })
+                        <small class="form-text text-muted">Mô tả càng chi tiết càng thu hút ứng viên</small>
+                    </div>
+                </div>
+
+                <!-- PHẦN BÊN PHẢI -->
+                <div class="col-lg-6">
+                    <h6 class="text-warning border-bottom pb-2 mb-3">
+                        <i class="bi bi-file-text"></i> Yêu cầu & Điều kiện
+                    </h6>
+
+                    <!-- Yêu cầu công việc -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Yêu cầu công việc <span class="text-danger">*</span>
+                        </label>
+                        @Html.TextAreaFor(m => m.Requirements, new
+                        {
+                            @class = "form-control",
+                            rows = "6",
+                            placeholder = "Nhập yêu cầu về kinh nghiệm, kỹ năng, bằng cấp..."
+                        })
+                        @Html.ValidationMessageFor(m => m.Requirements, "", new { @class = "text-danger small mt-1 d-block" })
+                    </div>
+
+                    <h6 class="text-warning border-bottom pb-2 mb-3 mt-4">
+                        <i class="bi bi-cash-stack"></i> Thông tin lương & thời hạn
+                    </h6>
+
+                    <!-- Mức lương -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3" id="salaryFromGroup">
+                                <label class="form-label fw-semibold">
+                                    Lương tối thiểu <span class="text-danger">*</span>
+                                </label>
+                                @Html.TextBoxFor(m => m.SalaryFrom, new
+                                {
+                                    @class = "form-control",
+                                    type = "number",
+                                    step = "0.01",
+                                    min = "0",
+                                    max = "999999999.99",
+                                    placeholder = "0.00"
+                                })
+                                @Html.ValidationMessageFor(m => m.SalaryFrom, "", new { @class = "text-danger small mt-1 d-block" })
+                                <div id="salaryFromError" class="text-danger small mt-1 d-none"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3" id="salaryToGroup">
+                                <label class="form-label fw-semibold">
+                                    Lương tối đa <span class="text-danger">*</span>
+                                </label>
+                                @Html.TextBoxFor(m => m.SalaryTo, new
+                                {
+                                    @class = "form-control",
+                                    type = "number",
+                                    step = "0.01",
+                                    min = "0",
+                                    max = "999999999.99",
+                                    placeholder = "0.00"
+                                })
+                                @Html.ValidationMessageFor(m => m.SalaryTo, "", new { @class = "text-danger small mt-1 d-block" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Đơn vị tiền tệ -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Đơn vị tiền tệ <span class="text-danger">*</span>
+                        </label>
+                        @Html.DropDownListFor(m => m.SalaryCurrency,
+                            new SelectList(new[] { "VND", "USD", "EUR", "JPY" }, Model.SalaryCurrency),
+                            "-- Chọn loại tiền --",
+                            new { @class = "form-select" })
+                        @Html.ValidationMessageFor(m => m.SalaryCurrency, "", new { @class = "text-danger small mt-1 d-block" })
+                    </div>
+
+                    <!-- Hạn nộp hồ sơ -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Hạn nộp hồ sơ <span class="text-danger">*</span>
+                        </label>
+                        @if (Model.ApplicationDeadline.HasValue)
+                        {
+                            @Html.TextBoxFor(m => m.ApplicationDeadline, "{0:yyyy-MM-dd}", new
+                            {
+                                @class = "form-control",
+                                type = "date"
+                            })
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(m => m.ApplicationDeadline, new
+                            {
+                                @class = "form-control",
+                                type = "date"
+                            })
+                        }
+                        @Html.ValidationMessageFor(m => m.ApplicationDeadline, "", new { @class = "text-danger small mt-1 d-block" })
+                        <small class="form-text text-muted">
+                            <i class="bi bi-calendar-event"></i> Ngày hết hạn nhận hồ sơ ứng tuyển
+                        </small>
+                    </div>
+
+                    <!-- Trạng thái -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Trạng thái <span class="text-danger">*</span>
+                        </label>
+                        @Html.DropDownListFor(m => m.Status,
+                            ViewBag.StatusOptions as SelectList,
+                            "-- Chọn trạng thái --",
+                            new { @class = "form-select" })
+                        @Html.ValidationMessageFor(m => m.Status, "", new { @class = "text-danger small mt-1 d-block" })
+                        <small class="form-text text-muted">
+                            <strong>Visible:</strong> Hiển thị công khai |
+                            <strong>Hidden:</strong> Ẩn |
+                            <strong>Closed:</strong> Đã đóng |
+                            <strong>Draft:</strong> Bản nháp
+                        </small>
+                    </div>
+
+                    <!-- Thông tin bổ sung -->
+                    <div class="alert alert-info border-0 mt-3">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-lightbulb"></i> Lưu ý khi chỉnh sửa
+                        </h6>
+                        <hr>
+                        <ul class="mb-0 small">
+                            <li>Các trường có dấu <span class="text-danger fw-bold">*</span> là bắt buộc</li>
+                            <li>Mức lương tối thiểu phải nhỏ hơn hoặc bằng mức lương tối đa</li>
+                            <li>Tiêu đề và mã công việc không được trùng với tin khác</li>
+                            @if (Model.PostedAt.HasValue)
+                            {
+                                <li class="mt-2 text-muted">
+                                    <i class="bi bi-clock-history"></i> Đăng lúc: <strong>@Model.PostedAt.Value.ToString("dd/MM/yyyy HH:mm")</strong>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                    <!-- Preview lương -->
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                <i class="bi bi-eye"></i> Preview mức lương
+                            </h6>
+                            <p class="card-text mb-0">
+                                <strong class="text-success" id="salaryPreview">Đang tải...</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
 
-          <div class="mb-3">
-            @Html.LabelFor(m => m.SalaryUnit, "Đơn vị lương", new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.SalaryUnit, new { @class = "form-control", placeholder = "VD: VND, USD" })
-            @Html.ValidationMessageFor(m => m.SalaryUnit, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.Deadline, "Hạn nộp", new { @class = "form-label" })
-            @if (Model.Deadline.HasValue)
-            {
-              @Html.TextBoxFor(m => m.Deadline, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-            }
-            else
-            {
-              @Html.TextBoxFor(m => m.Deadline, new { @class = "form-control", type = "date" })
-            }
-            @Html.ValidationMessageFor(m => m.Deadline, "", new { @class = "text-danger" })
-          </div>
-
-          <div class="mb-3">
-            @Html.LabelFor(m => m.Status, "Trạng thái", new { @class = "form-label" })
-            @Html.DropDownListFor(m => m.Status, ViewBag.StatusOptions as SelectList, "-- Chọn trạng thái --", new { @class = "form-select" })
-            @Html.ValidationMessageFor(m => m.Status, "", new { @class = "text-danger" })
-          </div>
-        </div>
-      </div>
-
-      <div class="d-flex justify-content-end gap-2 mt-3">
-        <a href="@Url.Action("Index")" class="btn btn-secondary">
-          <i class="bi bi-x-circle"></i> Hủy
-        </a>
-        <button type="submit" class="btn btn-primary">
-          <i class="bi bi-save"></i> Cập nhật
-        </button>
-      </div>
-    }
-  </div>
+            <!-- Phần nút action -->
+            <hr class="my-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Quay lại danh sách
+                </a>
+                <div class="d-flex gap-2">
+                    <a href="@Url.Action("Edit", new { id = Model.JobPostID })" class="btn btn-outline-warning">
+                        <i class="bi bi-arrow-clockwise"></i> Làm mới
+                    </a>
+                    <button type="submit" class="btn btn-warning text-dark">
+                        <i class="bi bi-save"></i> Cập nhật tin tuyển dụng
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
 </div>
 
+<!-- Custom Modal for Confirmation/Alerts - Thay thế alert() và confirm() -->
+<div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="customConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="customConfirmModalLabel"><i class="bi bi-exclamation-triangle-fill"></i> Cảnh báo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="customConfirmModalBody">
+                <!-- Message goes here -->
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="modalCancelButton">Hủy bỏ</button>
+                <button type="button" class="btn btn-danger" id="modalConfirmButton">Tiếp tục</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            // Khởi tạo Modal của Bootstrap
+            const confirmModal = new bootstrap.Modal(document.getElementById('customConfirmModal'));
+            let confirmationCallback = null;
+
+            // Hàm hiển thị Modal thay thế confirm()
+            function showConfirmation(message, onConfirm) {
+                $('#customConfirmModalBody').html(message);
+                $('#modalCancelButton').show(); // Luôn hiển thị nút Hủy cho confirm
+                $('#modalConfirmButton').removeClass('btn-danger').addClass('btn-warning').text('Tiếp tục');
+
+                // Gán callback khi người dùng nhấn nút xác nhận
+                confirmationCallback = onConfirm;
+
+                confirmModal.show();
+            }
+
+            // Xử lý sự kiện nhấn nút Tiếp tục/Xác nhận trong Modal
+            $('#modalConfirmButton').on('click', function () {
+                confirmModal.hide();
+                if (confirmationCallback) {
+                    confirmationCallback(true);
+                }
+            });
+
+            // Format số tiền
+            function formatCurrency(value, currency) {
+                if (!value || isNaN(value)) return 'Chưa có thông tin';
+
+                var formatted = parseFloat(value).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                return formatted + ' ' + (currency || 'VND');
+            }
+
+            // Update preview lương
+            function updateSalaryPreview() {
+                var from = $('#SalaryFrom').val();
+                var to = $('#SalaryTo').val();
+                var currency = $('#SalaryCurrency').val();
+
+                if (from && to && currency) {
+                    var fromValue = parseFloat(from);
+                    var toValue = parseFloat(to);
+
+                    var previewText = '';
+                    if (fromValue === 0 && toValue === 0) {
+                        previewText = 'Thỏa thuận';
+                    } else if (fromValue > 0 && toValue > 0) {
+                        previewText = formatCurrency(fromValue, currency) + ' - ' + formatCurrency(toValue, currency);
+                    } else if (fromValue > 0) {
+                        previewText = 'Từ ' + formatCurrency(fromValue, currency);
+                    } else if (toValue > 0) {
+                        previewText = 'Đến ' + formatCurrency(toValue, currency);
+                    } else {
+                        previewText = 'Chưa có thông tin';
+                    }
+
+                    $('#salaryPreview').text(previewText).addClass('text-success').removeClass('text-muted');
+                } else {
+                    $('#salaryPreview').text('Chưa có thông tin').addClass('text-muted').removeClass('text-success');
+                }
+            }
+
+            // Lắng nghe sự thay đổi
+            $('#SalaryFrom, #SalaryTo, #SalaryCurrency').on('input change', function () {
+                updateSalaryPreview();
+
+                // Xóa lỗi nếu giá trị thay đổi
+                $('#salaryFromError').addClass('d-none').text('');
+                $('#SalaryFrom').removeClass('is-invalid');
+            });
+
+            // Validation form trước khi submit
+            $('#editJobPostForm').on('submit', function (e) {
+                e.preventDefault(); // Ngăn form submit ngay lập tức
+
+                var salaryFrom = parseFloat($('#SalaryFrom').val()) || 0;
+                var salaryTo = parseFloat($('#SalaryTo').val()) || 0;
+                var form = this;
+
+                // 1. Kiểm tra mức lương (Thay thế alert())
+                if (salaryFrom > salaryTo && salaryTo > 0) {
+                    // Hiển thị lỗi ngay bên dưới SalaryFrom
+                    $('#salaryFromError').removeClass('d-none').html('⚠️ Lương tối thiểu **không được lớn hơn** mức lương tối đa!');
+                    $('#SalaryFrom').addClass('is-invalid').focus();
+                    return false;
+                } else {
+                    $('#salaryFromError').addClass('d-none').text('');
+                    $('#SalaryFrom').removeClass('is-invalid');
+                }
+
+                // 2. Kiểm tra hạn deadline (Thay thế confirm())
+                var deadlineVal = $('#ApplicationDeadline').val();
+                if (deadlineVal) {
+                    var deadline = new Date(deadlineVal);
+                    var today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    if (deadline < today) {
+                        showConfirmation('Hạn nộp hồ sơ đã qua (hạn nộp là **' + deadlineVal + '**). Bạn có chắc chắn muốn tiếp tục cập nhật tin tuyển dụng?', function (isConfirmed) {
+                            if (isConfirmed) {
+                                // Nếu người dùng xác nhận, submit form
+                                form.submit();
+                            } else {
+                                // Nếu người dùng hủy, focus vào trường deadline
+                                $('#ApplicationDeadline').focus();
+                            }
+                        });
+                        return false; // Ngăn form submit cho đến khi xác nhận
+                    }
+                }
+
+                // 3. Nếu mọi thứ OK, submit form
+                form.submit();
+            });
+
+            // Update preview ban đầu khi load trang
+            updateSalaryPreview();
+        });
+    </script>
+}
