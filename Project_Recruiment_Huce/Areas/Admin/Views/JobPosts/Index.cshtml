@@ -1,46 +1,113 @@
 @model List<Project_Recruiment_Huce.Areas.Admin.Models.JobPostListVm>
 @using Project_Recruiment_Huce.Areas.Admin.Models
+
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
 @{
-  ViewBag.ShowEmployment = true;
-  ViewBag.CenterSearch = true; // thu nhỏ & căn giữa ô tìm kiếm cho trang này
-  ViewBag.SearchWidth = "320px"; // có thể chỉnh 280-360px tùy ý
-  ViewBag.AddUrl = Url.Action("Create");
-  ViewBag.AddLabel = "Thêm bài đăng";
+    ViewBag.ShowEmployment = true;
+    ViewBag.CenterSearch = true;
+    ViewBag.SearchWidth = "320px";
+    ViewBag.AddUrl = Url.Action("Create");
+    ViewBag.AddLabel = "Thêm bài đăng";
 }
+
 @Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
 
 <div class="card mb-4">
-  <div class="card-body table-responsive p-0">
-    <table class="table table-hover">
-      <thead><tr>
-        <th>Mã</th><th>Tiêu đề</th><th>Công ty</th><th>Nhà tuyển dụng</th>
-        <th>Lương</th><th>Hình thức</th><th>Hạn nộp</th><th>Trạng thái</th><th>Đăng lúc</th><th></th>
-      </tr></thead>
-      <tbody>
-      @foreach (var item in Model) {
-        <tr>
-          <td>@item.JobCode</td>
-          <td>@item.Title</td>
-          <td>@item.CompanyName</td>
-          <td>@item.RecruiterName</td>
-          <td>@(AdminUiHelpers.FormatMoney(item.SalaryMin)) - @(AdminUiHelpers.FormatMoney(item.SalaryMax)) @item.SalaryUnit</td>
-          <td>@item.Employment</td>
-          <td>@(item.Deadline.HasValue ? item.Deadline.Value.ToString("dd/MM/yyyy") : "")</td>
-          <td>@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(item.Status, "JobPosts"))</td>
-          <td>@(item.PostedAt.HasValue ? item.PostedAt.Value.ToString("dd/MM/yyyy") : "")</td>
-          <td class="text-end" style="white-space:nowrap;">
-            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Index","JobPostDetails", new { area="Admin", jobId = item.JobId })" title="Chi tiết"><i class="bi bi-eye me-1"></i>Chi tiết</a>
-            <a class="btn btn-sm btn-outline-warning" href="@Url.Action("Edit", new { id = item.JobId })" title="Sửa"><i class="bi bi-pencil me-1"></i>Sửa</a>
-            <a class="btn btn-sm btn-outline-danger" href="@Url.Action("Delete", new { id = item.JobId })" title="Xóa"><i class="bi bi-trash me-1"></i>Xóa</a>
-          </td>
-        </tr>
-      }
-      </tbody>
-    </table>
-  </div>
+    <div class="card-body table-responsive p-0">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Mã</th>
+                    <th>Tiêu đề</th>
+                    <th>Công ty</th>
+                    <th>Nhà tuyển dụng</th>
+                    <th>Lương</th>
+                    <th>Hình thức</th>
+                    <th>Ngày đăng</th>
+                
+                    <th>Mô tả</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.JobPostID</td>
+                            <td>@item.JobCode</td>
+                            <td>@item.Title</td>
+                            <td>@item.CompanyName</td>
+                            <td>@item.FullName</td>
+
+                            <td>
+                                @if (item.SalaryFrom.HasValue || item.SalaryTo.HasValue)
+                                {
+                                    @(string.Format("{0:N0} - {1:N0} VNĐ",
+                                    item.SalaryFrom ?? 0,
+                                    item.SalaryTo ?? 0))
+                                }
+                                else
+                                {
+                                    @:Thỏa thuận
+                                }
+                            </td>
+
+                            <td>@item.EmploymentType</td>
+                            <td>@(item.PostedAt.ToString("dd/MM/yyyy") ?? "-")</td>
+
+                            <td>
+                                @Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml",
+                                    Tuple.Create(item.Status, "JobPosts"))
+                            </td>
+                                
+
+                            <td class="text-end" style="white-space:nowrap;">
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="@Url.Action("Index", "JobPostDetails", new { area = "Admin", jobId = item.JobPostID })"
+                                   title="Chi tiết">
+                                    <i class="bi bi-eye me-1"></i>Chi tiết
+                                </a>
+                                <a class="btn btn-sm btn-outline-warning"
+                                   href="@Url.Action("Edit", new { id = item.JobPostID })"
+                                   title="Sửa">
+                                    <i class="bi bi-pencil me-1"></i>Sửa
+                                </a>
+                                <a class="btn btn-sm btn-outline-danger"
+                                   href="@Url.Action("Delete", new { id = item.JobPostID })"
+                                   title="Xóa">
+                                    <i class="bi bi-trash me-1"></i>Xóa
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center py-3 text-muted">Không có dữ liệu để hiển thị</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
 
-@Html.Partial("~/Areas/Admin/Views/Shared/_Pagination.cshtml", new { PageIndex = 1, TotalPages = 1, BaseUrl = Url.Action("Index", new { q = Request["q"], status = Request["status"], companyId = Request["companyId"], recruiterId = Request["recruiterId"] }) })
-
-
+@Html.Partial(
+    "~/Areas/Admin/Views/Shared/_Pagination.cshtml",
+    new
+    {
+        PageIndex = 1,
+        TotalPages = 1,
+        BaseUrl = Url.Action("Index", new
+        {
+            q = Request["q"],
+            status = Request["status"],
+            companyId = Request["companyId"],
+            recruiterId = Request["recruiterId"]
+        })
+    }
+)

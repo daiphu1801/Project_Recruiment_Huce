@@ -74,26 +74,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
             new CandidateCertificateVm{ CandidateCertificateId=5, CandidateName="Nguyen Thi G", CertificateName="Google Cloud Professional", IssuedDate=new DateTime(2022,9,1), ExpiredDate=null, ScoreText="Pass"},
         });
 
-        private static readonly Lazy<List<JobPostListVm>> _jobPosts = new Lazy<List<JobPostListVm>>(() => new List<JobPostListVm>
-        {
-            new JobPostListVm{ JobId=1, JobCode="JOB-001", RecruiterId=1, CompanyId=1, Title=".NET Developer", CompanyName="Alpha Co.", RecruiterName="Nguyen Van A", SalaryMin=15000000, SalaryMax=30000000, SalaryUnit="VND", LocationText="TP.HCM", Employment="Full-time", Deadline=DateTime.Today.AddDays(14), Status="Visible", PostedAt=DateTime.Today.AddDays(-3), UpdatedAt=DateTime.Today.AddDays(-3)},
-            new JobPostListVm{ JobId=2, JobCode="JOB-002", RecruiterId=2, CompanyId=2, Title="QA Engineer", CompanyName="Beta Ltd", RecruiterName="Tran Thi B", SalaryMin=10000000, SalaryMax=20000000, SalaryUnit="VND", LocationText="Hà Nội", Employment="Full-time", Deadline=DateTime.Today.AddDays(7), Status="Draft", PostedAt=DateTime.Today.AddDays(-1), UpdatedAt=DateTime.Today.AddDays(-1)},
-            new JobPostListVm{ JobId=3, JobCode="JOB-003", RecruiterId=1, CompanyId=1, Title="Designer", CompanyName="Alpha Co.", RecruiterName="Nguyen Van A", SalaryMin=null, SalaryMax=null, SalaryUnit="VND", LocationText="TP.HCM", Employment="Part-time", Deadline=null, Status="Hidden", PostedAt=DateTime.Today.AddDays(-20), UpdatedAt=DateTime.Today.AddDays(-20)},
-            new JobPostListVm{ JobId=4, JobCode="JOB-004", RecruiterId=3, CompanyId=3, Title="Frontend Developer", CompanyName="Gamma Technology", RecruiterName="Le Van C", SalaryMin=12000000, SalaryMax=25000000, SalaryUnit="VND", LocationText="TP.HCM", Employment="Full-time", Deadline=DateTime.Today.AddDays(10), Status="Visible", PostedAt=DateTime.Today.AddDays(-5), UpdatedAt=DateTime.Today.AddDays(-5)},
-            new JobPostListVm{ JobId=5, JobCode="JOB-005", RecruiterId=4, CompanyId=4, Title="Backend Developer", CompanyName="Delta Solutions", RecruiterName="Pham Thi D", SalaryMin=18000000, SalaryMax=35000000, SalaryUnit="VND", LocationText="Hà Nội", Employment="Full-time", Deadline=DateTime.Today.AddDays(21), Status="Visible", PostedAt=DateTime.Today.AddDays(-2), UpdatedAt=DateTime.Today.AddDays(-2)},
-            new JobPostListVm{ JobId=6, JobCode="JOB-006", RecruiterId=1, CompanyId=1, Title="DevOps Engineer", CompanyName="Alpha Co.", RecruiterName="Nguyen Van A", SalaryMin=20000000, SalaryMax=40000000, SalaryUnit="VND", LocationText="TP.HCM", Employment="Full-time", Deadline=DateTime.Today.AddDays(30), Status="Visible", PostedAt=DateTime.Today.AddDays(-7), UpdatedAt=DateTime.Today.AddDays(-7)},
-            new JobPostListVm{ JobId=7, JobCode="JOB-007", RecruiterId=2, CompanyId=2, Title="Mobile Developer", CompanyName="Beta Ltd", RecruiterName="Tran Thi B", SalaryMin=13000000, SalaryMax=28000000, SalaryUnit="VND", LocationText="Hà Nội", Employment="Remote", Deadline=DateTime.Today.AddDays(15), Status="Draft", PostedAt=DateTime.Today.AddDays(-4), UpdatedAt=DateTime.Today.AddDays(-4)},
-        });
-
-        private static readonly Lazy<List<JobPostDetailVm>> _jobPostDetails = new Lazy<List<JobPostDetailVm>>(() => new List<JobPostDetailVm>
-        {
-            new JobPostDetailVm{ DetailId=1, JobId=1, Industry="IT", Major="Software", YearsExperience=2, EducationLevel="Bachelor", Skills="C#, .NET, SQL", Headcount=2, Gender="Không yêu cầu", AgeFrom=22, AgeTo=35, Status="Active"},
-            new JobPostDetailVm{ DetailId=2, JobId=1, Industry="IT", Major="Backend", YearsExperience=1, EducationLevel="Bachelor", Skills="ASP.NET, REST API", Headcount=1, Gender="Nam", AgeFrom=null, AgeTo=null, Status="Active"},
-            new JobPostDetailVm{ DetailId=3, JobId=2, Industry="IT", Major="QA", YearsExperience=1, EducationLevel="College", Skills="Testing, Selenium", Headcount=1, Gender="Nữ", AgeFrom=20, AgeTo=30, Status="Active"},
-            new JobPostDetailVm{ DetailId=4, JobId=4, Industry="IT", Major="Frontend", YearsExperience=2, EducationLevel="Bachelor", Skills="React, Vue.js, TypeScript", Headcount=3, Gender="Không yêu cầu", AgeFrom=22, AgeTo=40, Status="Active"},
-            new JobPostDetailVm{ DetailId=5, JobId=5, Industry="IT", Major="Backend", YearsExperience=3, EducationLevel="Bachelor", Skills="Java, Spring Boot, Microservices", Headcount=2, Gender="Không yêu cầu", AgeFrom=25, AgeTo=40, Status="Active"},
-            new JobPostDetailVm{ DetailId=6, JobId=6, Industry="IT", Major="DevOps", YearsExperience=3, EducationLevel="Bachelor", Skills="Docker, Kubernetes, AWS", Headcount=1, Gender="Không yêu cầu", AgeFrom=25, AgeTo=45, Status="Active"},
-        });
+        
 
         private static readonly Lazy<List<ApplicationListVm>> _applications = new Lazy<List<ApplicationListVm>>(() => new List<ApplicationListVm>
         {
@@ -163,8 +144,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public static List<WorkExperienceVm> WorkExperiences => _workExperiences.Value;
         public static List<CertificateListVm> Certificates => _certificates.Value;
         public static List<CandidateCertificateVm> CandidateCertificates => _candidateCertificates.Value;
-        public static List<JobPostListVm> JobPosts => _jobPosts.Value;
-        public static List<JobPostDetailVm> JobPostDetails => _jobPostDetails.Value;
+ 
+       
         public static List<ApplicationListVm> Applications => _applications.Value;
         public static List<TransactionListVm> Transactions => _transactions.Value;
         public static List<BankCardListVm> BankCards => _bankCards.Value;

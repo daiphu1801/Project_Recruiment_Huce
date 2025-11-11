@@ -5,76 +5,68 @@
 }
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
 
-<div class="alert alert-warning">
-  <i class="bi bi-exclamation-triangle"></i> Bạn có chắc chắn muốn xóa tin tuyển dụng này?
+<div class="alert alert-warning d-flex align-items-center" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <div>
+        <strong>Cảnh báo:</strong> Bạn có chắc chắn muốn xóa tin tuyển dụng này?
+    </div>
 </div>
 
-<div class="card">
-  <div class="card-header">
-    <h5 class="card-title mb-0"><i class="bi bi-trash"></i> Xác nhận xóa tin tuyển dụng</h5>
-  </div>
-  <div class="card-body">
-    <table class="table table-borderless">
-      <tr>
-        <th width="150">ID:</th>
-        <td>@Model.JobId</td>
-      </tr>
-      <tr>
-        <th>Mã công việc:</th>
-        <td>@Model.JobCode</td>
-      </tr>
-      <tr>
-        <th>Tiêu đề:</th>
-        <td>@Model.Title</td>
-      </tr>
-      <tr>
-        <th>Công ty:</th>
-        <td>@Model.CompanyName</td>
-      </tr>
-      <tr>
-        <th>Nhà tuyển dụng:</th>
-        <td>@Model.RecruiterName</td>
-      </tr>
-      <tr>
-        <th>Lương:</th>
-        <td>@(AdminUiHelpers.FormatMoney(Model.SalaryMin)) - @(AdminUiHelpers.FormatMoney(Model.SalaryMax)) @Model.SalaryUnit</td>
-      </tr>
-      <tr>
-        <th>Hình thức:</th>
-        <td>@Model.Employment</td>
-      </tr>
-      <tr>
-        <th>Trạng thái:</th>
-        <td>@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(Model.Status, "JobPosts"))</td>
-      </tr>
-      <tr>
-        <th>Hạn nộp:</th>
-        <td>@(Model.Deadline?.ToString("dd/MM/yyyy") ?? "-")</td>
-      </tr>
-      <tr>
-        <th>Đăng lúc:</th>
-        <td>@(Model.PostedAt?.ToString("dd/MM/yyyy") ?? "-")</td>
-      </tr>
-    </table>
+<div class="card shadow-sm">
+    <div class="card-header bg-danger text-white">
+        <h5 class="card-title mb-0"><i class="bi bi-trash"></i> Xác nhận xóa tin tuyển dụng</h5>
+    </div>
 
-    @using (Html.BeginForm("Delete", "JobPosts", FormMethod.Post))
-    {
-      @Html.AntiForgeryToken()
-      @Html.Hidden("id", Model.JobId)
-      
-      <div class="alert alert-danger mt-3">
-        <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến tin tuyển dụng này sẽ bị xóa.
-      </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Mã tin tuyển dụng:</dt>
+            <dd class="col-sm-9">@Model.JobCode</dd>
 
-      <div class="d-flex justify-content-end gap-2 mt-3">
-        <a href="@Url.Action("Index")" class="btn btn-secondary">
-          <i class="bi bi-arrow-left"></i> Hủy
-        </a>
-        <button type="submit" class="btn btn-danger">
-          <i class="bi bi-trash"></i> Xác nhận xóa
-        </button>
-      </div>
-    }
-  </div>
+            <dt class="col-sm-3">Tiêu đề:</dt>
+            <dd class="col-sm-9">@Model.Title</dd>
+
+            <dt class="col-sm-3">Công ty:</dt>
+            <dd class="col-sm-9">@Model.CompanyName</dd>
+
+            <dt class="col-sm-3">Nhà tuyển dụng:</dt>
+            <dd class="col-sm-9">@Model.FullName</dd>
+
+            <dt class="col-sm-3">Mức lương:</dt>
+            <dd class="col-sm-9">
+                @(Model.SalaryFrom?.ToString("N0") ?? "0") - @(Model.SalaryTo?.ToString("N0") ?? "0") VNĐ
+            </dd>
+
+            <dt class="col-sm-3">Hình thức làm việc:</dt>
+            <dd class="col-sm-9">@Model.EmploymentType</dd>
+
+            <dt class="col-sm-3">Trạng thái:</dt>
+            <dd class="col-sm-9">@Model.Status</dd>
+
+            <dt class="col-sm-3">Ngày đăng:</dt>
+            <dd class="col-sm-9">@Model.PostedAt.ToString("dd/MM/yyyy")</dd>
+
+            <dt class="col-sm-3">Cập nhật gần nhất:</dt>
+            <dd class="col-sm-9">@Model.UpdatedAt.ToString("dd/MM/yyyy")</dd>
+        </dl>
+
+        @using (Html.BeginForm("DeleteConfirmed", "JobPosts", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.JobPostID)
+
+            <div class="alert alert-danger mt-3">
+                <strong>Lưu ý:</strong> Hành động này <u>không thể hoàn tác</u>.
+                Dữ liệu của tin tuyển dụng sẽ bị xóa vĩnh viễn khỏi hệ thống.
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a href="@Url.Action("Index", "JobPosts")" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Hủy
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Xác nhận xóa
+                </button>
+            </div>
+        }
+    </div>
 </div>
-

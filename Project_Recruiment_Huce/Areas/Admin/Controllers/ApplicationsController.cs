@@ -51,7 +51,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 new Tuple<string, string>("Thêm mới", null)
             };
             ViewBag.CandidateOptions = new SelectList(MockData.Candidates.Select(c => new { Id = c.CandidateId, Name = c.FullName }), "Id", "Name");
-            ViewBag.JobOptions = new SelectList(MockData.JobPosts.Select(j => new { Id = j.JobId, Name = j.Title }), "Id", "Name");
+  
             ViewBag.StatusOptions = new SelectList(new[] { "Under review", "Interview", "Offered", "Hired", "Rejected" });
             return View();
         }
@@ -80,7 +80,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 new Tuple<string, string>($"#{item.ApplicationId}", null)
             };
             ViewBag.CandidateOptions = new SelectList(MockData.Candidates.Select(c => new { Id = c.CandidateId, Name = c.FullName }), "Id", "Name", item.CandidateId);
-            ViewBag.JobOptions = new SelectList(MockData.JobPosts.Select(j => new { Id = j.JobId, Name = j.Title }), "Id", "Name", item.JobId);
+            
             ViewBag.StatusOptions = new SelectList(new[] { "Under review", "Interview", "Offered", "Hired", "Rejected" }, item.AppStatus);
             return View(item);
         }
