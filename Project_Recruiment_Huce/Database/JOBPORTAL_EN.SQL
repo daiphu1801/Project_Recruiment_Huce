@@ -1,12 +1,12 @@
 -- =====================================================================
--- File: JOBPORTAL_EN_full_with_company_photo.sql
+-- File: JOBPORTAL_EN_no_certificates.sql
 -- Target: Microsoft SQL Server
--- Notes:
---   - Idempotent: chạy lại nhiều lần không lỗi
---   - Dùng IF OBJECT_ID ... để tạo bảng nếu chưa có
---   - JobPosts.JobCode & Transactions.TransactionCode: dùng unique index có filter (cho phép nhiều NULL)
---   - Thêm FK PhotoID cho Accounts/Companies/Recruiters/Candidates -> ProfilePhotos (ON DELETE SET NULL)
---   - Trigger tự xóa SavedJobs khi JobPosts chuyển trạng thái Closed/Expired/Archived
+-- Notes (2025-11-12):
+--   - Idempotent: safe to run multiple times.
+--   - Removed tables: [Certificates], [CertificateImages], [CandidateCertificates], [Educations], [WorkExperiences].
+--   - JobPosts.JobCode & Transactions.TransactionCode use filtered UNIQUE indexes (allow multiple NULLs).
+--   - PhotoID foreign keys on Accounts/Companies/Recruiters/Candidates -> ProfilePhotos (ON DELETE SET NULL).
+--   - Trigger deletes SavedJobs rows when a JobPost becomes Closed/Expired/Archived.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -20,6 +20,25 @@ BEGIN
 END;
 GO
 USE JOBPORTAL_EN;
+GO
+
+/* =====================================================
+   A) CLEANUP — DROP UNUSED TABLES IF THEY EXIST
+   ===================================================== */
+IF OBJECT_ID(N'dbo.CertificateImages','U') IS NOT NULL
+    DROP TABLE dbo.CertificateImages;
+GO
+IF OBJECT_ID(N'dbo.CandidateCertificates','U') IS NOT NULL
+    DROP TABLE dbo.CandidateCertificates;
+GO
+IF OBJECT_ID(N'dbo.Certificates','U') IS NOT NULL
+    DROP TABLE dbo.Certificates;
+GO
+IF OBJECT_ID(N'dbo.Educations','U') IS NOT NULL
+    DROP TABLE dbo.Educations;
+GO
+IF OBJECT_ID(N'dbo.WorkExperiences','U') IS NOT NULL
+    DROP TABLE dbo.WorkExperiences;
 GO
 
 /* =====================================================
@@ -105,7 +124,8 @@ BEGIN
         Phone          NVARCHAR(20) NULL,
         CreatedAt      DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
         ActiveFlag     TINYINT NOT NULL DEFAULT 1,
-        PhotoID        INT NULL          -- ảnh đại diện recruiter
+        PhotoID        INT NULL,          -- ảnh đại diện recruiter
+        RowVer         ROWVERSION NOT NULL -- Concurrency token
     );
 END
 GO
@@ -202,91 +222,7 @@ BEGIN
 END
 GO
 
--- WorkExperiences
-IF OBJECT_ID(N'dbo.WorkExperiences','U') IS NULL
-BEGIN
-    CREATE TABLE dbo.WorkExperiences (
-        ExperienceID     INT IDENTITY(1,1) PRIMARY KEY,
-        CandidateID      INT NOT NULL,
-        PreviousCompany  NVARCHAR(255) NOT NULL,
-        JobTitle         NVARCHAR(150) NOT NULL,
-        Industry         NVARCHAR(150) NULL,
-        Major            NVARCHAR(150) NULL,
-        JobDescription   NVARCHAR(MAX) NULL,
-        StartDate        DATE NOT NULL,
-        EndDate          DATE NULL,
-        Salary           DECIMAL(18,2) NULL,
-        SalaryCurrency   NVARCHAR(20) NOT NULL DEFAULT N'VND',
-        Achievements     NVARCHAR(500) NULL,
-        CreatedAt        DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
-    );
-END
-GO
-
--- Educations
-IF OBJECT_ID(N'dbo.Educations','U') IS NULL
-BEGIN
-    CREATE TABLE dbo.Educations (
-        EducationID      INT IDENTITY(1,1) PRIMARY KEY,
-        CandidateID      INT NOT NULL,
-        School           NVARCHAR(255) NOT NULL,
-        Degree           NVARCHAR(100) NOT NULL,
-        FieldOfStudy     NVARCHAR(150) NOT NULL,
-        Major            NVARCHAR(150) NULL,
-        StartYear        INT NULL,
-        EndYear          INT NULL,
-        ExtraDescription NVARCHAR(500) NULL,
-        DegreeFilePath   NVARCHAR(500) NULL,
-        UploadedAt       DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
-    );
-END
-GO
-
--- Certificates
-IF OBJECT_ID(N'dbo.Certificates','U') IS NULL
-BEGIN
-    CREATE TABLE dbo.Certificates (
-        CertificateID    INT IDENTITY(1,1) PRIMARY KEY,
-        CertificateName  NVARCHAR(100) NOT NULL,
-        Issuer           NVARCHAR(100) NULL,
-        Industry         NVARCHAR(100) NOT NULL,
-        Major            NVARCHAR(150) NULL,
-        Description      NVARCHAR(255) NULL
-    );
-END
-GO
-
--- CandidateCertificates
-IF OBJECT_ID(N'dbo.CandidateCertificates','U') IS NULL
-BEGIN
-    CREATE TABLE dbo.CandidateCertificates (
-        CandidateCertificateID INT IDENTITY(1,1) PRIMARY KEY,
-        CandidateID            INT NOT NULL,
-        CertificateID          INT NOT NULL,
-        IssueDate              DATE NULL,
-        ExpiryDate             DATE NULL,
-        FilePath               NVARCHAR(500) NULL,
-        Score                  NVARCHAR(50) NULL,
-        Note                   NVARCHAR(255) NULL,
-        UploadedAt             DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
-    );
-END
-GO
-
--- CertificateImages
-IF OBJECT_ID(N'dbo.CertificateImages','U') IS NULL
-BEGIN
-    CREATE TABLE dbo.CertificateImages (
-        CertificateImageID     INT IDENTITY(1,1) PRIMARY KEY,
-        CandidateCertificateID INT NOT NULL,
-        FileName               NVARCHAR(255) NULL,
-        FilePath               NVARCHAR(500) NULL,
-        UploadedAt             DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
-    );
-END
-GO
-
--- JobPosts  (KHÔNG khai báo UNIQUE trực tiếp trên JobCode để cho phép nhiều NULL)
+-- JobPosts (no UNIQUE on JobCode to allow multiple NULLs)
 IF OBJECT_ID(N'dbo.JobPosts','U') IS NULL
 BEGIN
     CREATE TABLE dbo.JobPosts (
@@ -347,7 +283,7 @@ BEGIN
 END
 GO
 
--- Transactions  (KHÔNG khai báo UNIQUE trực tiếp trên TransactionCode để cho phép nhiều NULL)
+-- Transactions (no UNIQUE on TransactionCode to allow multiple NULLs)
 IF OBJECT_ID(N'dbo.Transactions','U') IS NULL
 BEGIN
     CREATE TABLE dbo.Transactions (
@@ -365,7 +301,7 @@ BEGIN
 END
 GO
 
--- SavedJobs (tạo bảng + ràng buộc trong lần tạo đầu)
+-- SavedJobs
 IF OBJECT_ID(N'dbo.SavedJobs','U') IS NULL
 BEGIN
     CREATE TABLE dbo.SavedJobs (
@@ -379,12 +315,10 @@ BEGIN
 END
 GO
 
-
 /* =====================================================
-   2) FOREIGN KEYS  (create if not exists)
+   2) FOREIGN KEYS
    ===================================================== */
 
--- Helper: add FK if not exists (pattern used repeatedly)
 -- Accounts.PhotoID -> ProfilePhotos
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_Accounts_ProfilePhotos')
 BEGIN
@@ -525,56 +459,6 @@ BEGIN
 END
 GO
 
--- WorkExperiences.CandidateID -> Candidates
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_WorkExperiences_Candidates')
-BEGIN
-    ALTER TABLE dbo.WorkExperiences
-    ADD CONSTRAINT FK_WorkExperiences_Candidates
-        FOREIGN KEY (CandidateID) REFERENCES dbo.Candidates(CandidateID)
-        ON DELETE CASCADE;
-END
-GO
-
--- Educations.CandidateID -> Candidates
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_Educations_Candidates')
-BEGIN
-    ALTER TABLE dbo.Educations
-    ADD CONSTRAINT FK_Educations_Candidates
-        FOREIGN KEY (CandidateID) REFERENCES dbo.Candidates(CandidateID)
-        ON DELETE CASCADE;
-END
-GO
-
--- CandidateCertificates.CandidateID -> Candidates
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_CandidateCertificates_Candidates')
-BEGIN
-    ALTER TABLE dbo.CandidateCertificates
-    ADD CONSTRAINT FK_CandidateCertificates_Candidates
-        FOREIGN KEY (CandidateID) REFERENCES dbo.Candidates(CandidateID)
-        ON DELETE CASCADE;
-END
-GO
-
--- CandidateCertificates.CertificateID -> Certificates
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_CandidateCertificates_Certificates')
-BEGIN
-    ALTER TABLE dbo.CandidateCertificates
-    ADD CONSTRAINT FK_CandidateCertificates_Certificates
-        FOREIGN KEY (CertificateID) REFERENCES dbo.Certificates(CertificateID)
-        ON DELETE CASCADE;
-END
-GO
-
--- CertificateImages.CandidateCertificateID -> CandidateCertificates
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_CertificateImages_CandidateCertificates')
-BEGIN
-    ALTER TABLE dbo.CertificateImages
-    ADD CONSTRAINT FK_CertificateImages_CandidateCertificates
-        FOREIGN KEY (CandidateCertificateID) REFERENCES dbo.CandidateCertificates(CandidateCertificateID)
-        ON DELETE CASCADE;
-END
-GO
-
 -- JobPosts.RecruiterID -> Recruiters
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_JobPosts_Recruiters')
 BEGIN
@@ -635,7 +519,7 @@ BEGIN
 END
 GO
 
--- SavedJobs FKs (nếu bảng đã tồn tại trước đó mà chưa có FK)
+-- SavedJobs FKs
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_SavedJobs_Candidates')
 BEGIN
     ALTER TABLE dbo.SavedJobs
@@ -644,7 +528,6 @@ BEGIN
         ON DELETE CASCADE;
 END
 GO
-
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_SavedJobs_JobPosts')
 BEGIN
     ALTER TABLE dbo.SavedJobs
@@ -654,11 +537,9 @@ BEGIN
 END
 GO
 
-
 /* =====================================================
-   3) INDEXES (create if not exists)
+   3) INDEXES
    ===================================================== */
-
 -- JobPosts.PostedAt
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_JobPosts_PostedAt' AND object_id = OBJECT_ID('dbo.JobPosts'))
     CREATE INDEX IX_JobPosts_PostedAt ON dbo.JobPosts(PostedAt);
@@ -696,7 +577,6 @@ GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_SavedJobs_JobPost' AND object_id = OBJECT_ID('dbo.SavedJobs'))
     CREATE INDEX IX_SavedJobs_JobPost ON dbo.SavedJobs(JobPostID);
 GO
-
 
 /* =====================================================
    4) FILTERED UNIQUE INDEXES (allow multiple NULLs)
@@ -801,11 +681,9 @@ BEGIN
 END
 GO
 
-
 /* =====================================================
    5) TRIGGER: Delete SavedJobs when JobPosts closes
    ===================================================== */
-
 DROP TRIGGER IF EXISTS dbo.trg_JobPosts_DeleteSavedWhenClosed;
 GO
 CREATE TRIGGER dbo.trg_JobPosts_DeleteSavedWhenClosed
@@ -827,8 +705,21 @@ BEGIN
 END;
 GO
 
+-- Ensure Recruiters.RowVer exists (idempotent patch for legacy DBs)
+IF COL_LENGTH('dbo.Recruiters', 'RowVer') IS NULL
+BEGIN
+    ALTER TABLE dbo.Recruiters ADD RowVer ROWVERSION;
+END
+GO
+
+-- Normalize legacy job status values
+IF EXISTS (SELECT 1 FROM dbo.JobPosts WHERE Status = 'Visible')
+BEGIN
+    UPDATE dbo.JobPosts SET Status = 'Published' WHERE Status = 'Visible';
+END
+GO
 
 /* =====================================================
    6) DONE
    ===================================================== */
-PRINT 'JOBPORTAL_EN schema ready. All tables, FKs, indexes & trigger are in place.';
+PRINT 'JOBPORTAL_EN schema ready (no certificates/educations/workexperiences).';

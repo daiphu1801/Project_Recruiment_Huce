@@ -37,6 +37,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public List<string> Dates7 { get; set; }
         public List<int> JobPostsWeekly { get; set; }
         public List<int> ApplicationsWeekly { get; set; }
+        // Phân bố theo loại hình công việc
+        public List<string> EmploymentTypeLabels { get; set; }
+        public List<int> EmploymentTypeCounts { get; set; }
     }
 
     /// <summary>

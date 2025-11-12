@@ -209,6 +209,10 @@
                     @{ var mobileRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro"); }
                     @if (mobileRoleClaim != null && mobileRoleClaim.Value == "Candidate")
                     {
+                      <li><a href="@Url.Action("Index", "MyAccount")" style="display: flex; align-items: center; padding: 12px 20px;">
+                        <span class="icon-cog mr-3" style="width: 20px; text-align: center; color: #6c757d;"></span>
+                        <span>Tài khoản của tôi</span>
+                      </a></li>
                       <li><a href="@Url.Action("CandidatesManage", "Candidates")" style="display: flex; align-items: center; padding: 12px 20px;">
                         <span class="icon-user mr-3" style="width: 20px; text-align: center; color: #007bff;"></span>
                         <span>Hồ sơ của tôi</span>
@@ -228,6 +232,10 @@
                     }
                     else if (mobileRoleClaim != null && mobileRoleClaim.Value == "Recruiter")
                     {
+                      <li><a href="@Url.Action("Index", "MyAccount")" style="display: flex; align-items: center; padding: 12px 20px;">
+                        <span class="icon-cog mr-3" style="width: 20px; text-align: center; color: #6c757d;"></span>
+                        <span>Tài khoản của tôi</span>
+                      </a></li>
                       <li><a href="@Url.Action("RecruitersManage", "Recruiters")" style="display: flex; align-items: center; padding: 12px 20px;">
                         <span class="icon-user mr-3" style="width: 20px; text-align: center; color: #007bff;"></span>
                         <span>Hồ sơ của tôi</span>
@@ -300,6 +308,10 @@
                     @{ var navRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro"); }
                     @if (navRoleClaim != null && navRoleClaim.Value == "Candidate")
                     {
+                      <a class="dropdown-item" href="@Url.Action("Index", "MyAccount")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
+                        <span class="icon-cog mr-3" style="width: 20px; text-align: center; color: #6c757d;"></span>
+                        <span>Tài khoản của tôi</span>
+                      </a>
                       <a class="dropdown-item" href="@Url.Action("CandidatesManage", "Candidates")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
                         <span class="icon-user mr-3" style="width: 20px; text-align: center; color: #007bff;"></span>
                         <span>Hồ sơ của tôi</span>
@@ -320,6 +332,10 @@
                     }
                     else if (navRoleClaim != null && navRoleClaim.Value == "Recruiter")
                     {
+                      <a class="dropdown-item" href="@Url.Action("Index", "MyAccount")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
+                        <span class="icon-cog mr-3" style="width: 20px; text-align: center; color: #6c757d;"></span>
+                        <span>Tài khoản của tôi</span>
+                      </a>
                       <a class="dropdown-item" href="@Url.Action("RecruitersManage", "Recruiters")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">
                         <span class="icon-user mr-3" style="width: 20px; text-align: center; color: #007bff;"></span>
                         <span>Hồ sơ của tôi</span>

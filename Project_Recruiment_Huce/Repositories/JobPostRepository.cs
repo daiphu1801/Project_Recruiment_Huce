@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Helpers;
 
 namespace Project_Recruiment_Huce.Repositories
 {
@@ -15,8 +16,9 @@ namespace Project_Recruiment_Huce.Repositories
 
         public IEnumerable<JobPost> GetLatestVisible(int take = 10)
         {
+            JobStatusHelper.NormalizeStatuses(_db);
             return _db.JobPosts
-                .Where(j => j.Status == "Visible")
+                .Where(j => j.Status == JobStatusHelper.Published)
                 .OrderByDescending(j => j.PostedAt)
                 .Take(take)
                 .ToList();
@@ -31,6 +33,7 @@ namespace Project_Recruiment_Huce.Repositories
 
         public IEnumerable<JobPost> Search(string keyword, string industry = null, string employment = null)
         {
+            JobStatusHelper.NormalizeStatuses(_db);
             var query = _db.JobPosts.AsQueryable();
             if (!string.IsNullOrWhiteSpace(keyword))
             {

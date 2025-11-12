@@ -29,6 +29,7 @@
         @using (Html.BeginForm("Create", "JobPosts", FormMethod.Post))
         {
             @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.CompanyID)
 
             <div class="row g-4">
                 <!-- PHẦN BÊN TRÁI -->
@@ -65,18 +66,6 @@
                         @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger small mt-1 d-block" })
                     </div>
 
-                    <!-- Công ty -->
-                    <div class="mb-3">
-                        <label for="CompanyID" class="form-label fw-semibold">
-                            Công ty <span class="text-danger">*</span>
-                        </label>
-                        @Html.DropDownListFor(m => m.CompanyID,
-                            ViewBag.CompanyOptions as SelectList,
-                            "-- Chọn công ty --",
-                            new { @class = "form-select" })
-                        @Html.ValidationMessageFor(m => m.CompanyID, "", new { @class = "text-danger small mt-1 d-block" })
-                    </div>
-
                     <!-- Nhà tuyển dụng -->
                     <div class="mb-3">
                         <label for="RecruiterID" class="form-label fw-semibold">
@@ -109,12 +98,12 @@
                         </label>
                         @Html.DropDownListFor(m => m.EmploymentType,
                             new SelectList(new[] {
-                                "Full-time",
-                                "Part-time",
-                                "Contract",
-                                "Internship",
-                                "Freelance"
-                            }),
+                                new SelectListItem { Value = "Full-time", Text = "Toàn thời gian" },
+                                new SelectListItem { Value = "Part-time", Text = "Bán thời gian" },
+                                new SelectListItem { Value = "Contract", Text = "Hợp đồng" },
+                                new SelectListItem { Value = "Internship", Text = "Thực tập" },
+                                new SelectListItem { Value = "Freelance", Text = "Tự do" }
+                            }, "Value", "Text"),
                             "-- Chọn loại hình --",
                             new { @class = "form-select" })
                         @Html.ValidationMessageFor(m => m.EmploymentType, "", new { @class = "text-danger small mt-1 d-block" })
@@ -352,12 +341,39 @@
             });
 
             // Auto-fill JobCode nếu để trống
-            $('#CompanyID').on('change', function() {
+            $('#RecruiterID').on('change', function() {
                 var jobCode = $('#JobCode').val();
                 if (!jobCode) {
                     var year = new Date().getFullYear();
                     var random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
                     $('#JobCode').val('JOB-' + year + '-' + random);
+                }
+            });
+            
+            // Tự động set CompanyID từ RecruiterID
+            $('#RecruiterID').on('change', function() {
+                var recruiterId = $(this).val();
+                if (recruiterId) {
+                    // Gửi AJAX request để lấy CompanyID từ RecruiterID
+                    $.ajax({
+                        url: '@Url.Action("GetCompanyByRecruiter", "JobPosts")',
+                        type: 'GET',
+                        data: { recruiterId: recruiterId },
+                        success: function(data) {
+                            if (data && data.companyId) {
+                                $('#CompanyID').val(data.companyId);
+                            } else {
+                                $('#CompanyID').val('');
+                                alert('Nhà tuyển dụng này chưa được gán cho công ty nào. Vui lòng chọn nhà tuyển dụng khác.');
+                            }
+                        },
+                        error: function() {
+                            console.error('Không thể lấy thông tin công ty từ nhà tuyển dụng');
+                            $('#CompanyID').val('');
+                        }
+                    });
+                } else {
+                    $('#CompanyID').val('');
                 }
             });
 

@@ -55,26 +55,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
             new WorkExperienceVm{ ExperienceId=5, CandidateName="Nguyen Thi G", CompanyName="Epsilon Corporation", JobTitle="QA Engineer", StartDate=new DateTime(2021,3,1), EndDate=null},
         });
 
-        private static readonly Lazy<List<CertificateListVm>> _certificates = new Lazy<List<CertificateListVm>>(() => new List<CertificateListVm>
-        {
-            new CertificateListVm{ CertificateId=1, CertificateName="IELTS 7.0", Issuer="IDP", Industry="Language", Major="English"},
-            new CertificateListVm{ CertificateId=2, CertificateName="AWS Solutions Architect", Issuer="Amazon", Industry="Cloud", Major="Architecture"},
-            new CertificateListVm{ CertificateId=3, CertificateName="TOEIC 850", Issuer="ETS", Industry="Language", Major="English"},
-            new CertificateListVm{ CertificateId=4, CertificateName="Microsoft Certified: Azure Developer", Issuer="Microsoft", Industry="Cloud", Major="Azure"},
-            new CertificateListVm{ CertificateId=5, CertificateName="Oracle Certified Professional", Issuer="Oracle", Industry="Database", Major="Oracle Database"},
-            new CertificateListVm{ CertificateId=6, CertificateName="Google Cloud Professional", Issuer="Google", Industry="Cloud", Major="GCP"},
-        });
-
-        private static readonly Lazy<List<CandidateCertificateVm>> _candidateCertificates = new Lazy<List<CandidateCertificateVm>>(() => new List<CandidateCertificateVm>
-        {
-            new CandidateCertificateVm{ CandidateCertificateId=1, CandidateName="Pham Quang C", CertificateName="IELTS 7.0", IssuedDate=new DateTime(2022,5,1), ExpiredDate=new DateTime(2024,5,1), ScoreText="7.0"},
-            new CandidateCertificateVm{ CandidateCertificateId=2, CandidateName="Le Thi D", CertificateName="AWS Solutions Architect", IssuedDate=new DateTime(2023,3,1), ExpiredDate=null, ScoreText="Pass"},
-            new CandidateCertificateVm{ CandidateCertificateId=3, CandidateName="Pham Quang C", CertificateName="TOEIC 850", IssuedDate=new DateTime(2021,8,1), ExpiredDate=new DateTime(2023,8,1), ScoreText="850"},
-            new CandidateCertificateVm{ CandidateCertificateId=4, CandidateName="Tran Minh F", CertificateName="Microsoft Certified: Azure Developer", IssuedDate=new DateTime(2023,6,1), ExpiredDate=null, ScoreText="Pass"},
-            new CandidateCertificateVm{ CandidateCertificateId=5, CandidateName="Nguyen Thi G", CertificateName="Google Cloud Professional", IssuedDate=new DateTime(2022,9,1), ExpiredDate=null, ScoreText="Pass"},
-        });
-
-        
 
         private static readonly Lazy<List<ApplicationListVm>> _applications = new Lazy<List<ApplicationListVm>>(() => new List<ApplicationListVm>
         {
@@ -142,10 +122,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public static List<RecruiterListVm> Recruiters => _recruiters.Value;
         public static List<CandidateListVm> Candidates => _candidates.Value;
         public static List<WorkExperienceVm> WorkExperiences => _workExperiences.Value;
-        public static List<CertificateListVm> Certificates => _certificates.Value;
-        public static List<CandidateCertificateVm> CandidateCertificates => _candidateCertificates.Value;
- 
-       
         public static List<ApplicationListVm> Applications => _applications.Value;
         public static List<TransactionListVm> Transactions => _transactions.Value;
         public static List<BankCardListVm> BankCards => _bankCards.Value;

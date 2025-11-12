@@ -106,8 +106,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Required(ErrorMessage = "Nhà tuyển dụng là bắt buộc")]
         public int RecruiterID { get; set; }
 
-        [Required(ErrorMessage = "Công ty là bắt buộc")]
-        public int CompanyID { get; set; }
+        // CompanyID được tự động lấy từ RecruiterID, không cần Required
+        // Dùng int? để tránh validation tự động khi giá trị là 0
+        public int? CompanyID { get; set; }
 
         [Required(ErrorMessage = "Tiêu đề là bắt buộc")]
         public string Title { get; set; }

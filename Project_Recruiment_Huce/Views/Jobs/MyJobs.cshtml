@@ -137,7 +137,7 @@
                 <div class="job-card">
                     <div class="job-card-header">
                         <div>
-                            <a href="@Url.Action("Details","JobDetails", new { id = job.JobPostID })" class="job-title-link">
+                            <a href="@Url.Action("JobDetails","Jobs", new { id = job.JobPostID })" class="job-title-link">
                                 @job.Title
                             </a>
                             @if (!string.IsNullOrEmpty(job.JobCode))
@@ -204,7 +204,7 @@
                     }
 
                     <div class="job-actions">
-                        <a href="@Url.Action("Details","JobDetails", new { id = job.JobPostID })" class="btn btn-sm btn-outline-primary">
+                        <a href="@Url.Action("JobDetails","Jobs", new { id = job.JobPostID })" class="btn btn-sm btn-outline-primary">
                             <span class="icon-eye mr-1"></span>Xem chi tiết
                         </a>
                         <a href="@Url.Action("MyApplications", "RecruitersApplication", new { jobId = job.JobPostID })" class="btn btn-sm btn-outline-info">

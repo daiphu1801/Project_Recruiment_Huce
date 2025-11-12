@@ -61,7 +61,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     PhotoUrl = a.ProfilePhoto != null ? a.ProfilePhoto.FilePath : null
                 }).ToList();
 
-                ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
+                ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                 return View(accounts);
             }
         }
@@ -108,7 +108,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 new Tuple<string, string>("Thêm mới", null)
             };
 
-            ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
+            ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
             return View();
         }
 
@@ -119,7 +119,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
+                ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                 return View(model);
             }
 
@@ -129,7 +129,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (db.Accounts.Any(a => a.Username == model.Username))
                 {
                     ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
-                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
+                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                     return View(model);
                 }
 
@@ -137,7 +137,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (db.Accounts.Any(a => a.Email.ToLower() == model.Email.ToLower()))
                 {
                     ModelState.AddModelError("Email", "Email đã được sử dụng");
-                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
+                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                     return View(model);
                 }
 
@@ -168,6 +168,13 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 db.Accounts.InsertOnSubmit(account);
                 db.SubmitChanges();
+
+                // Tự động tạo profile Candidate/Recruiter (không set email - email trong profile là email liên lạc riêng)
+                if (model.Role == "Candidate" || model.Role == "Recruiter")
+                {
+                    EmailSyncHelper.CreateProfile(db, account.AccountID, model.Role);
+                    db.SubmitChanges();
+                }
 
                 TempData["SuccessMessage"] = "Tạo tài khoản thành công!";
                 return RedirectToAction("Index");
@@ -200,7 +207,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     new Tuple<string, string>($"#{account.AccountID}", null)
                 };
 
-                ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
+                ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                 return View(vm);
             }
         }
@@ -212,7 +219,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
+                ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                 return View(model);
             }
 
@@ -225,7 +232,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (db.Accounts.Any(a => a.Username == model.Username && a.AccountID != model.AccountId))
                 {
                     ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
-                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
+                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                         model.CurrentPhotoId = account.PhotoID;
                     return View(model);
                 }
@@ -234,7 +241,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (db.Accounts.Any(a => a.Email.ToLower() == model.Email.ToLower() && a.AccountID != model.AccountId))
                 {
                     ModelState.AddModelError("Email", "Email đã được sử dụng");
-                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Company", "Recruiter", "Candidate" });
+                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                         model.CurrentPhotoId = account.PhotoID;
                     return View(model);
                 }
@@ -255,6 +262,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 }
 
                 // Update account
+                // NOTE: Email trong Account dùng để đăng nhập, không đồng bộ với profile
                 account.Username = model.Username;
                 account.Email = model.Email;
                 account.Phone = model.Phone;
