@@ -12,7 +12,7 @@
                 <div class="custom-breadcrumbs">
                     <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
                     <a href="@Url.Action("JobsListing","Jobs")">Việc làm</a> <span class="mx-2 slash">/</span>
-                    <a href="@Url.Action("Details","JobDetails", new { id = Model.JobPostID })">Chi tiết</a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("JobDetails","Jobs", new { id = Model.JobPostID })">Chi tiết</a> <span class="mx-2 slash">/</span>
                     <span class="text-white"><strong>Ứng tuyển</strong></span>
                 </div>
             </div>
@@ -201,7 +201,7 @@
                                 <button type="submit" class="btn btn-primary btn-lg btn-block">
                                     <i class="icon-check mr-2"></i>Gửi đơn ứng tuyển
                                 </button>
-                                <a href="@Url.Action("Details", "JobDetails", new { id = Model.JobPostID })" class="btn btn-secondary btn-block mt-2">
+                        <a href="@Url.Action("JobDetails", "Jobs", new { id = Model.JobPostID })" class="btn btn-secondary btn-block mt-2">
                                     <i class="icon-arrow-left mr-2"></i>Quay lại
                                 </a>
                             </div>
@@ -254,7 +254,7 @@
                         {
                             <p><strong>Lương:</strong> @Model.SalaryRange</p>
                         }
-                        <a href="@Url.Action("Details", "JobDetails", new { id = Model.JobPostID })" class="btn btn-sm btn-outline-primary btn-block mt-3">
+                        <a href="@Url.Action("JobDetails", "Jobs", new { id = Model.JobPostID })" class="btn btn-sm btn-outline-primary btn-block mt-3">
                             <i class="icon-eye mr-1"></i>Xem chi tiết công việc
                         </a>
                     </div>

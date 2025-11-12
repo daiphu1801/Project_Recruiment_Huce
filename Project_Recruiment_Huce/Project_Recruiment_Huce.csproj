@@ -177,6 +177,7 @@
     <Compile Include="Controllers\Candidates\SavedJobsController.cs" />
     <Compile Include="Controllers\Recruiters\RecruitersController.cs" />
     <Compile Include="Controllers\Recruiters\RecruitersApplicationController.cs" />
+    <Compile Include="Controllers\MyAccount\MyAccountController.cs" />
     <Compile Include="Controllers\Companies\CompaniesController.cs" />
     <Compile Include="Controllers\Jobs\JobsController.cs" />
     <Compile Include="Controllers\Jobs\JobDetailsController.cs" />
@@ -205,6 +206,8 @@
     <Compile Include="Startup.cs" />
     <Compile Include="Helpers\PasswordHelper.cs" />
     <Compile Include="Helpers\HtmlSanitizerHelper.cs" />
+    <Compile Include="Helpers\JobStatusHelper.cs" />
+    <Compile Include="Helpers\EmailSyncHelper.cs" />
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\JobPostRepository.cs" />
   </ItemGroup>

@@ -8,6 +8,7 @@ using System.Web.Mvc;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Home;
 using Project_Recruiment_Huce.Models.Jobs;
+using Project_Recruiment_Huce.Helpers;
 
 namespace Project_Recruiment_Huce.Controllers
 {
@@ -25,15 +26,17 @@ namespace Project_Recruiment_Huce.Controllers
                 db.LoadOptions = loadOptions;
                 db.ObjectTrackingEnabled = false;
 
+                JobStatusHelper.NormalizeStatuses(db);
+
                 // Get statistics
                 var totalCandidates = db.Candidates.Count(c => c.ActiveFlag == 1);
-                var totalJobPosts = db.JobPosts.Count(j => j.Status == "Published");
+                var totalJobPosts = db.JobPosts.Count(j => j.Status == JobStatusHelper.Published);
                 var totalHiredJobs = db.Applications.Count(a => a.Status == "Hired" || a.Status == "Accepted");
                 var totalCompanies = db.Companies.Count(c => c.ActiveFlag == 1);
 
                 // Get recent published jobs (limit to 6-7 for homepage)
                 var recentJobs = db.JobPosts
-                    .Where(j => j.Status == "Published")
+                    .Where(j => j.Status == JobStatusHelper.Published)
                     .OrderByDescending(j => j.PostedAt ?? j.UpdatedAt ?? (DateTime?)SqlDateTime.MinValue.Value)
                     .Take(7)
                     .ToList();
@@ -42,11 +45,11 @@ namespace Project_Recruiment_Huce.Controllers
                 var jobViewModels = recentJobs.Select(j => MapToJobListingItem(j, db)).ToList();
 
                 // Get total jobs count
-                var totalJobsCount = db.JobPosts.Count(j => j.Status == "Published");
+                var totalJobsCount = db.JobPosts.Count(j => j.Status == JobStatusHelper.Published);
 
                 // Get distinct locations from published jobs for filter dropdown
                 var locations = db.JobPosts
-                    .Where(j => j.Status == "Published" && j.Location != null)
+                    .Where(j => j.Status == JobStatusHelper.Published && j.Location != null)
                     .Select(j => j.Location)
                     .ToList()
                     .Where(l => !string.IsNullOrEmpty(l))
@@ -59,7 +62,7 @@ namespace Project_Recruiment_Huce.Controllers
                 try
                 {
                     var jobTitles = db.JobPosts
-                        .Where(j => j.Status == "Published" && j.Title != null)
+                        .Where(j => j.Status == JobStatusHelper.Published && j.Title != null)
                         .Select(j => j.Title)
                         .ToList()
                         .Where(t => !string.IsNullOrEmpty(t))
@@ -211,7 +214,8 @@ namespace Project_Recruiment_Huce.Controllers
 
                 // Get statistics for About page
                 var totalCandidates = db.Candidates.Count(c => c.ActiveFlag == 1);
-                var totalJobPosts = db.JobPosts.Count(j => j.Status == "Published");
+                JobStatusHelper.NormalizeStatuses(db);
+                var totalJobPosts = db.JobPosts.Count(j => j.Status == JobStatusHelper.Published);
                 var totalHiredJobs = db.Applications.Count(a => a.Status == "Hired" || a.Status == "Accepted");
                 var totalCompanies = db.Companies.Count(c => c.ActiveFlag == 1);
 

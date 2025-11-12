@@ -96,6 +96,8 @@ namespace Project_Recruiment_Huce.Controllers
                     candidate.Email = viewModel.Email;
                     candidate.Address = viewModel.Address;
                     
+                    // NOTE: Email trong Candidate.Email là email liên lạc, không đồng bộ với Account.Email
+                    
                     // Sanitize HTML before saving to prevent XSS attacks
                     // [AllowHtml] allows the HTML to be posted, but we still sanitize it
                     if (!string.IsNullOrEmpty(viewModel.Summary))
@@ -330,6 +332,8 @@ namespace Project_Recruiment_Huce.Controllers
                 loadOptions.LoadWith<Recruiter>(r => r.Company);
                 db.LoadOptions = loadOptions;
 
+                JobStatusHelper.NormalizeStatuses(db);
+
                 // Get job post
                 var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == jobId.Value);
                 if (job == null)
@@ -338,18 +342,20 @@ namespace Project_Recruiment_Huce.Controllers
                     return RedirectToAction("JobsListing", "Jobs");
                 }
 
+                job.Status = JobStatusHelper.NormalizeStatus(job.Status);
+
                 // Check if job is still open
-                if (job.Status != "Published")
+                if (!JobStatusHelper.IsPublished(job.Status))
                 {
                     TempData["ErrorMessage"] = "Công việc này không còn nhận đơn ứng tuyển.";
-                    return RedirectToAction("Details", "JobDetails", new { id = jobId.Value });
+                    return RedirectToAction("JobDetails", "Jobs", new { id = jobId.Value });
                 }
 
                 // Check deadline
                 if (job.ApplicationDeadline.HasValue && job.ApplicationDeadline.Value < DateTime.Now.Date)
                 {
                     TempData["ErrorMessage"] = "Hạn nộp hồ sơ đã qua.";
-                    return RedirectToAction("Details", "JobDetails", new { id = jobId.Value });
+                    return RedirectToAction("JobDetails", "Jobs", new { id = jobId.Value });
                 }
 
                 // Get candidate
@@ -365,7 +371,7 @@ namespace Project_Recruiment_Huce.Controllers
                 if (existingApplication != null)
                 {
                     TempData["WarningMessage"] = "Bạn đã ứng tuyển công việc này rồi.";
-                    return RedirectToAction("Details", "JobDetails", new { id = jobId.Value });
+                    return RedirectToAction("JobDetails", "Jobs", new { id = jobId.Value });
                 }
 
                 // Get candidate photo
@@ -447,6 +453,7 @@ namespace Project_Recruiment_Huce.Controllers
 
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
+                JobStatusHelper.NormalizeStatuses(db);
                 // Get candidate
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 if (candidate == null)
@@ -457,7 +464,14 @@ namespace Project_Recruiment_Huce.Controllers
 
                 // Get job post
                 var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == viewModel.JobPostID);
-                if (job == null || job.Status != "Published")
+                if (job == null)
+                {
+                    TempData["ErrorMessage"] = "Công việc này không còn nhận đơn ứng tuyển.";
+                    return RedirectToAction("JobsListing", "Jobs");
+                }
+
+                job.Status = JobStatusHelper.NormalizeStatus(job.Status);
+                if (!JobStatusHelper.IsPublished(job.Status))
                 {
                     TempData["ErrorMessage"] = "Công việc này không còn nhận đơn ứng tuyển.";
                     return RedirectToAction("JobsListing", "Jobs");

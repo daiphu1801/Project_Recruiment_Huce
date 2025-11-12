@@ -48,7 +48,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var recruiters = recruitersList.Select(r =>
                 {
                     var company = db.Companies.FirstOrDefault(c => c.CompanyID == r.CompanyID);
-                    int? photoId = GetRecruiterPhotoID(r, db);
+                    var account = db.Accounts.FirstOrDefault(a => a.AccountID == r.AccountID);
+                    int? photoId = account?.PhotoID;
                     var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
 
                     return new RecruiterListVm
@@ -81,7 +82,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (recruiter == null) return HttpNotFound();
 
                 var company = db.Companies.FirstOrDefault(c => c.CompanyID == recruiter.CompanyID);
-                int? photoId = GetRecruiterPhotoID(recruiter, db);
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
+                int? photoId = account?.PhotoID;
                 var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
 
                 var vm = new RecruiterListVm
@@ -115,6 +117,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         public ActionResult Create()
         {
             ViewBag.Title = "Thêm nhà tuyển dụng mới";
+
             ViewBag.Breadcrumbs = new List<Tuple<string, string>>
             {
                 new Tuple<string, string>("Nhà tuyển dụng", Url.Action("Index")),
@@ -216,13 +219,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
                 }
 
-                // Handle photo upload
-                int? photoId = null;
-                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
-                {
-                    photoId = SavePhoto(model.PhotoFile);
-                }
-
                 var recruiter = new Recruiter
                 {
                     AccountID = model.AccountId,
@@ -235,17 +231,24 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     ActiveFlag = model.Active ? (byte?)1 : (byte?)0
                 };
 
-                // Set PhotoID using reflection or direct SQL if property doesn't exist yet
-                SetRecruiterPhotoID(recruiter, photoId, db);
-
                 db.Recruiters.InsertOnSubmit(recruiter);
-                db.SubmitChanges();
 
-                // If PhotoID property doesn't exist, update it via SQL
-                if (photoId.HasValue && !HasPhotoIDProperty())
+                // Handle photo upload (stored on Account)
+                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {
-                    db.ExecuteCommand("UPDATE Recruiters SET PhotoID = {0} WHERE RecruiterID = {1}", photoId.Value, recruiter.RecruiterID);
+                    var photoId = SavePhoto(model.PhotoFile);
+                    if (photoId.HasValue)
+                    {
+                        var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
+                        if (account != null)
+                        {
+                            account.PhotoID = photoId;
+                        }
+                    }
                 }
+
+                // NOTE: Email trong Recruiter.CompanyEmail là email liên lạc, không đồng bộ với Account.Email
+                db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Tạo nhà tuyển dụng thành công!";
                 return RedirectToAction("Index");
@@ -273,7 +276,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 );
                 ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", recruiter.CompanyID);
 
-                int? photoId = GetRecruiterPhotoID(recruiter, db);
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
+                int? photoId = account?.PhotoID;
                 var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
 
                 var vm = new EditRecruiterVm
@@ -324,7 +328,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == model.RecruiterId);
                     if (recruiter != null)
                     {
-                        int? photoId = GetRecruiterPhotoID(recruiter, db);
+                        var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
+                        int? photoId = account?.PhotoID;
                         var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
                         model.CurrentPhotoId = photoId;
                         model.CurrentPhotoUrl = photo != null ? photo.FilePath : null;
@@ -351,7 +356,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         model.AccountId
                     );
                     ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
-                    int? photoIdErr1 = GetRecruiterPhotoID(recruiter, db);
+                    var accountErr1 = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
+                    int? photoIdErr1 = accountErr1?.PhotoID;
                     var photoErr1 = photoIdErr1.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoIdErr1.Value) : null;
                     model.CurrentPhotoId = photoIdErr1;
                     model.CurrentPhotoUrl = photoErr1 != null ? photoErr1.FilePath : null;
@@ -372,7 +378,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         model.AccountId
                     );
                     ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
-                    int? photoIdErr2 = GetRecruiterPhotoID(recruiter, db);
+                    var accountErr2 = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
+                    int? photoIdErr2 = accountErr2?.PhotoID;
                     var photoErr2 = photoIdErr2.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoIdErr2.Value) : null;
                     model.CurrentPhotoId = photoIdErr2;
                     model.CurrentPhotoUrl = photoErr2 != null ? photoErr2.FilePath : null;
@@ -395,7 +402,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                             model.AccountId
                         );
                         ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
-                        int? photoIdErr3 = GetRecruiterPhotoID(recruiter, db);
+                        var accountErr3 = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
+                        int? photoIdErr3 = accountErr3?.PhotoID;
                         var photo = photoIdErr3.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoIdErr3.Value) : null;
                         model.CurrentPhotoId = photoIdErr3;
                         model.CurrentPhotoUrl = photo != null ? photo.FilePath : null;
@@ -405,13 +413,14 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 // Handle photo upload
                 int? newPhotoId = null;
+                var accountRecord = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
                 if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {
                     newPhotoId = SavePhoto(model.PhotoFile);
                     if (newPhotoId.HasValue)
                     {
                         // Get old photo ID before updating
-                        int? oldPhotoId = GetRecruiterPhotoID(recruiter, db);
+                        int? oldPhotoId = accountRecord?.PhotoID;
 
                         // Delete old photo if exists
                         if (oldPhotoId.HasValue)
@@ -419,8 +428,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                             DeletePhoto(oldPhotoId.Value);
                         }
 
-                        // Update PhotoID
-                        SetRecruiterPhotoID(recruiter, newPhotoId, db);
+                        if (accountRecord != null)
+                        {
+                            accountRecord.PhotoID = newPhotoId;
+                        }
                     }
                 }
 
@@ -432,13 +443,22 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 recruiter.Phone = model.Phone;
                 recruiter.ActiveFlag = model.Active ? (byte?)1 : (byte?)0;
 
-                db.SubmitChanges();
-
-                // If PhotoID property doesn't exist and we have a new photo, update via SQL
-                if (newPhotoId.HasValue && !HasPhotoIDProperty())
+                // Handle photo upload (stored on Account)
+                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {
-                    db.ExecuteCommand("UPDATE Recruiters SET PhotoID = {0} WHERE RecruiterID = {1}", newPhotoId.Value, recruiter.RecruiterID);
+                    var photoId = SavePhoto(model.PhotoFile);
+                    if (photoId.HasValue)
+                    {
+                        var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
+                        if (account != null)
+                        {
+                            account.PhotoID = photoId;
+                        }
+                    }
                 }
+
+                // NOTE: Email trong Recruiter.CompanyEmail là email liên lạc, không đồng bộ với Account.Email
+                db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Cập nhật nhà tuyển dụng thành công!";
                 return RedirectToAction("Index");
@@ -454,7 +474,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (recruiter == null) return HttpNotFound();
 
                 var company = db.Companies.FirstOrDefault(c => c.CompanyID == recruiter.CompanyID);
-                int? photoId = GetRecruiterPhotoID(recruiter, db);
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
+                int? photoId = account?.PhotoID;
                 var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
 
                 var vm = new RecruiterListVm
@@ -493,13 +514,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             {
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == id);
                 if (recruiter == null) return HttpNotFound();
-
-                // Delete photo if exists
-                int? photoIdToDelete = GetRecruiterPhotoID(recruiter, db);
-                if (photoIdToDelete.HasValue)
-                {
-                    DeletePhoto(photoIdToDelete.Value);
-                }
 
                 db.Recruiters.DeleteOnSubmit(recruiter);
                 db.SubmitChanges();
@@ -596,50 +610,5 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
-        // Helper: Check if PhotoID property exists on Recruiter class
-        private bool HasPhotoIDProperty()
-        {
-            try
-            {
-                var property = typeof(Recruiter).GetProperty("PhotoID");
-                return property != null;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        // Helper: Get PhotoID from Recruiter (works with or without property)
-        private int? GetRecruiterPhotoID(Recruiter recruiter, JOBPORTAL_ENDataContext db)
-        {
-            if (HasPhotoIDProperty())
-            {
-                var property = typeof(Recruiter).GetProperty("PhotoID");
-                var value = property.GetValue(recruiter);
-                return value as int?;
-            }
-            else
-            {
-                // Use SQL query to get PhotoID
-                var result = db.ExecuteQuery<int?>("SELECT PhotoID FROM Recruiters WHERE RecruiterID = {0}", recruiter.RecruiterID).FirstOrDefault();
-                return result;
-            }
-        }
-
-        // Helper: Set PhotoID on Recruiter (works with or without property)
-        private void SetRecruiterPhotoID(Recruiter recruiter, int? photoId, JOBPORTAL_ENDataContext db)
-        {
-            if (HasPhotoIDProperty())
-            {
-                var property = typeof(Recruiter).GetProperty("PhotoID");
-                property.SetValue(recruiter, photoId);
-            }
-            else
-            {
-                // Will be set via SQL after SubmitChanges if property doesn't exist
-                // This is handled in the calling code
-            }
-        }
     }
 }

@@ -1,0 +1,182 @@
+@model Project_Recruiment_Huce.Controllers.MyAccount.MyAccountViewModel
+@{
+    ViewBag.Title = "Tài khoản của tôi";
+    var changePasswordModel = ViewBag.ChangePasswordModel as Project_Recruiment_Huce.Controllers.MyAccount.ChangePasswordViewModel ?? new Project_Recruiment_Huce.Controllers.MyAccount.ChangePasswordViewModel();
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-7">
+        <h1 class="text-white font-weight-bold">Tài khoản của tôi</h1>
+        <div class="custom-breadcrumbs">
+          <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+          <span class="text-white"><strong>Tài khoản của tôi</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="site-section">
+  <div class="container">
+            
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Thông tin đăng nhập -->
+        <div class="col-md-6 mb-4">
+            <div class="p-4 p-md-5 border rounded bg-light">
+                <h3 class="text-black mb-4 border-bottom pb-2"><span class="icon-user mr-2"></span> Thông tin đăng nhập</h3>
+                <div>
+                    <div class="form-group mb-4">
+                        <label class="text-black font-weight-bold">Tên đăng nhập</label>
+                        <div class="form-control-plaintext">@Model.Username</div>
+                        <small class="text-muted">Không thể thay đổi</small>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="text-black font-weight-bold">Email đăng nhập</label>
+                        <div class="form-control-plaintext">@(Model.LoginEmail ?? "-")</div>
+                        <small class="text-muted">Dùng để đăng nhập và xử lý quên mật khẩu. Không thể thay đổi.</small>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="text-black font-weight-bold">Email liên lạc</label>
+                        <div class="form-control-plaintext">@(Model.ContactEmail ?? "<em class='text-muted'>Chưa cập nhật</em>")</div>
+                        <small class="text-muted">Email này được lấy từ hồ sơ của bạn. Bạn có thể cập nhật trong phần quản lý hồ sơ.</small>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="text-black font-weight-bold">Số điện thoại</label>
+                        <div class="form-control-plaintext">@(Model.Phone ?? "-")</div>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="text-black font-weight-bold">Vai trò</label>
+                        <div class="form-control-plaintext">
+                            @if (Model.Role == "Candidate")
+                            {
+                                <span class="badge badge-info">Ứng viên</span>
+                            }
+                            else if (Model.Role == "Recruiter")
+                            {
+                                <span class="badge badge-warning">Nhà tuyển dụng</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">@Model.Role</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="text-black font-weight-bold">Ngày tạo tài khoản</label>
+                        <div class="form-control-plaintext">@(Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Đổi mật khẩu -->
+        <div class="col-md-6 mb-4">
+            <div class="p-4 p-md-5 border rounded bg-light">
+                <h3 class="text-black mb-4 border-bottom pb-2"><span class="icon-lock mr-2"></span> Đổi mật khẩu</h3>
+                @using (Html.BeginForm("ChangePassword", "MyAccount", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded" }))
+                {
+                    @Html.AntiForgeryToken()
+                    
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
+
+                    <div class="form-group mb-4">
+                        @Html.LabelFor(m => changePasswordModel.CurrentPassword, new { @class = "text-black font-weight-bold" })
+                        @Html.PasswordFor(m => changePasswordModel.CurrentPassword, new { @class = "form-control", required = "required" })
+                        @Html.ValidationMessageFor(m => changePasswordModel.CurrentPassword, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group mb-4">
+                        @Html.LabelFor(m => changePasswordModel.NewPassword, new { @class = "text-black font-weight-bold" })
+                        @Html.PasswordFor(m => changePasswordModel.NewPassword, new { @class = "form-control", required = "required", minlength = "6" })
+                        @Html.ValidationMessageFor(m => changePasswordModel.NewPassword, "", new { @class = "text-danger" })
+                        <small class="form-text text-muted">Mật khẩu phải tối thiểu 6 ký tự, gồm chữ hoa, chữ thường và số.</small>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        @Html.LabelFor(m => changePasswordModel.ConfirmPassword, new { @class = "text-black font-weight-bold" })
+                        @Html.PasswordFor(m => changePasswordModel.ConfirmPassword, new { @class = "form-control", required = "required" })
+                        @Html.ValidationMessageFor(m => changePasswordModel.ConfirmPassword, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary py-2 px-4">
+                            <span class="icon-key mr-2"></span> Đổi mật khẩu
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Thông tin bổ sung -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="p-4 p-md-5 border rounded bg-light">
+                <h3 class="text-black mb-4 border-bottom pb-2"><span class="icon-info mr-2"></span> Thông tin bổ sung</h3>
+                <p class="mb-2"><strong>Email đăng nhập:</strong> Dùng để đăng nhập vào hệ thống và nhận mã token khi quên mật khẩu. Email này không thể thay đổi.</p>
+                <p class="mb-2"><strong>Email liên lạc:</strong> Email này được lưu trong hồ sơ của bạn, dùng để nhà tuyển dụng/ứng viên liên hệ với bạn. Bạn có thể cập nhật email này trong phần quản lý hồ sơ.</p>
+                @if (Model.Role == "Candidate")
+                {
+                    <p class="mb-0">
+                        <a href="@Url.Action("CandidatesManage", "Candidates")" class="btn btn-primary py-2 px-4">
+                            <span class="icon-user mr-2"></span> Quản lý hồ sơ ứng viên
+                        </a>
+                    </p>
+                }
+                else if (Model.Role == "Recruiter")
+                {
+                    <p class="mb-0">
+                        <a href="@Url.Action("RecruitersManage", "Recruiters")" class="btn btn-primary py-2 px-4">
+                            <span class="icon-briefcase mr-2"></span> Quản lý hồ sơ nhà tuyển dụng
+                        </a>
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Form validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByTagName('form');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
+}
+

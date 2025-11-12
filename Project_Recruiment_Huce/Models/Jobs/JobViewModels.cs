@@ -50,6 +50,27 @@ namespace Project_Recruiment_Huce.Models.Jobs
         public DateTime? ApplicationDeadline { get; set; }
         public string Status { get; set; }
         public string LogoUrl { get; set; }
+        public string Industry { get; set; }
+        public string Major { get; set; }
+        public int? YearsExperience { get; set; }
+        public string DegreeRequired { get; set; }
+        public string Skills { get; set; }
+        public int? Headcount { get; set; }
+        public string GenderRequirement { get; set; }
+        public int? AgeFrom { get; set; }
+        public int? AgeTo { get; set; }
+        public string DetailStatus { get; set; }
+
+        public bool HasJobDetail =>
+            !string.IsNullOrWhiteSpace(Industry) ||
+            !string.IsNullOrWhiteSpace(Major) ||
+            YearsExperience.HasValue ||
+            !string.IsNullOrWhiteSpace(DegreeRequired) ||
+            !string.IsNullOrWhiteSpace(Skills) ||
+            Headcount.HasValue ||
+            !string.IsNullOrWhiteSpace(GenderRequirement) ||
+            AgeFrom.HasValue ||
+            AgeTo.HasValue;
     }
 
     /// <summary>

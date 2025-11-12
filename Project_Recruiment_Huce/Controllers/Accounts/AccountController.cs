@@ -198,6 +198,13 @@ namespace Project_Recruiment_Huce.Controllers
                     db.Accounts.InsertOnSubmit(newAccount);
                     db.SubmitChanges();
 
+                    // Tự động tạo profile Candidate/Recruiter (không set email - email trong profile là email liên lạc riêng)
+                    if (mappedRole == "Candidate" || mappedRole == "Recruiter")
+                    {
+                        EmailSyncHelper.CreateProfile(db, newAccount.AccountID, mappedRole);
+                        db.SubmitChanges();
+                    }
+
                     // Auto login after registration (User Cookie)
                 var claims = new List<Claim>
                 {

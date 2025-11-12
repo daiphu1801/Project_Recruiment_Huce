@@ -6,6 +6,7 @@ using System.Configuration;
 using System.Collections.Generic;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Candidates;
+using Project_Recruiment_Huce.Helpers;
 
 namespace Project_Recruiment_Huce.Controllers
 {
@@ -37,6 +38,7 @@ namespace Project_Recruiment_Huce.Controllers
             using (var db = new JOBPORTAL_ENDataContext(connectionString))
             {
                 db.ObjectTrackingEnabled = false;
+                JobStatusHelper.NormalizeStatuses(db);
 
                 // Eager load related entities - MUST be set BEFORE any queries
                 var loadOptions = new System.Data.Linq.DataLoadOptions();
@@ -57,7 +59,7 @@ namespace Project_Recruiment_Huce.Controllers
                     .Where(sj => sj.CandidateID == candidate.CandidateID)
                     .ToList()
                     .Where(sj => sj.JobPost != null && 
-                                sj.JobPost.Status == "Published")
+                                JobStatusHelper.IsPublished(JobStatusHelper.NormalizeStatus(sj.JobPost.Status)))
                     .ToList();
 
                 // Get distinct locations for filter dropdown (from already loaded data)
@@ -158,6 +160,7 @@ namespace Project_Recruiment_Huce.Controllers
             var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
             using (var db = new JOBPORTAL_ENDataContext(connectionString))
             {
+                JobStatusHelper.NormalizeStatuses(db);
                 // Get candidate
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 if (candidate == null)
@@ -172,7 +175,8 @@ namespace Project_Recruiment_Huce.Controllers
                     return Json(new { success = false, message = "Không tìm thấy công việc." });
                 }
 
-                if (job.Status != "Published")
+                job.Status = JobStatusHelper.NormalizeStatus(job.Status);
+                if (!JobStatusHelper.IsPublished(job.Status))
                 {
                     return Json(new { success = false, message = "Công việc này không còn nhận ứng viên." });
                 }

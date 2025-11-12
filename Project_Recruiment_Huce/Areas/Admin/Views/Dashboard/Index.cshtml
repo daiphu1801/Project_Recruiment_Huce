@@ -1,4 +1,4 @@
-@model dynamic
+@model Project_Recruiment_Huce.Areas.Admin.Models.DashboardVm
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
 
 <div class="app-content-header">
@@ -46,30 +46,30 @@
         </div>
       </div>
       <div class="col-lg-5 connectedSortable">
-        <div class="card text-white bg-primary bg-gradient border-primary mb-4">
+        <div class="card mb-4">
           <div class="card-header border-0">
-            <h3 class="card-title">Phân bố theo quốc gia (demo)</h3>
+            <h3 class="card-title">Phân bố theo loại hình công việc</h3>
             <div class="card-tools">
-              <button type="button" class="btn btn-primary btn-sm" data-lte-toggle="card-collapse">
+              <button type="button" class="btn btn-tool" data-lte-toggle="card-collapse">
                 <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
                 <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
               </button>
             </div>
           </div>
-          <div class="card-body"><div id="world-map" style="height: 220px"></div></div>
+          <div class="card-body"><div id="employment-type-chart" style="height: 300px"></div></div>
           <div class="card-footer border-0">
             <div class="row">
               <div class="col-4 text-center">
                 <div id="sparkline-1" class="text-dark"></div>
-                <div class="text-white">Tin mới</div>
+                <div class="text-muted small">Tin mới</div>
               </div>
               <div class="col-4 text-center">
                 <div id="sparkline-2" class="text-dark"></div>
-                <div class="text-white">Ứng tuyển</div>
+                <div class="text-muted small">Ứng tuyển</div>
               </div>
               <div class="col-4 text-center">
                 <div id="sparkline-3" class="text-dark"></div>
-                <div class="text-white">Đăng ký</div>
+                <div class="text-muted small">Tổng số</div>
               </div>
             </div>
           </div>
@@ -93,7 +93,12 @@
       var job = @Html.Raw(System.Web.Helpers.Json.Encode(Model.JobPostsWeekly));
       var apps = @Html.Raw(System.Web.Helpers.Json.Encode(Model.ApplicationsWeekly));
 
+      // Phân bố theo loại hình công việc
+      var employmentLabels = @Html.Raw(System.Web.Helpers.Json.Encode(Model.EmploymentTypeLabels ?? new List<string>()));
+      var employmentCounts = @Html.Raw(System.Web.Helpers.Json.Encode(Model.EmploymentTypeCounts ?? new List<int>()));
+
       if (window.ApexCharts) {
+        // Area chart - Tin tuyển dụng theo thời gian
         var options = {
           series: [
             { name: 'Tin tuyển dụng', data: job },
@@ -110,12 +115,66 @@
         var chart = new ApexCharts(document.querySelector('#revenue-chart'), options);
         chart.render();
 
+        // Donut chart - Phân bố theo loại hình công việc
+        if (employmentLabels.length > 0 && employmentCounts.length > 0) {
+          var employmentChartOptions = {
+            series: employmentCounts,
+            chart: {
+              type: 'donut',
+              height: 300,
+              toolbar: { show: false }
+            },
+            labels: employmentLabels,
+            colors: ['#0d6efd', '#20c997', '#ffc107', '#dc3545', '#6f42c1'],
+            legend: {
+              position: 'bottom',
+              show: true
+            },
+            dataLabels: {
+              enabled: true,
+              formatter: function (val, opts) {
+                return opts.w.config.series[opts.seriesIndex] + ' (' + val.toFixed(1) + '%)';
+              }
+            },
+            plotOptions: {
+              pie: {
+                donut: {
+                  size: '65%',
+                  labels: {
+                    show: true,
+                    total: {
+                      show: true,
+                      label: 'Tổng số',
+                      formatter: function () {
+                        return employmentCounts.reduce(function(a, b) { return a + b; }, 0);
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            tooltip: {
+              y: {
+                formatter: function (val) {
+                  return val + ' tin tuyển dụng';
+                }
+              }
+            }
+          };
+          var employmentChart = new ApexCharts(document.querySelector('#employment-type-chart'), employmentChartOptions);
+          employmentChart.render();
+        } else {
+          // Hiển thị thông báo nếu không có dữ liệu
+          document.querySelector('#employment-type-chart').innerHTML = '<div class="text-center text-muted p-4">Chưa có dữ liệu phân bố theo loại hình công việc</div>';
+        }
+
         // Sparklines
-        var spark1 = new ApexCharts(document.querySelector('#sparkline-1'), { series: [{ data: job }], chart: { type: 'area', height: 50, sparkline: { enabled: true } }, stroke: { curve: 'straight' }, fill: { opacity: 0.3 }, colors: ['#DCE6EC'] });
+        var spark1 = new ApexCharts(document.querySelector('#sparkline-1'), { series: [{ data: job }], chart: { type: 'area', height: 50, sparkline: { enabled: true } }, stroke: { curve: 'straight' }, fill: { opacity: 0.3 }, colors: ['#0d6efd'] });
         spark1.render();
-        var spark2 = new ApexCharts(document.querySelector('#sparkline-2'), { series: [{ data: apps }], chart: { type: 'area', height: 50, sparkline: { enabled: true } }, stroke: { curve: 'straight' }, fill: { opacity: 0.3 }, colors: ['#DCE6EC'] });
+        var spark2 = new ApexCharts(document.querySelector('#sparkline-2'), { series: [{ data: apps }], chart: { type: 'area', height: 50, sparkline: { enabled: true } }, stroke: { curve: 'straight' }, fill: { opacity: 0.3 }, colors: ['#20c997'] });
         spark2.render();
-        var spark3 = new ApexCharts(document.querySelector('#sparkline-3'), { series: [{ data: job.map(function(v,i){ return (apps[i]||0) + v; }) }], chart: { type: 'area', height: 50, sparkline: { enabled: true } }, stroke: { curve: 'straight' }, fill: { opacity: 0.3 }, colors: ['#DCE6EC'] });
+        var totalData = job.map(function(v,i){ return (apps[i]||0) + v; });
+        var spark3 = new ApexCharts(document.querySelector('#sparkline-3'), { series: [{ data: totalData }], chart: { type: 'area', height: 50, sparkline: { enabled: true } }, stroke: { curve: 'straight' }, fill: { opacity: 0.3 }, colors: ['#ffc107'] });
         spark3.render();
       }
     })();

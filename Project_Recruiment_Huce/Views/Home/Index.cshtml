@@ -162,7 +162,7 @@
             foreach (var job in Model.RecentJobs)
             {
               <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-                <a href="@Url.Action("Details","JobDetails", new { id = job.JobPostID })"></a>
+            <a href="@Url.Action("JobDetails","Jobs", new { id = job.JobPostID })"></a>
                 <div class="job-listing-logo">
                   <img src="@Url.Content("~" + job.LogoUrl)" alt="@job.CompanyName" class="img-fluid">
                 </div>

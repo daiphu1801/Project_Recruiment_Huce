@@ -213,7 +213,7 @@
                                 </div>
                                 <div class="col-md-8">
                                     <div class="job-title">
-                                        <a href="@Url.Action("Details","JobDetails", new { id = savedJob.JobPostID })">@savedJob.Title</a>
+                                        <a href="@Url.Action("JobDetails","Jobs", new { id = savedJob.JobPostID })">@savedJob.Title</a>
                                     </div>
                                     <div class="company-name">
                                         <span class="icon-briefcase mr-1"></span>@savedJob.CompanyName
@@ -267,7 +267,7 @@
                                 </div>
                                 <div class="col-md-2 text-right">
                                     <div class="job-actions flex-column">
-                                        <a href="@Url.Action("Details","JobDetails", new { id = savedJob.JobPostID })" class="btn btn-sm btn-primary mb-2 w-100">
+                                        <a href="@Url.Action("JobDetails","Jobs", new { id = savedJob.JobPostID })" class="btn btn-sm btn-primary mb-2 w-100">
                                             <span class="icon-eye mr-1"></span>Xem chi tiết
                                         </a>
                                         <a href="@Url.Action("Apply", "Candidates", new { jobId = savedJob.JobPostID })" class="btn btn-sm btn-success mb-2 w-100">

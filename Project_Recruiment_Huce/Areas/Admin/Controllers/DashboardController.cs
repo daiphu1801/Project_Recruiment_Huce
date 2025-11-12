@@ -45,6 +45,37 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     appSeries.Add(db.Applications.Count(a => a.AppliedAt.HasValue && a.AppliedAt.Value.Date == d));
                 }
 
+                // Phân bố theo loại hình công việc
+                // Lấy tất cả JobPosts về memory trước, sau đó filter và group
+                var allJobPosts = db.JobPosts.ToList();
+                
+                var employmentTypeDistribution = allJobPosts
+                    .Where(j => j.EmploymentType != null)
+                    .GroupBy(j => j.EmploymentType)
+                    .Select(g => new { Type = g.Key, Count = g.Count() })
+                    .OrderByDescending(x => x.Count)
+                    .ToList();
+
+                var employmentLabels = new List<string>();
+                var employmentCounts = new List<int>();
+                
+                // Map EmploymentType values to Vietnamese labels
+                var typeMapping = new Dictionary<string, string>
+                {
+                    { "Full-time", "Toàn thời gian" },
+                    { "Part-time", "Bán thời gian" },
+                    { "Contract", "Hợp đồng" },
+                    { "Internship", "Thực tập" },
+                    { "Freelance", "Tự do" }
+                };
+
+                foreach (var item in employmentTypeDistribution)
+                {
+                    var label = typeMapping.ContainsKey(item.Type) ? typeMapping[item.Type] : item.Type;
+                    employmentLabels.Add(label);
+                    employmentCounts.Add(item.Count);
+                }
+
                 var vm = new DashboardVm
                 {
                     Accounts = accountsCount,
@@ -56,7 +87,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Transactions = transactionsCount,
                     Dates7 = dates,
                     JobPostsWeekly = jobSeries,
-                    ApplicationsWeekly = appSeries
+                    ApplicationsWeekly = appSeries,
+                    EmploymentTypeLabels = employmentLabels,
+                    EmploymentTypeCounts = employmentCounts
                 };
                 return View(vm);
             }

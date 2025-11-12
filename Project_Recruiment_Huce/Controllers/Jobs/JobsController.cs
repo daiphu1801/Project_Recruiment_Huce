@@ -43,23 +43,12 @@ namespace Project_Recruiment_Huce.Controllers
         /// </summary>
         private JobListingItemViewModel MapToJobListingItem(JobPost job, JOBPORTAL_ENDataContext db = null)
         {
+            job.Status = JobStatusHelper.NormalizeStatus(job.Status);
+
             string companyName = job.Company != null ? job.Company.CompanyName : 
                                 (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
             
-            // Get company logo URL
-            string logoUrl = "/Content/images/job_logo_1.jpg"; // Default logo
-            if (job.Company?.PhotoID.HasValue == true)
-            {
-                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-                using (var logoDb = new JOBPORTAL_ENDataContext(connectionString))
-                {
-                    var photo = logoDb.ProfilePhotos.FirstOrDefault(p => p.PhotoID == job.Company.PhotoID.Value);
-                    if (photo != null && !string.IsNullOrEmpty(photo.FilePath))
-                    {
-                        logoUrl = photo.FilePath;
-                    }
-                }
-            }
+            string logoUrl = GetCompanyLogoUrl(job);
             
             // Calculate pending applications count if db context is provided
             int pendingCount = 0;
@@ -92,6 +81,94 @@ namespace Project_Recruiment_Huce.Controllers
                 Status = job.Status,
                 LogoUrl = logoUrl,
                 PendingApplicationsCount = pendingCount
+            };
+        }
+
+        private string GetCompanyLogoUrl(JobPost job)
+        {
+            string logoUrl = "/Content/images/job_logo_1.jpg"; // Default logo
+            if (job.Company?.PhotoID.HasValue == true)
+            {
+                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
+                using (var logoDb = new JOBPORTAL_ENDataContext(connectionString))
+                {
+                    var photo = logoDb.ProfilePhotos.FirstOrDefault(p => p.PhotoID == job.Company.PhotoID.Value);
+                    if (photo != null && !string.IsNullOrEmpty(photo.FilePath))
+                    {
+                        logoUrl = photo.FilePath;
+                    }
+                }
+            }
+
+            return logoUrl;
+        }
+
+        private JobDetailsViewModel MapToJobDetails(JobPost job)
+        {
+            job.Status = JobStatusHelper.NormalizeStatus(job.Status);
+
+            string companyName = job.Company != null ? job.Company.CompanyName :
+                                (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
+
+            string logoUrl = GetCompanyLogoUrl(job);
+            var jobDetail = job.JobPostDetails?.FirstOrDefault();
+
+            return new JobDetailsViewModel
+            {
+                JobPostID = job.JobPostID,
+                JobCode = job.JobCode,
+                Title = job.Title,
+                Description = job.Description,
+                Requirements = job.Requirements,
+                CompanyName = companyName,
+                Location = job.Location,
+                EmploymentType = job.EmploymentType,
+                EmploymentTypeDisplay = GetEmploymentTypeDisplay(job.EmploymentType),
+                SalaryFrom = job.SalaryFrom,
+                SalaryTo = job.SalaryTo,
+                SalaryCurrency = job.SalaryCurrency,
+                SalaryRange = FormatSalaryRange(job.SalaryFrom, job.SalaryTo, job.SalaryCurrency),
+                PostedAt = job.PostedAt,
+                UpdatedAt = job.UpdatedAt,
+                ApplicationDeadline = job.ApplicationDeadline,
+                Status = job.Status,
+                LogoUrl = logoUrl,
+                Industry = jobDetail?.Industry,
+                Major = jobDetail?.Major,
+                YearsExperience = jobDetail?.YearsExperience,
+                DegreeRequired = jobDetail?.DegreeRequired,
+                Skills = jobDetail?.Skills,
+                Headcount = jobDetail?.Headcount,
+                GenderRequirement = jobDetail?.GenderRequirement,
+                AgeFrom = jobDetail?.AgeFrom,
+                AgeTo = jobDetail?.AgeTo,
+                DetailStatus = jobDetail?.Status
+            };
+        }
+
+        private RelatedJobViewModel MapToRelatedJob(JobPost job)
+        {
+            job.Status = JobStatusHelper.NormalizeStatus(job.Status);
+
+            string companyName = job.Company != null ? job.Company.CompanyName :
+                                (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
+
+            string logoUrl = GetCompanyLogoUrl(job);
+
+            return new RelatedJobViewModel
+            {
+                JobPostID = job.JobPostID,
+                Title = job.Title,
+                CompanyName = companyName,
+                Location = job.Location,
+                EmploymentType = job.EmploymentType,
+                EmploymentTypeDisplay = GetEmploymentTypeDisplay(job.EmploymentType),
+                SalaryFrom = job.SalaryFrom,
+                SalaryTo = job.SalaryTo,
+                SalaryCurrency = job.SalaryCurrency,
+                SalaryRange = FormatSalaryRange(job.SalaryFrom, job.SalaryTo, job.SalaryCurrency),
+                PostedAt = job.PostedAt,
+                LogoUrl = logoUrl
             };
         }
 
@@ -148,12 +225,97 @@ namespace Project_Recruiment_Huce.Controllers
 
             return "Thỏa thuận";
         }
+
+        public ActionResult JobDetails(int? id)
+        {
+            if (!id.HasValue)
+            {
+                return RedirectToAction("JobsListing");
+            }
+
+            var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
+            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            {
+                db.ObjectTrackingEnabled = false;
+                JobStatusHelper.NormalizeStatuses(db);
+
+                var loadOptions = new System.Data.Linq.DataLoadOptions();
+                loadOptions.LoadWith<JobPost>(j => j.Company);
+                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
+                loadOptions.LoadWith<JobPost>(j => j.JobPostDetails);
+                db.LoadOptions = loadOptions;
+
+                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value);
+
+                if (job == null)
+                {
+                    return RedirectToAction("JobsListing");
+                }
+
+                var relatedJobs = db.JobPosts
+                    .Where(j => j.JobPostID != id.Value &&
+                               j.Status == JobStatusHelper.Published &&
+                               (j.CompanyID == job.CompanyID ||
+                                (j.Location != null && job.Location != null && j.Location == job.Location)))
+                    .OrderByDescending(j => j.PostedAt ?? j.UpdatedAt ?? (DateTime?)SqlDateTime.MinValue.Value)
+                    .Take(5)
+                    .ToList();
+
+                var jobDetailsViewModel = MapToJobDetails(job);
+                var relatedJobsViewModels = relatedJobs.Select(j => MapToRelatedJob(j)).ToList();
+
+                bool isAuthenticated = User.Identity.IsAuthenticated;
+                bool isCandidate = false;
+                bool isJobSaved = false;
+                bool hasApplied = false;
+
+                if (isAuthenticated)
+                {
+                    var identity = (ClaimsIdentity)User.Identity;
+                    var roleClaim = identity.FindFirst("VaiTro");
+                    if (roleClaim != null && roleClaim.Value == "Candidate")
+                    {
+                        isCandidate = true;
+                        var accountIdClaim = identity.FindFirst(ClaimTypes.NameIdentifier);
+                        if (accountIdClaim != null && int.TryParse(accountIdClaim.Value, out int accountId))
+                        {
+                            var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId);
+                            if (candidate != null)
+                            {
+                                isJobSaved = db.SavedJobs
+                                    .Any(sj => sj.CandidateID == candidate.CandidateID &&
+                                              sj.JobPostID == id.Value);
+
+                                hasApplied = db.Applications
+                                    .Any(app => app.CandidateID == candidate.CandidateID &&
+                                                app.JobPostID == id.Value);
+                            }
+                        }
+                    }
+                }
+
+                bool isExpired = job.ApplicationDeadline.HasValue && job.ApplicationDeadline.Value < DateTime.Now;
+                bool isJobOpen = JobStatusHelper.IsPublished(job.Status) && !isExpired;
+
+                ViewBag.RelatedJobs = relatedJobsViewModels;
+                ViewBag.IsJobSaved = isJobSaved;
+                ViewBag.HasApplied = hasApplied;
+                ViewBag.IsAuthenticated = isAuthenticated;
+                ViewBag.IsCandidate = isCandidate;
+                ViewBag.IsJobOpen = isJobOpen;
+                ViewBag.IsJobExpired = isExpired;
+                ViewBag.JobStatus = job.Status;
+
+                return View("JobsDetails", jobDetailsViewModel);
+            }
+        }
         public ActionResult JobsListing(string keyword = null, string location = null, string employmentType = null, int? page = null)
         {
             var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
             using (var db = new JOBPORTAL_ENDataContext(connectionString))
             {
                 db.ObjectTrackingEnabled = false;
+                JobStatusHelper.NormalizeStatuses(db);
 
                 // Eager load related entities for better performance
                 var loadOptions = new System.Data.Linq.DataLoadOptions();
@@ -162,7 +324,7 @@ namespace Project_Recruiment_Huce.Controllers
                 db.LoadOptions = loadOptions;
 
                 // Filter by Status: "Published"
-                var query = db.JobPosts.Where(j => j.Status == "Published");
+                var query = db.JobPosts.Where(j => j.Status == JobStatusHelper.Published);
 
                 // Search by keyword
                 if (!string.IsNullOrWhiteSpace(keyword))
@@ -256,6 +418,7 @@ namespace Project_Recruiment_Huce.Controllers
             using (var db = new JOBPORTAL_ENDataContext(connectionString))
             {
                 db.ObjectTrackingEnabled = false;
+                JobStatusHelper.NormalizeStatuses(db);
 
                 // Eager load related entities
                 var loadOptions = new System.Data.Linq.DataLoadOptions();

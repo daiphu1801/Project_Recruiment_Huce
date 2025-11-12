@@ -6,12 +6,18 @@
 }
 <div class="btn-group btn-group-sm" role="group">
   @if (hasDetails) {
-    <a class="btn btn-outline-primary" href="@Model["Details"]" title="Chi tiết"><i class="bi bi-eye"></i></a>
+    <a class="btn btn-outline-primary" href="@Model["Details"]" title="Chi tiết">
+      <i class="bi bi-eye"></i> Chi tiết
+    </a>
   }
   @if (hasEdit) {
-    <a class="btn btn-outline-secondary" href="@Model["Edit"]" title="Sửa"><i class="bi bi-pencil"></i></a>
+    <a class="btn btn-outline-warning" href="@Model["Edit"]" title="Sửa">
+      <i class="bi bi-pencil"></i> Sửa
+    </a>
   }
   @if (hasDelete) {
-    <a class="btn btn-outline-danger" href="@Model["Delete"]" title="Xóa" onclick="return confirm('Xóa mục này?');"><i class="bi bi-trash"></i></a>
+    <a class="btn btn-outline-danger" href="@Model["Delete"]" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa mục này?');">
+      <i class="bi bi-trash"></i> Xóa
+    </a>
   }
 </div>
