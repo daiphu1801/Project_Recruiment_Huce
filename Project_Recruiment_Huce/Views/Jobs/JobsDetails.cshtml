@@ -1,7 +1,51 @@
+@using System
+@using System.Linq
+@using System.Text.RegularExpressions
+@using System.Security.Claims
+@using System.Web
 @model Project_Recruiment_Huce.Models.Jobs.JobDetailsViewModel
 
 @{
     ViewBag.Title = "Chi tiết việc làm";
+
+    bool isAuthenticated = User?.Identity != null && User.Identity.IsAuthenticated;
+    var identity = isAuthenticated ? (ClaimsIdentity)User.Identity : null;
+    bool isCandidate = identity?.FindFirst("VaiTro")?.Value == "Candidate";
+    bool isRecruiter = identity?.FindFirst("VaiTro")?.Value == "Recruiter";
+
+    bool isJobSaved = ViewBag.IsJobSaved is bool saved && saved;
+    bool hasApplied = ViewBag.HasApplied is bool applied && applied;
+
+    string rawStatus = (ViewBag.JobStatus as string ?? Model?.Status ?? string.Empty) ?? string.Empty;
+    string normalizedStatus = rawStatus.Trim();
+    bool statusClosed = normalizedStatus.Equals("Closed", StringComparison.OrdinalIgnoreCase)
+        || normalizedStatus.Equals("Expired", StringComparison.OrdinalIgnoreCase)
+        || normalizedStatus.Equals("Draft", StringComparison.OrdinalIgnoreCase);
+
+    bool isJobExpired = Model?.ApplicationDeadline.HasValue == true && Model.ApplicationDeadline.Value.Date < DateTime.Now.Date;
+    bool isJobOpen = !statusClosed && !isJobExpired;
+
+    string saveButtonLabel = isJobSaved ? "Đã lưu" : "Lưu việc làm";
+    string applyButtonLabel;
+    bool applyButtonDisabled = false;
+
+    if (hasApplied)
+    {
+        applyButtonLabel = "Đã ứng tuyển";
+        applyButtonDisabled = true;
+    }
+    else if (!isJobOpen)
+    {
+        applyButtonLabel = isJobExpired ? "Hết hạn ứng tuyển" : (!string.IsNullOrEmpty(normalizedStatus) ? $"Đã {normalizedStatus.ToLower()}" : "Không còn tuyển");
+        applyButtonDisabled = true;
+    }
+    else
+    {
+        applyButtonLabel = "Ứng tuyển ngay";
+    }
+
+    string loginUrl = Url.Action("Login", "Account", new { returnUrl = Request?.RawUrl ?? Url.Action("JobDetails", "Jobs", new { id = Model?.JobPostID }) });
+    string candidateProfileUrl = Url.Action("CandidatesManage", "Candidates");
 }
 
 <section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
@@ -44,14 +88,89 @@
         </div>
       </div>
       <div class="col-lg-4">
-        <div class="row">
-          <div class="col-6">
-            <a href="#" class="btn btn-block btn-light btn-md"><span class="icon-heart-o mr-2 text-danger"></span>Lưu việc làm</a>
-          </div>
-          <div class="col-6">
-            <a href="#" class="btn btn-block btn-primary btn-md">Ứng tuyển ngay</a>
-          </div>
+        <div id="jobActionAlert" class="alert alert-dismissible fade d-none mb-3" role="alert">
+          <span class="alert-status-icon mr-2"></span>
+          <span class="alert-message"></span>
+          <button type="button" class="close alert-dismiss" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
+        <div class="row">
+          @if (!isAuthenticated)
+          {
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
+              <a href="@loginUrl" class="btn btn-block btn-primary btn-md">Đăng nhập để ứng tuyển</a>
+            </div>
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
+              <a href="@loginUrl" class="btn btn-block btn-outline-primary btn-md">
+                <span class="icon-heart-o mr-2 text-danger"></span>Lưu việc làm
+              </a>
+            </div>
+          }
+          else if (isCandidate)
+          {
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
+              <button type="button"
+                      id="applyJobBtn"
+                      class="btn btn-block btn-md @(applyButtonDisabled ? "btn-secondary" : "btn-primary")"
+                      data-apply-url="@Url.Action("Apply", "Candidates", new { jobId = Model.JobPostID })"
+                      @(applyButtonDisabled ? "disabled=\"disabled\"" : "")>
+                @applyButtonLabel
+              </button>
+            </div>
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
+              <button type="button"
+                      id="saveJobBtn"
+                      class="btn btn-block btn-md @(isJobSaved ? "btn-success" : "btn-outline-primary")"
+                      data-saved="@isJobSaved.ToString().ToLower()"
+                      data-save-url="@Url.Action("SaveJob","SavedJobs")"
+                      data-unsave-url="@Url.Action("UnsaveJob","SavedJobs")">
+                <span class="@(isJobSaved ? "icon-heart" : "icon-heart-o") mr-2 save-icon @(isJobSaved ? "" : "text-danger")"></span>
+                <span class="save-label">@saveButtonLabel</span>
+              </button>
+            </div>
+          }
+          else if (!isRecruiter)
+          {
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
+              <a href="@candidateProfileUrl" class="btn btn-block btn-outline-primary btn-md">
+                <span class="icon-heart-o mr-2 text-danger"></span>Lưu việc làm
+              </a>
+            </div>
+            <div class="col-12 col-md-6">
+              <a href="@candidateProfileUrl" class="btn btn-block btn-primary btn-md">Tạo hồ sơ ứng viên</a>
+            </div>
+          }
+          else
+          {
+            @* Recruiters do not see job action buttons *@
+          }
+        </div>
+        @{
+          if (isAuthenticated && isCandidate)
+          {
+            <form id="jobActionsForm" class="d-none">
+              @Html.AntiForgeryToken()
+            </form>
+          }
+        }
+        @if (applyButtonDisabled && isAuthenticated && isCandidate)
+        {
+          <small class="text-muted d-block mt-2">
+            @if (hasApplied)
+            {
+              @:Bạn đã ứng tuyển công việc này.
+            }
+            else if (isJobExpired)
+            {
+              @:Hạn nộp hồ sơ đã kết thúc.
+            }
+            else if (!string.IsNullOrEmpty(normalizedStatus))
+            {
+              @:Trạng thái tin: @normalizedStatus.
+            }
+          </small>
+        }
       </div>
     </div>
     <div class="row">
@@ -72,14 +191,169 @@
           </div>
         }
 
-        <div class="row mb-5">
-          <div class="col-6">
-            <a href="#" class="btn btn-block btn-light btn-md"><span class="icon-heart-o mr-2 text-danger"></span>Lưu việc làm</a>
+        @{
+          bool hasExtraDetails = Model?.HasJobDetail ?? false;
+          string ageRangeText = string.Empty;
+          if (Model?.AgeFrom.HasValue == true && Model?.AgeTo.HasValue == true)
+          {
+            ageRangeText = string.Format("{0} - {1} tuổi", Model.AgeFrom.Value, Model.AgeTo.Value);
+          }
+          else if (Model?.AgeFrom.HasValue == true)
+          {
+            ageRangeText = string.Format("Từ {0} tuổi", Model.AgeFrom.Value);
+          }
+          else if (Model?.AgeTo.HasValue == true)
+          {
+            ageRangeText = string.Format("Đến {0} tuổi", Model.AgeTo.Value);
+          }
+
+          string experienceText = Model?.YearsExperience.HasValue == true
+            ? (Model.YearsExperience.Value == 0 ? "Không yêu cầu kinh nghiệm" : string.Format("{0} năm", Model.YearsExperience.Value))
+            : string.Empty;
+
+          string headcountText = Model?.Headcount.HasValue == true
+            ? string.Format("{0} ứng viên", Model.Headcount.Value)
+            : string.Empty;
+
+          Func<string, string> cleanSkill = raw =>
+          {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+              return string.Empty;
+            }
+
+            string noHtml = Regex.Replace(raw, "<.*?>", string.Empty).Trim();
+            if (noHtml.StartsWith("-"))
+            {
+              noHtml = noHtml.Substring(1).Trim();
+            }
+
+            return noHtml;
+          };
+
+          var skills = (Model?.Skills ?? string.Empty)
+            .Split(new[] { ',', ';', '|', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => cleanSkill(s))
+            .Where(s => !string.IsNullOrEmpty(s))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        }
+
+        @if (hasExtraDetails)
+        {
+          <div class="mb-5">
+            <h3 class="h5 d-flex align-items-center mb-4 text-primary">
+              <span class="icon-info mr-3"></span>Thông tin chi tiết công việc
+            </h3>
+            <div class="card border-0 shadow-sm">
+              <div class="card-body p-4">
+                <div class="row">
+                  <div class="col-md-6">
+                    <ul class="list-unstyled mb-0">
+                      @if (!string.IsNullOrWhiteSpace(Model.Industry))
+                      {
+                        <li class="mb-3 d-flex align-items-start">
+                          <span class="icon-briefcase text-primary mr-3 mt-1"></span>
+                          <div>
+                            <span class="text-muted text-uppercase small">Ngành nghề</span>
+                            <div class="font-weight-bold text-dark">@Model.Industry</div>
+                          </div>
+                        </li>
+                      }
+                      @if (!string.IsNullOrWhiteSpace(Model.Major))
+                      {
+                        <li class="mb-3 d-flex align-items-start">
+                          <span class="icon-book text-primary mr-3 mt-1"></span>
+                          <div>
+                            <span class="text-muted text-uppercase small">Chuyên ngành</span>
+                            <div class="font-weight-bold text-dark">@Model.Major</div>
+                          </div>
+                        </li>
+                      }
+                      @if (!string.IsNullOrWhiteSpace(experienceText))
+                      {
+                        <li class="mb-3 d-flex align-items-start">
+                          <span class="icon-clock-o text-primary mr-3 mt-1"></span>
+                          <div>
+                            <span class="text-muted text-uppercase small">Kinh nghiệm</span>
+                            <div class="font-weight-bold text-dark">@experienceText</div>
+                          </div>
+                        </li>
+                      }
+                      @if (!string.IsNullOrWhiteSpace(Model.DegreeRequired))
+                      {
+                        <li class="mb-0 d-flex align-items-start">
+                          <span class="icon-graduation-cap text-primary mr-3 mt-1"></span>
+                          <div>
+                            <span class="text-muted text-uppercase small">Trình độ học vấn</span>
+                            <div class="font-weight-bold text-dark">@Model.DegreeRequired</div>
+                          </div>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                  <div class="col-md-6">
+                    <ul class="list-unstyled mb-0">
+                      @if (!string.IsNullOrWhiteSpace(headcountText))
+                      {
+                        <li class="mb-3 d-flex align-items-start">
+                          <span class="icon-users text-primary mr-3 mt-1"></span>
+                          <div>
+                            <span class="text-muted text-uppercase small">Số lượng tuyển</span>
+                            <div class="font-weight-bold text-dark">@headcountText</div>
+                          </div>
+                        </li>
+                      }
+                      @if (!string.IsNullOrWhiteSpace(Model.GenderRequirement))
+                      {
+                        <li class="mb-3 d-flex align-items-start">
+                          <span class="icon-user text-primary mr-3 mt-1"></span>
+                          <div>
+                            <span class="text-muted text-uppercase small">Giới tính</span>
+                            <div class="font-weight-bold text-dark">@Model.GenderRequirement</div>
+                          </div>
+                        </li>
+                      }
+                      @if (!string.IsNullOrWhiteSpace(ageRangeText))
+                      {
+                        <li class="mb-3 d-flex align-items-start">
+                          <span class="icon-calendar text-primary mr-3 mt-1"></span>
+                          <div>
+                            <span class="text-muted text-uppercase small">Độ tuổi</span>
+                            <div class="font-weight-bold text-dark">@ageRangeText</div>
+                          </div>
+                        </li>
+                      }
+                      @if (!string.IsNullOrWhiteSpace(Model.DetailStatus))
+                      {
+                        <li class="mb-0 d-flex align-items-start">
+                          <span class="icon-flag text-primary mr-3 mt-1"></span>
+                          <div>
+                            <span class="text-muted text-uppercase small">Trạng thái</span>
+                            <div class="font-weight-bold text-dark">@Model.DetailStatus</div>
+                          </div>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                </div>
+
+                @if (skills.Any())
+                {
+                  <div class="mt-4">
+                    <span class="text-muted text-uppercase small">Kỹ năng ưu tiên</span>
+                    <div class="mt-2">
+                      @foreach (var skill in skills)
+                      {
+                        <span class="badge badge-pill badge-primary mr-2 mb-2 px-3 py-2">@skill</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
           </div>
-          <div class="col-6">
-            <a href="#" class="btn btn-block btn-primary btn-md">Ứng tuyển ngay</a>
-          </div>
-        </div>
+        }
 
       </div>
       <div class="col-lg-4">
@@ -165,7 +439,7 @@
           }
           
           <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-            <a href="@Url.Action("Details","JobDetails", new { id = job.JobPostID })"></a>
+            <a href="@Url.Action("JobDetails","Jobs", new { id = job.JobPostID })"></a>
             <div class="job-listing-logo">
               <img src="@job.LogoUrl" alt="@job.CompanyName" class="img-fluid">
             </div>
@@ -197,34 +471,34 @@
 </section>
 
 <section class="bg-light pt-5 testimony-full">
-    <div class="owl-carousel single-carousel">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-6 align-self-center text-center text-lg-left">
-            <blockquote>
-              <p>&ldquo;Soluta quasi cum delectus eum facilis recusandae nesciunt molestias accusantium libero dolores repellat id in dolorem laborum ad modi qui at quas dolorum voluptatem voluptatum repudiandae.&rdquo;</p>
-              <p><cite> &mdash; Corey Woods, @@Dribbble</cite></p>
-            </blockquote>
-          </div>
-          <div class="col-lg-6 align-self-end text-center text-lg-right">
-            <img src="@Url.Content("~/Content/images/person_transparent_2.png")" alt="Image" class="img-fluid mb-0">
-          </div>
+  <div class="owl-carousel single-carousel">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 align-self-center text-center text-lg-left">
+          <blockquote>
+            <p>&ldquo;JobBoard đã giúp tôi tìm được công việc mơ ước một cách nhanh chóng và dễ dàng. Giao diện thân thiện và hệ thống tìm kiếm thông minh giúp tôi nhanh chóng tìm thấy những cơ hội phù hợp với kỹ năng của mình.&rdquo;</p>
+            <p><cite> &mdash; Nguyễn Minh Tiến, Ứng viên</cite></p>
+          </blockquote>
+        </div>
+        <div class="col-lg-6 align-self-end text-center text-lg-right">
+          <img src="@Url.Content("~/Content/images/ảnh_bìa_4-Photoroom.png")" alt="Phản hồi từ ứng viên" class="img-fluid mb-0">
         </div>
       </div>
+    </div>
 
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-6 align-self-center text-center text-lg-left">
-            <blockquote>
-              <p>&ldquo;Soluta quasi cum delectus eum facilis recusandae nesciunt molestias accusantium libero dolores repellat id in dolorem laborum ad modi qui at quas dolorum voluptatem voluptatum repudiandae.&rdquo;</p>
-              <p><cite> &mdash; Chris Peters, @Google</cite></p>
-            </blockquote>
-          </div>
-          <div class="col-lg-6 align-self-end text-center text-lg-right">
-            <img src="@Url.Content("~/Content/images/person_transparent.png")" alt="Image" class="img-fluid mb-0">
-          </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 align-self-center text-center text-lg-left">
+          <blockquote>
+            <p>&ldquo;Là một nhà tuyển dụng, tôi rất hài lòng với JobBoard. Hệ thống giúp chúng tôi tiếp cận được nhiều ứng viên chất lượng và quản lý quy trình tuyển dụng một cách hiệu quả. Đây thực sự là công cụ tuyển dụng tốt nhất mà chúng tôi từng sử dụng.&rdquo;</p>
+            <p><cite> &mdash; Trần Thị B, Nhà tuyển dụng</cite></p>
+          </blockquote>
+        </div>
+        <div class="col-lg-6 align-self-end text-center text-lg-right">
+          <img src="@Url.Content("~/Content/images/ảnh_bìa_3-Photoroom.png")" alt="Phản hồi từ nhà tuyển dụng" class="img-fluid mb-0">
         </div>
       </div>
+    </div>
   </div>
 </section>
 
@@ -232,19 +506,166 @@
   <div class="container">
     <div class="row">
       <div class="col-md-6 align-self-center text-center text-md-left mb-5 mb-md-0">
-        <h2 class="text-white">Tải ứng dụng di động</h2>
-        <p class="mb-5 lead text-white">Tải ứng dụng JobBoard để tìm việc và quản lý hồ sơ mọi lúc mọi nơi.</p>
+        <h2 class="text-white">Dễ Dàng Sử Dụng Trên Điện Thoại</h2>
+        <p class="mb-5 lead text-white">JobBoard hoạt động mượt mà trên mọi thiết bị. Bạn có thể tìm kiếm việc làm, ứng tuyển và theo dõi hành trình nghề nghiệp của mình ngay trên smartphone.</p>
         <p class="mb-0">
-          <a href="#" class="btn btn-dark btn-md px-4 border-width-2"><span class="icon-apple mr-3"></span>App Store</a>
-          <a href="#" class="btn btn-dark btn-md px-4 border-width-2"><span class="icon-android mr-3"></span>Play Store</a>
+          <a href="@Url.Action("JobsListing", "Jobs")" class="btn btn-warning btn-md px-4 border-width-2"><span class="icon-search mr-3"></span>Khám phá việc làm</a>
+          <a href="@Url.Action("Register", "Account")" class="btn btn-outline-light btn-md px-4 border-width-2 mt-3 mt-md-0"><span class="icon-person_add mr-3"></span>Đăng ký miễn phí</a>
         </p>
+        <p class="mt-3 text-white-50 small">* Không cần cài đặt ứng dụng – chỉ cần mở JobBoard trên trình duyệt điện thoại.</p>
       </div>
       <div class="col-md-6 ml-auto align-self-end">
-        <img src="@Url.Content("~/Content/images/apps.png")" alt="Image" class="img-fluid">
+        <img src="@Url.Content("~/Content/images/apps.png")" alt="Ứng dụng JobBoard" class="img-fluid">
       </div>
     </div>
   </div>
 </section>
 
 @section Scripts {
+  <script>
+    $(function () {
+      var $saveBtn = $('#saveJobBtn');
+      var $applyBtn = $('#applyJobBtn');
+      var $alert = $('#jobActionAlert');
+      var $tokenField = $('#jobActionsForm input[name="__RequestVerificationToken"]');
+      var token = $tokenField.length ? $tokenField.val() : null;
+      var jobId = @Model.JobPostID;
+
+      var hideAlertTimeout = null;
+
+      function hideAlert() {
+        if (!$alert.length) {
+          return;
+        }
+        $alert.removeClass('show');
+        setTimeout(function () {
+          $alert
+            .addClass('d-none')
+            .removeClass('alert-success alert-danger alert-warning alert-info');
+          $alert.removeData('timeout');
+          hideAlertTimeout = null;
+        }, 200);
+      }
+
+      if ($alert.length) {
+        $alert.find('.alert-dismiss').on('click', function () {
+          clearTimeout(hideAlertTimeout);
+          hideAlert();
+        });
+      }
+
+      function showAlert(type, message) {
+        if (!$alert.length) {
+          return;
+        }
+
+        clearTimeout(hideAlertTimeout);
+
+        var iconMap = {
+          success: 'icon-check-circle text-success',
+          danger: 'icon-exclamation-circle text-danger',
+          warning: 'icon-warning text-warning',
+          info: 'icon-info text-info'
+        };
+
+        $alert
+          .removeClass('d-none show alert-success alert-danger alert-warning alert-info')
+          .addClass('alert-' + type);
+
+        var $icon = $alert.find('.alert-status-icon');
+        if ($icon.length) {
+          var iconClass = iconMap[type] || '';
+          $icon.attr('class', 'alert-status-icon mr-2 ' + iconClass);
+        }
+
+        $alert.find('.alert-message').text(message);
+
+        // Force reflow to restart animation for the fade effect
+        void $alert[0].offsetWidth;
+        $alert.addClass('show');
+
+        var alertEl = $alert[0];
+        if (alertEl && typeof alertEl.scrollIntoView === 'function') {
+          alertEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        hideAlertTimeout = setTimeout(function () {
+          hideAlert();
+        }, 4000);
+        $alert.data('timeout', hideAlertTimeout);
+      }
+
+      $applyBtn.on('click', function () {
+        var $btn = $(this);
+        if ($btn.prop('disabled')) {
+          return;
+        }
+
+        var applyUrl = $btn.data('apply-url');
+        if (!applyUrl) {
+          showAlert('danger', 'Không tìm thấy đường dẫn ứng tuyển.');
+          return;
+        }
+
+        window.location.href = applyUrl;
+      });
+
+      $saveBtn.on('click', function () {
+        var $btn = $(this);
+        if ($btn.prop('disabled')) {
+          return;
+        }
+
+        if (!token) {
+          showAlert('danger', 'Không tìm thấy mã xác thực. Vui lòng tải lại trang.');
+          return;
+        }
+
+        var isSaved = ($btn.data('saved') === true || $btn.data('saved') === "true");
+        var actionUrl = isSaved ? $btn.data('unsave-url') : $btn.data('save-url');
+
+        if (!actionUrl) {
+          showAlert('danger', 'Không tìm thấy đường dẫn lưu công việc.');
+          return;
+        }
+
+        $.ajax({
+          url: actionUrl,
+          method: 'POST',
+          data: {
+            __RequestVerificationToken: token,
+            jobPostId: jobId
+          },
+          beforeSend: function () {
+            $btn.prop('disabled', true).addClass('disabled');
+          }
+        }).done(function (response) {
+          if (response && response.success) {
+            isSaved = !isSaved;
+            $btn.data('saved', isSaved.toString());
+            $btn
+              .toggleClass('btn-outline-primary', !isSaved)
+              .toggleClass('btn-success', isSaved);
+            $btn.find('.save-icon')
+              .toggleClass('icon-heart-o', !isSaved)
+              .toggleClass('icon-heart', isSaved)
+              .toggleClass('text-danger', !isSaved);
+            $btn.find('.save-label').text(isSaved ? 'Đã lưu' : 'Lưu việc làm');
+
+            showAlert('success', response.message || (isSaved ? 'Đã lưu công việc thành công.' : 'Đã bỏ lưu công việc.'));
+          }
+          else if (response && response.message) {
+            showAlert('warning', response.message);
+          }
+          else {
+            showAlert('danger', 'Không thể cập nhật trạng thái lưu công việc.');
+          }
+        }).fail(function () {
+          showAlert('danger', 'Không thể kết nối máy chủ. Vui lòng thử lại sau.');
+        }).always(function () {
+          $btn.prop('disabled', false).removeClass('disabled');
+        });
+      });
+    });
+  </script>
 }

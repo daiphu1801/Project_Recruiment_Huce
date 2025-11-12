@@ -1,29 +1,83 @@
 @model System.Tuple<string,string>
 @{
-    var status = (Model?.Item1 ?? string.Empty).Trim();
+    var rawStatus = (Model?.Item1 ?? string.Empty).Trim();
     var type = (Model?.Item2 ?? string.Empty).Trim();
+    var normalized = rawStatus.ToLowerInvariant();
+
     string css = "badge bg-secondary";
+    string displayText = string.IsNullOrEmpty(rawStatus) ? "Không xác định" : rawStatus;
+
     if (type.Equals("JobPosts", System.StringComparison.OrdinalIgnoreCase))
     {
-        if (status.Equals("Visible", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-primary"; }
-        else if (status.Equals("Hidden", System.StringComparison.OrdinalIgnoreCase) || status.Equals("Closed", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-secondary"; }
-        else if (status.Equals("Draft", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-warning"; }
+        switch (normalized)
+        {
+            case "published":
+                css = "badge bg-primary";
+                displayText = "Hiển thị";
+                break;
+            case "draft":
+                css = "badge bg-warning text-dark";
+                displayText = "Nháp";
+                break;
+            case "hidden":
+                css = "badge bg-secondary";
+                displayText = "Đã ẩn";
+                break;
+            case "closed":
+                css = "badge bg-secondary";
+                displayText = "Đã đóng";
+                break;
+            case "expired":
+                css = "badge bg-dark";
+                displayText = "Hết hạn";
+                break;
+        }
     }
     else if (type.Equals("Applications", System.StringComparison.OrdinalIgnoreCase))
     {
-        if (status.Equals("Under review", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-warning"; }
-        else if (status.Equals("Interview", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-info"; }
-        else if (status.Equals("Offered", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-primary"; }
-        else if (status.Equals("Hired", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-success"; }
-        else if (status.Equals("Rejected", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-danger"; }
+        if (normalized == "under review")
+        {
+            css = "badge bg-warning text-dark";
+            displayText = "Đang xem xét";
+        }
+        else if (normalized == "interview")
+        {
+            css = "badge bg-info text-dark";
+            displayText = "Phỏng vấn";
+        }
+        else if (normalized == "offered")
+        {
+            css = "badge bg-primary";
+            displayText = "Đã đề nghị";
+        }
+        else if (normalized == "hired")
+        {
+            css = "badge bg-success";
+            displayText = "Đã nhận";
+        }
+        else if (normalized == "rejected")
+        {
+            css = "badge bg-danger";
+            displayText = "Từ chối";
+        }
     }
     else if (type.Equals("Transactions", System.StringComparison.OrdinalIgnoreCase))
     {
-        if (status.Equals("Processing", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-warning"; }
-        else if (status.Equals("Completed", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-success"; }
-        else if (status.Equals("Failed", System.StringComparison.OrdinalIgnoreCase)) { css = "badge bg-danger"; }
+        if (normalized == "processing")
+        {
+            css = "badge bg-warning text-dark";
+            displayText = "Đang xử lý";
+        }
+        else if (normalized == "completed")
+        {
+            css = "badge bg-success";
+            displayText = "Hoàn tất";
+        }
+        else if (normalized == "failed")
+        {
+            css = "badge bg-danger";
+            displayText = "Thất bại";
+        }
     }
 }
-<span class="@css">@status</span>
-
-
+<span class="@css">@displayText</span>

@@ -6,6 +6,7 @@ using System.Configuration;
 using System.Linq;
 using System.Security.Policy;
 using System.Web.Mvc;
+using Project_Recruiment_Huce.Helpers;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
@@ -25,6 +26,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             using (var db = new JOBPORTAL_ENDataContext(
                 ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
+                JobStatusHelper.NormalizeStatuses(db);
                 var query = from job in db.JobPosts
                             join company in db.Companies on job.CompanyID equals company.CompanyID
                             join recruiter in db.Recruiters on job.RecruiterID equals recruiter.RecruiterID
@@ -77,7 +79,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 }
 
                 // ViewBag dropdowns
-                ViewBag.StatusOptions = new SelectList(new[] { "Visible", "Hidden", "Closed", "Draft" });
+                ViewBag.StatusOptions = BuildStatusSelectList(status);
                 ViewBag.CompanyOptions = new SelectList(
                     db.Companies.Select(c => new { Id = c.CompanyID, Name = c.CompanyName }).ToList(),
                     "Id", "Name"
@@ -161,11 +163,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             using (var db = new JOBPORTAL_ENDataContext(
                 ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                ViewBag.CompanyOptions = new SelectList(
-                    db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(),
-                    "CompanyID",
-                    "CompanyName"
-                );
+                JobStatusHelper.NormalizeStatuses(db);
 
                 ViewBag.RecruiterOptions = new SelectList(
                     db.Recruiters.Select(r => new { r.RecruiterID, r.FullName }).ToList(),
@@ -173,10 +171,26 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     "FullName"
                 );
 
-                ViewBag.StatusOptions = new SelectList(new[] { "Visible", "Hidden", "Closed", "Draft" });
+                ViewBag.StatusOptions = BuildStatusSelectList(null);
             }
 
             return View();
+        }
+
+        // GET: Admin/JobPosts/GetCompanyByRecruiter
+        // Action để lấy CompanyID từ RecruiterID qua AJAX
+        public JsonResult GetCompanyByRecruiter(int recruiterId)
+        {
+            using (var db = new JOBPORTAL_ENDataContext(
+                ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            {
+                var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId);
+                if (recruiter != null && recruiter.CompanyID.HasValue)
+                {
+                    return Json(new { companyId = recruiter.CompanyID.Value }, JsonRequestBehavior.AllowGet);
+                }
+                return Json(new { companyId = (int?)null }, JsonRequestBehavior.AllowGet);
+            }
         }
 
         // POST: Admin/JobPosts/Create
@@ -187,6 +201,21 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             using (var db = new JOBPORTAL_ENDataContext(
                 ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
+                JobStatusHelper.NormalizeStatuses(db);
+                
+                // Xóa validation error cho CompanyID vì nó được tự động lấy từ RecruiterID
+                ModelState.Remove("CompanyID");
+                
+                // Tự động lấy CompanyID từ RecruiterID trước khi validate
+                if (model.RecruiterID > 0)
+                {
+                    var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == model.RecruiterID);
+                    if (recruiter != null && recruiter.CompanyID.HasValue)
+                    {
+                        model.CompanyID = recruiter.CompanyID.Value;
+                    }
+                }
+                
                 // ✅ Kiểm tra tiêu đề trùng
                 if (!string.IsNullOrWhiteSpace(model.Title) && db.JobPosts.Any(j => j.Title == model.Title))
                 {
@@ -209,9 +238,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 if (model.RecruiterID <= 0)
                     ModelState.AddModelError("RecruiterID", "Nhà tuyển dụng là bắt buộc");
-
-                if (model.CompanyID <= 0)
-                    ModelState.AddModelError("CompanyID", "Công ty là bắt buộc");
+                else if (!model.CompanyID.HasValue || model.CompanyID.Value <= 0)
+                {
+                    // Nếu CompanyID vẫn chưa được set (sau khi đã lấy từ RecruiterID ở trên)
+                    ModelState.AddModelError("RecruiterID", "Nhà tuyển dụng này chưa được gán cho công ty nào");
+                }
 
                 if (string.IsNullOrWhiteSpace(model.Description))
                     ModelState.AddModelError("Description", "Mô tả là bắt buộc");
@@ -237,13 +268,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // Nếu có lỗi, load lại dropdown
                 if (!ModelState.IsValid)
                 {
-                    ViewBag.CompanyOptions = new SelectList(
-                        db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(),
-                        "CompanyID",
-                        "CompanyName",
-                        model.CompanyID
-                    );
-
                     ViewBag.RecruiterOptions = new SelectList(
                         db.Recruiters.Select(r => new { r.RecruiterID, r.FullName }).ToList(),
                         "RecruiterID",
@@ -251,7 +275,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         model.RecruiterID
                     );
 
-                    ViewBag.StatusOptions = new SelectList(new[] { "Visible", "Hidden", "Closed", "Draft" }, model.Status);
+                    ViewBag.StatusOptions = BuildStatusSelectList(model.Status);
 
                     return View(model);
                 }
@@ -261,7 +285,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 {
                     JobCode = model.JobCode,
                     RecruiterID = model.RecruiterID,
-                    CompanyID = model.CompanyID,
+                    CompanyID = model.CompanyID, // CompanyID đã được validate và set ở trên
                     Title = model.Title,
                     Description = model.Description,
                     Requirements = model.Requirements,
@@ -304,12 +328,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             using (var db = new JOBPORTAL_ENDataContext(
                 ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
+                JobStatusHelper.NormalizeStatuses(db);
                 var jobPost = db.JobPosts.FirstOrDefault(j => j.JobPostID == id);
 
                 if (jobPost == null)
                 {
                     return HttpNotFound();
                 }
+
+                jobPost.Status = JobStatusHelper.NormalizeStatus(jobPost.Status);
 
                 // Load dropdown options with current selected values
                 ViewBag.CompanyOptions = new SelectList(
@@ -326,10 +353,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     jobPost.RecruiterID
                 );
 
-                ViewBag.StatusOptions = new SelectList(
-                    new[] { "Visible", "Hidden", "Closed", "Draft" },
-                    jobPost.Status
-                );
+                ViewBag.StatusOptions = BuildStatusSelectList(jobPost.Status);
 
                 // Map entity to view model
                 var vm = new JobPostEditVm
@@ -373,6 +397,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 using (var db = new JOBPORTAL_ENDataContext(
                     ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
                 {
+                    JobStatusHelper.NormalizeStatuses(db);
                     ViewBag.CompanyOptions = new SelectList(
                         db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(),
                         "CompanyID",
@@ -387,10 +412,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         model.RecruiterID
                     );
 
-                    ViewBag.StatusOptions = new SelectList(
-                        new[] { "Visible", "Hidden", "Closed", "Draft" },
-                        model.Status
-                    );
+                    ViewBag.StatusOptions = BuildStatusSelectList(model.Status);
                 }
                 return View(model);
             }
@@ -398,12 +420,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             using (var db = new JOBPORTAL_ENDataContext(
                 ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
+                JobStatusHelper.NormalizeStatuses(db);
                 var jobPost = db.JobPosts.FirstOrDefault(j => j.JobPostID == model.JobPostID);
 
                 if (jobPost == null)
                 {
                     return HttpNotFound();
                 }
+
+                jobPost.Status = JobStatusHelper.NormalizeStatus(jobPost.Status);
 
                 //  Kiểm tra tiêu đề trùng (trừ chính nó)
                 
@@ -425,10 +450,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         "FullName",
                         model.RecruiterID
                     );
-                    ViewBag.StatusOptions = new SelectList(
-                        new[] { "Visible", "Hidden", "Closed", "Draft" },
-                        model.Status
-                    );
+                    ViewBag.StatusOptions = BuildStatusSelectList(model.Status);
                     return View(model);
                 }
 
@@ -448,10 +470,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         "FullName",
                         model.RecruiterID
                     );
-                    ViewBag.StatusOptions = new SelectList(
-                        new[] { "Visible", "Hidden", "Closed", "Draft" },
-                        model.Status
-                    );
+                    ViewBag.StatusOptions = BuildStatusSelectList(model.Status);
                     return View(model);
                 }
 
@@ -470,10 +489,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         "FullName",
                         model.RecruiterID
                     );
-                    ViewBag.StatusOptions = new SelectList(
-                        new[] { "Visible", "Hidden", "Closed", "Draft" },
-                        model.Status
-                    );
+                    ViewBag.StatusOptions = BuildStatusSelectList(model.Status);
                     return View(model);
                 }
 
@@ -492,10 +508,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         "FullName",
                         model.RecruiterID
                     );
-                    ViewBag.StatusOptions = new SelectList(
-                        new[] { "Visible", "Hidden", "Closed", "Draft" },
-                        model.Status
-                    );
+                    ViewBag.StatusOptions = BuildStatusSelectList(model.Status);
                     return View(model);
                 }
 
@@ -528,6 +541,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             using (var db = new JOBPORTAL_ENDataContext(
                 ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
+                JobStatusHelper.NormalizeStatuses(db);
                 var job = (from j in db.JobPosts
                            join c in db.Companies on j.CompanyID equals c.CompanyID
                            join r in db.Recruiters on j.RecruiterID equals r.RecruiterID
@@ -584,7 +598,19 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             return RedirectToAction("Index");
         }
 
+        private SelectList BuildStatusSelectList(string selectedStatus)
+        {
+            var statusItems = new[]
+            {
+                new { Value = JobStatusHelper.Published, Text = "Hiển thị" },
+                new { Value = JobStatusHelper.Hidden, Text = "Đã ẩn" },
+                new { Value = JobStatusHelper.Closed, Text = "Đã đóng" },
+                new { Value = JobStatusHelper.Draft, Text = "Nháp" }
+            };
 
+            var value = string.IsNullOrWhiteSpace(selectedStatus) ? JobStatusHelper.Published : selectedStatus;
+            return new SelectList(statusItems, "Value", "Text", value);
+        }
     }
 }
 

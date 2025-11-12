@@ -96,7 +96,7 @@ if (recruiterId.HasValue)
 
 **Dòng 40-42: Chuẩn bị dropdowns cho view**
 ```csharp
-ViewBag.StatusOptions = new SelectList(new[] { "Visible", "Hidden", "Closed", "Draft" });
+ViewBag.StatusOptions = new SelectList(new[] { "Published", "Hidden", "Closed", "Draft" });
 ViewBag.CompanyOptions = new SelectList(MockData.Companies.Select(c => new { Id = c.CompanyId, Name = c.CompanyName }), "Id", "Name");
 ViewBag.RecruiterOptions = new SelectList(MockData.Recruiters.Select(r => new { Id = r.RecruiterId, Name = r.FullName }), "Id", "Name");
 ```
@@ -188,7 +188,7 @@ ViewBag.Breadcrumbs = new List<Tuple<string, string>>
 ```csharp
 ViewBag.CompanyOptions = new SelectList(MockData.Companies.Select(c => new { Id = c.CompanyId, Name = c.CompanyName }), "Id", "Name");
 ViewBag.RecruiterOptions = new SelectList(MockData.Recruiters.Select(r => new { Id = r.RecruiterId, Name = r.FullName }), "Id", "Name");
-ViewBag.StatusOptions = new SelectList(new[] { "Visible", "Hidden", "Closed", "Draft" });
+ViewBag.StatusOptions = new SelectList(new[] { "Published", "Hidden", "Closed", "Draft" });
 ViewBag.EmploymentOptions = new SelectList(new[] { "Full-time", "Part-time", "Internship", "Contract", "Remote" });
 ```
 - **Mục đích**: Tạo các dropdown cho form
@@ -271,7 +271,7 @@ ViewBag.Breadcrumbs = new List<Tuple<string, string>>
 ```csharp
 ViewBag.CompanyOptions = new SelectList(MockData.Companies.Select(c => new { Id = c.CompanyId, Name = c.CompanyName }), "Id", "Name", item.CompanyId);
 ViewBag.RecruiterOptions = new SelectList(MockData.Recruiters.Select(r => new { Id = r.RecruiterId, Name = r.FullName }), "Id", "Name", item.RecruiterId);
-ViewBag.StatusOptions = new SelectList(new[] { "Visible", "Hidden", "Closed", "Draft" }, item.Status);
+ViewBag.StatusOptions = new SelectList(new[] { "Published", "Hidden", "Closed", "Draft" }, item.Status);
 ViewBag.EmploymentOptions = new SelectList(new[] { "Full-time", "Part-time", "Internship", "Contract", "Remote" }, item.Employment);
 ```
 - **Mục đích**: Tạo dropdowns với giá trị đã chọn sẵn
