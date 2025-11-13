@@ -19,6 +19,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Display(Name = "Công ty")]
         public int? CompanyId { get; set; }
 
+        [Display(Name = "Tên đăng nhập")]
+        public string Username { get; set; }
+
         [Display(Name = "Họ tên")]
         public string FullName { get; set; }
 
@@ -52,9 +55,22 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
 
     public class CreateRecruiterVm
     {
-        // Added AccountId and CompanyId so the Create view's dropdowns bind correctly.
-        [Display(Name = "Tài khoản")]
-        public int AccountId { get; set; }
+        // [REQ 5] Bỏ AccountId, thêm các trường tạo tài khoản mới
+        [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
+        [StringLength(100)]
+        [Display(Name = "Tên đăng nhập")]
+        public string Username { get; set; }
+
+        [Required(ErrorMessage = "Vui lòng nhập email")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [Display(Name = "Email")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Mật khẩu")]
+        public string Password { get; set; }
 
         [Display(Name = "Công ty")]
         public int? CompanyId { get; set; }
@@ -70,8 +86,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string PositionTitle { get; set; }
 
         [Display(Name = "Email")]
-        [Required(ErrorMessage = "Vui lòng nhập email")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [Required(ErrorMessage = "Vui lòng nhập email liên lạc")]
+        [EmailAddress(ErrorMessage = "Email liên lạc không hợp lệ")]
         public string CompanyEmail { get; set; }
 
         [Display(Name = "Số điện thoại")]
@@ -100,7 +116,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Display(Name = "Công ty")]
         public int? CompanyId { get; set; }
 
-        [Display(Name = "Họ tên")]
+        [Display(Name = "Họ tên")] 
         [Required(ErrorMessage = "Vui lòng nhập tên nhà tuyển dụng")]
         [StringLength(100, ErrorMessage = "Tên nhà tuyển dụng tối đa 100 ký tự")]
         public string FullName { get; set; }
@@ -111,13 +127,19 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string PositionTitle { get; set; }
 
         [Display(Name = "Email")]
-        [Required(ErrorMessage = "Vui lòng nhập email")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [Required(ErrorMessage = "Vui lòng nhập email liên lạc")]
+        [EmailAddress(ErrorMessage = "Email liên lạc không hợp lệ")]
         public string CompanyEmail { get; set; }
 
         [Display(Name = "Số điện thoại")]
         [StringLength(20)]
         public string Phone { get; set; }
+
+        // [REQ 6] Thêm trường mật khẩu
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Mật khẩu mới (để trống nếu không đổi)")]
+        public string Password { get; set; }
 
         public byte? ActiveFlag { get; set; }
 

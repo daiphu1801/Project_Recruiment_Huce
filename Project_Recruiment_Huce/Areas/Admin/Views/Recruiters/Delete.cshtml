@@ -1,3 +1,4 @@
+//Recruiter Delete
 @model Project_Recruiment_Huce.Areas.Admin.Models.RecruiterListVm
 @{
     ViewBag.Title = "Xóa nhà tuyển dụng";
@@ -18,20 +19,25 @@
             <div class="col-md-8">
                 <table class="table table-borderless">
                     <tr>
-                        <th width="150">ID:</th>
+                        <th width="150">ID Nhà tuyển dụng:</th>
                         <td>@Model.RecruiterId</td>
                     </tr>
                     <tr>
-                        <th>ID tài khoản:</th>
+                        <th>ID Tài khoản:</th>
                         <td>@Model.AccountId</td>
                     </tr>
-                    <tr>
-                        <th>ID công ty:</th>
-                        <td>@Model.CompanyId</td>
-                    </tr>
+
                     <tr>
                         <th>Tên đăng nhập:</th>
+                        <td>@Model.Username</td>
+                    </tr>
+                    <tr>
+                        <th>Họ và tên:</th>
                         <td>@Model.FullName</td>
+                    </tr>
+                    <tr>
+                        <th>Công ty:</th>
+                        <td>@Model.CompanyName</td>
                     </tr>
                     <tr>
                         <th>Chức danh:</th>
@@ -52,7 +58,7 @@
                     <tr>
                         <th>Trạng thái:</th>
                         <td>
-                            @if (Model.Active)
+                            @if (Model.ActiveFlag == 1)
                             {
                                 <span class="badge bg-success">Hoạt động</span>
                             }
@@ -67,7 +73,7 @@
             <div class="col-md-4 text-center">
                 @if (!string.IsNullOrEmpty(Model.PhotoUrl))
                 {
-                    <img src="@Model.PhotoUrl" alt="@Model.FullName" class="img-fluid rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;" />
+                    <img src="@Url.Content(Model.PhotoUrl)" alt="@Model.FullName" class="img-fluid rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;" />
                 }
                 else
                 {
@@ -78,13 +84,13 @@
             </div>
         </div>
 
-        @using (Html.BeginForm("Delete", "Recruiters", new { area = "Admin" }, FormMethod.Post, new { enctype = "multipart/form-data" }))
+        @using (Html.BeginForm("Delete", "Recruiters", new { area = "Admin" }, FormMethod.Post))
         {
             @Html.AntiForgeryToken()
             @Html.HiddenFor(m => m.RecruiterId)
 
             <div class="alert alert-danger mt-3">
-                <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến nhà tuyển dụng này sẽ bị xóa.
+                <strong>Cảnh báo:</strong> Hành động này sẽ xóa vĩnh viễn cả <strong>Nhà tuyển dụng</strong> và <strong>Tài khoản</strong> liên kết. Không thể hoàn tác.
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-3">
