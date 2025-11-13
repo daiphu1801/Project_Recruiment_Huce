@@ -34,7 +34,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // Search
                 if (!string.IsNullOrWhiteSpace(q))
                 {
-                    query = query.Where(a => 
+                    query = query.Where(a =>
                         (a.Username != null && a.Username.Contains(q)) ||
                         (a.Email != null && a.Email.Contains(q)) ||
                         (a.Phone != null && a.Phone.Contains(q))
@@ -117,9 +117,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(CreateAccountVm model)
         {
+            ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
             if (!ModelState.IsValid)
             {
-                ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                 return View(model);
             }
 
@@ -129,7 +129,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (db.Accounts.Any(a => a.Username == model.Username))
                 {
                     ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
-                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                     return View(model);
                 }
 
@@ -137,15 +136,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (db.Accounts.Any(a => a.Email.ToLower() == model.Email.ToLower()))
                 {
                     ModelState.AddModelError("Email", "Email đã được sử dụng");
-                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                     return View(model);
-                }
-
-                // Handle photo upload
-                int? photoId = null;
-                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
-                {
-                    photoId = SavePhoto(model.PhotoFile);
                 }
 
                 // Generate salt and hash password
@@ -163,11 +154,41 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Salt = salt,
                     ActiveFlag = 1,
                     CreatedAt = DateTime.Now,
-                    PhotoID = photoId
                 };
 
+                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
+                {
+                    ProfilePhoto photo = SavePhoto(db, model.PhotoFile);
+                    if (photo != null)
+                    {
+                        account.ProfilePhoto = photo;
+                    }
+                    else
+                    {
+                        return View(model);
+                    }
+                }
+
                 db.Accounts.InsertOnSubmit(account);
-                db.SubmitChanges();
+
+                try
+                {
+                    db.SubmitChanges();
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Lỗi khi lưu tài khoản: " + ex.Message);
+                    if (account.ProfilePhoto != null)
+                    {
+                        var filePath = Server.MapPath("~" + account.ProfilePhoto.FilePath);
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+                    }
+                    return View(model);
+                }
+
 
                 // Tự động tạo profile Candidate/Recruiter (không set email - email trong profile là email liên lạc riêng)
                 if (model.Role == "Candidate" || model.Role == "Recruiter")
@@ -217,9 +238,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(EditAccountVm model)
         {
+            ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
             if (!ModelState.IsValid)
             {
-                ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
                 return View(model);
             }
 
@@ -228,12 +249,12 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var account = db.Accounts.FirstOrDefault(a => a.AccountID == model.AccountId);
                 if (account == null) return HttpNotFound();
 
+                model.CurrentPhotoId = account.PhotoID;
+
                 // Check duplicate username (except current account)
                 if (db.Accounts.Any(a => a.Username == model.Username && a.AccountID != model.AccountId))
                 {
                     ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
-                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
-                        model.CurrentPhotoId = account.PhotoID;
                     return View(model);
                 }
 
@@ -241,23 +262,25 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (db.Accounts.Any(a => a.Email.ToLower() == model.Email.ToLower() && a.AccountID != model.AccountId))
                 {
                     ModelState.AddModelError("Email", "Email đã được sử dụng");
-                    ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
-                        model.CurrentPhotoId = account.PhotoID;
                     return View(model);
                 }
 
                 // Handle photo upload
                 if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {
-                    int? newPhotoId = SavePhoto(model.PhotoFile);
-                    if (newPhotoId.HasValue)
+                    if (account.PhotoID.HasValue)
                     {
-                        // Delete old photo if exists
-                        if (account.PhotoID.HasValue)
-                        {
-                            DeletePhoto(account.PhotoID.Value);
-                        }
-                        account.PhotoID = newPhotoId;
+                        DeletePhoto(db, account.PhotoID.Value);
+                    }
+
+                    ProfilePhoto newPhoto = SavePhoto(db, model.PhotoFile);
+                    if (newPhoto != null)
+                    {
+                        account.ProfilePhoto = newPhoto;
+                    }
+                    else
+                    {
+                        return View(model);
                     }
                 }
 
@@ -269,6 +292,33 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 account.Role = model.Role;
                 account.ActiveFlag = model.ActiveFlag;
 
+                if (!string.IsNullOrWhiteSpace(model.Password))
+                {
+                    string salt = PasswordHelper.GenerateSalt();
+                    account.PasswordHash = PasswordHelper.HashPassword(model.Password, salt);
+                    account.Salt = salt;
+                }
+
+                // Đồng bộ dữ liệu
+                if (account.Role == "Recruiter")
+                {
+                    var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == account.AccountID);
+                    if (recruiter != null)
+                    {
+                        recruiter.Phone = model.Phone;
+                        recruiter.ActiveFlag = model.ActiveFlag;
+                    }
+                }
+                else if (account.Role == "Candidate")
+                {
+                    var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == account.AccountID);
+                    if (candidate != null)
+                    {
+                        candidate.Phone = model.Phone;
+                        candidate.ActiveFlag = model.ActiveFlag;
+                    }
+                }
+
                 db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Cập nhật tài khoản thành công!";
@@ -276,7 +326,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
-        // GET: Admin/Accounts/Delete/5
         public ActionResult Delete(int id)
         {
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
@@ -321,7 +370,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // Delete photo if exists
                 if (account.PhotoID.HasValue)
                 {
-                    DeletePhoto(account.PhotoID.Value);
+                    DeletePhoto(db, account.PhotoID.Value);
                 }
 
                 db.Accounts.DeleteOnSubmit(account);
@@ -333,7 +382,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         }
 
         // Helper: Save uploaded photo
-        private int? SavePhoto(HttpPostedFileBase file)
+        private ProfilePhoto SavePhoto(JOBPORTAL_ENDataContext db, HttpPostedFileBase file)
         {
             if (file == null || file.ContentLength == 0) return null;
 
@@ -358,7 +407,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // Generate unique filename
                 var fileName = Guid.NewGuid().ToString() + fileExt;
                 var uploadPath = Server.MapPath("~/Content/Uploads/Photos/");
-                
+
                 // Create directory if not exists
                 if (!Directory.Exists(uploadPath))
                 {
@@ -368,22 +417,17 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var fullPath = Path.Combine(uploadPath, fileName);
                 file.SaveAs(fullPath);
 
-                // Save to database - ProfilePhotos table
-                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                var photo = new ProfilePhoto
                 {
-                    var photo = new ProfilePhoto
-                    {
-                        FileName = file.FileName,
-                        FilePath = "/Content/Uploads/Photos/" + fileName,
-                        FileSizeKB = file.ContentLength / 1024,
-                        FileFormat = fileExt.Replace(".", ""),
-                        UploadedAt = DateTime.Now
-                    };
+                    FileName = file.FileName,
+                    FilePath = "/Content/Uploads/Photos/" + fileName,
+                    FileSizeKB = file.ContentLength / 1024,
+                    FileFormat = fileExt.Replace(".", ""),
+                    UploadedAt = DateTime.Now
+                };
 
-                    db.ProfilePhotos.InsertOnSubmit(photo);
-                    db.SubmitChanges();
-                    return photo.PhotoID;
-                }
+                db.ProfilePhotos.InsertOnSubmit(photo);
+                return photo;
             }
             catch (Exception ex)
             {
@@ -393,26 +437,22 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         }
 
         // Helper: Delete photo from ProfilePhotos
-        private void DeletePhoto(int photoId)
+        private void DeletePhoto(JOBPORTAL_ENDataContext db, int photoId)
         {
             try
             {
-                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId);
+                if (photo == null) return;
+
+                // Delete physical file
+                var filePath = Server.MapPath("~" + photo.FilePath);
+                if (System.IO.File.Exists(filePath))
                 {
-                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId);
-                    if (photo == null) return;
-
-                    // Delete physical file
-                    var filePath = Server.MapPath("~" + photo.FilePath);
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-
-                    // Delete database record
-                    db.ProfilePhotos.DeleteOnSubmit(photo);
-                    db.SubmitChanges();
+                    System.IO.File.Delete(filePath);
                 }
+
+                // Delete database record
+                db.ProfilePhotos.DeleteOnSubmit(photo);
             }
             catch (Exception ex)
             {

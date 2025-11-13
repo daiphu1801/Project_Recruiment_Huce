@@ -39,11 +39,13 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     query = query.Where(r =>
                         (r.FullName != null && r.FullName.Contains(q)) ||
                         (r.CompanyEmail != null && r.CompanyEmail.Contains(q)) ||
-                        (r.Phone != null && r.Phone.Contains(q))
+                        (r.Phone != null && r.Phone.Contains(q)) ||
+                        (r.Account.Username != null && r.Account.Username.Contains(q)) ||
+                        (r.Account.Email != null && r.Account.Email.Contains(q))
                     );
                 }
 
-                // Get recruiters and manually join with photos (since PhotoID property may not exist yet)
+                // Get recruiters and manually join with photos
                 var recruitersList = query.ToList();
                 var recruiters = recruitersList.Select(r =>
                 {
@@ -56,6 +58,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     {
                         RecruiterId = r.RecruiterID,
                         AccountId = r.AccountID,
+                        Username = account.Username,
                         CompanyId = r.CompanyID,
                         FullName = r.FullName,
                         PositionTitle = r.PositionTitle,
@@ -73,6 +76,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
+        // ... (Toàn bộ các hàm Details, Create, Edit, Delete, SavePhoto, DeletePhoto giữ nguyên) ...
         // GET: Admin/Recruiters/Details/5
         public ActionResult Details(int id)
         {
@@ -90,6 +94,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 {
                     RecruiterId = recruiter.RecruiterID,
                     AccountId = recruiter.AccountID,
+                    Username = account.Username,
                     CompanyId = recruiter.CompanyID,
                     FullName = recruiter.FullName,
                     PositionTitle = recruiter.PositionTitle,
@@ -126,19 +131,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                // Only show accounts that have role 'Recruiter' and are active
-                ViewBag.AccountOptions = new SelectList(
-                    db.Accounts
-                      .Where(a => a.ActiveFlag == 1 && a.Role == "Recruiter")
-                      .Select(a => new { a.AccountID, a.Username })
-                      .ToList(),
-                    "AccountID",
-                    "Username"
-                );
                 ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName");
             }
 
-            return View();
+            return View(new CreateRecruiterVm { Active = true }); // Khởi tạo giá trị Active
         }
 
         // POST: Admin/Recruiters/Create
@@ -146,86 +142,80 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(CreateRecruiterVm model)
         {
-            if (!ModelState.IsValid)
-            {
-                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
-                {
-                    ViewBag.AccountOptions = new SelectList(
-                        db.Accounts
-                          .Where(a => a.ActiveFlag == 1 && a.Role == "Recruiter")
-                          .Select(a => new { a.AccountID, a.Username })
-                          .ToList(),
-                        "AccountID",
-                        "Username",
-                        model.AccountId
-                    );
-                    ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
-                }
-                return View(model);
-            }
-
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                if (!string.IsNullOrWhiteSpace(model.FullName) && db.Recruiters.Any(r => r.FullName == model.FullName))
+                ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
+
+                // Validation cho các trường Account mới
+                if (db.Accounts.Any(a => a.Username == model.Username))
                 {
-                    ModelState.AddModelError("FullName", "Nhà tuyển dụng đã tồn tại");
-                    ViewBag.AccountOptions = new SelectList(
-                        db.Accounts
-                          .Where(a => a.ActiveFlag == 1 && a.Role == "Recruiter")
-                          .Select(a => new { a.AccountID, a.Username })
-                          .ToList(),
-                        "AccountID",
-                        "Username",
-                        model.AccountId
-                    );
-                    ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
-                    return View(model);
+                    ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
+                }
+                if (db.Accounts.Any(a => a.Email.ToLower() == model.Email.ToLower()))
+                {
+                    ModelState.AddModelError("Email", "Email (login) đã được sử dụng");
                 }
 
-                // Validate AccountId uniqueness (DB likely enforces a unique constraint on AccountID)
-                if (model.AccountId > 0 && db.Recruiters.Any(r => r.AccountID == model.AccountId))
-                {
-                    ModelState.AddModelError("AccountId", "Tài khoản này đã được liên kết với nhà tuyển dụng khác");
-                    ViewBag.AccountOptions = new SelectList(
-                        db.Accounts
-                          .Where(a => a.ActiveFlag == 1 && a.Role == "Recruiter")
-                          .Select(a => new { a.AccountID, a.Username })
-                          .ToList(),
-                        "AccountID",
-                        "Username",
-                        model.AccountId
-                    );
-                    ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
-                    return View(model);
-                }
-
+                // Validation cho CompanyEmail (liên lạc)
                 if (!string.IsNullOrWhiteSpace(model.CompanyEmail))
                 {
                     var emailLower = model.CompanyEmail.ToLowerInvariant();
                     if (db.Recruiters.Any(r => r.CompanyEmail != null && r.CompanyEmail.ToLower() == emailLower))
                     {
-                        ModelState.AddModelError("CompanyEmail", "Email đã được sử dụng");
-                        ViewBag.AccountOptions = new SelectList(
-                            db.Accounts
-                              .Where(a => a.ActiveFlag == 1 && a.Role == "Recruiter")
-                              .Select(a => new { a.AccountID, a.Username })
-                              .ToList(),
-                            "AccountID",
-                            "Username",
-                            model.AccountId
-                        );
-                        ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
+                        ModelState.AddModelError("CompanyEmail", "Email (liên lạc) đã được sử dụng");
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(model.FullName) && db.Recruiters.Any(r => r.FullName == model.FullName))
+                {
+                    ModelState.AddModelError("FullName", "Tên nhà tuyển dụng (Họ tên) đã tồn tại");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                // Tạo Account mới
+                string salt = PasswordHelper.GenerateSalt();
+                string passwordHash = PasswordHelper.HashPassword(model.Password, salt);
+
+                var account = new Account
+                {
+                    Username = model.Username,
+                    Email = model.Email,
+                    Phone = model.Phone, // Đồng bộ SĐT
+                    Role = "Recruiter",
+                    PasswordHash = passwordHash,
+                    Salt = salt,
+                    ActiveFlag = model.Active ? (byte?)1 : (byte?)0,
+                    CreatedAt = DateTime.Now
+                };
+
+                // [FIX] Xử lý ảnh (lưu vào Account)
+                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
+                {
+                    ProfilePhoto photo = SavePhoto(db, model.PhotoFile); // [FIX] Pass 'db'
+                    if (photo != null)
+                    {
+                        account.ProfilePhoto = photo; // [FIX] Gán thực thể
+                    }
+                    else
+                    {
                         return View(model);
                     }
                 }
 
+                db.Accounts.InsertOnSubmit(account);
+
+                // Tạo Recruiter mới và liên kết với Account
                 var recruiter = new Recruiter
                 {
-                    AccountID = model.AccountId,
+                    Account = account, // Liên kết trực tiếp
                     CompanyID = model.CompanyId,
                     FullName = model.FullName,
                     PositionTitle = model.PositionTitle,
-                    CompanyEmail = model.CompanyEmail,
+                    CompanyEmail = model.CompanyEmail, // Email liên lạc riêng
                     Phone = model.Phone,
                     CreatedAt = DateTime.Now,
                     ActiveFlag = model.Active ? (byte?)1 : (byte?)0
@@ -233,24 +223,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 db.Recruiters.InsertOnSubmit(recruiter);
 
-                // Handle photo upload (stored on Account)
-                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
-                {
-                    var photoId = SavePhoto(model.PhotoFile);
-                    if (photoId.HasValue)
-                    {
-                        var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
-                        if (account != null)
-                        {
-                            account.PhotoID = photoId;
-                        }
-                    }
-                }
-
-                // NOTE: Email trong Recruiter.CompanyEmail là email liên lạc, không đồng bộ với Account.Email
+                // [FIX] Submit 1 lần duy nhất
                 db.SubmitChanges();
 
-                TempData["SuccessMessage"] = "Tạo nhà tuyển dụng thành công!";
+                TempData["SuccessMessage"] = "Tạo nhà tuyển dụng và tài khoản thành công!";
                 return RedirectToAction("Index");
             }
         }
@@ -263,21 +239,17 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == id);
                 if (recruiter == null) return HttpNotFound();
 
-                // Only show accounts that have role 'Recruiter' and are active,
-                // but include the currently assigned account so the selection isn't lost if its role differs.
-                ViewBag.AccountOptions = new SelectList(
-                    db.Accounts
-                      .Where(a => a.ActiveFlag == 1 && (a.Role == "Recruiter" || a.AccountID == recruiter.AccountID))
-                      .Select(a => new { a.AccountID, a.Username })
-                      .ToList(),
-                    "AccountID",
-                    "Username",
-                    recruiter.AccountID
-                );
+                // Lấy Account liên kết
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
+                if (account == null)
+                {
+                    TempData["ErrorMessage"] = "Lỗi: Không tìm thấy tài khoản liên kết.";
+                    return RedirectToAction("Index");
+                }
+
                 ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", recruiter.CompanyID);
 
-                var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
-                int? photoId = account?.PhotoID;
+                int? photoId = account.PhotoID;
                 var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
 
                 var vm = new EditRecruiterVm
@@ -310,132 +282,77 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(EditRecruiterVm model)
         {
-            if (!ModelState.IsValid)
-            {
-                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
-                {
-                    ViewBag.AccountOptions = new SelectList(
-                        db.Accounts
-                          .Where(a => a.ActiveFlag == 1 && (a.Role == "Recruiter" || a.AccountID == model.AccountId))
-                          .Select(a => new { a.AccountID, a.Username })
-                          .ToList(),
-                        "AccountID",
-                        "Username",
-                        model.AccountId
-                    );
-                    ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
-
-                    var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == model.RecruiterId);
-                    if (recruiter != null)
-                    {
-                        var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
-                        int? photoId = account?.PhotoID;
-                        var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
-                        model.CurrentPhotoId = photoId;
-                        model.CurrentPhotoUrl = photo != null ? photo.FilePath : null;
-                    }
-                }
-                return View(model);
-            }
-
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
+                ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
+
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == model.RecruiterId);
                 if (recruiter == null) return HttpNotFound();
 
-                if (!string.IsNullOrWhiteSpace(model.FullName) && db.Recruiters.Any(r => r.FullName == model.FullName && r.RecruiterID != model.RecruiterId))
+                var accountRecord = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
+                if (accountRecord == null)
                 {
-                    ModelState.AddModelError("FullName", "Tên nhà tuyển dụng đã tồn tại");
-                    ViewBag.AccountOptions = new SelectList(
-                        db.Accounts
-                          .Where(a => a.ActiveFlag == 1 && (a.Role == "Recruiter" || a.AccountID == model.AccountId))
-                          .Select(a => new { a.AccountID, a.Username })
-                          .ToList(),
-                        "AccountID",
-                        "Username",
-                        model.AccountId
-                    );
-                    ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
-                    var accountErr1 = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
-                    int? photoIdErr1 = accountErr1?.PhotoID;
-                    var photoErr1 = photoIdErr1.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoIdErr1.Value) : null;
-                    model.CurrentPhotoId = photoIdErr1;
-                    model.CurrentPhotoUrl = photoErr1 != null ? photoErr1.FilePath : null;
+                    TempData["ErrorMessage"] = "Lỗi: Không tìm thấy tài khoản liên kết.";
                     return View(model);
                 }
 
-                // Prevent assigning an account that is already linked to another recruiter
-                if (model.AccountId > 0 && db.Recruiters.Any(r => r.AccountID == model.AccountId && r.RecruiterID != model.RecruiterId))
-                {
-                    ModelState.AddModelError("AccountId", "Tài khoản này đã được liên kết với nhà tuyển dụng khác");
-                    ViewBag.AccountOptions = new SelectList(
-                        db.Accounts
-                          .Where(a => a.ActiveFlag == 1 && (a.Role == "Recruiter" || a.AccountID == model.AccountId))
-                          .Select(a => new { a.AccountID, a.Username })
-                          .ToList(),
-                        "AccountID",
-                        "Username",
-                        model.AccountId
-                    );
-                    ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
-                    var accountErr2 = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
-                    int? photoIdErr2 = accountErr2?.PhotoID;
-                    var photoErr2 = photoIdErr2.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoIdErr2.Value) : null;
-                    model.CurrentPhotoId = photoIdErr2;
-                    model.CurrentPhotoUrl = photoErr2 != null ? photoErr2.FilePath : null;
-                    return View(model);
-                }
+                // Gán lại ảnh phòng trường hợp validation fail
+                model.CurrentPhotoId = accountRecord.PhotoID;
+                model.CurrentPhotoUrl = accountRecord.ProfilePhoto?.FilePath;
 
+                // Validation
+                if (db.Accounts.Any(a => a.Username == model.FullName && a.AccountID != accountRecord.AccountID))
+                {
+                    ModelState.AddModelError("FullName", "Tên (Username) này đã được tài khoản khác sử dụng");
+                }
                 if (!string.IsNullOrWhiteSpace(model.CompanyEmail))
                 {
                     var emailLower = model.CompanyEmail.ToLowerInvariant();
                     if (db.Recruiters.Any(c => c.CompanyEmail != null && c.CompanyEmail.ToLower() == emailLower && c.RecruiterID != model.RecruiterId))
                     {
-                        ModelState.AddModelError("CompanyEmail", "Email đã được sử dụng");
-                        ViewBag.AccountOptions = new SelectList(
-                            db.Accounts
-                              .Where(a => a.ActiveFlag == 1 && (a.Role == "Recruiter" || a.AccountID == model.AccountId))
-                              .Select(a => new { a.AccountID, a.Username })
-                              .ToList(),
-                            "AccountID",
-                            "Username",
-                            model.AccountId
-                        );
-                        ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
-                        var accountErr3 = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
-                        int? photoIdErr3 = accountErr3?.PhotoID;
-                        var photo = photoIdErr3.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoIdErr3.Value) : null;
-                        model.CurrentPhotoId = photoIdErr3;
-                        model.CurrentPhotoUrl = photo != null ? photo.FilePath : null;
+                        ModelState.AddModelError("CompanyEmail", "Email (liên lạc) đã được sử dụng");
+                    }
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                // [FIX] Handle photo upload
+                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
+                {
+                    // [FIX] Xóa ảnh cũ khỏi context
+                    if (accountRecord.PhotoID.HasValue)
+                    {
+                        DeletePhoto(db, accountRecord.PhotoID.Value); // Pass 'db'
+                    }
+
+                    // [FIX] Thêm ảnh mới vào context
+                    ProfilePhoto newPhoto = SavePhoto(db, model.PhotoFile); // Pass 'db'
+                    if (newPhoto != null)
+                    {
+                        accountRecord.ProfilePhoto = newPhoto; // [FIX] Gán thực thể
+                    }
+                    else
+                    {
                         return View(model);
                     }
                 }
 
-                // Handle photo upload
-                int? newPhotoId = null;
-                var accountRecord = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
-                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
+                // Cập nhật Account
+                accountRecord.Username = model.FullName;
+                accountRecord.Phone = model.Phone;
+                accountRecord.ActiveFlag = model.Active ? (byte?)1 : (byte?)0;
+
+                if (!string.IsNullOrWhiteSpace(model.Password))
                 {
-                    newPhotoId = SavePhoto(model.PhotoFile);
-                    if (newPhotoId.HasValue)
-                    {
-                        // Get old photo ID before updating
-                        int? oldPhotoId = accountRecord?.PhotoID;
-
-                        // Delete old photo if exists
-                        if (oldPhotoId.HasValue)
-                        {
-                            DeletePhoto(oldPhotoId.Value);
-                        }
-
-                        if (accountRecord != null)
-                        {
-                            accountRecord.PhotoID = newPhotoId;
-                        }
-                    }
+                    string salt = PasswordHelper.GenerateSalt();
+                    accountRecord.PasswordHash = PasswordHelper.HashPassword(model.Password, salt);
+                    accountRecord.Salt = salt;
                 }
 
-                recruiter.AccountID = model.AccountId;
+                // Cập nhật Recruiter
                 recruiter.CompanyID = model.CompanyId;
                 recruiter.FullName = model.FullName;
                 recruiter.PositionTitle = model.PositionTitle;
@@ -443,21 +360,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 recruiter.Phone = model.Phone;
                 recruiter.ActiveFlag = model.Active ? (byte?)1 : (byte?)0;
 
-                // Handle photo upload (stored on Account)
-                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
-                {
-                    var photoId = SavePhoto(model.PhotoFile);
-                    if (photoId.HasValue)
-                    {
-                        var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
-                        if (account != null)
-                        {
-                            account.PhotoID = photoId;
-                        }
-                    }
-                }
-
-                // NOTE: Email trong Recruiter.CompanyEmail là email liên lạc, không đồng bộ với Account.Email
+                // [FIX] Submit 1 lần duy nhất
                 db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Cập nhật nhà tuyển dụng thành công!";
@@ -491,7 +394,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     ActiveFlag = recruiter.ActiveFlag,
                     CompanyName = company != null ? company.CompanyName : null,
                     PhotoId = photoId,
-                    PhotoUrl = photo != null ? photo.FilePath : null
+                    PhotoUrl = photo != null ? photo.FilePath : null,
+                    Username = account.Username,
                 };
 
                 ViewBag.Title = "Xóa nhà tuyển dụng";
@@ -515,15 +419,32 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == id);
                 if (recruiter == null) return HttpNotFound();
 
-                db.Recruiters.DeleteOnSubmit(recruiter);
-                db.SubmitChanges();
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
 
-                TempData["SuccessMessage"] = "Xóa nhà tuyển dụng thành công!";
+                if (account != null)
+                {
+                    // [FIX] Xóa ảnh thủ công trước
+                    if (account.PhotoID.HasValue)
+                    {
+                        DeletePhoto(db, account.PhotoID.Value); // Pass 'db'
+                    }
+                    db.Accounts.DeleteOnSubmit(account);
+                }
+                else
+                {
+                    db.Recruiters.DeleteOnSubmit(recruiter);
+                }
+
+                db.SubmitChanges(); // Submit 1 lần
+
+                TempData["SuccessMessage"] = "Xóa nhà tuyển dụng (và tài khoản liên kết) thành công!";
                 return RedirectToAction("Index");
             }
         }
+
+        // [FIX] Sửa hàm SavePhoto
         // Helper: Save uploaded photo
-        private int? SavePhoto(HttpPostedFileBase file)
+        private ProfilePhoto SavePhoto(JOBPORTAL_ENDataContext db, HttpPostedFileBase file)
         {
             if (file == null || file.ContentLength == 0) return null;
 
@@ -558,22 +479,19 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var fullPath = Path.Combine(uploadPath, fileName);
                 file.SaveAs(fullPath);
 
-                // Save to database - ProfilePhotos table
-                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                // [FIX] Save to database - ProfilePhotos table
+                var photo = new ProfilePhoto
                 {
-                    var photo = new ProfilePhoto
-                    {
-                        FileName = file.FileName,
-                        FilePath = "/Content/Uploads/Photos/" + fileName,
-                        FileSizeKB = file.ContentLength / 1024,
-                        FileFormat = fileExt.Replace(".", ""),
-                        UploadedAt = DateTime.Now
-                    };
+                    FileName = file.FileName,
+                    FilePath = "/Content/Uploads/Photos/" + fileName,
+                    FileSizeKB = file.ContentLength / 1024,
+                    FileFormat = fileExt.Replace(".", ""),
+                    UploadedAt = DateTime.Now
+                };
 
-                    db.ProfilePhotos.InsertOnSubmit(photo);
-                    db.SubmitChanges();
-                    return photo.PhotoID;
-                }
+                db.ProfilePhotos.InsertOnSubmit(photo);
+                // [FIX] KHÔNG gọi SubmitChanges() ở đây
+                return photo; // [FIX] Trả về thực thể
             }
             catch (Exception ex)
             {
@@ -582,27 +500,25 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
+        // [FIX] Sửa hàm DeletePhoto
         // Helper: Delete photo from ProfilePhotos
-        private void DeletePhoto(int photoId)
+        private void DeletePhoto(JOBPORTAL_ENDataContext db, int photoId)
         {
             try
             {
-                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId);
+                if (photo == null) return;
+
+                // Delete physical file
+                var filePath = Server.MapPath("~" + photo.FilePath);
+                if (System.IO.File.Exists(filePath))
                 {
-                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId);
-                    if (photo == null) return;
-
-                    // Delete physical file
-                    var filePath = Server.MapPath("~" + photo.FilePath);
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-
-                    // Delete database record
-                    db.ProfilePhotos.DeleteOnSubmit(photo);
-                    db.SubmitChanges();
+                    System.IO.File.Delete(filePath);
                 }
+
+                // Delete database record
+                db.ProfilePhotos.DeleteOnSubmit(photo);
+                // [FIX] KHÔNG gọi SubmitChanges() ở đây
             }
             catch (Exception ex)
             {

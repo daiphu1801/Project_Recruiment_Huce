@@ -12,6 +12,7 @@
             <thead>
                 <tr>
                     <th>Ảnh</th>
+                    <th>Tên đăng nhập</th>
                     <th>Họ tên</th>
                     <th>Công ty</th>
                     <th>Chức danh</th>
@@ -40,6 +41,7 @@
                                     </div>
                                 }
                             </td>
+                            <td>@item.Username</td>
                             <td>@item.FullName</td>
                             <td>@(item.CompanyName ?? "-")</td>
                             <td>@(item.PositionTitle ?? "-")</td>
