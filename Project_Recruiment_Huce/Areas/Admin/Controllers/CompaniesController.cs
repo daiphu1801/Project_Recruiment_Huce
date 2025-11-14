@@ -359,7 +359,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 company.CompanyEmail = model.CompanyEmail;
                 company.Website = model.Website;
                 company.Description = model.Description;
-                company.ActiveFlag = model.ActiveFlag;
+                company.ActiveFlag = model.ActiveFlag ?? (byte)1; // Cast byte? to byte
 
                 // [FIX] Submit 1 lần
                 db.SubmitChanges();

@@ -37,7 +37,7 @@ namespace Project_Recruiment_Huce.Controllers
                 // Get recent published jobs (limit to 6-7 for homepage)
                 var recentJobs = db.JobPosts
                     .Where(j => j.Status == JobStatusHelper.Published)
-                    .OrderByDescending(j => j.PostedAt ?? j.UpdatedAt ?? (DateTime?)SqlDateTime.MinValue.Value)
+                    .OrderByDescending(j => j.PostedAt > j.UpdatedAt ? j.PostedAt : j.UpdatedAt)
                     .Take(7)
                     .ToList();
 

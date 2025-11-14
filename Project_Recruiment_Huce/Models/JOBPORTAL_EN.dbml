@@ -8,32 +8,30 @@
       <Column Name="Email" Type="System.String" DbType="NVarChar(150) NOT NULL" CanBeNull="false" />
       <Column Name="Phone" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
       <Column Name="Role" Type="System.String" DbType="NVarChar(30) NOT NULL" CanBeNull="false" />
-      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
       <Column Name="PhotoID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="Account_Transaction" Member="Transactions" ThisKey="AccountID" OtherKey="AccountID" Type="Transaction" />
       <Association Name="Account_Admin" Member="Admins" ThisKey="AccountID" OtherKey="AccountID" Type="Admin" />
       <Association Name="Account_Candidate" Member="Candidates" ThisKey="AccountID" OtherKey="AccountID" Type="Candidate" />
+      <Association Name="Account_PasswordResetToken" Member="PasswordResetTokens" ThisKey="AccountID" OtherKey="AccountID" Type="PasswordResetToken" />
       <Association Name="Account_Recruiter" Member="Recruiters" ThisKey="AccountID" OtherKey="AccountID" Type="Recruiter" />
-      <Association Name="Account_Transaction" Member="Transactions" ThisKey="AccountID" OtherKey="AccountID" Type="Transaction" />
       <Association Name="ProfilePhoto_Account" Member="ProfilePhoto" ThisKey="PhotoID" OtherKey="PhotoID" Type="ProfilePhoto" IsForeignKey="true" DeleteRule="SET NULL" />
     </Type>
   </Table>
-  <Table Name="dbo.WorkExperiences" Member="WorkExperiences">
-    <Type Name="WorkExperience">
-      <Column Name="ExperienceID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="CandidateID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="PreviousCompany" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
-      <Column Name="JobTitle" Type="System.String" DbType="NVarChar(150) NOT NULL" CanBeNull="false" />
-      <Column Name="Industry" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
-      <Column Name="Major" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
-      <Column Name="JobDescription" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Column Name="StartDate" Type="System.DateTime" DbType="Date NOT NULL" CanBeNull="false" />
-      <Column Name="EndDate" Type="System.DateTime" DbType="Date" CanBeNull="true" />
-      <Column Name="Salary" Type="System.Decimal" DbType="Decimal(18,2)" CanBeNull="true" />
-      <Column Name="SalaryCurrency" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
-      <Column Name="Achievements" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
-      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Association Name="Candidate_WorkExperience" Member="Candidate" ThisKey="CandidateID" OtherKey="CandidateID" Type="Candidate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+  <Table Name="dbo.Transactions" Member="Transactions">
+    <Type Name="Transaction">
+      <Column Name="TransactionID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="TransactionCode" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="AccountID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="TransactionType" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Amount" Type="System.Decimal" DbType="Decimal(18,2) NOT NULL" CanBeNull="false" />
+      <Column Name="Method" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="Status" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="TransactionDate" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="Description" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
+      <Column Name="UpdatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Association Name="Account_Transaction" Member="Account" ThisKey="AccountID" OtherKey="AccountID" Type="Account" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
   <Table Name="dbo.Admins" Member="Admins">
@@ -42,8 +40,8 @@
       <Column Name="AccountID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="FullName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
       <Column Name="ContactEmail" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
-      <Column Name="Permission" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
-      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
+      <Column Name="Permission" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Association Name="Account_Admin" Member="Account" ThisKey="AccountID" OtherKey="AccountID" Type="Account" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
@@ -52,12 +50,12 @@
       <Column Name="ApplicationID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="CandidateID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="JobPostID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="AppliedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Column Name="Status" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="AppliedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="Status" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="ResumeFilePath" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
       <Column Name="CertificateFilePath" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
       <Column Name="Note" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
-      <Column Name="UpdatedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
+      <Column Name="UpdatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Association Name="Candidate_Application" Member="Candidate" ThisKey="CandidateID" OtherKey="CandidateID" Type="Candidate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="JobPost_Application" Member="JobPost" ThisKey="JobPostID" OtherKey="JobPostID" Type="JobPost" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
@@ -70,25 +68,9 @@
       <Column Name="BankName" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
       <Column Name="CardHolderName" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
       <Column Name="ExpiryDate" Type="System.DateTime" DbType="Date" CanBeNull="true" />
-      <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
-      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
+      <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Association Name="Recruiter_BankCard" Member="Recruiter" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="Recruiter" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.CandidateCertificates" Member="CandidateCertificates">
-    <Type Name="CandidateCertificate">
-      <Column Name="CandidateCertificateID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="CandidateID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="CertificateID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="IssueDate" Type="System.DateTime" DbType="Date" CanBeNull="true" />
-      <Column Name="ExpiryDate" Type="System.DateTime" DbType="Date" CanBeNull="true" />
-      <Column Name="FilePath" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
-      <Column Name="Score" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
-      <Column Name="Note" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="UploadedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Association Name="CandidateCertificate_CertificateImage" Member="CertificateImages" ThisKey="CandidateCertificateID" OtherKey="CandidateCertificateID" Type="CertificateImage" />
-      <Association Name="Candidate_CandidateCertificate" Member="Candidate" ThisKey="CandidateID" OtherKey="CandidateID" Type="Candidate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="Certificate_CandidateCertificate" Member="Certificate" ThisKey="CertificateID" OtherKey="CertificateID" Type="Certificate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
   <Table Name="dbo.Candidates" Member="Candidates">
@@ -103,36 +85,13 @@
       <Column Name="Address" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="Summary" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
       <Column Name="PhotoID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
-      <Association Name="Candidate_WorkExperience" Member="WorkExperiences" ThisKey="CandidateID" OtherKey="CandidateID" Type="WorkExperience" />
+      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
       <Association Name="Candidate_Application" Member="Applications" ThisKey="CandidateID" OtherKey="CandidateID" Type="Application" />
-      <Association Name="Candidate_CandidateCertificate" Member="CandidateCertificates" ThisKey="CandidateID" OtherKey="CandidateID" Type="CandidateCertificate" />
-      <Association Name="Candidate_Education" Member="Educations" ThisKey="CandidateID" OtherKey="CandidateID" Type="Education" />
       <Association Name="Candidate_ResumeFile" Member="ResumeFiles" ThisKey="CandidateID" OtherKey="CandidateID" Type="ResumeFile" />
       <Association Name="Candidate_SavedJob" Member="SavedJobs" ThisKey="CandidateID" OtherKey="CandidateID" Type="SavedJob" />
       <Association Name="Account_Candidate" Member="Account" ThisKey="AccountID" OtherKey="AccountID" Type="Account" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.CertificateImages" Member="CertificateImages">
-    <Type Name="CertificateImage">
-      <Column Name="CertificateImageID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="CandidateCertificateID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="FileName" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="FilePath" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
-      <Column Name="UploadedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Association Name="CandidateCertificate_CertificateImage" Member="CandidateCertificate" ThisKey="CandidateCertificateID" OtherKey="CandidateCertificateID" Type="CandidateCertificate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.Certificates" Member="Certificates">
-    <Type Name="Certificate">
-      <Column Name="CertificateID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="CertificateName" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="Issuer" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
-      <Column Name="Industry" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="Major" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
-      <Column Name="Description" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Association Name="Certificate_CandidateCertificate" Member="CandidateCertificates" ThisKey="CertificateID" OtherKey="CertificateID" Type="CandidateCertificate" />
+      <Association Name="ProfilePhoto_Candidate" Member="ProfilePhoto" ThisKey="PhotoID" OtherKey="PhotoID" Type="ProfilePhoto" IsForeignKey="true" DeleteRule="SET NULL" />
     </Type>
   </Table>
   <Table Name="dbo.Companies" Member="Companies">
@@ -146,28 +105,12 @@
       <Column Name="CompanyEmail" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
       <Column Name="Website" Type="System.String" DbType="NVarChar(200)" CanBeNull="true" />
       <Column Name="Description" Type="System.String" DbType="NVarChar(1000)" CanBeNull="true" />
-      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
       <Column Name="PhotoID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="Company_JobPost" Member="JobPosts" ThisKey="CompanyID" OtherKey="CompanyID" Type="JobPost" />
       <Association Name="Company_Recruiter" Member="Recruiters" ThisKey="CompanyID" OtherKey="CompanyID" Type="Recruiter" />
       <Association Name="ProfilePhoto_Company" Member="ProfilePhoto" ThisKey="PhotoID" OtherKey="PhotoID" Type="ProfilePhoto" IsForeignKey="true" DeleteRule="SET NULL" />
-    </Type>
-  </Table>
-  <Table Name="dbo.Educations" Member="Educations">
-    <Type Name="Education">
-      <Column Name="EducationID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="CandidateID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="School" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
-      <Column Name="Degree" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="FieldOfStudy" Type="System.String" DbType="NVarChar(150) NOT NULL" CanBeNull="false" />
-      <Column Name="Major" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
-      <Column Name="StartYear" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="EndYear" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="ExtraDescription" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
-      <Column Name="DegreeFilePath" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
-      <Column Name="UploadedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Association Name="Candidate_Education" Member="Candidate" ThisKey="CandidateID" OtherKey="CandidateID" Type="Candidate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
   <Table Name="dbo.JobPostDetails" Member="JobPostDetails">
@@ -176,14 +119,14 @@
       <Column Name="JobPostID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="Industry" Type="System.String" DbType="NVarChar(150) NOT NULL" CanBeNull="false" />
       <Column Name="Major" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
-      <Column Name="YearsExperience" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="YearsExperience" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="DegreeRequired" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
       <Column Name="Skills" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Column Name="Headcount" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="GenderRequirement" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="Headcount" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="GenderRequirement" Type="System.String" DbType="NVarChar(20) NOT NULL" CanBeNull="false" />
       <Column Name="AgeFrom" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="AgeTo" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="Status" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="Status" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Association Name="JobPost_JobPostDetail" Member="JobPost" ThisKey="JobPostID" OtherKey="JobPostID" Type="JobPost" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
@@ -198,13 +141,13 @@
       <Column Name="Requirements" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
       <Column Name="SalaryFrom" Type="System.Decimal" DbType="Decimal(18,2)" CanBeNull="true" />
       <Column Name="SalaryTo" Type="System.Decimal" DbType="Decimal(18,2)" CanBeNull="true" />
-      <Column Name="SalaryCurrency" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="SalaryCurrency" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="Location" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="EmploymentType" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
       <Column Name="ApplicationDeadline" Type="System.DateTime" DbType="Date" CanBeNull="true" />
-      <Column Name="Status" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
-      <Column Name="PostedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Column Name="UpdatedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
+      <Column Name="Status" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="PostedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="UpdatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Association Name="JobPost_Application" Member="Applications" ThisKey="JobPostID" OtherKey="JobPostID" Type="Application" />
       <Association Name="JobPost_JobPostDetail" Member="JobPostDetails" ThisKey="JobPostID" OtherKey="JobPostID" Type="JobPostDetail" />
       <Association Name="JobPost_PostingHistory" Member="PostingHistories" ThisKey="JobPostID" OtherKey="JobPostID" Type="PostingHistory" />
@@ -213,14 +156,27 @@
       <Association Name="Recruiter_JobPost" Member="Recruiter" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="Recruiter" IsForeignKey="true" />
     </Type>
   </Table>
+  <Table Name="dbo.PasswordResetTokens" Member="PasswordResetTokens">
+    <Type Name="PasswordResetToken">
+      <Column Name="TokenID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="AccountID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ResetCode" Type="System.String" DbType="NVarChar(6) NOT NULL" CanBeNull="false" />
+      <Column Name="Email" Type="System.String" DbType="NVarChar(150) NOT NULL" CanBeNull="false" />
+      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="ExpiresAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="UsedFlag" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="AttemptCount" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="Account_PasswordResetToken" Member="Account" ThisKey="AccountID" OtherKey="AccountID" Type="Account" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
   <Table Name="dbo.PaymentHistory" Member="PaymentHistories">
     <Type Name="PaymentHistory">
       <Column Name="PaymentHistoryID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="RecruiterID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="Amount" Type="System.Decimal" DbType="Decimal(18,2) NOT NULL" CanBeNull="false" />
       <Column Name="Method" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
-      <Column Name="PaidAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Column Name="Status" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="PaidAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="Status" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="Note" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Association Name="Recruiter_PaymentHistory" Member="Recruiter" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="Recruiter" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
@@ -232,7 +188,7 @@
       <Column Name="Amount" Type="System.Decimal" DbType="Decimal(18,2) NOT NULL" CanBeNull="false" />
       <Column Name="DueDate" Type="System.DateTime" DbType="Date" CanBeNull="true" />
       <Column Name="Reason" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="Status" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="Status" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Association Name="Recruiter_PendingPayment" Member="Recruiter" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="Recruiter" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
@@ -241,8 +197,8 @@
       <Column Name="PostingHistoryID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="RecruiterID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="JobPostID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="PostedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Column Name="Status" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="PostedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="Status" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="Note" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Association Name="JobPost_PostingHistory" Member="JobPost" ThisKey="JobPostID" OtherKey="JobPostID" Type="JobPost" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="Recruiter_PostingHistory" Member="Recruiter" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="Recruiter" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
@@ -255,9 +211,11 @@
       <Column Name="FilePath" Type="System.String" DbType="NVarChar(500) NOT NULL" CanBeNull="false" />
       <Column Name="FileSizeKB" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="FileFormat" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
-      <Column Name="UploadedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
+      <Column Name="UploadedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Association Name="ProfilePhoto_Account" Member="Accounts" ThisKey="PhotoID" OtherKey="PhotoID" Type="Account" />
+      <Association Name="ProfilePhoto_Candidate" Member="Candidates" ThisKey="PhotoID" OtherKey="PhotoID" Type="Candidate" />
       <Association Name="ProfilePhoto_Company" Member="Companies" ThisKey="PhotoID" OtherKey="PhotoID" Type="Company" />
+      <Association Name="ProfilePhoto_Recruiter" Member="Recruiters" ThisKey="PhotoID" OtherKey="PhotoID" Type="Recruiter" />
     </Type>
   </Table>
   <Table Name="dbo.Recruiters" Member="Recruiters">
@@ -269,8 +227,9 @@
       <Column Name="PositionTitle" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
       <Column Name="CompanyEmail" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
       <Column Name="Phone" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
-      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="PhotoID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="RowVer" Type="System.Data.Linq.Binary" DbType="rowversion NOT NULL" CanBeNull="false" IsVersion="true" />
       <Association Name="Recruiter_BankCard" Member="BankCards" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="BankCard" />
       <Association Name="Recruiter_JobPost" Member="JobPosts" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="JobPost" />
@@ -279,6 +238,7 @@
       <Association Name="Recruiter_PostingHistory" Member="PostingHistories" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="PostingHistory" />
       <Association Name="Account_Recruiter" Member="Account" ThisKey="AccountID" OtherKey="AccountID" Type="Account" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="Company_Recruiter" Member="Company" ThisKey="CompanyID" OtherKey="CompanyID" Type="Company" IsForeignKey="true" />
+      <Association Name="ProfilePhoto_Recruiter" Member="ProfilePhoto" ThisKey="PhotoID" OtherKey="PhotoID" Type="ProfilePhoto" IsForeignKey="true" DeleteRule="SET NULL" />
     </Type>
   </Table>
   <Table Name="dbo.ResumeFiles" Member="ResumeFiles">
@@ -287,7 +247,7 @@
       <Column Name="CandidateID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="FileName" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="FilePath" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
-      <Column Name="UploadedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
+      <Column Name="UploadedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Association Name="Candidate_ResumeFile" Member="Candidate" ThisKey="CandidateID" OtherKey="CandidateID" Type="Candidate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
@@ -300,21 +260,6 @@
       <Column Name="Note" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
       <Association Name="Candidate_SavedJob" Member="Candidate" ThisKey="CandidateID" OtherKey="CandidateID" Type="Candidate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="JobPost_SavedJob" Member="JobPost" ThisKey="JobPostID" OtherKey="JobPostID" Type="JobPost" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.Transactions" Member="Transactions">
-    <Type Name="Transaction">
-      <Column Name="TransactionID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="TransactionCode" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
-      <Column Name="AccountID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="TransactionType" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="Amount" Type="System.Decimal" DbType="Decimal(18,2) NOT NULL" CanBeNull="false" />
-      <Column Name="Method" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
-      <Column Name="Status" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
-      <Column Name="TransactionDate" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Column Name="Description" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
-      <Column Name="UpdatedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Association Name="Account_Transaction" Member="Account" ThisKey="AccountID" OtherKey="AccountID" Type="Account" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
 </Database>

@@ -188,7 +188,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Role = "Recruiter",
                     PasswordHash = passwordHash,
                     Salt = salt,
-                    ActiveFlag = model.Active ? (byte?)1 : (byte?)0,
+                    ActiveFlag = model.Active ? (byte)1 : (byte)0,
                     CreatedAt = DateTime.Now
                 };
 
@@ -218,7 +218,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     CompanyEmail = model.CompanyEmail, // Email liên lạc riêng
                     Phone = model.Phone,
                     CreatedAt = DateTime.Now,
-                    ActiveFlag = model.Active ? (byte?)1 : (byte?)0
+                    ActiveFlag = model.Active ? (byte)1 : (byte)0
                 };
 
                 db.Recruiters.InsertOnSubmit(recruiter);
@@ -343,7 +343,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // Cập nhật Account
                 accountRecord.Username = model.FullName;
                 accountRecord.Phone = model.Phone;
-                accountRecord.ActiveFlag = model.Active ? (byte?)1 : (byte?)0;
+                accountRecord.ActiveFlag = model.Active ? (byte)1 : (byte)0;
 
                 if (!string.IsNullOrWhiteSpace(model.Password))
                 {
@@ -358,7 +358,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 recruiter.PositionTitle = model.PositionTitle;
                 recruiter.CompanyEmail = model.CompanyEmail;
                 recruiter.Phone = model.Phone;
-                recruiter.ActiveFlag = model.Active ? (byte?)1 : (byte?)0;
+                recruiter.ActiveFlag = model.Active ? (byte)1 : (byte)0;
 
                 // [FIX] Submit 1 lần duy nhất
                 db.SubmitChanges();

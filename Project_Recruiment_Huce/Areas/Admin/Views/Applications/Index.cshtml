@@ -18,7 +18,7 @@
         <tr>
           <td>@item.CandidateName</td>
           <td>@item.JobTitle</td>
-          <td>@(item.AppliedAt.HasValue ? item.AppliedAt.Value.ToString("dd/MM/yyyy") : "")</td>
+          <td>@(item.AppliedAt?.ToString("dd/MM/yyyy") ?? "")</td>
           <td>@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(item.AppStatus, "Applications"))</td>
           <td class="text-end" style="white-space:nowrap;">
             @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string,string>{

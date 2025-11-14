@@ -257,7 +257,7 @@ namespace Project_Recruiment_Huce.Controllers
                                j.Status == JobStatusHelper.Published &&
                                (j.CompanyID == job.CompanyID ||
                                 (j.Location != null && job.Location != null && j.Location == job.Location)))
-                    .OrderByDescending(j => j.PostedAt ?? j.UpdatedAt ?? (DateTime?)SqlDateTime.MinValue.Value)
+                    .OrderByDescending(j => j.PostedAt > j.UpdatedAt ? j.PostedAt : j.UpdatedAt)
                     .Take(5)
                     .ToList();
 
@@ -372,9 +372,9 @@ namespace Project_Recruiment_Huce.Controllers
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
                 // Order and paginate - only load the page we need
-                // Use SqlDateTime.MinValue.Value (1753-01-01) instead of DateTime.MinValue to avoid SqlDateTime overflow
+                // PostedAt và UpdatedAt giờ là non-nullable DateTime
                 var pagedJobs = query
-                    .OrderByDescending(j => j.PostedAt ?? j.UpdatedAt ?? (DateTime?)SqlDateTime.MinValue.Value)
+                    .OrderByDescending(j => j.PostedAt > j.UpdatedAt ? j.PostedAt : j.UpdatedAt)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
@@ -437,7 +437,7 @@ namespace Project_Recruiment_Huce.Controllers
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
                 var pagedJobs = query
-                    .OrderByDescending(j => j.PostedAt ?? j.UpdatedAt ?? (DateTime?)SqlDateTime.MinValue.Value)
+                    .OrderByDescending(j => j.PostedAt > j.UpdatedAt ? j.PostedAt : j.UpdatedAt)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
@@ -939,11 +939,7 @@ namespace Project_Recruiment_Huce.Controllers
                 job.EmploymentType = employmentType;
                 job.ApplicationDeadline = viewModel.ApplicationDeadline;
                 job.UpdatedAt = DateTime.Now;
-                // Keep existing PostedAt if it exists, otherwise set to now
-                if (!job.PostedAt.HasValue)
-                {
-                    job.PostedAt = DateTime.Now;
-                }
+                // PostedAt giờ là non-nullable, luôn có giá trị, không cần check HasValue
 
                 db.SubmitChanges();
 
@@ -1124,11 +1120,7 @@ namespace Project_Recruiment_Huce.Controllers
                 job.Status = "Published";
                 job.UpdatedAt = DateTime.Now;
                 
-                // Nếu PostedAt chưa có, set nó
-                if (!job.PostedAt.HasValue)
-                {
-                    job.PostedAt = DateTime.Now;
-                }
+                // PostedAt giờ là non-nullable, luôn có giá trị, không cần check HasValue
                 
                 db.SubmitChanges();
 
