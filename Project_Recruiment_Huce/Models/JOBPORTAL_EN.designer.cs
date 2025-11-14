@@ -20,9 +20,9 @@ namespace Project_Recruiment_Huce.Models
 	using System.Linq.Expressions;
 	using System.ComponentModel;
 	using System;
-	
-	
-	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="JOBPORTAL_EN")]
+    using System.Web;
+
+    [global::System.Data.Linq.Mapping.DatabaseAttribute(Name="JOBPORTAL_EN")]
 	public partial class JOBPORTAL_ENDataContext : System.Data.Linq.DataContext
 	{
 		
@@ -2745,8 +2745,17 @@ namespace Project_Recruiment_Huce.Models
 				}
 			}
 		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
+
+        public DateTime? DateOfBirth { get; internal set; }
+        public string CandidateId { get; internal set; }
+        public int AccountId { get; internal set; }
+        public int? PhotoId { get; internal set; }
+        public HttpPostedFileBase PhotoUrl { get; internal set; }
+        public string PhotoFile { get; internal set; }
+        public string ApplicationEmail { get; internal set; }
+        public bool Active { get; internal set; }
+
+        public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
 		

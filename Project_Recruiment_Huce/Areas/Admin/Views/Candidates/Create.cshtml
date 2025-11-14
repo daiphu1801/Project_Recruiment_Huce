@@ -1,4 +1,4 @@
-@model Project_Recruiment_Huce.Areas.Admin.Models.CandidateListVm
+@model Project_Recruiment_Huce.Areas.Admin.Models.CreateCandidateListVm
 @{
     ViewBag.Title = "Thêm ứng viên mới";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
@@ -27,50 +27,56 @@
       @Html.AntiForgeryToken()
       
       <div class="row">
-        <div class="col-md-8">
-          <div class="mb-3">
-            @Html.LabelFor(m => m.AccountId, new { @class = "form-label" })
-            @Html.DropDownListFor(m => m.AccountId, ViewBag.AccountOptions as SelectList, "-- Chọn tài khoản --", new { @class = "form-select" })
-            @Html.ValidationMessageFor(m => m.AccountId, "", new { @class = "text-danger" })
-          </div>
+          <div class="col-md-8">
+              <div class="mb-3">
+                  @Html.LabelFor(m => m.AccountId, new { @class = "form-label" })
+                  @Html.DropDownListFor(m => m.AccountId, ViewBag.AccountOptions as SelectList, "-- Chọn tài khoản --", new { @class = "form-select" })
+                  @Html.ValidationMessageFor(m => m.AccountId, "", new { @class = "text-danger" })
+              </div>
 
-          <div class="mb-3">
-            @Html.LabelFor(m => m.FullName, new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Nhập họ tên" })
-            @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
-          </div>
+              <div class="mb-3">
+                  @Html.LabelFor(m => m.FullName, new { @class = "form-label" })
+                  @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Nhập họ tên" })
+                  @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+              </div>
 
-          <div class="mb-3">
-            @Html.LabelFor(m => m.DateOfBirth, new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.DateOfBirth, new { @class = "form-control", type = "date" })
-            @Html.ValidationMessageFor(m => m.DateOfBirth, "", new { @class = "text-danger" })
-          </div>
+              <div class="mb-3">
+                  @Html.LabelFor(m => m.DateOfBirth, new { @class = "form-label" })
+                  @Html.TextBoxFor(m => m.DateOfBirth, new { @class = "form-control", type = "date" })
+                  @Html.ValidationMessageFor(m => m.DateOfBirth, "", new { @class = "text-danger" })
+              </div>
 
-          <div class="mb-3">
-            @Html.LabelFor(m => m.Gender, new { @class = "form-label" })
-            @Html.DropDownListFor(m => m.Gender, new SelectList(new[] { "Male", "Female", "Other" }), "-- Chọn giới tính --", new { @class = "form-select" })
-            @Html.ValidationMessageFor(m => m.Gender, "", new { @class = "text-danger" })
-          </div>
+              <div class="mb-3">
+                  @Html.LabelFor(m => m.Gender, new { @class = "form-label" })
+                  @Html.DropDownListFor(m => m.Gender, new SelectList(new[] { "Male", "Female", "Other" }), "-- Chọn giới tính --", new { @class = "form-select" })
+                  @Html.ValidationMessageFor(m => m.Gender, "", new { @class = "text-danger" })
+              </div>
 
-          <div class="mb-3">
-            @Html.LabelFor(m => m.Phone, new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
-            @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
-          </div>
+              <div class="mb-3">
+                  @Html.LabelFor(m => m.Phone, new { @class = "form-label" })
+                  @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
+                  @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+              </div>
 
-          <div class="mb-3">
-            @Html.LabelFor(m => m.PhotoId, new { @class = "form-label" })
-            @Html.TextBoxFor(m => m.PhotoId, new { @class = "form-control", type = "number", placeholder = "Photo ID (tùy chọn)" })
-            @Html.ValidationMessageFor(m => m.PhotoId, "", new { @class = "text-danger" })
-          </div>
+              <div class="mb-3">
+                  @Html.LabelFor(m => m.ApplicationEmail, new { @class = "form-label" })
+                  @Html.TextBoxFor(m => m.ApplicationEmail, new { @class = "form-control", placeholder = "Nhập email liên hệ" })
+                  @Html.ValidationMessageFor(m => m.ApplicationEmail, "", new { @class = "text-danger" })
+              </div>
 
-          <div class="mb-3">
-            <div class="form-check">
-              @Html.CheckBoxFor(m => m.Active, new { @class = "form-check-input" })
-              @Html.LabelFor(m => m.Active, new { @class = "form-check-label" })
-            </div>
+              <div class="mb-3">
+                  @Html.LabelFor(m => m.PhotoId, new { @class = "form-label" })
+                  @Html.TextBoxFor(m => m.PhotoId, new { @class = "form-control", type = "number", placeholder = "Photo ID (tùy chọn)" })
+                  @Html.ValidationMessageFor(m => m.PhotoId, "", new { @class = "text-danger" })
+              </div>
+
+              <div class="mb-3">
+                  <div class="form-check">
+                      @Html.CheckBoxFor(m => m.Active, new { @class = "form-check-input" })
+                      @Html.LabelFor(m => m.Active, new { @class = "form-check-label" })
+                  </div>
+              </div>
           </div>
-        </div>
       </div>
 
       <div class="d-flex justify-content-end gap-2 mt-3">
