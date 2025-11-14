@@ -1,4 +1,4 @@
-@model Project_Recruiment_Huce.Areas.Admin.Models.ApplicationListVm
+@model Project_Recruiment_Huce.Areas.Admin.Models.EditApplicationListVm
 @{
     ViewBag.Title = "Sửa hồ sơ ứng tuyển";
 }
@@ -9,56 +9,60 @@
     <h5 class="card-title mb-0"><i class="bi bi-pencil-square"></i> Chỉnh sửa hồ sơ ứng tuyển</h5>
   </div>
   <div class="card-body">
-    @if (!ViewData.ModelState.IsValid)
-    {
-      <div class="alert alert-danger">
-        <ul class="mb-0">
-          @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-          {
-            <li>@error.ErrorMessage</li>
-          }
-        </ul>
-      </div>
-    }
+      @if (!ViewData.ModelState.IsValid)
+      {
+          <div class="alert alert-danger">
+              <ul class="mb-0">
+                  @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                  {
+                      <li>@error.ErrorMessage</li>
+                  }
+              </ul>
+          </div>
+      }
 
-    @using (Html.BeginForm("Edit", "Applications", FormMethod.Post))
-    {
-      @Html.AntiForgeryToken()
-      @Html.HiddenFor(m => m.ApplicationId)
-      
-      <div class="mb-3">
-        @Html.LabelFor(m => m.CandidateId, "Ứng viên", new { @class = "form-label" })
-        @Html.DropDownListFor(m => m.CandidateId, ViewBag.CandidateOptions as SelectList, "-- Chọn ứng viên --", new { @class = "form-select" })
-        @Html.ValidationMessageFor(m => m.CandidateId, "", new { @class = "text-danger" })
-      </div>
+      @using (Html.BeginForm("Edit", "Applications", FormMethod.Post))
+      {
+          @Html.AntiForgeryToken()
+          @Html.HiddenFor(m => m.ApplicationId)
 
-      <div class="mb-3">
-        @Html.LabelFor(m => m.JobId, "Công việc", new { @class = "form-label" })
-        @Html.DropDownListFor(m => m.JobId, ViewBag.JobOptions as SelectList, "-- Chọn công việc --", new { @class = "form-select" })
-        @Html.ValidationMessageFor(m => m.JobId, "", new { @class = "text-danger" })
-      </div>
+          <div class="mb-3">
+              @Html.LabelFor(m => m.CandidateId, "Ứng viên", new { @class = "form-label" })
+              @Html.DropDownListFor(m => m.CandidateId, ViewBag.CandidateOptions as SelectList, "-- Chọn ứng viên --", new { @class = "form-select" })
+              @Html.ValidationMessageFor(m => m.CandidateId, "", new { @class = "text-danger" })
+          </div>
 
-      <div class="mb-3">
-        @Html.LabelFor(m => m.AppStatus, "Trạng thái", new { @class = "form-label" })
-        @Html.DropDownListFor(m => m.AppStatus, ViewBag.StatusOptions as SelectList, "-- Chọn trạng thái --", new { @class = "form-select" })
-        @Html.ValidationMessageFor(m => m.AppStatus, "", new { @class = "text-danger" })
-      </div>
+          <div class="mb-3">
+              @Html.LabelFor(m => m.JobPostId, "Công việc", new { @class = "form-label" })
+              @Html.DropDownListFor(m => m.JobPostId, ViewBag.JobOptions as SelectList, "-- Chọn công việc --", new { @class = "form-select" })
+              @Html.ValidationMessageFor(m => m.JobPostId, "", new { @class = "text-danger" })
+          </div>
+          <div class="mb-3">
+              @Html.LabelFor(m => m.CompanyName, "Tên công ty", new { @class = "form-label" })
+              @Html.DropDownListFor(m => m.CompanyName, ViewBag.JobOptions as SelectList, "-- Chọn công ty --", new { @class = "form-select" })
+              @Html.ValidationMessageFor(m => m.CompanyName, "", new { @class = "text-danger" })
+          </div>
+          <div class="mb-3">
+              @Html.LabelFor(m => m.AppStatus, "Trạng thái", new { @class = "form-label" })
+              @Html.DropDownListFor(m => m.AppStatus, ViewBag.StatusOptions as SelectList, "-- Chọn trạng thái --", new { @class = "form-select" })
+              @Html.ValidationMessageFor(m => m.AppStatus, "", new { @class = "text-danger" })
+          </div>
 
-      <div class="mb-3">
-        @Html.LabelFor(m => m.Note, new { @class = "form-label" })
-        @Html.TextAreaFor(m => m.Note, new { @class = "form-control", rows = "3", placeholder = "Ghi chú (tùy chọn)" })
-        @Html.ValidationMessageFor(m => m.Note, "", new { @class = "text-danger" })
-      </div>
+          <div class="mb-3">
+              @Html.LabelFor(m => m.Note, new { @class = "form-label" })
+              @Html.TextAreaFor(m => m.Note, new { @class = "form-control", rows = "3", placeholder = "Ghi chú (tùy chọn)" })
+              @Html.ValidationMessageFor(m => m.Note, "", new { @class = "text-danger" })
+          </div>
 
-      <div class="d-flex justify-content-end gap-2 mt-3">
-        <a href="@Url.Action("Index")" class="btn btn-secondary">
-          <i class="bi bi-x-circle"></i> Hủy
-        </a>
-        <button type="submit" class="btn btn-primary">
-          <i class="bi bi-save"></i> Cập nhật
-        </button>
-      </div>
-    }
+          <div class="d-flex justify-content-end gap-2 mt-3">
+              <a href="@Url.Action("Index")" class="btn btn-secondary">
+                  <i class="bi bi-x-circle"></i> Hủy
+              </a>
+              <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-save"></i> Cập nhật
+              </button>
+          </div>
+      }
   </div>
 </div>
 

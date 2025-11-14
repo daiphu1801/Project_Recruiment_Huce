@@ -16,9 +16,36 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string CertificatePath { get; set; }
         public string Note { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        
+
         // Helper properties for display (from related tables)
         public string CandidateName { get; set; }
+        public string JobTitle { get; set; }
+        public int JobPostId { get; set; }
+        public string ResumeFilePath { get; set; }
+        public string CertificateFilePath { get; set; }
+        public string CompanyName { get; internal set; }
+    }
+    public class CreateApplicationListVm
+    {
+        public string ResumeFilePath { get; set; }
+        public int CandidateId { get; set; }
+        public int JobPostId { get; set; }
+        public string CertificateFilePath { get; set; }
+        public string Note { get; set; }
+        public string AppStatus { get; set; }
+        public string CompanyName { get; internal set; }
+    }
+    public class EditApplicationListVm
+    {
+        public int CandidateId { get; set; }
+        public int JobPostId { get; set; }
+        public string AppStatus { get; set; }
+        public string ResumeFilePath { get; set; }
+        public string CertificateFilePath { get; set; }
+        public string Note { get; set; }
+        public int ApplicationId { get; set; }
+        public string CompanyName { get; internal set; }
+
         public string JobTitle { get; set; }
     }
 }
