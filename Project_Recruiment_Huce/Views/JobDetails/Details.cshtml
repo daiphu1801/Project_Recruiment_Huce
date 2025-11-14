@@ -135,9 +135,9 @@
         <div class="bg-light p-3 border rounded mb-4">
           <h3 class="text-primary  mt-3 h5 pl-3 mb-3 ">Tóm tắt công việc</h3>
           <ul class="list-unstyled pl-3 mb-0">
-            @if (Model?.PostedAt.HasValue ?? false)
+            @if (Model?.PostedAt != null)
             {
-              <li class="mb-2"><strong class="text-black">Ngày đăng:</strong> @Model.PostedAt.Value.ToString("dd/MM/yyyy")</li>
+              <li class="mb-2"><strong class="text-black">Ngày đăng:</strong> @Model.PostedAt.ToString("dd/MM/yyyy")</li>
             }
             @if (!string.IsNullOrEmpty(Model?.EmploymentTypeDisplay))
             {

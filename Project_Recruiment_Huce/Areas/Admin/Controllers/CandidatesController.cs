@@ -84,7 +84,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         Address = c.Address,
                         PhotoUrl = photoUrl,
                         Summary = c.Summary,
-                        ApplicationEmail = c.ApplicationEmail,
+                        ApplicationEmail = c.Email, // ApplicationEmail không tồn tại, dùng Email
                     };
                 }).ToList();
                 return View(candidates);
@@ -95,10 +95,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         private int? GetCandidatePhotoID(Candidate c, JOBPORTAL_ENDataContext db)
         {
             var accountId = c.AccountID;
-            if (accountId == null)
-            {
-                return null;
-            }
+            // AccountID giờ là non-nullable int, không cần check null
             var photoId = db.Accounts
                 .Where(a => a.AccountID == accountId)
                 .Select(a => a.PhotoID)
@@ -135,7 +132,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Address = candidate.Address,
                     PhotoUrl = photo != null ? photo.FilePath : null,
                     Summary = candidate.Summary,
-                    ApplicationEmail= candidate.ApplicationEmail
+                    ApplicationEmail = candidate.Email // ApplicationEmail không tồn tại, dùng Email
                 };
                 ViewBag.Title = "Chi tiết ứng viên";
                 ViewBag.Breadcrumbs = new List<Tuple<string, string>> {
@@ -229,8 +226,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Email = model.Email,
                     Address = model.Address,
                     Summary = model.Summary,
-                    ApplicationEmail = model.ApplicationEmail,
-                    ActiveFlag = model.ActiveFlag,
+                    ActiveFlag = model.ActiveFlag ?? (byte)1, // Cast byte? to byte
                     CreatedAt = DateTime.Now,
                     PhotoID = photoId                      // lưu id ảnh
                 };
@@ -294,9 +290,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     ActiveFlag = candidate.ActiveFlag,
                     Email = candidate.Email,
                     Address = candidate.Address,
-                    PhotoUrl = (string)candidate.PhotoFile,
+                    PhotoUrl = photo?.FilePath, // PhotoFile không tồn tại, dùng photo từ ProfilePhoto
                     Summary = candidate.Summary,
-                    ApplicationEmail = candidate.ApplicationEmail,
+                    ApplicationEmail = candidate.Email, // ApplicationEmail không tồn tại, dùng Email
                     CurrentPhotoId = photoId,
                     CurrentPhotoUrl = photo?.FilePath
                 };
@@ -410,11 +406,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                      candidateToUpdate.BirthDate = model.DateOfBirth;
                      candidateToUpdate.Gender = model.Gender;
                      candidateToUpdate.Phone = model.Phone;
-                     candidateToUpdate.Email = model.Email;
-                     candidateToUpdate.Address = model.Address;
-                     candidateToUpdate.Summary = model.Summary;
-                     candidateToUpdate.ActiveFlag = model.ActiveFlag;
-                     candidateToUpdate.ApplicationEmail = model.ApplicationEmail;
+                    candidateToUpdate.Email = model.Email;
+                    candidateToUpdate.Address = model.Address;
+                    candidateToUpdate.Summary = model.Summary;
+                    candidateToUpdate.ActiveFlag = model.ActiveFlag ?? (byte)1; // Cast byte? to byte
+                    // ApplicationEmail không tồn tại, không cần set
 
                      db.SubmitChanges();
                  }
@@ -443,9 +439,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                      db.ProfilePhotos.InsertOnSubmit(newPhoto);
                      db.SubmitChanges();
 
-                     // cập nhật lại Candidate
-                     candidateToUpdate.PhotoID = newPhoto.PhotoID;
-                     candidateToUpdate.PhotoFile = relativePath;
+                    // cập nhật lại Candidate
+                    candidateToUpdate.PhotoID = newPhoto.PhotoID;
+                    // PhotoFile không tồn tại, chỉ cần set PhotoID
                  }
                  TempData["SuccessMessage"] = "Cập nhật ứng viên thành công!";
                  return RedirectToAction("Index");
@@ -477,11 +473,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 // Cập nhật thông tin cơ bản
                 candidate.FullName = model.FullName;
-                candidate.DateOfBirth = model.DateOfBirth;
+                candidate.BirthDate = model.DateOfBirth; // DateOfBirth không tồn tại, dùng BirthDate
                 candidate.Gender = model.Gender;
                 candidate.Phone = model.Phone;
-                candidate.ApplicationEmail = model.ApplicationEmail;
-                candidate.Active = model.Active;
+                candidate.Email = model.ApplicationEmail ?? candidate.Email; // ApplicationEmail không tồn tại, dùng Email
+                candidate.ActiveFlag = model.Active ? (byte)1 : (byte)0; // Active không tồn tại, dùng ActiveFlag
                 candidate.AccountID = model.AccountId;
 
                 // =====================
@@ -508,9 +504,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     model.PhotoFile.SaveAs(savePath);
 
                     // Nếu có ảnh cũ thì xóa file cũ + xóa record cũ
-                    if (candidate.PhotoId != null)
+                    if (candidate.PhotoID != null)
                     {
-                        var oldPhoto = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == candidate.PhotoId);
+                        var oldPhoto = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == candidate.PhotoID);
                         if (oldPhoto != null)
                         {
                             string oldFilePath = Server.MapPath(oldPhoto.FilePath);
@@ -593,9 +589,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     ActiveFlag = candidate.ActiveFlag,
                     Email = candidate.Email,
                     Address = candidate.Address,
-                    PhotoUrl = (string)candidate.PhotoFile,
+                    PhotoUrl = photo?.FilePath, // PhotoFile không tồn tại, dùng photo từ ProfilePhoto
                     Summary = candidate.Summary,
-                    ApplicationEmail = candidate.ApplicationEmail,
+                    ApplicationEmail = candidate.Email, // ApplicationEmail không tồn tại, dùng Email
                 };
 
                 ViewBag.Title = "Xóa nhà tuyển dụng";

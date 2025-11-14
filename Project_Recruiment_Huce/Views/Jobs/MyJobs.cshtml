@@ -145,12 +145,9 @@
                                 <span class="text-muted ml-2">(@job.JobCode)</span>
                             }
                         </div>
-                        @if (job.PostedAt.HasValue)
-                        {
-                            <span class="text-muted" style="font-size: 0.875rem;">
-                                Đăng ngày: @job.PostedAt.Value.ToString("dd/MM/yyyy")
-                            </span>
-                        }
+                        <span class="text-muted" style="font-size: 0.875rem;">
+                            Đăng ngày: @job.PostedAt.ToString("dd/MM/yyyy")
+                        </span>
                     </div>
 
                     <div class="job-meta">

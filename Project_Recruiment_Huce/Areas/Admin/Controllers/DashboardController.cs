@@ -39,10 +39,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     dates.Add(d.ToString("yyyy-MM-dd"));
                     
                     // Count job posts posted on this date
-                    jobSeries.Add(db.JobPosts.Count(j => j.PostedAt.HasValue && j.PostedAt.Value.Date == d));
+                    jobSeries.Add(db.JobPosts.Count(j => j.PostedAt.Date == d));
                     
                     // Count applications applied on this date
-                    appSeries.Add(db.Applications.Count(a => a.AppliedAt.HasValue && a.AppliedAt.Value.Date == d));
+                    appSeries.Add(db.Applications.Count(a => a.AppliedAt.Date == d));
                 }
 
                 // Phân bố theo loại hình công việc

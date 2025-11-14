@@ -21,6 +21,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         // GET: Admin/Accounts
         public ActionResult Index(string q, string role = null, int page = 1)
         {
+            _ = page;
+
             ViewBag.Title = "Quản lý tài khoản";
             ViewBag.Breadcrumbs = new List<Tuple<string, string>>
             {
@@ -290,7 +292,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 account.Email = model.Email;
                 account.Phone = model.Phone;
                 account.Role = model.Role;
-                account.ActiveFlag = model.ActiveFlag;
+                account.ActiveFlag = model.ActiveFlag ?? (byte)1; // Cast byte? to byte
 
                 if (!string.IsNullOrWhiteSpace(model.Password))
                 {
@@ -306,7 +308,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     if (recruiter != null)
                     {
                         recruiter.Phone = model.Phone;
-                        recruiter.ActiveFlag = model.ActiveFlag;
+                        recruiter.ActiveFlag = model.ActiveFlag ?? (byte)1; // Cast byte? to byte
                     }
                 }
                 else if (account.Role == "Candidate")
@@ -315,7 +317,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     if (candidate != null)
                     {
                         candidate.Phone = model.Phone;
-                        candidate.ActiveFlag = model.ActiveFlag;
+                        candidate.ActiveFlag = model.ActiveFlag ?? (byte)1; // Cast byte? to byte
                     }
                 }
 

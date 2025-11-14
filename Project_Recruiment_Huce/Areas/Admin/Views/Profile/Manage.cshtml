@@ -11,7 +11,7 @@
         <div class="row mb-2"><div class="col-4 text-secondary">Email</div><div class="col-8">@Model.Email</div></div>
         <div class="row mb-2"><div class="col-4 text-secondary">Điện thoại</div><div class="col-8">@Model.Phone</div></div>
         <div class="row mb-2"><div class="col-4 text-secondary">Vai trò</div><div class="col-8">@Model.Role</div></div>
-        <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@(Model.CreatedAt.HasValue ? Model.CreatedAt.Value.ToString("dd/MM/yyyy") : "")</div></div>
+        <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "")</div></div>
       </div>
     </div>
   </div>

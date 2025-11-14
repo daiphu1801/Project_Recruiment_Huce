@@ -5,6 +5,7 @@ using System.Web.Mvc;
 using System.Configuration;
 using Project_Recruiment_Huce.Areas.Admin.Models;
 using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Helpers;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
@@ -66,7 +67,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                                 .Take(pageSize)
                                 .ToList();
 
-                ViewBag.StatusOptions = new SelectList(new[] { "Under review", "Interview", "Offered", "Hired", "Rejected" }, status);
+                ViewBag.StatusOptions = ApplicationStatusHelper.GetStatusSelectList(status);
                 return View(data);
             }
         }
@@ -147,7 +148,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             .ToList();
                 ViewBag.CompanyName = new SelectList(companyList, "Id", "Name");
 
-                ViewBag.StatusOptions = new SelectList(new[] { "Under review", "Interview", "Offered", "Hired", "Rejected" });
+                ViewBag.StatusOptions = ApplicationStatusHelper.GetStatusSelectList();
                 return View(new CreateApplicationListVm());
             }
         }
@@ -166,7 +167,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         CandidateID = model.CandidateId,
                         JobPostID = model.JobPostId,
                         AppliedAt = DateTime.Now,
-                        Status = model.AppStatus ?? "Under review",
+                        Status = model.AppStatus ?? ApplicationStatusHelper.UnderReview,
                         ResumeFilePath = model.ResumeFilePath,
                         CertificateFilePath = model.CertificateFilePath,
                         Note = model.Note,
@@ -204,7 +205,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                             .Select(c => new { Id = c.CompanyID, Name = c.CompanyName })
                             .ToList();
                 ViewBag.CompanyName = new SelectList(companyList, "Id", "Name");
-                ViewBag.StatusOptions = new SelectList(new[] { "Under review", "Interview", "Offered", "Hired", "Rejected" }, model.AppStatus);
+                ViewBag.StatusOptions = ApplicationStatusHelper.GetStatusSelectList(model.AppStatus);
                 return View(model);
             }
         }
@@ -242,7 +243,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                                 .ToList();
                 ViewBag.JobOptions = new SelectList(jobList, "Id", "Title", item.JobPostId);
 
-                ViewBag.StatusOptions = new SelectList(new[] { "Under review", "Interview", "Offered", "Hired", "Rejected" }, item.AppStatus);
+                ViewBag.StatusOptions = ApplicationStatusHelper.GetStatusSelectList(item.AppStatus);
                 ViewBag.CompanyName = new SelectList(companyList, "Id", "Name");
 
                 return View(item);
@@ -265,7 +266,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     // FIX: Nếu VM (EditApplicationListVm) đã được sửa kiểu dữ liệu thành int/string, KHÔNG CẦN ép kiểu (int), (string)
                     appToUpdate.CandidateID = model.CandidateId;
                     appToUpdate.JobPostID = model.JobPostId;
-                    appToUpdate.Status = model.AppStatus ?? "Under review";
+                    appToUpdate.Status = model.AppStatus ?? ApplicationStatusHelper.UnderReview;
                     appToUpdate.ResumeFilePath = model.ResumeFilePath;
                     appToUpdate.CertificateFilePath = model.CertificateFilePath;
                     appToUpdate.Note = model.Note;
@@ -288,7 +289,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                                 .ToList();
                 ViewBag.JobOptions = new SelectList(jobList, "Id", "Title", model.JobPostId);
 
-                ViewBag.StatusOptions = new SelectList(new[] { "Under review", "Interview", "Offered", "Hired", "Rejected" }, model.AppStatus);
+                ViewBag.StatusOptions = ApplicationStatusHelper.GetStatusSelectList(model.AppStatus);
                 var companyList = db.Companies
                             .Select(c => new { Id = c.CompanyID, Name = c.CompanyName })
                             .ToList();

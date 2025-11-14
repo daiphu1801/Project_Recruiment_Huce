@@ -243,7 +243,7 @@
                         </span>
                     </div>
                     <div class="application-date">
-                        Ngày nộp đơn: @(app.AppliedAt.HasValue ? app.AppliedAt.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")
+                        Ngày nộp đơn: @(app.AppliedAt?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")
                     </div>
                 </div>
 
