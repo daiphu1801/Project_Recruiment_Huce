@@ -193,21 +193,23 @@
     <Compile Include="Models\Candidates\ResumeFileViewModel.cs" />
     <Compile Include="Models\Candidates\SavedJobViewModel.cs" />
     <Compile Include="Models\Companies\CompanyManageViewModel.cs" />
-    <Compile Include="Models\Recruiters\RecruiterApplicationViewModel.cs" />
-    <Compile Include="Models\Home\HomeIndexViewModel.cs" />
-    <Compile Include="Models\Jobs\JobViewModels.cs" />
-    <Compile Include="Models\Jobs\JobCreateViewModel.cs" />
     <Compile Include="Models\JOBPORTAL_EN.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>JOBPORTAL_EN.dbml</DependentUpon>
     </Compile>
+    <Compile Include="Models\Recruiters\RecruiterApplicationViewModel.cs" />
+    <Compile Include="Models\Home\HomeIndexViewModel.cs" />
+    <Compile Include="Models\Jobs\JobViewModels.cs" />
+    <Compile Include="Models\Jobs\JobCreateViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Helpers\PasswordHelper.cs" />
     <Compile Include="Helpers\HtmlSanitizerHelper.cs" />
     <Compile Include="Helpers\JobStatusHelper.cs" />
     <Compile Include="Helpers\EmailSyncHelper.cs" />
+    <Compile Include="Helpers\PasswordResetHelper.cs" />
+    <Compile Include="Helpers\ApplicationStatusHelper.cs" />
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\JobPostRepository.cs" />
   </ItemGroup>
@@ -284,13 +286,13 @@
     <Content Include="Content\Admin\css\adminlte.rtl.min.css.map" />
     <Content Include="Scripts\Admin\js\adminlte.js.map" />
     <Content Include="Scripts\Admin\js\adminlte.min.js.map" />
-    <Content Include="Models\JOBPORTAL_EN.dbml">
-      <Generator>MSLinqToSQLGenerator</Generator>
-      <SubType>Designer</SubType>
-      <LastGenOutput>JOBPORTAL_EN1.designer.cs</LastGenOutput>
-    </Content>
     <Content Include="Areas\Admin\Views\Photos\Create.cshtml" />
     <Content Include="Areas\Admin\Views\Photos\Delete.cshtml" />
+    <Content Include="Models\JOBPORTAL_EN.dbml">
+      <Generator>MSLinqToSQLGenerator</Generator>
+      <LastGenOutput>JOBPORTAL_EN.designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="Models\JOBPORTAL_EN.dbml.layout">
       <DependentUpon>JOBPORTAL_EN.dbml</DependentUpon>
     </None>

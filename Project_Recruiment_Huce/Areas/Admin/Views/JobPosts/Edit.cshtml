@@ -267,12 +267,9 @@
                             <li>Các trường có dấu <span class="text-danger fw-bold">*</span> là bắt buộc</li>
                             <li>Mức lương tối thiểu phải nhỏ hơn hoặc bằng mức lương tối đa</li>
                             <li>Tiêu đề và mã công việc không được trùng với tin khác</li>
-                            @if (Model.PostedAt.HasValue)
-                            {
-                                <li class="mt-2 text-muted">
-                                    <i class="bi bi-clock-history"></i> Đăng lúc: <strong>@Model.PostedAt.Value.ToString("dd/MM/yyyy HH:mm")</strong>
-                                </li>
-                            }
+                            <li class="mt-2 text-muted">
+                                <i class="bi bi-clock-history"></i> Đăng lúc: <strong>@Model.PostedAt.ToString("dd/MM/yyyy HH:mm")</strong>
+                            </li>
                         </ul>
                     </div>
 
