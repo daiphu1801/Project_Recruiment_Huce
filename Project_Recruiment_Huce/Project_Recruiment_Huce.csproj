@@ -210,6 +210,7 @@
     <Compile Include="Helpers\EmailSyncHelper.cs" />
     <Compile Include="Helpers\PasswordResetHelper.cs" />
     <Compile Include="Helpers\ApplicationStatusHelper.cs" />
+    <Compile Include="Helpers\ValidationHelper.cs" />
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\JobPostRepository.cs" />
   </ItemGroup>
@@ -326,9 +327,24 @@
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Account\Register.cshtml" />
     <Content Include="Views\Account\Manage.cshtml" />
+    <Content Include="Views\Account\ForgotPassword.cshtml" />
+    <Content Include="Views\Account\ResetPassword.cshtml" />
+    <Content Include="Views\Account\ExternalLoginFailure.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Candidates\MyApplications.cshtml" />
     <Content Include="Views\Candidates\CandidatesManage.cshtml" />
+    <Content Include="Views\Candidates\Apply.cshtml" />
+    <Content Include="Views\Companies\CompaniesManage.cshtml" />
+    <Content Include="Views\MyAccount\Index.cshtml" />
+    <Content Include="Views\Recruiters\RecruitersManage.cshtml" />
+    <Content Include="Views\RecruitersApplication\MyApplications.cshtml" />
+    <Content Include="Views\RecruitersApplication\ApplicationDetails.cshtml" />
+    <Content Include="Views\RecruitersApplication\UpdateApplicationStatus.cshtml" />
+    <Content Include="Views\ResumeFiles\MyResumes.cshtml" />
+    <Content Include="Views\JobDetails\Details.cshtml" />
+    <Content Include="Views\Jobs\MyJobs.cshtml" />
+    <Content Include="Views\Jobs\Edit.cshtml" />
+    <Content Include="Views\Jobs\JobsCreate.cshtml" />
     <Content Include="Views\SavedJobs\MySavedJobs.cshtml" />
   </ItemGroup>
   <ItemGroup>
