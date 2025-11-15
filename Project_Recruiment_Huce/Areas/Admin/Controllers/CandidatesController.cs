@@ -1,5 +1,6 @@
 using Project_Recruiment_Huce.Areas.Admin.Models;
 using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -20,7 +21,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
     // Team members should follow AccountsController pattern to implement CRUD with database.
     public class CandidatesController : AdminBaseController
     {
-        private string photo;
+        // Removed unused field: private string photo;
 
         public string PhotoUrl { get; private set; }
 
@@ -215,6 +216,43 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     photoId = newPhoto.PhotoID;
                 }
 
+                // Validate phone number format and normalize (if provided)
+                var phone = (model.Phone ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(phone))
+                {
+                    if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                    {
+                        ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                        LoadDropdown(model.AccountId);
+                        return View(model);
+                    }
+                    else
+                    {
+                        // Normalize phone number
+                        phone = ValidationHelper.NormalizePhone(phone);
+                    }
+                }
+                else
+                {
+                    phone = null;
+                }
+
+                // Validate email format (if provided)
+                var email = (model.Email ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    if (!ValidationHelper.IsValidEmail(email))
+                    {
+                        ModelState.AddModelError("Email", "Email không hợp lệ.");
+                        LoadDropdown(model.AccountId);
+                        return View(model);
+                    }
+                }
+                else
+                {
+                    email = null;
+                }
+
                 // TẠO CANDIDATE
                 var candidate = new Candidate
                 {
@@ -222,8 +260,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     FullName = model.FullName,
                     BirthDate = model.BirthDate,
                     Gender = model.Gender,
-                    Phone = model.Phone,
-                    Email = model.Email,
+                    Phone = phone, // Use normalized phone
+                    Email = email, // Use validated email
                     Address = model.Address,
                     Summary = model.Summary,
                     ActiveFlag = model.ActiveFlag ?? (byte)1, // Cast byte? to byte
@@ -392,6 +430,53 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                      }
                  }
 
+                 // Validate phone number format and normalize (if provided)
+                 var phone = (model.Phone ?? string.Empty).Trim();
+                 if (!string.IsNullOrWhiteSpace(phone))
+                 {
+                     if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                     {
+                         ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                         LoadDropdown(model.AccountId);
+                         var candidate = db.Candidates.FirstOrDefault(x => x.CandidateID == model.CandidateId);
+                         int? photoIdErr = candidate != null ? GetCandidatePhotoID(candidate, db) : (int?)null;
+                         var photo = photoIdErr.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoIdErr.Value) : null;
+                         model.CurrentPhotoId = photoIdErr;
+                         model.CurrentPhotoUrl = photo != null ? photo.FilePath : null;
+                         return View(model);
+                     }
+                     else
+                     {
+                         // Normalize phone number
+                         phone = ValidationHelper.NormalizePhone(phone);
+                     }
+                 }
+                 else
+                 {
+                     phone = null;
+                 }
+
+                 // Validate email format (if provided)
+                 var email = (model.Email ?? string.Empty).Trim();
+                 if (!string.IsNullOrWhiteSpace(email))
+                 {
+                     if (!ValidationHelper.IsValidEmail(email))
+                     {
+                         ModelState.AddModelError("Email", "Email không hợp lệ.");
+                         LoadDropdown(model.AccountId);
+                         var candidate = db.Candidates.FirstOrDefault(x => x.CandidateID == model.CandidateId);
+                         int? photoIdErr = candidate != null ? GetCandidatePhotoID(candidate, db) : (int?)null;
+                         var photo = photoIdErr.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoIdErr.Value) : null;
+                         model.CurrentPhotoId = photoIdErr;
+                         model.CurrentPhotoUrl = photo != null ? photo.FilePath : null;
+                         return View(model);
+                     }
+                 }
+                 else
+                 {
+                     email = null;
+                 }
+
                  // Update candidate logic here (not implemented in the provided code)
                  // Example:
                  // var candidateToUpdate = db.Candidates.FirstOrDefault(x => x.CandidateID == model.CandidateId);
@@ -405,8 +490,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                      candidateToUpdate.AccountID = model.AccountId;
                      candidateToUpdate.BirthDate = model.DateOfBirth;
                      candidateToUpdate.Gender = model.Gender;
-                     candidateToUpdate.Phone = model.Phone;
-                    candidateToUpdate.Email = model.Email;
+                     candidateToUpdate.Phone = phone; // Use normalized phone
+                    candidateToUpdate.Email = email; // Use validated email
                     candidateToUpdate.Address = model.Address;
                     candidateToUpdate.Summary = model.Summary;
                     candidateToUpdate.ActiveFlag = model.ActiveFlag ?? (byte)1; // Cast byte? to byte

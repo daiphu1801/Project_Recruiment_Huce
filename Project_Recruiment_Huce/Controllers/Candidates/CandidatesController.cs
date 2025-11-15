@@ -12,15 +12,8 @@ using Project_Recruiment_Huce.Helpers;
 namespace Project_Recruiment_Huce.Controllers
 {
     [Authorize]
-    public class CandidatesController : Controller
+    public class CandidatesController : BaseController
     {
-        private int? GetCurrentAccountId()
-        {
-            var idClaim = ((ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.NameIdentifier);
-            if (idClaim == null) return null;
-            int accountId;
-            return int.TryParse(idClaim.Value, out accountId) ? (int?)accountId : null;
-        }
 
         [HttpGet]
         public ActionResult CandidatesManage()
@@ -86,13 +79,32 @@ namespace Project_Recruiment_Huce.Controllers
                     db.Candidates.InsertOnSubmit(candidate);
                 }
 
+                // Validate phone number format and normalize (if provided)
+                var phone = (viewModel.Phone ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(phone))
+                {
+                    if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                    {
+                        ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                    }
+                    else
+                    {
+                        // Normalize phone number
+                        phone = ValidationHelper.NormalizePhone(phone);
+                    }
+                }
+                else
+                {
+                    phone = null;
+                }
+
                 // Update profile fields only when model is valid
                 if (ModelState.IsValid)
                 {
                     candidate.FullName = viewModel.FullName;
                     candidate.BirthDate = viewModel.BirthDate;
                     candidate.Gender = string.IsNullOrWhiteSpace(viewModel.Gender) ? "Nam" : viewModel.Gender;
-                    candidate.Phone = viewModel.Phone;
+                    candidate.Phone = phone; // Use normalized phone
                     candidate.Email = viewModel.Email;
                     candidate.Address = viewModel.Address;
                     
@@ -244,7 +256,7 @@ namespace Project_Recruiment_Huce.Controllers
                     CompanyName = app.JobPost?.Company != null ? app.JobPost.Company.CompanyName :
                                  (app.JobPost?.Recruiter?.Company != null ? app.JobPost.Recruiter.Company.CompanyName : "N/A"),
                     Location = app.JobPost?.Location ?? string.Empty,
-                    SalaryRange = FormatSalaryRange(app.JobPost?.SalaryFrom, app.JobPost?.SalaryTo, app.JobPost?.SalaryCurrency),
+                    SalaryRange = SalaryHelper.FormatSalaryRange(app.JobPost?.SalaryFrom, app.JobPost?.SalaryTo, app.JobPost?.SalaryCurrency),
                     AppliedAt = app.AppliedAt,
                     Status = app.Status ?? "Under review",
                     ApplicationDeadline = app.JobPost?.ApplicationDeadline,
@@ -269,40 +281,6 @@ namespace Project_Recruiment_Huce.Controllers
             }
         }
 
-        private string FormatSalaryRange(decimal? salaryFrom, decimal? salaryTo, string currency)
-        {
-            if (!salaryFrom.HasValue && !salaryTo.HasValue)
-                return "Thỏa thuận";
-
-            string currencySymbol = currency == "VND" ? "VNĐ" : currency ?? "VNĐ";
-
-            if (salaryFrom.HasValue && salaryTo.HasValue)
-            {
-                if (currency == "VND")
-                {
-                    return $"{salaryFrom.Value:N0} - {salaryTo.Value:N0} {currencySymbol}";
-                }
-                return $"{salaryFrom.Value:N0} - {salaryTo.Value:N0} {currencySymbol}";
-            }
-            else if (salaryFrom.HasValue)
-            {
-                if (currency == "VND")
-                {
-                    return $"Từ {salaryFrom.Value:N0} {currencySymbol}";
-                }
-                return $"Từ {salaryFrom.Value:N0} {currencySymbol}";
-            }
-            else if (salaryTo.HasValue)
-            {
-                if (currency == "VND")
-                {
-                    return $"Đến {salaryTo.Value:N0} {currencySymbol}";
-                }
-                return $"Đến {salaryTo.Value:N0} {currencySymbol}";
-            }
-
-            return "Thỏa thuận";
-        }
 
         /// <summary>
         /// GET: Candidates/Apply
@@ -413,7 +391,7 @@ namespace Project_Recruiment_Huce.Controllers
                     JobTitle = job.Title,
                     CompanyName = companyName,
                     Location = job.Location,
-                    SalaryRange = FormatSalaryRange(job.SalaryFrom, job.SalaryTo, job.SalaryCurrency),
+                    SalaryRange = SalaryHelper.FormatSalaryRange(job.SalaryFrom, job.SalaryTo, job.SalaryCurrency),
                     ApplicationDeadline = job.ApplicationDeadline,
                     CandidateID = candidate.CandidateID,
                     FullName = candidate.FullName,

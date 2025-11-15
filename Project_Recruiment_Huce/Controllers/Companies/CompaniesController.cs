@@ -12,30 +12,8 @@ using Project_Recruiment_Huce.Helpers;
 namespace Project_Recruiment_Huce.Controllers
 {
     [Authorize]
-    public class CompaniesController : Controller
+    public class CompaniesController : BaseController
     {
-        private int? GetCurrentAccountId()
-        {
-            if (User?.Identity == null || !User.Identity.IsAuthenticated)
-                return null;
-
-            var idClaim = ((ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.NameIdentifier);
-            if (idClaim == null) return null;
-            int accountId;
-            return int.TryParse(idClaim.Value, out accountId) ? (int?)accountId : null;
-        }
-
-        private int? GetCurrentRecruiterId()
-        {
-            var accountId = GetCurrentAccountId();
-            if (accountId == null) return null;
-
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
-            {
-                var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
-                return recruiter?.RecruiterID;
-            }
-        }
 
         // Helper: Save uploaded logo
         private int? SaveLogo(HttpPostedFileBase file)
@@ -156,6 +134,7 @@ namespace Project_Recruiment_Huce.Controllers
                     Industry = company?.Industry,
                     Address = company?.Address,
                     Phone = company?.Phone,
+                    Fax = null, // Fax field not in database yet, will be null for now
                     CompanyEmail = company?.CompanyEmail,
                     Website = company?.Website,
                     Description = company?.Description,
@@ -184,6 +163,56 @@ namespace Project_Recruiment_Huce.Controllers
             if (accountId == null)
             {
                 return RedirectToAction("Login", "Account");
+            }
+
+            // Validate phone number format and uniqueness (if provided)
+            var phone = (viewModel.Phone ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(phone))
+            {
+                // Validate phone format
+                if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                {
+                    ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                }
+                else
+                {
+                    // Normalize phone number
+                    phone = ValidationHelper.NormalizePhone(phone);
+
+                    // Check if phone already exists in Companies (exclude current company)
+                    if (!ValidationHelper.IsCompanyPhoneUnique(phone, viewModel.CompanyID))
+                    {
+                        ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng bởi công ty khác.");
+                    }
+                }
+            }
+            else
+            {
+                phone = null;
+            }
+
+            // Validate company email uniqueness (if provided)
+            var companyEmail = (viewModel.CompanyEmail ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(companyEmail))
+            {
+                if (!ValidationHelper.IsCompanyEmailUnique(companyEmail, viewModel.CompanyID))
+                {
+                    ModelState.AddModelError("CompanyEmail", "Email này đã được sử dụng bởi công ty khác.");
+                }
+            }
+
+            // Validate fax number format (if provided)
+            var fax = (viewModel.Fax ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(fax))
+            {
+                if (!ValidationHelper.IsValidFax(fax))
+                {
+                    ModelState.AddModelError("Fax", ValidationHelper.GetFaxErrorMessage());
+                }
+            }
+            else
+            {
+                fax = null;
             }
 
             if (!ModelState.IsValid)
@@ -223,8 +252,8 @@ namespace Project_Recruiment_Huce.Controllers
                                 TaxCode = viewModel.TaxCode,
                                 Industry = viewModel.Industry,
                                 Address = viewModel.Address,
-                                Phone = viewModel.Phone,
-                                CompanyEmail = viewModel.CompanyEmail,
+                                Phone = phone, // Use normalized phone
+                                CompanyEmail = companyEmail, // Use trimmed email
                                 Website = viewModel.Website,
                                 Description = !string.IsNullOrWhiteSpace(viewModel.Description) 
                                     ? HtmlSanitizerHelper.Sanitize(viewModel.Description) 
@@ -253,8 +282,8 @@ namespace Project_Recruiment_Huce.Controllers
                             company.TaxCode = viewModel.TaxCode;
                             company.Industry = viewModel.Industry;
                             company.Address = viewModel.Address;
-                            company.Phone = viewModel.Phone;
-                            company.CompanyEmail = viewModel.CompanyEmail;
+                            company.Phone = phone; // Use normalized phone
+                            company.CompanyEmail = companyEmail; // Use trimmed email
                             company.Website = viewModel.Website;
                             company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
                                 ? HtmlSanitizerHelper.Sanitize(viewModel.Description)

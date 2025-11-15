@@ -11,15 +11,8 @@ using Project_Recruiment_Huce.Models.Candidates;
 namespace Project_Recruiment_Huce.Controllers
 {
     [Authorize]
-    public class ResumeFilesController : Controller
+    public class ResumeFilesController : BaseController
     {
-        private int? GetCurrentAccountId()
-        {
-            var idClaim = ((ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.NameIdentifier);
-            if (idClaim == null) return null;
-            int accountId;
-            return int.TryParse(idClaim.Value, out accountId) ? (int?)accountId : null;
-        }
 
         /// <summary>
         /// GET: Candidates/ResumeFiles/MyResumes

@@ -156,14 +156,54 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     ModelState.AddModelError("Email", "Email (login) đã được sử dụng");
                 }
 
-                // Validation cho CompanyEmail (liên lạc)
-                if (!string.IsNullOrWhiteSpace(model.CompanyEmail))
+                // Validate phone number format and uniqueness (if provided)
+                var phone = (model.Phone ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(phone))
                 {
-                    var emailLower = model.CompanyEmail.ToLowerInvariant();
-                    if (db.Recruiters.Any(r => r.CompanyEmail != null && r.CompanyEmail.ToLower() == emailLower))
+                    // Validate phone format
+                    if (!ValidationHelper.IsValidVietnamesePhone(phone))
                     {
-                        ModelState.AddModelError("CompanyEmail", "Email (liên lạc) đã được sử dụng");
+                        ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
                     }
+                    else
+                    {
+                        // Normalize phone number
+                        phone = ValidationHelper.NormalizePhone(phone);
+
+                        // Check if phone already exists in Accounts
+                        if (!ValidationHelper.IsAccountPhoneUnique(phone))
+                        {
+                            ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng. Mỗi số điện thoại chỉ có thể đăng ký một tài khoản.");
+                        }
+                    }
+                }
+                else
+                {
+                    phone = null;
+                }
+
+                // Validate company email format and uniqueness (if provided)
+                var companyEmail = (model.CompanyEmail ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(companyEmail))
+                {
+                    // Validate email format
+                    if (!ValidationHelper.IsValidEmail(companyEmail))
+                    {
+                        ModelState.AddModelError("CompanyEmail", "Email không hợp lệ.");
+                    }
+                    else
+                    {
+                        // Check if email already exists in Recruiters
+                        var emailLower = companyEmail.ToLowerInvariant();
+                        if (db.Recruiters.Any(r => r.CompanyEmail != null && r.CompanyEmail.ToLower() == emailLower))
+                        {
+                            ModelState.AddModelError("CompanyEmail", "Email (liên lạc) đã được sử dụng");
+                        }
+                    }
+                }
+                else
+                {
+                    companyEmail = null;
                 }
 
                 if (!string.IsNullOrWhiteSpace(model.FullName) && db.Recruiters.Any(r => r.FullName == model.FullName))
@@ -184,7 +224,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 {
                     Username = model.Username,
                     Email = model.Email,
-                    Phone = model.Phone, // Đồng bộ SĐT
+                    Phone = phone, // Use normalized phone
                     Role = "Recruiter",
                     PasswordHash = passwordHash,
                     Salt = salt,
@@ -215,8 +255,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     CompanyID = model.CompanyId,
                     FullName = model.FullName,
                     PositionTitle = model.PositionTitle,
-                    CompanyEmail = model.CompanyEmail, // Email liên lạc riêng
-                    Phone = model.Phone,
+                    CompanyEmail = companyEmail, // Use validated email
+                    Phone = phone, // Use normalized phone
                     CreatedAt = DateTime.Now,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0
                 };
@@ -300,18 +340,60 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 model.CurrentPhotoId = accountRecord.PhotoID;
                 model.CurrentPhotoUrl = accountRecord.ProfilePhoto?.FilePath;
 
+                // Validate phone number format and uniqueness (if provided)
+                var phone = (model.Phone ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(phone))
+                {
+                    // Validate phone format
+                    if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                    {
+                        ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                    }
+                    else
+                    {
+                        // Normalize phone number
+                        phone = ValidationHelper.NormalizePhone(phone);
+
+                        // Check if phone already exists in Accounts (except current account)
+                        if (!ValidationHelper.IsAccountPhoneUnique(phone, accountRecord.AccountID))
+                        {
+                            ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng. Mỗi số điện thoại chỉ có thể đăng ký một tài khoản.");
+                        }
+                    }
+                }
+                else
+                {
+                    phone = null;
+                }
+
+                // Validate company email format and uniqueness (if provided)
+                var companyEmail = (model.CompanyEmail ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(companyEmail))
+                {
+                    // Validate email format
+                    if (!ValidationHelper.IsValidEmail(companyEmail))
+                    {
+                        ModelState.AddModelError("CompanyEmail", "Email không hợp lệ.");
+                    }
+                    else
+                    {
+                        // Check if email already exists in Recruiters (except current recruiter)
+                        var emailLower = companyEmail.ToLowerInvariant();
+                        if (db.Recruiters.Any(c => c.CompanyEmail != null && c.CompanyEmail.ToLower() == emailLower && c.RecruiterID != model.RecruiterId))
+                        {
+                            ModelState.AddModelError("CompanyEmail", "Email (liên lạc) đã được sử dụng");
+                        }
+                    }
+                }
+                else
+                {
+                    companyEmail = null;
+                }
+
                 // Validation
                 if (db.Accounts.Any(a => a.Username == model.FullName && a.AccountID != accountRecord.AccountID))
                 {
                     ModelState.AddModelError("FullName", "Tên (Username) này đã được tài khoản khác sử dụng");
-                }
-                if (!string.IsNullOrWhiteSpace(model.CompanyEmail))
-                {
-                    var emailLower = model.CompanyEmail.ToLowerInvariant();
-                    if (db.Recruiters.Any(c => c.CompanyEmail != null && c.CompanyEmail.ToLower() == emailLower && c.RecruiterID != model.RecruiterId))
-                    {
-                        ModelState.AddModelError("CompanyEmail", "Email (liên lạc) đã được sử dụng");
-                    }
                 }
 
                 if (!ModelState.IsValid)
@@ -342,7 +424,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 // Cập nhật Account
                 accountRecord.Username = model.FullName;
-                accountRecord.Phone = model.Phone;
+                accountRecord.Phone = phone; // Use normalized phone
                 accountRecord.ActiveFlag = model.Active ? (byte)1 : (byte)0;
 
                 if (!string.IsNullOrWhiteSpace(model.Password))
@@ -356,8 +438,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 recruiter.CompanyID = model.CompanyId;
                 recruiter.FullName = model.FullName;
                 recruiter.PositionTitle = model.PositionTitle;
-                recruiter.CompanyEmail = model.CompanyEmail;
-                recruiter.Phone = model.Phone;
+                recruiter.CompanyEmail = companyEmail; // Use validated email
+                recruiter.Phone = phone; // Use normalized phone
                 recruiter.ActiveFlag = model.Active ? (byte)1 : (byte)0;
 
                 // [FIX] Submit 1 lần duy nhất

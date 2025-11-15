@@ -147,18 +147,39 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View(model);
                 }
 
-                if (!string.IsNullOrWhiteSpace(model.TaxCode) && db.Companies.Any(c => c.Phone == model.Phone))
+                // Validate phone number format and uniqueness (if provided)
+                var phone = (model.Phone ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(phone))
                 {
-                    ModelState.AddModelError("Phone", "Số điện thoại đã tồn tại");
-                    return View(model);
+                    // Validate phone format
+                    if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                    {
+                        ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                        return View(model);
+                    }
+
+                    // Normalize phone number
+                    phone = ValidationHelper.NormalizePhone(phone);
+
+                    // Check if phone already exists
+                    if (!ValidationHelper.IsCompanyPhoneUnique(phone))
+                    {
+                        ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng bởi công ty khác.");
+                        return View(model);
+                    }
+                }
+                else
+                {
+                    phone = null;
                 }
 
-                if (!string.IsNullOrWhiteSpace(model.CompanyEmail))
+                // Validate company email uniqueness (if provided)
+                var companyEmail = (model.CompanyEmail ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(companyEmail))
                 {
-                    var emailLower = model.CompanyEmail.ToLowerInvariant();
-                    if (db.Companies.Any(c => c.CompanyEmail != null && c.CompanyEmail.ToLower() == emailLower))
+                    if (!ValidationHelper.IsCompanyEmailUnique(companyEmail))
                     {
-                        ModelState.AddModelError("CompanyEmail", "Email đã được sử dụng");
+                        ModelState.AddModelError("CompanyEmail", "Email này đã được sử dụng bởi công ty khác.");
                         return View(model);
                     }
                 }
@@ -179,8 +200,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     TaxCode = model.TaxCode,
                     Industry = model.Industry,
                     Address = model.Address,
-                    Phone = model.Phone,
-                    CompanyEmail = model.CompanyEmail,
+                    Phone = phone, // Use normalized phone
+                    CompanyEmail = companyEmail, // Use trimmed email
                     Website = model.Website,
                     Description = model.Description,
                     CreatedAt = DateTime.Now,
@@ -298,19 +319,41 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View(model);
                 }
 
-                if (!string.IsNullOrWhiteSpace(model.Phone) && db.Companies.Any(c => c.Phone == model.Phone && c.CompanyID != model.CompanyId))
+                // Validate phone number format and uniqueness (if provided)
+                var phone = (model.Phone ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(phone))
                 {
-                    ModelState.AddModelError("Phone", "Số điện thoại đã tồn tại");
-                    refreshPhotoInfo(company);
-                    return View(model);
+                    // Validate phone format
+                    if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                    {
+                        ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                        refreshPhotoInfo(company);
+                        return View(model);
+                    }
+
+                    // Normalize phone number
+                    phone = ValidationHelper.NormalizePhone(phone);
+
+                    // Check if phone already exists (except current company)
+                    if (!ValidationHelper.IsCompanyPhoneUnique(phone, model.CompanyId))
+                    {
+                        ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng bởi công ty khác.");
+                        refreshPhotoInfo(company);
+                        return View(model);
+                    }
+                }
+                else
+                {
+                    phone = null;
                 }
 
-                if (!string.IsNullOrWhiteSpace(model.CompanyEmail))
+                // Validate company email uniqueness (if provided)
+                var companyEmail = (model.CompanyEmail ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(companyEmail))
                 {
-                    var emailLower = model.CompanyEmail.ToLowerInvariant();
-                    if (db.Companies.Any(c => c.CompanyEmail != null && c.CompanyEmail.ToLower() == emailLower && c.CompanyID != model.CompanyId))
+                    if (!ValidationHelper.IsCompanyEmailUnique(companyEmail, model.CompanyId))
                     {
-                        ModelState.AddModelError("CompanyEmail", "Email đã được sử dụng");
+                        ModelState.AddModelError("CompanyEmail", "Email này đã được sử dụng bởi công ty khác.");
                         refreshPhotoInfo(company);
                         return View(model);
                     }
@@ -355,8 +398,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 company.TaxCode = model.TaxCode;
                 company.Industry = model.Industry;
                 company.Address = model.Address;
-                company.Phone = model.Phone;
-                company.CompanyEmail = model.CompanyEmail;
+                company.Phone = phone; // Use normalized phone
+                company.CompanyEmail = companyEmail; // Use trimmed email
                 company.Website = model.Website;
                 company.Description = model.Description;
                 company.ActiveFlag = model.ActiveFlag ?? (byte)1; // Cast byte? to byte

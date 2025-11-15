@@ -137,7 +137,7 @@
           <ul class="list-unstyled pl-3 mb-0">
             @if (Model?.PostedAt != null)
             {
-              <li class="mb-2"><strong class="text-black">Ngày đăng:</strong> @Model.PostedAt.ToString("dd/MM/yyyy")</li>
+              <li class="mb-2"><strong class="text-black">Ngày đăng:</strong> @Model.PostedAt.Value.ToString("dd/MM/yyyy")</li>
             }
             @if (!string.IsNullOrEmpty(Model?.EmploymentTypeDisplay))
             {

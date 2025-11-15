@@ -1,25 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using System.Configuration;
 using System.Web;
 using System.Web.Mvc;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Accounts;
 using Project_Recruiment_Huce.Helpers;
+using Project_Recruiment_Huce.Services;
+using Project_Recruiment_Huce.Infrastructure;
 
 namespace Project_Recruiment_Huce.Controllers
 {
     public class AccountController : Controller
     {
-        // Keep ASP.NET Identity for backward compatibility if needed
-        // But we'll use custom authentication with TaiKhoan table
+        // Using ValidationService for centralized validation
+        private readonly ValidationService _validationService = new ValidationService();
 
         //
         // GET: /Account/Login
@@ -89,26 +87,6 @@ namespace Project_Recruiment_Huce.Controllers
             return View(model);
         }
 
-        // ASP.NET Identity methods commented out - using custom authentication with TaiKhoan table
-        /*
-        //
-        // GET: /Account/VerifyCode
-        [AllowAnonymous]
-        public async Task<ActionResult> VerifyCode(string provider, string returnUrl, bool rememberMe)
-        {
-            return View("Error");
-        }
-
-        //
-        // POST: /Account/VerifyCode
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> VerifyCode(VerifyCodeViewModel model)
-        {
-            return View("Error");
-        }
-        */
 
         //
         // GET: /Account/Register
@@ -144,14 +122,40 @@ namespace Project_Recruiment_Huce.Controllers
                         return View(model);
                     }
 
-                    // Extra server-side password complexity validation
-                    var password = model.Password ?? string.Empty;
-                    bool hasLower = password.Any(char.IsLower);
-                    bool hasUpper = password.Any(char.IsUpper);
-                    bool hasDigit = password.Any(char.IsDigit);
-                    if (password.Length < 6 || !hasLower || !hasUpper || !hasDigit)
+                    // Validate phone number format and uniqueness (if provided)
+                    var phone = (model.SoDienThoai ?? string.Empty).Trim();
+                    if (!string.IsNullOrWhiteSpace(phone))
                     {
-                        ModelState.AddModelError("Password", "Mật khẩu phải tối thiểu 6 ký tự gồm chữ hoa, chữ thường và số.");
+                        // Validate phone format
+                        if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                        {
+                            ModelState.AddModelError("SoDienThoai", ValidationHelper.GetPhoneErrorMessage());
+                            return View(model);
+                        }
+
+                        // Normalize phone number
+                        phone = ValidationHelper.NormalizePhone(phone);
+
+                        // Check if phone already exists
+                        if (!ValidationHelper.IsAccountPhoneUnique(phone))
+                        {
+                            ModelState.AddModelError("SoDienThoai", "Số điện thoại này đã được sử dụng. Mỗi số điện thoại chỉ có thể đăng ký một tài khoản.");
+                            return View(model);
+                        }
+                    }
+                    else
+                    {
+                        phone = null; // Set to null if empty
+                    }
+
+                    // Extra server-side password complexity validation using ValidationService
+                    var passwordValidation = _validationService.ValidatePassword(model.Password, model.ConfirmPassword);
+                    if (!passwordValidation.IsValid)
+                    {
+                        foreach (var error in passwordValidation.Errors)
+                        {
+                            ModelState.AddModelError(error.Key, error.Value);
+                        }
                         return View(model);
                     }
 
@@ -187,7 +191,7 @@ namespace Project_Recruiment_Huce.Controllers
                     {
                         Username = model.TenDangNhap,
                         Email = email,
-                        Phone = model.SoDienThoai,
+                        Phone = phone, // Use normalized phone
                         Role = mappedRole,
                         PasswordHash = passwordHash,
                         Salt = salt,
@@ -225,11 +229,159 @@ namespace Project_Recruiment_Huce.Controllers
             return View(model);
         }
 
-        // ASP.NET Identity methods commented out - using custom authentication
-        /*
-        // Methods for password reset, email confirmation, external login, etc. 
-        // Can be implemented later if needed using TaiKhoan table
-        */
+        //
+        // GET: /Account/ForgotPassword
+        [AllowAnonymous]
+        public ActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        //
+        // POST: /Account/ForgotPassword
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public ActionResult ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            {
+                var email = (model.Email ?? string.Empty).Trim().ToLower();
+                var account = db.Accounts.FirstOrDefault(a => a.Email.ToLower() == email && a.ActiveFlag == 1);
+
+                // Luôn hiển thị thông báo thành công để bảo mật (không tiết lộ email có tồn tại hay không)
+                if (account != null)
+                {
+                    // Tạo mã reset và lưu vào database
+                    var token = PasswordResetHelper.CreateResetToken(db, account.AccountID, account.Email);
+                    
+                    // Gửi email chứa mã reset
+                    bool emailSent = PasswordResetHelper.SendResetCodeEmail(account.Email, token.ResetCode, account.Username);
+                    
+                    if (emailSent)
+                    {
+                        // Lưu email vào session để dùng ở trang ResetPassword
+                        Session["ResetPasswordEmail"] = account.Email;
+                        TempData["SuccessMessage"] = $"Mã xác thực đã được gửi đến email {account.Email}. Vui lòng kiểm tra hộp thư của bạn.";
+                        return RedirectToAction("ResetPassword");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Không thể gửi email. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.");
+                    }
+                }
+                else
+                {
+                    // Vẫn hiển thị thông báo thành công để bảo mật
+                    TempData["SuccessMessage"] = "Nếu email tồn tại trong hệ thống, mã xác thực đã được gửi đến email của bạn.";
+                    return RedirectToAction("Login");
+                }
+            }
+
+            return View(model);
+        }
+
+        //
+        // GET: /Account/ResetPassword
+        [AllowAnonymous]
+        public ActionResult ResetPassword()
+        {
+            // Kiểm tra xem có email trong session không (từ ForgotPassword)
+            var email = Session["ResetPasswordEmail"] as string;
+            if (string.IsNullOrEmpty(email))
+            {
+                // Nếu không có email trong session, redirect về ForgotPassword
+                TempData["ErrorMessage"] = "Vui lòng nhập email để nhận mã xác thực trước.";
+                return RedirectToAction("ForgotPassword");
+            }
+
+            var model = new ResetPasswordViewModel
+            {
+                Email = email
+            };
+
+            return View(model);
+        }
+
+        //
+        // POST: /Account/ResetPassword
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public ActionResult ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            {
+                var email = (model.Email ?? string.Empty).Trim().ToLower();
+                var resetCode = (model.ResetCode ?? string.Empty).Trim().ToUpper();
+
+                // Xác thực mã reset
+                var token = PasswordResetHelper.ValidateResetCode(db, email, resetCode);
+
+                if (token == null)
+                {
+                    ModelState.AddModelError("ResetCode", "Mã xác thực không đúng hoặc đã hết hạn. Vui lòng thử lại.");
+                    return View(model);
+                }
+
+                // Kiểm tra số lần thử (tối đa 5 lần)
+                if (token.AttemptCount > 5)
+                {
+                    ModelState.AddModelError("ResetCode", "Bạn đã nhập sai mã quá nhiều lần. Vui lòng yêu cầu mã mới.");
+                    return View(model);
+                }
+
+                // Validate password complexity
+                var password = model.NewPassword ?? string.Empty;
+                bool hasLower = password.Any(char.IsLower);
+                bool hasUpper = password.Any(char.IsUpper);
+                bool hasDigit = password.Any(char.IsDigit);
+                if (password.Length < 6 || !hasLower || !hasUpper || !hasDigit)
+                {
+                    ModelState.AddModelError("NewPassword", "Mật khẩu phải tối thiểu 6 ký tự gồm chữ hoa, chữ thường và số.");
+                    return View(model);
+                }
+
+                // Cập nhật mật khẩu mới
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == token.AccountID);
+                if (account != null)
+                {
+                    string salt = PasswordHelper.GenerateSalt();
+                    string passwordHash = PasswordHelper.HashPassword(model.NewPassword, salt);
+                    
+                    account.PasswordHash = passwordHash;
+                    account.Salt = salt;
+                    
+                    // Đánh dấu token đã sử dụng
+                    PasswordResetHelper.MarkTokenAsUsed(db, token.TokenID);
+                    
+                    db.SubmitChanges();
+
+                    // Xóa email khỏi session
+                    Session.Remove("ResetPasswordEmail");
+
+                    TempData["SuccessMessage"] = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập với mật khẩu mới.";
+                    return RedirectToAction("Login");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Không tìm thấy tài khoản. Vui lòng thử lại.");
+                }
+            }
+
+            return View(model);
+        }
+
 
         //
         // POST: /Account/LogOff
@@ -250,19 +402,6 @@ namespace Project_Recruiment_Huce.Controllers
             return RedirectToAction("Login", "Account");
         }
 
-        //
-        // GET: /Account/ExternalLoginFailure
-        [AllowAnonymous]
-        public ActionResult ExternalLoginFailure()
-        {
-            return View();
-        }
-
-        [Authorize]
-        public ActionResult Manage()
-        {
-            return View();
-        }
 
         protected override void Dispose(bool disposing)
         {
@@ -270,9 +409,6 @@ namespace Project_Recruiment_Huce.Controllers
         }
 
         #region Helpers
-        // Used for XSRF protection when adding external logins
-        public const string XsrfKey = "XsrfId";
-
         private IAuthenticationManager AuthenticationManager
         {
             get
@@ -290,34 +426,6 @@ namespace Project_Recruiment_Huce.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public class ChallengeResult : HttpUnauthorizedResult
-        {
-            public ChallengeResult(string provider, string redirectUri)
-                : this(provider, redirectUri, null)
-            {
-            }
-
-            public ChallengeResult(string provider, string redirectUri, string userId)
-            {
-                LoginProvider = provider;
-                RedirectUri = redirectUri;
-                UserId = userId;
-            }
-
-            public string LoginProvider { get; set; }
-            public string RedirectUri { get; set; }
-            public string UserId { get; set; }
-
-            public override void ExecuteResult(ControllerContext context)
-            {
-                var properties = new AuthenticationProperties { RedirectUri = RedirectUri };
-                if (UserId != null)
-                {
-                    properties.Dictionary[XsrfKey] = UserId;
-                }
-                context.HttpContext.GetOwinContext().Authentication.Challenge(properties, LoginProvider);
-            }
-        }
         #endregion
     }
 }

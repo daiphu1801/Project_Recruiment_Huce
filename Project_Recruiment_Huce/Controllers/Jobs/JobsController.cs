@@ -9,222 +9,21 @@ using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Jobs;
 using Project_Recruiment_Huce.Repositories;
 using Project_Recruiment_Huce.Helpers;
+using Project_Recruiment_Huce.Mappers;
+using Project_Recruiment_Huce.Infrastructure;
+using Project_Recruiment_Huce.Services;
 
 namespace Project_Recruiment_Huce.Controllers
 {
-    public class JobsController : Controller
+    public class JobsController : BaseController
     {
-        private int? GetCurrentAccountId()
+        // Using Service Layer and Repository Pattern for better architecture
+        private JobService GetJobService(JOBPORTAL_ENDataContext db)
         {
-            if (User?.Identity == null || !User.Identity.IsAuthenticated)
-                return null;
-
-            var idClaim = ((ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.NameIdentifier);
-            if (idClaim == null) return null;
-            int accountId;
-            return int.TryParse(idClaim.Value, out accountId) ? (int?)accountId : null;
+            var jobRepository = new JobRepository(db);
+            return new JobService(jobRepository, db);
         }
 
-        private int? GetCurrentRecruiterId(int? accountId)
-        {
-            if (!accountId.HasValue)
-                return null;
-
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
-            {
-                var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
-                return recruiter?.RecruiterID;
-            }
-        }
-
-        /// <summary>
-        /// Map JobPost entity to JobListingItemViewModel
-        /// </summary>
-        private JobListingItemViewModel MapToJobListingItem(JobPost job, JOBPORTAL_ENDataContext db = null)
-        {
-            job.Status = JobStatusHelper.NormalizeStatus(job.Status);
-
-            string companyName = job.Company != null ? job.Company.CompanyName : 
-                                (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
-            
-            string logoUrl = GetCompanyLogoUrl(job);
-            
-            // Calculate pending applications count if db context is provided
-            int pendingCount = 0;
-            if (db != null)
-            {
-                var pendingStatuses = new[] { "Under review", "Interview", "Offered" };
-                pendingCount = db.Applications
-                    .Where(a => a.JobPostID == job.JobPostID && 
-                               a.Status != null && 
-                               pendingStatuses.Contains(a.Status))
-                    .Count();
-            }
-            
-            return new JobListingItemViewModel
-            {
-                JobPostID = job.JobPostID,
-                JobCode = job.JobCode,
-                Title = job.Title,
-                Description = job.Description,
-                CompanyName = companyName,
-                Location = job.Location,
-                EmploymentType = job.EmploymentType,
-                EmploymentTypeDisplay = GetEmploymentTypeDisplay(job.EmploymentType),
-                SalaryFrom = job.SalaryFrom,
-                SalaryTo = job.SalaryTo,
-                SalaryCurrency = job.SalaryCurrency,
-                SalaryRange = FormatSalaryRange(job.SalaryFrom, job.SalaryTo, job.SalaryCurrency),
-                PostedAt = job.PostedAt,
-                ApplicationDeadline = job.ApplicationDeadline,
-                Status = job.Status,
-                LogoUrl = logoUrl,
-                PendingApplicationsCount = pendingCount
-            };
-        }
-
-        private string GetCompanyLogoUrl(JobPost job)
-        {
-            string logoUrl = "/Content/images/job_logo_1.jpg"; // Default logo
-            if (job.Company?.PhotoID.HasValue == true)
-            {
-                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-                using (var logoDb = new JOBPORTAL_ENDataContext(connectionString))
-                {
-                    var photo = logoDb.ProfilePhotos.FirstOrDefault(p => p.PhotoID == job.Company.PhotoID.Value);
-                    if (photo != null && !string.IsNullOrEmpty(photo.FilePath))
-                    {
-                        logoUrl = photo.FilePath;
-                    }
-                }
-            }
-
-            return logoUrl;
-        }
-
-        private JobDetailsViewModel MapToJobDetails(JobPost job)
-        {
-            job.Status = JobStatusHelper.NormalizeStatus(job.Status);
-
-            string companyName = job.Company != null ? job.Company.CompanyName :
-                                (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
-
-            string logoUrl = GetCompanyLogoUrl(job);
-            var jobDetail = job.JobPostDetails?.FirstOrDefault();
-
-            return new JobDetailsViewModel
-            {
-                JobPostID = job.JobPostID,
-                JobCode = job.JobCode,
-                Title = job.Title,
-                Description = job.Description,
-                Requirements = job.Requirements,
-                CompanyName = companyName,
-                Location = job.Location,
-                EmploymentType = job.EmploymentType,
-                EmploymentTypeDisplay = GetEmploymentTypeDisplay(job.EmploymentType),
-                SalaryFrom = job.SalaryFrom,
-                SalaryTo = job.SalaryTo,
-                SalaryCurrency = job.SalaryCurrency,
-                SalaryRange = FormatSalaryRange(job.SalaryFrom, job.SalaryTo, job.SalaryCurrency),
-                PostedAt = job.PostedAt,
-                UpdatedAt = job.UpdatedAt,
-                ApplicationDeadline = job.ApplicationDeadline,
-                Status = job.Status,
-                LogoUrl = logoUrl,
-                Industry = jobDetail?.Industry,
-                Major = jobDetail?.Major,
-                YearsExperience = jobDetail?.YearsExperience,
-                DegreeRequired = jobDetail?.DegreeRequired,
-                Skills = jobDetail?.Skills,
-                Headcount = jobDetail?.Headcount,
-                GenderRequirement = jobDetail?.GenderRequirement,
-                AgeFrom = jobDetail?.AgeFrom,
-                AgeTo = jobDetail?.AgeTo,
-                DetailStatus = jobDetail?.Status
-            };
-        }
-
-        private RelatedJobViewModel MapToRelatedJob(JobPost job)
-        {
-            job.Status = JobStatusHelper.NormalizeStatus(job.Status);
-
-            string companyName = job.Company != null ? job.Company.CompanyName :
-                                (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
-
-            string logoUrl = GetCompanyLogoUrl(job);
-
-            return new RelatedJobViewModel
-            {
-                JobPostID = job.JobPostID,
-                Title = job.Title,
-                CompanyName = companyName,
-                Location = job.Location,
-                EmploymentType = job.EmploymentType,
-                EmploymentTypeDisplay = GetEmploymentTypeDisplay(job.EmploymentType),
-                SalaryFrom = job.SalaryFrom,
-                SalaryTo = job.SalaryTo,
-                SalaryCurrency = job.SalaryCurrency,
-                SalaryRange = FormatSalaryRange(job.SalaryFrom, job.SalaryTo, job.SalaryCurrency),
-                PostedAt = job.PostedAt,
-                LogoUrl = logoUrl
-            };
-        }
-
-        /// <summary>
-        /// Get display text for employment type
-        /// </summary>
-        private string GetEmploymentTypeDisplay(string employmentType)
-        {
-            if (string.IsNullOrWhiteSpace(employmentType))
-                return string.Empty;
-
-            var mapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "part-time", "Bán thời gian" },
-                { "part time", "Bán thời gian" },
-                { "full-time", "Toàn thời gian" },
-                { "full time", "Toàn thời gian" },
-                { "internship", "Thực tập" },
-                { "contract", "Hợp đồng" },
-                { "remote", "Làm việc từ xa" }
-            };
-
-            var normalized = employmentType.Trim();
-            if (mapping.TryGetValue(normalized, out var display))
-            {
-                return display;
-            }
-
-            return employmentType;
-        }
-
-        /// <summary>
-        /// Format salary range for display
-        /// </summary>
-        private string FormatSalaryRange(decimal? salaryFrom, decimal? salaryTo, string currency)
-        {
-            if (!salaryFrom.HasValue && !salaryTo.HasValue)
-                return "Thỏa thuận";
-
-            string currencyDisplay = currency == "VND" ? "VNĐ" : currency ?? "VNĐ";
-
-            if (salaryFrom.HasValue && salaryTo.HasValue)
-            {
-                return $"{salaryFrom.Value:N0} - {salaryTo.Value:N0} {currencyDisplay}";
-            }
-            else if (salaryFrom.HasValue)
-            {
-                return $"Từ {salaryFrom.Value:N0} {currencyDisplay}";
-            }
-            else if (salaryTo.HasValue)
-            {
-                return $"Đến {salaryTo.Value:N0} {currencyDisplay}";
-            }
-
-            return "Thỏa thuận";
-        }
 
         public ActionResult JobDetails(int? id)
         {
@@ -233,36 +32,20 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("JobsListing");
             }
 
-            var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
-                db.ObjectTrackingEnabled = false;
-                JobStatusHelper.NormalizeStatuses(db);
+                var jobService = GetJobService(db);
+                var jobRepository = new JobRepository(db);
 
-                var loadOptions = new System.Data.Linq.DataLoadOptions();
-                loadOptions.LoadWith<JobPost>(j => j.Company);
-                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
-                loadOptions.LoadWith<JobPost>(j => j.JobPostDetails);
-                db.LoadOptions = loadOptions;
-
-                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value);
-
+                // Get job details using service
+                var job = jobRepository.GetByIdWithDetails(id.Value);
                 if (job == null)
                 {
                     return RedirectToAction("JobsListing");
                 }
 
-                var relatedJobs = db.JobPosts
-                    .Where(j => j.JobPostID != id.Value &&
-                               j.Status == JobStatusHelper.Published &&
-                               (j.CompanyID == job.CompanyID ||
-                                (j.Location != null && job.Location != null && j.Location == job.Location)))
-                    .OrderByDescending(j => j.PostedAt > j.UpdatedAt ? j.PostedAt : j.UpdatedAt)
-                    .Take(5)
-                    .ToList();
-
-                var jobDetailsViewModel = MapToJobDetails(job);
-                var relatedJobsViewModels = relatedJobs.Select(j => MapToRelatedJob(j)).ToList();
+                var jobDetailsViewModel = jobService.GetJobDetails(id.Value);
+                var relatedJobsViewModels = jobService.GetRelatedJobs(id.Value, job.CompanyID ?? 0, job.Location);
 
                 bool isAuthenticated = User.Identity.IsAuthenticated;
                 bool isCandidate = false;
@@ -282,20 +65,15 @@ namespace Project_Recruiment_Huce.Controllers
                             var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId);
                             if (candidate != null)
                             {
-                                isJobSaved = db.SavedJobs
-                                    .Any(sj => sj.CandidateID == candidate.CandidateID &&
-                                              sj.JobPostID == id.Value);
-
-                                hasApplied = db.Applications
-                                    .Any(app => app.CandidateID == candidate.CandidateID &&
-                                                app.JobPostID == id.Value);
+                                isJobSaved = jobService.IsJobSavedByCandidate(id.Value, candidate.CandidateID);
+                                hasApplied = jobService.HasCandidateApplied(id.Value, candidate.CandidateID);
                             }
                         }
                     }
                 }
 
+                bool isJobOpen = jobService.IsJobOpen(job);
                 bool isExpired = job.ApplicationDeadline.HasValue && job.ApplicationDeadline.Value < DateTime.Now;
-                bool isJobOpen = JobStatusHelper.IsPublished(job.Status) && !isExpired;
 
                 ViewBag.RelatedJobs = relatedJobsViewModels;
                 ViewBag.IsJobSaved = isJobSaved;
@@ -311,76 +89,20 @@ namespace Project_Recruiment_Huce.Controllers
         }
         public ActionResult JobsListing(string keyword = null, string location = null, string employmentType = null, int? page = null)
         {
-            var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
-                db.ObjectTrackingEnabled = false;
-                JobStatusHelper.NormalizeStatuses(db);
+                var jobService = GetJobService(db);
 
-                // Eager load related entities for better performance
-                var loadOptions = new System.Data.Linq.DataLoadOptions();
-                loadOptions.LoadWith<JobPost>(j => j.Company);
-                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
-                db.LoadOptions = loadOptions;
-
-                // Filter by Status: "Published"
-                var query = db.JobPosts.Where(j => j.Status == JobStatusHelper.Published);
-
-                // Search by keyword
-                if (!string.IsNullOrWhiteSpace(keyword))
-                {
-                    query = query.Where(j => j.Title.Contains(keyword) || 
-                                           (j.Description != null && j.Description.Contains(keyword)) ||
-                                           (j.Company != null && j.Company.CompanyName.Contains(keyword)));
-                }
-
-                // Filter by location
-                if (!string.IsNullOrWhiteSpace(location) && location != "Bất kỳ đâu")
-                {
-                    query = query.Where(j => j.Location != null && j.Location.Contains(location));
-                }
-
-                // Filter by employment type
+                // Map employment type from Vietnamese to English
+                string dbEmploymentType = employmentType;
                 if (!string.IsNullOrWhiteSpace(employmentType))
                 {
-                    var selectedEmploymentType = employmentType.Trim();
-                    var employmentTypeLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { "Bán thời gian", "Part-time" },
-                        { "Toàn thời gian", "Full-time" },
-                        { "Thực tập", "Internship" },
-                        { "Hợp đồng", "Contract" },
-                        { "Làm việc từ xa", "Remote" }
-                    };
-
-                    if (employmentTypeLookup.TryGetValue(selectedEmploymentType, out var dbValue))
-                    {
-                        query = query.Where(j => j.EmploymentType == dbValue);
-                    }
-                    else
-                    {
-                        query = query.Where(j => j.EmploymentType == selectedEmploymentType);
-                    }
+                    dbEmploymentType = EmploymentTypeHelper.GetDatabaseValue(employmentType);
                 }
 
-                // Pagination
-                int pageSize = 10;
+                // Use service to search jobs with pagination
                 int pageNumber = page ?? 1;
-                
-                // Get total count before pagination
-                int totalItems = query.Count();
-                int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
-
-                // Order and paginate - only load the page we need
-                // PostedAt và UpdatedAt giờ là non-nullable DateTime
-                var pagedJobs = query
-                    .OrderByDescending(j => j.PostedAt > j.UpdatedAt ? j.PostedAt : j.UpdatedAt)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
-
-                // Map to ViewModels
-                var jobViewModels = pagedJobs.Select(j => MapToJobListingItem(j)).ToList();
+                var (jobs, totalItems, totalPages) = jobService.SearchJobs(keyword, location, dbEmploymentType, pageNumber);
 
                 ViewBag.TotalItems = totalItems;
                 ViewBag.CurrentPage = pageNumber;
@@ -389,7 +111,7 @@ namespace Project_Recruiment_Huce.Controllers
                 ViewBag.Location = location;
                 ViewBag.EmploymentType = employmentType;
 
-                return View(jobViewModels);
+                return View(jobs);
             }
         }
 
@@ -407,49 +129,26 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var recruiterId = GetCurrentRecruiterId(accountId);
+            var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để xem tin tuyển dụng.";
                 return RedirectToAction("RecruitersManage", "Recruiters");
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
-                db.ObjectTrackingEnabled = false;
-                JobStatusHelper.NormalizeStatuses(db);
+                var jobService = GetJobService(db);
 
-                // Eager load related entities
-                var loadOptions = new System.Data.Linq.DataLoadOptions();
-                loadOptions.LoadWith<JobPost>(j => j.Company);
-                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
-                db.LoadOptions = loadOptions;
-
-                // Get all jobs posted by this recruiter
-                var query = db.JobPosts.Where(j => j.RecruiterID == recruiterId.Value);
-
-                // Pagination
-                int pageSize = 10;
+                // Use service to get jobs by recruiter with pagination
                 int pageNumber = page ?? 1;
-
-                int totalItems = query.Count();
-                int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
-
-                var pagedJobs = query
-                    .OrderByDescending(j => j.PostedAt > j.UpdatedAt ? j.PostedAt : j.UpdatedAt)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
-
-                // Map to ViewModels with db context for pending applications count
-                var jobViewModels = pagedJobs.Select(j => MapToJobListingItem(j, db)).ToList();
+                var (jobs, totalItems, totalPages) = jobService.GetJobsByRecruiter(recruiterId.Value, pageNumber);
 
                 ViewBag.TotalItems = totalItems;
                 ViewBag.CurrentPage = pageNumber;
                 ViewBag.TotalPages = totalPages;
 
-                return View(jobViewModels);
+                return View(jobs);
             }
         }
 
@@ -466,7 +165,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var recruiterId = GetCurrentRecruiterId(accountId);
+            var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để đăng tin tuyển dụng. Vui lòng cập nhật hồ sơ trước.";
@@ -474,8 +173,7 @@ namespace Project_Recruiment_Huce.Controllers
             }
 
             // Load companies for dropdown if needed
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId.Value);
                 if (recruiter != null && recruiter.CompanyID.HasValue)
@@ -509,7 +207,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var recruiterId = GetCurrentRecruiterId(accountId);
+            var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để đăng tin tuyển dụng.";
@@ -519,8 +217,7 @@ namespace Project_Recruiment_Huce.Controllers
             if (!ModelState.IsValid)
             {
                 // Reload companies for dropdown
-                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-                using (var db = new JOBPORTAL_ENDataContext(connectionString))
+                using (var db = DbContextFactory.Create())
                 {
                     var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId.Value);
                     if (recruiter != null && recruiter.CompanyID.HasValue)
@@ -538,8 +235,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return View("JobsCreate", viewModel);
             }
 
-            var connectionString2 = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString2))
+            using (var db = DbContextFactory.Create())
             {
                 // Get recruiter to get CompanyID
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId.Value);
@@ -726,7 +422,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var recruiterId = GetCurrentRecruiterId(accountId);
+            var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để chỉnh sửa tin tuyển dụng.";
@@ -739,8 +435,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyJobs", "Jobs");
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 db.ObjectTrackingEnabled = false;
 
@@ -820,7 +515,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var recruiterId = GetCurrentRecruiterId(accountId);
+            var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để chỉnh sửa tin tuyển dụng.";
@@ -836,8 +531,7 @@ namespace Project_Recruiment_Huce.Controllers
             if (!ModelState.IsValid)
             {
                 // Reload companies for dropdown
-                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-                using (var db = new JOBPORTAL_ENDataContext(connectionString))
+                using (var db = DbContextFactory.Create())
                 {
                     var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
                     ViewBag.Companies = companies.Select(c => new SelectListItem
@@ -850,8 +544,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return View(viewModel);
             }
 
-            var connectionString2 = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString2))
+            using (var db = DbContextFactory.Create())
             {
                 // Get job and verify it belongs to this recruiter
                 var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
@@ -991,7 +684,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var recruiterId = GetCurrentRecruiterId(accountId);
+            var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để thực hiện thao tác này.";
@@ -1010,8 +703,7 @@ namespace Project_Recruiment_Huce.Controllers
                 status = "Closed";
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 // Get job and verify it belongs to this recruiter
                 var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
@@ -1063,7 +755,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var recruiterId = GetCurrentRecruiterId(accountId);
+            var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để thực hiện thao tác này.";
@@ -1076,8 +768,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyJobs", "Jobs");
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 // Get job and verify it belongs to this recruiter
                 var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
