@@ -7,19 +7,14 @@ using System.Collections.Generic;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Candidates;
 using Project_Recruiment_Huce.Helpers;
+using Project_Recruiment_Huce.Mappers;
+using Project_Recruiment_Huce.Infrastructure;
 
 namespace Project_Recruiment_Huce.Controllers
 {
     [Authorize]
-    public class SavedJobsController : Controller
+    public class SavedJobsController : BaseController
     {
-        private int? GetCurrentAccountId()
-        {
-            var idClaim = ((ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.NameIdentifier);
-            if (idClaim == null) return null;
-            int accountId;
-            return int.TryParse(idClaim.Value, out accountId) ? (int?)accountId : null;
-        }
 
         /// <summary>
         /// GET: Candidates/SavedJobs/MySavedJobs
@@ -34,8 +29,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 db.ObjectTrackingEnabled = false;
                 JobStatusHelper.NormalizeStatuses(db);
@@ -124,7 +118,7 @@ namespace Project_Recruiment_Huce.Controllers
                     .ToList();
 
                 // Map to ViewModels
-                var viewModels = pagedJobs.Select(sj => MapToSavedJobViewModel(sj)).ToList();
+                var viewModels = pagedJobs.Select(sj => JobMapper.MapToSavedJob(sj)).ToList();
 
                 ViewBag.Keyword = keyword;
                 ViewBag.Location = location;
@@ -157,8 +151,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return Json(new { success = false, message = "Không tìm thấy công việc." });
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 JobStatusHelper.NormalizeStatuses(db);
                 // Get candidate
@@ -237,8 +230,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return Json(new { success = false, message = "Không tìm thấy công việc." });
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 // Get candidate
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
@@ -283,8 +275,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return Json(new { isSaved = false }, JsonRequestBehavior.AllowGet);
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 if (candidate == null)
@@ -300,103 +291,9 @@ namespace Project_Recruiment_Huce.Controllers
             }
         }
 
-        /// <summary>
-        /// Map SavedJob entity to SavedJobViewModel
-        /// </summary>
-        private SavedJobViewModel MapToSavedJobViewModel(SavedJob savedJob)
-        {
-            var job = savedJob.JobPost;
-            if (job == null) return null;
-
-            string companyName = job.Company != null ? job.Company.CompanyName : "N/A";
-            
-            // Get company logo URL
-            string logoUrl = "/Content/images/job_logo_1.jpg"; // Default logo
-            if (job.Company?.PhotoID.HasValue == true)
-            {
-                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-                using (var db = new JOBPORTAL_ENDataContext(connectionString))
-                {
-                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == job.Company.PhotoID.Value);
-                    if (photo != null && !string.IsNullOrEmpty(photo.FilePath))
-                    {
-                        logoUrl = photo.FilePath;
-                    }
-                }
-            }
-
-            // Get employment type display
-            string employmentTypeDisplay = GetEmploymentTypeDisplay(job.EmploymentType);
-
-            return new SavedJobViewModel
-            {
-                SavedJobID = savedJob.SavedJobID,
-                JobPostID = job.JobPostID,
-                JobCode = job.JobCode,
-                Title = job.Title,
-                CompanyName = companyName,
-                Location = job.Location,
-                EmploymentTypeDisplay = employmentTypeDisplay,
-                SalaryRange = FormatSalaryRange(job.SalaryFrom, job.SalaryTo, job.SalaryCurrency),
-                SavedAt = savedJob.SavedAt,
-                ApplicationDeadline = job.ApplicationDeadline,
-                LogoUrl = logoUrl
-            };
-        }
-
-        /// <summary>
-        /// Get display text for employment type
-        /// </summary>
-        private string GetEmploymentTypeDisplay(string employmentType)
-        {
-            if (string.IsNullOrWhiteSpace(employmentType))
-                return string.Empty;
-
-            var mapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "part-time", "Bán thời gian" },
-                { "part time", "Bán thời gian" },
-                { "full-time", "Toàn thời gian" },
-                { "full time", "Toàn thời gian" },
-                { "internship", "Thực tập" },
-                { "contract", "Hợp đồng" },
-                { "remote", "Làm việc từ xa" }
-            };
-
-            var normalized = employmentType.Trim();
-            if (mapping.TryGetValue(normalized, out var display))
-            {
-                return display;
-            }
-
-            return employmentType;
-        }
-
-        /// <summary>
-        /// Format salary range for display
-        /// </summary>
-        private string FormatSalaryRange(decimal? salaryFrom, decimal? salaryTo, string currency)
-        {
-            if (!salaryFrom.HasValue && !salaryTo.HasValue)
-                return "Thỏa thuận";
-
-            string currencyDisplay = currency == "VND" ? "VNĐ" : currency ?? "VNĐ";
-
-            if (salaryFrom.HasValue && salaryTo.HasValue)
-            {
-                return $"{salaryFrom.Value:N0} - {salaryTo.Value:N0} {currencyDisplay}";
-            }
-            else if (salaryFrom.HasValue)
-            {
-                return $"Từ {salaryFrom.Value:N0} {currencyDisplay}";
-            }
-            else if (salaryTo.HasValue)
-            {
-                return $"Đến {salaryTo.Value:N0} {currencyDisplay}";
-            }
-
-            return "Thỏa thuận";
-        }
+        // Removed duplicate mapping methods - now using JobMapper class
+        // Removed duplicate GetEmploymentTypeDisplay - now using EmploymentTypeHelper
+        // Removed duplicate FormatSalaryRange - now using SalaryHelper
     }
 }
 

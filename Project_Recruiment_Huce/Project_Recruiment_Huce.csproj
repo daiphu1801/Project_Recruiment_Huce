@@ -171,6 +171,7 @@
     <!-- Admin Area -->
     <Compile Include="Areas\Admin\**\*.cs" />
     <!-- User -->
+    <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\Accounts\AccountController.cs" />
     <Compile Include="Controllers\Candidates\CandidatesController.cs" />
     <Compile Include="Controllers\Candidates\ResumeFilesController.cs" />
@@ -209,10 +210,21 @@
     <Compile Include="Helpers\JobStatusHelper.cs" />
     <Compile Include="Helpers\EmailSyncHelper.cs" />
     <Compile Include="Helpers\PasswordResetHelper.cs" />
+    <Compile Include="Helpers\SalaryHelper.cs" />
     <Compile Include="Helpers\ApplicationStatusHelper.cs" />
     <Compile Include="Helpers\ValidationHelper.cs" />
+    <Compile Include="Helpers\EmploymentTypeHelper.cs" />
+    <Compile Include="Helpers\CompanyLogoHelper.cs" />
+    <Compile Include="Infrastructure\DbContextFactory.cs" />
+    <Compile Include="Mappers\JobMapper.cs" />
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\JobPostRepository.cs" />
+    <Compile Include="Repositories\IJobRepository.cs" />
+    <Compile Include="Repositories\JobRepository.cs" />
+    <Compile Include="Repositories\IApplicationRepository.cs" />
+    <Compile Include="Repositories\ApplicationRepository.cs" />
+    <Compile Include="Services\JobService.cs" />
+    <Compile Include="Services\ValidationService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\Admin\css\adminlte.css" />
