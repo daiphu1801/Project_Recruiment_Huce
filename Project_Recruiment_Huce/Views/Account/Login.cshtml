@@ -59,9 +59,16 @@
               </div>
             </div>
 
-            <p>
-              @Html.ActionLink("Đăng ký tài khoản mới", "Register")
-            </p>
+            <div class="row form-group">
+              <div class="col-md-12">
+                <p class="mb-2">
+                  @Html.ActionLink("Quên mật khẩu?", "ForgotPassword", null, new { @class = "text-primary" })
+                </p>
+                <p>
+                  @Html.ActionLink("Đăng ký tài khoản mới", "Register")
+                </p>
+              </div>
+            </div>
         }
       </div>
     </div>

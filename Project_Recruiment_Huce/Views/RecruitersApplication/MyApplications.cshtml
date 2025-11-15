@@ -129,11 +129,11 @@
                                             }
                                             <p class="mb-2">
                                                 <strong><i class="icon-calendar mr-2"></i>Ngày ứng tuyển:</strong> 
-                                                @app.AppliedAt.ToString("dd/MM/yyyy HH:mm")
+                                                @(app.AppliedAt?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")
                                             </p>
                                             <p class="mb-2">
                                                 <strong><i class="icon-clock-o mr-2"></i>Cập nhật lúc:</strong> 
-                                                @app.UpdatedAt.ToString("dd/MM/yyyy HH:mm")
+                                                @(app.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")
                                             </p>
                                         </div>
                                     </div>

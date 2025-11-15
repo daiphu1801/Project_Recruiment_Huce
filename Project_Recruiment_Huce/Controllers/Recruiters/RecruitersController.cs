@@ -6,22 +6,13 @@ using System.Web;
 using System.Web.Mvc;
 using System.Configuration;
 using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Helpers;
 
 namespace Project_Recruiment_Huce.Controllers
 {
     [Authorize]
-    public class RecruitersController : Controller
+    public class RecruitersController : BaseController
     {
-        private int? GetCurrentAccountId()
-        {
-            if (User?.Identity == null || !User.Identity.IsAuthenticated)
-                return null;
-
-            var idClaim = ((ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.NameIdentifier);
-            if (idClaim == null) return null;
-            int accountId;
-            return int.TryParse(idClaim.Value, out accountId) ? (int?)accountId : null;
-        }
 
         [HttpGet]
         public ActionResult RecruitersManage()
@@ -63,6 +54,61 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            // Validate phone number format and normalize (if provided)
+            var phone = (recruiter.Phone ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(phone))
+            {
+                if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                {
+                    ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                }
+                else
+                {
+                    // Normalize phone number
+                    phone = ValidationHelper.NormalizePhone(phone);
+                }
+            }
+            else
+            {
+                phone = null;
+            }
+
+            // Validate company email format (if provided)
+            var companyEmail = (recruiter.CompanyEmail ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(companyEmail))
+            {
+                if (!ValidationHelper.IsValidEmail(companyEmail))
+                {
+                    ModelState.AddModelError("CompanyEmail", "Email không hợp lệ.");
+                }
+            }
+            else
+            {
+                companyEmail = null;
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Reload entity for view
+                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                {
+                    var existingRecruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
+                    if (existingRecruiter == null)
+                    {
+                        existingRecruiter = new Recruiter
+                        {
+                            AccountID = accountId.Value,
+                            FullName = User.Identity.Name,
+                            CreatedAt = DateTime.Now,
+                            ActiveFlag = 1
+                        };
+                        db.Recruiters.InsertOnSubmit(existingRecruiter);
+                        db.SubmitChanges();
+                    }
+                    return View(existingRecruiter);
+                }
+            }
+
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 // Load entity from database
@@ -75,8 +121,8 @@ namespace Project_Recruiment_Huce.Controllers
                         AccountID = accountId.Value,
                         FullName = recruiter.FullName ?? User.Identity.Name,
                         PositionTitle = recruiter.PositionTitle,
-                        CompanyEmail = recruiter.CompanyEmail,
-                        Phone = recruiter.Phone,
+                        CompanyEmail = companyEmail, // Use validated email
+                        Phone = phone, // Use normalized phone
                         CompanyID = recruiter.CompanyID,
                         CreatedAt = DateTime.Now,
                         ActiveFlag = 1
@@ -94,8 +140,8 @@ namespace Project_Recruiment_Huce.Controllers
                     
                     // Update nullable fields - allow setting to null/empty if user clears them
                     existingRecruiter.PositionTitle = recruiter.PositionTitle;
-                    existingRecruiter.CompanyEmail = recruiter.CompanyEmail;
-                    existingRecruiter.Phone = recruiter.Phone;
+                    existingRecruiter.CompanyEmail = companyEmail; // Use validated email
+                    existingRecruiter.Phone = phone; // Use normalized phone
                     
                     // Update CompanyID if provided (including null to clear it)
                     existingRecruiter.CompanyID = recruiter.CompanyID;

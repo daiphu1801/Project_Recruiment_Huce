@@ -10,15 +10,8 @@ using Project_Recruiment_Huce.Helpers;
 namespace Project_Recruiment_Huce.Controllers.MyAccount
 {
     [Authorize]
-    public class MyAccountController : Controller
+    public class MyAccountController : BaseController
     {
-        private int? GetCurrentAccountId()
-        {
-            var idClaim = ((ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.NameIdentifier);
-            if (idClaim == null) return null;
-            int accountId;
-            return int.TryParse(idClaim.Value, out accountId) ? (int?)accountId : null;
-        }
 
         // GET: MyAccount
         public ActionResult Index()

@@ -90,12 +90,17 @@
           </div>
 
           <div class="form-row">
-            <div class="form-group col-md-6">
+            <div class="form-group col-md-4">
               <label for="Phone">Số điện thoại</label>
               @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "090..." })
               @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
             </div>
-            <div class="form-group col-md-6">
+            <div class="form-group col-md-4">
+              <label for="Fax">Số fax</label>
+              @Html.TextBoxFor(m => m.Fax, new { @class = "form-control", placeholder = "024..." })
+              @Html.ValidationMessageFor(m => m.Fax, "", new { @class = "text-danger" })
+            </div>
+            <div class="form-group col-md-4">
               <label for="CompanyEmail">Email công ty</label>
               @Html.TextBoxFor(m => m.CompanyEmail, new { @class = "form-control", type = "email", placeholder = "contact@company.com" })
               @Html.ValidationMessageFor(m => m.CompanyEmail, "", new { @class = "text-danger" })

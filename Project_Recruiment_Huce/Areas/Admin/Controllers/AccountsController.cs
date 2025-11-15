@@ -141,6 +141,32 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View(model);
                 }
 
+                // Validate phone number format and uniqueness (if provided)
+                var phone = (model.Phone ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(phone))
+                {
+                    // Validate phone format
+                    if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                    {
+                        ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                        return View(model);
+                    }
+
+                    // Normalize phone number
+                    phone = ValidationHelper.NormalizePhone(phone);
+
+                    // Check if phone already exists
+                    if (!ValidationHelper.IsAccountPhoneUnique(phone))
+                    {
+                        ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng. Mỗi số điện thoại chỉ có thể đăng ký một tài khoản.");
+                        return View(model);
+                    }
+                }
+                else
+                {
+                    phone = null;
+                }
+
                 // Generate salt and hash password
                 string salt = PasswordHelper.GenerateSalt();
                 string passwordHash = PasswordHelper.HashPassword(model.Password, salt);
@@ -150,7 +176,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 {
                     Username = model.Username,
                     Email = model.Email,
-                    Phone = model.Phone,
+                    Phone = phone, // Use normalized phone
                     Role = model.Role,
                     PasswordHash = passwordHash,
                     Salt = salt,
@@ -267,6 +293,32 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View(model);
                 }
 
+                // Validate phone number format and uniqueness (if provided)
+                var phone = (model.Phone ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(phone))
+                {
+                    // Validate phone format
+                    if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                    {
+                        ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                        return View(model);
+                    }
+
+                    // Normalize phone number
+                    phone = ValidationHelper.NormalizePhone(phone);
+
+                    // Check if phone already exists (except current account)
+                    if (!ValidationHelper.IsAccountPhoneUnique(phone, model.AccountId))
+                    {
+                        ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng. Mỗi số điện thoại chỉ có thể đăng ký một tài khoản.");
+                        return View(model);
+                    }
+                }
+                else
+                {
+                    phone = null;
+                }
+
                 // Handle photo upload
                 if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {
@@ -290,7 +342,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // NOTE: Email trong Account dùng để đăng nhập, không đồng bộ với profile
                 account.Username = model.Username;
                 account.Email = model.Email;
-                account.Phone = model.Phone;
+                account.Phone = phone; // Use normalized phone
                 account.Role = model.Role;
                 account.ActiveFlag = model.ActiveFlag ?? (byte)1; // Cast byte? to byte
 
@@ -307,7 +359,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == account.AccountID);
                     if (recruiter != null)
                     {
-                        recruiter.Phone = model.Phone;
+                        recruiter.Phone = phone; // Use normalized phone
                         recruiter.ActiveFlag = model.ActiveFlag ?? (byte)1; // Cast byte? to byte
                     }
                 }
@@ -316,7 +368,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == account.AccountID);
                     if (candidate != null)
                     {
-                        candidate.Phone = model.Phone;
+                        candidate.Phone = phone; // Use normalized phone
                         candidate.ActiveFlag = model.ActiveFlag ?? (byte)1; // Cast byte? to byte
                     }
                 }
