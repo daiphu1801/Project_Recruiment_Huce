@@ -124,30 +124,84 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         //GET: Admin/JobPosts/Details/5
         // NOTE: This action uses MockData as a template/base.
         // Team members should follow AccountsController pattern to implement CRUD with database.
-        // public ActionResult Details(int id)
-        //{
-        // using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
-        // {
-        //     var JobPost = db.JobPosts.FirstOrDefault(r => r.JobPostID == id);
-        //     if (JobPost == null) return HttpNotFound();
-        //     var JobPostDetail = db.JobPostDetails.FirstOrDefault(a => a.DetailID = JobPost.DetailID);
-        //     var company = db.Companies.FirstOrDefault(c => c.CompanyID == JobPost.CompanyID);
-        //     var vm = new JobPostListVm
-        //     {
-        //         JobCode = JobPost.JobCode,
-        //         Title = JobPost.Title,
-        //         CompanyID = JobPost.CompanyID,
-        //         CompanyName = company != null ? company.CompanyName : null,
-        //         RecruiterID = JobPost.RecruiterID,
-        //         FullName = Recruiter
+        // GET: Admin/JobPosts/Details/5
+        public ActionResult Details(int id)
+        {
+            // Cài đặt tiêu đề và Breadcrumbs (tùy chọn)
+            ViewBag.Title = "Chi tiết tin tuyển dụng";
+            ViewBag.Breadcrumbs = new List<Tuple<string, string>>
+    {
+        new Tuple<string, string>("Tin tuyển dụng", Url.Action("Index")),
+        new Tuple<string, string>("Chi tiết", null)
+    };
 
+            using (var db = new JOBPORTAL_ENDataContext(
+                ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            {
+                // 1. Lấy thông tin JobPost và các liên kết (Join)
+                var jobPostDetail = (from j in db.JobPosts
+                                     join r in db.Recruiters on j.RecruiterID equals r.RecruiterID
+                                     join c in db.Companies on j.CompanyID equals c.CompanyID into companyGroup // Left Join
+                                     from c in companyGroup.DefaultIfEmpty()
+                                     join jpd in db.JobPostDetails on j.JobPostID equals jpd.JobPostID into detailsGroup // Left Join
+                                     from jpd in detailsGroup.DefaultIfEmpty()
+                                     where j.JobPostID == id
+                                     select new JobPostDetailVm // Sử dụng ViewModel chi tiết
+                                     {
+                                         // Thông tin JobPost cơ bản
+                                         JobPostID = j.JobPostID,
+                                         JobCode = j.JobCode,
+                                         Title = j.Title,
+                                         Description = j.Description,
+                                         Requirements = j.Requirements,
+                                         Location = j.Location,
+                                         EmploymentType = j.EmploymentType,
+                                         SalaryFrom = j.SalaryFrom,
+                                         SalaryTo = j.SalaryTo,
+                                         SalaryCurrency = j.SalaryCurrency,
+                                         ApplicationDeadline = j.ApplicationDeadline,
+                                         Status = j.Status,
+                                         PostedAt = j.PostedAt,
+                                         UpdatedAt = j.UpdatedAt,
 
-        //     }
+                                         // Thông tin Công ty
+                                         CompanyID = c.CompanyID,
+                                         CompanyName = c.CompanyName,
+                                         Address = c.Address,
+                                         Website = c.Website,
 
-        //     }
-        //     ;
-        // return View(item);
-        // }
+                                         // Thông tin Nhà tuyển dụng
+                                         RecruiterID = r.RecruiterID,
+                                         FullName = r.FullName,
+                                         PositionTitle = r.PositionTitle,
+                                         Phone = r.Phone,
+
+                                         //  Thông tin JobPostDetails (Chi tiết)
+                                         DetailID = jpd.DetailID,
+                                         Industry = jpd.Industry,
+                                         Major = jpd.Major,
+                                         YearsExperience = jpd.YearsExperience,
+                                         DegreeRequired = jpd.DegreeRequired,
+                                         Skills = jpd.Skills,
+                                         Headcount = jpd.Headcount,
+                                         GenderRequirement = jpd.GenderRequirement,
+                                         AgeFrom = jpd.AgeFrom,
+                                         AgeTo = jpd.AgeTo
+                                     })
+                                     .FirstOrDefault();
+
+                // 2. Kiểm tra nếu không tìm thấy
+                if (jobPostDetail == null)
+                {
+                    TempData["ErrorMessage"] = "Tin tuyển dụng không tồn tại hoặc đã bị xóa.";
+                    return RedirectToAction("Index"); // Chuyển hướng về trang danh sách
+                }
+
+                // 3. Trả về View với ViewModel đã có đầy đủ dữ liệu
+                return View(jobPostDetail);
+            }
+        }
+        
 
 
         // GET: Admin/JobPosts/Create
@@ -216,13 +270,13 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
                 }
                 
-                // ✅ Kiểm tra tiêu đề trùng
+                //  Kiểm tra tiêu đề trùng
                 if (!string.IsNullOrWhiteSpace(model.Title) && db.JobPosts.Any(j => j.Title == model.Title))
                 {
                     ModelState.AddModelError("Title", "Tiêu đề công việc đã tồn tại");
                 }
 
-                // ✅ Kiểm tra SalaryFrom & SalaryTo
+                //  Kiểm tra SalaryFrom & SalaryTo
                 if (model.SalaryFrom < 0 || model.SalaryFrom > 999999999.99m)
                     ModelState.AddModelError("SalaryFrom", "Mức lương tối thiểu không hợp lệ");
 
@@ -232,7 +286,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (model.SalaryFrom > model.SalaryTo)
                     ModelState.AddModelError("", "Mức lương tối thiểu không được lớn hơn mức lương tối đa");
 
-                // ✅ Kiểm tra các trường bắt buộc
+                // Kiểm tra các trường bắt buộc
                 if (string.IsNullOrWhiteSpace(model.JobCode))
                     ModelState.AddModelError("JobCode", "Mã công việc là bắt buộc");
 
@@ -303,6 +357,26 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 db.JobPosts.InsertOnSubmit(jobPost);
                 db.SubmitChanges();
+                //TẠO VÀ LƯU JOBPOSTDETAIL(Lần SubmitChanges 2)
+        var jobPostDetail = new JobPostDetail
+        {
+            JobPostID = jobPost.JobPostID, // Dùng ID vừa tạo
+            Industry = model.Industry,
+            Major = model.Major,
+            YearsExperience = model.YearsExperience,
+            DegreeRequired = model.DegreeRequired,
+            Skills = model.Skills,
+            Headcount = model.Headcount,
+            // Xử lý GenderRequirement: nếu null, dùng giá trị default của DB
+            GenderRequirement = string.IsNullOrWhiteSpace(model.GenderRequirement) ? "Not required" : model.GenderRequirement,
+            AgeFrom = model.AgeFrom,
+            AgeTo = model.AgeTo,
+            // Sử dụng Status của JobPost, JobPostDetails trong DB của bạn có default là 'Published'
+            Status = model.Status ?? "Published"
+        };
+
+                db.JobPostDetails.InsertOnSubmit(jobPostDetail);
+                db.SubmitChanges(); // LƯU LẦN 2: Lưu chi tiết bài đăng
 
                 TempData["SuccessMessage"] = "Tạo tin tuyển dụng thành công!";
                 return RedirectToAction("Index");
@@ -337,6 +411,33 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 }
 
                 jobPost.Status = JobStatusHelper.NormalizeStatus(jobPost.Status);
+                // --- BẮT ĐẦU PHẦN SỬA LỖI ---
+
+                // 1. Lấy danh sách recruiters VỚI TÊN CÔNG TY (chuẩn bị 1 lần)
+                // (Giả định có quan hệ Recruiter -> Company)
+                var recruiters = db.Recruiters
+                                   .Select(r => new {
+                                       r.RecruiterID,
+                                       r.FullName,
+                                       CompanyName = r.Company.CompanyName
+                                   }).ToList();
+
+                // 2. Tạo SelectList cho dropdown
+                ViewBag.RecruiterOptions = new SelectList(
+                    recruiters, // Dùng list đã lấy ở trên
+                    "RecruiterID",
+                    "FullName",
+                    jobPost.RecruiterID
+                );
+
+                // 3. TẠO MAP cho JavaScript (Key: RecruiterID, Value: CompanyName)
+                // Đây là dữ liệu chúng ta sẽ truyền sang View để JS sử dụng
+                ViewBag.RecruiterCompanyMap = recruiters.ToDictionary(
+                    r => r.RecruiterID.ToString(), // Key (dạng string để JS dễ map)
+                    r => r.CompanyName ?? "Chưa gán công ty" // Value
+                );
+
+                // --- KẾT THÚC PHẦN SỬA LỖI ---
 
                 // Load dropdown options with current selected values
                 ViewBag.CompanyOptions = new SelectList(
@@ -386,136 +487,128 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
+        // GET: Admin/JobPosts/Edit/5
         // POST: Admin/JobPosts/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(JobPostEditVm model)
+        public ActionResult Edit(JobPostEditVm model) // Giả định VM này đã có đủ trường
         {
-            // Nếu ModelState không hợp lệ, load lại dropdown
-            if (!ModelState.IsValid)
-            {
-                using (var db = new JOBPORTAL_ENDataContext(
-                    ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
-                {
-                    JobStatusHelper.NormalizeStatuses(db);
-                    ViewBag.CompanyOptions = new SelectList(
-                        db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(),
-                        "CompanyID",
-                        "CompanyName",
-                        model.CompanyID
-                    );
-
-                    ViewBag.RecruiterOptions = new SelectList(
-                        db.Recruiters.Select(r => new { r.RecruiterID, r.FullName }).ToList(),
-                        "RecruiterID",
-                        "FullName",
-                        model.RecruiterID
-                    );
-
-                    ViewBag.StatusOptions = BuildStatusSelectList(model.Status);
-                }
-                return View(model);
-            }
-
             using (var db = new JOBPORTAL_ENDataContext(
                 ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 JobStatusHelper.NormalizeStatuses(db);
-                var jobPost = db.JobPosts.FirstOrDefault(j => j.JobPostID == model.JobPostID);
 
-                if (jobPost == null)
+                // --- BẮT ĐẦU KHỐI VALIDATION (Tương tự Create) ---
+
+                // Xóa validation error cho CompanyID vì nó được tự động lấy từ RecruiterID
+                ModelState.Remove("CompanyID");
+
+                // Tự động lấy CompanyID từ RecruiterID trước khi validate
+                if (model.RecruiterID > 0)
                 {
-                    return HttpNotFound();
+                    var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == model.RecruiterID);
+                    if (recruiter != null && recruiter.CompanyID.HasValue)
+                    {
+                        model.CompanyID = recruiter.CompanyID.Value;
+                    }
                 }
 
-                jobPost.Status = JobStatusHelper.NormalizeStatus(jobPost.Status);
+                // Kiểm tra tiêu đề trùng (trừ chính nó)
+                if (!string.IsNullOrWhiteSpace(model.Title) &&
+                    db.JobPosts.Any(j => j.Title == model.Title && j.JobPostID != model.JobPostID))
+                {
+                    ModelState.AddModelError("Title", "Tiêu đề công việc đã tồn tại");
+                }
 
-                //  Kiểm tra tiêu đề trùng (trừ chính nó)
-                
-
-                //  Kiểm tra JobCode trùng (trừ chính nó)
+                // Kiểm tra JobCode trùng (trừ chính nó)
                 if (!string.IsNullOrWhiteSpace(model.JobCode) &&
                     db.JobPosts.Any(j => j.JobCode == model.JobCode && j.JobPostID != model.JobPostID))
                 {
                     ModelState.AddModelError("JobCode", "Mã công việc đã tồn tại");
-                    ViewBag.CompanyOptions = new SelectList(
-                        db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(),
-                        "CompanyID",
-                        "CompanyName",
-                        model.CompanyID
-                    );
-                    ViewBag.RecruiterOptions = new SelectList(
-                        db.Recruiters.Select(r => new { r.RecruiterID, r.FullName }).ToList(),
-                        "RecruiterID",
-                        "FullName",
-                        model.RecruiterID
-                    );
-                    ViewBag.StatusOptions = BuildStatusSelectList(model.Status);
-                    return View(model);
                 }
 
                 // Kiểm tra SalaryFrom & SalaryTo
                 if (model.SalaryFrom < 0 || model.SalaryFrom > 999999999.99m)
-                {
                     ModelState.AddModelError("SalaryFrom", "Mức lương tối thiểu không hợp lệ");
-                    ViewBag.CompanyOptions = new SelectList(
-                        db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(),
-                        "CompanyID",
-                        "CompanyName",
-                        model.CompanyID
-                    );
-                    ViewBag.RecruiterOptions = new SelectList(
-                        db.Recruiters.Select(r => new { r.RecruiterID, r.FullName }).ToList(),
-                        "RecruiterID",
-                        "FullName",
-                        model.RecruiterID
-                    );
-                    ViewBag.StatusOptions = BuildStatusSelectList(model.Status);
-                    return View(model);
-                }
 
                 if (model.SalaryTo < 0 || model.SalaryTo > 999999999.99m)
-                {
                     ModelState.AddModelError("SalaryTo", "Mức lương tối đa không hợp lệ");
-                    ViewBag.CompanyOptions = new SelectList(
-                        db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(),
-                        "CompanyID",
-                        "CompanyName",
-                        model.CompanyID
-                    );
-                    ViewBag.RecruiterOptions = new SelectList(
-                        db.Recruiters.Select(r => new { r.RecruiterID, r.FullName }).ToList(),
-                        "RecruiterID",
-                        "FullName",
-                        model.RecruiterID
-                    );
-                    ViewBag.StatusOptions = BuildStatusSelectList(model.Status);
-                    return View(model);
-                }
 
                 if (model.SalaryFrom > model.SalaryTo)
-                {
                     ModelState.AddModelError("", "Mức lương tối thiểu không được lớn hơn mức lương tối đa");
-                    ViewBag.CompanyOptions = new SelectList(
-                        db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(),
-                        "CompanyID",
-                        "CompanyName",
-                        model.CompanyID
-                    );
+
+                // Kiểm tra các trường bắt buộc (tương tự Create)
+                if (string.IsNullOrWhiteSpace(model.JobCode))
+                    ModelState.AddModelError("JobCode", "Mã công việc là bắt buộc");
+
+                if (model.RecruiterID <= 0)
+                    ModelState.AddModelError("RecruiterID", "Nhà tuyển dụng là bắt buộc");
+                else if (!model.CompanyID.HasValue || model.CompanyID.Value <= 0)
+                {
+                    ModelState.AddModelError("RecruiterID", "Nhà tuyển dụng này chưa được gán cho công ty nào");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.Description))
+                    ModelState.AddModelError("Description", "Mô tả là bắt buộc");
+
+                if (string.IsNullOrWhiteSpace(model.Requirements))
+                    ModelState.AddModelError("Requirements", "Yêu cầu là bắt buộc");
+
+                if (string.IsNullOrWhiteSpace(model.SalaryCurrency))
+                    ModelState.AddModelError("SalaryCurrency", "Loại tiền lương là bắt buộc");
+
+                if (string.IsNullOrWhiteSpace(model.Location))
+                    ModelState.AddModelError("Location", "Địa điểm là bắt buộc");
+
+                if (string.IsNullOrWhiteSpace(model.EmploymentType))
+                    ModelState.AddModelError("EmploymentType", "Loại hình công việc là bắt buộc");
+
+                if (model.ApplicationDeadline == default)
+                    ModelState.AddModelError("ApplicationDeadline", "Hạn nộp hồ sơ là bắt buộc");
+
+                if (string.IsNullOrWhiteSpace(model.Status))
+                    ModelState.AddModelError("Status", "Trạng thái là bắt buộc");
+
+                // --- KẾT THÚC KHỐI VALIDATION ---
+
+                // Nếu có lỗi, load lại dropdown và trả về view
+                if (!ModelState.IsValid)
+                {
                     ViewBag.RecruiterOptions = new SelectList(
                         db.Recruiters.Select(r => new { r.RecruiterID, r.FullName }).ToList(),
                         "RecruiterID",
                         "FullName",
                         model.RecruiterID
                     );
+
                     ViewBag.StatusOptions = BuildStatusSelectList(model.Status);
+
+                    // Nạp lại Title và Breadcrumbs
+                    ViewBag.Title = "Chỉnh sửa tin tuyển dụng (Lỗi)";
+                    ViewBag.Breadcrumbs = new List<Tuple<string, string>>
+            {
+                new Tuple<string, string>("Tin tuyển dụng", Url.Action("Index")),
+                new Tuple<string, string>($"Chỉnh sửa #{model.JobCode}", null)
+            };
+
                     return View(model);
                 }
 
-                // ✅ Cập nhật thông tin JobPost
+                // Nếu ModelState Hợp Lệ -> Tiến hành cập nhật
+
+                // Lấy các bản ghi hiện tại từ DB
+                var jobPost = db.JobPosts.FirstOrDefault(j => j.JobPostID == model.JobPostID);
+                var jobPostDetail = db.JobPostDetails.FirstOrDefault(d => d.JobPostID == model.JobPostID);
+
+                if (jobPost == null || jobPostDetail == null)
+                {
+                    return HttpNotFound("Không tìm thấy bản ghi để cập nhật.");
+                }
+
+                // Cập nhật thông tin JobPost
                 jobPost.JobCode = model.JobCode;
                 jobPost.RecruiterID = model.RecruiterID;
-                jobPost.CompanyID = model.CompanyID;
+                jobPost.CompanyID = model.CompanyID; // Đã được validate và set ở trên
                 jobPost.Title = model.Title;
                 jobPost.Description = model.Description;
                 jobPost.Requirements = model.Requirements;
@@ -526,8 +619,21 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 jobPost.EmploymentType = model.EmploymentType;
                 jobPost.ApplicationDeadline = model.ApplicationDeadline;
                 jobPost.Status = model.Status;
-                jobPost.UpdatedAt = DateTime.Now;  
+                jobPost.UpdatedAt = DateTime.Now;
 
+                // Cập nhật thông tin JobPostDetail
+                jobPostDetail.Industry = model.Industry;
+                jobPostDetail.Major = model.Major;
+                jobPostDetail.YearsExperience = model.YearsExperience;
+                jobPostDetail.DegreeRequired = model.DegreeRequired;
+                jobPostDetail.Skills = model.Skills;
+                jobPostDetail.Headcount = model.Headcount;
+                jobPostDetail.GenderRequirement = string.IsNullOrWhiteSpace(model.GenderRequirement) ? "Not required" : model.GenderRequirement;
+                jobPostDetail.AgeFrom = model.AgeFrom;
+                jobPostDetail.AgeTo = model.AgeTo;
+                jobPostDetail.Status = model.Status ?? "Published"; // Đồng bộ status
+
+                // Lưu thay đổi cho cả hai đối tượng (chỉ cần 1 lần SubmitChanges)
                 db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Cập nhật tin tuyển dụng thành công!";
