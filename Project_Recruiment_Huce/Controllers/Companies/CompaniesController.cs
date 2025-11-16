@@ -8,6 +8,7 @@ using System.Configuration;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Companies;
 using Project_Recruiment_Huce.Helpers;
+using Project_Recruiment_Huce.Infrastructure;
 
 namespace Project_Recruiment_Huce.Controllers
 {
@@ -52,7 +53,7 @@ namespace Project_Recruiment_Huce.Controllers
                 file.SaveAs(fullPath);
 
                 // Save to database - ProfilePhotos table
-                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                using (var db = DbContextFactory.Create())
                 {
                     var photo = new ProfilePhoto
                     {
@@ -80,7 +81,7 @@ namespace Project_Recruiment_Huce.Controllers
         {
             try
             {
-                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                using (var db = DbContextFactory.Create())
                 {
                     var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId);
                     if (photo == null) return;
@@ -109,7 +110,7 @@ namespace Project_Recruiment_Huce.Controllers
             var accountId = GetCurrentAccountId();
             if (accountId == null) return RedirectToAction("Login", "Account");
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 // Get recruiter and their company
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
@@ -191,13 +192,22 @@ namespace Project_Recruiment_Huce.Controllers
                 phone = null;
             }
 
-            // Validate company email uniqueness (if provided)
+            // Validate company email format and uniqueness (if provided)
             var companyEmail = (viewModel.CompanyEmail ?? string.Empty).Trim();
             if (!string.IsNullOrWhiteSpace(companyEmail))
             {
-                if (!ValidationHelper.IsCompanyEmailUnique(companyEmail, viewModel.CompanyID))
+                // Validate email format
+                if (!ValidationHelper.IsValidEmail(companyEmail))
                 {
-                    ModelState.AddModelError("CompanyEmail", "Email này đã được sử dụng bởi công ty khác.");
+                    ModelState.AddModelError("CompanyEmail", "Email không hợp lệ.");
+                }
+                else
+                {
+                    // Check email uniqueness
+                    if (!ValidationHelper.IsCompanyEmailUnique(companyEmail, viewModel.CompanyID))
+                    {
+                        ModelState.AddModelError("CompanyEmail", "Email này đã được sử dụng bởi công ty khác.");
+                    }
                 }
             }
 
@@ -217,10 +227,11 @@ namespace Project_Recruiment_Huce.Controllers
 
             if (!ModelState.IsValid)
             {
+                TempData["ErrorMessage"] = "Vui lòng kiểm tra lại thông tin. Có lỗi trong form.";
                 return View(viewModel);
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 // Get recruiter
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);

@@ -28,7 +28,13 @@ namespace Project_Recruiment_Huce.Infrastructure
         /// <returns>New JOBPORTAL_ENDataContext instance</returns>
         public static JOBPORTAL_ENDataContext Create()
         {
-            return new JOBPORTAL_ENDataContext(ConnectionString);
+             var db = new JOBPORTAL_ENDataContext(ConnectionString);
+
+            // ÉP BẬT TRACKING cho mọi context dùng để ghi
+            db.ObjectTrackingEnabled = true;
+            db.DeferredLoadingEnabled = true; // tùy chọn, để lazy load
+
+            return db;
         }
 
         /// <summary>

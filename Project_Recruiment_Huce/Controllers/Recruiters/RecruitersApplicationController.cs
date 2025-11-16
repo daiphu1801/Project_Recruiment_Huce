@@ -146,10 +146,8 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyApplications", "RecruitersApplication");
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
-                db.ObjectTrackingEnabled = false;
 
                 // Load related entities
                 var loadOptions = new System.Data.Linq.DataLoadOptions();
@@ -226,10 +224,8 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyApplications", "RecruitersApplication");
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
-                db.ObjectTrackingEnabled = false;
 
                 // Load related entities
                 var loadOptions = new System.Data.Linq.DataLoadOptions();
@@ -308,8 +304,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return View(viewModel);
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 // Get application and verify it belongs to this recruiter's job
                 var application = db.Applications.FirstOrDefault(a => a.ApplicationID == viewModel.ApplicationID);

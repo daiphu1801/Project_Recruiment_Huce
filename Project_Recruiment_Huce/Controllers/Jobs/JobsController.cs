@@ -34,17 +34,28 @@ namespace Project_Recruiment_Huce.Controllers
 
             using (var db = DbContextFactory.CreateReadOnly())
             {
+                // Set LoadOptions BEFORE creating repository/service to avoid "LoadOptions already set" error
+                var loadOptions = new System.Data.Linq.DataLoadOptions();
+                loadOptions.LoadWith<JobPost>(j => j.Company);
+                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
+                loadOptions.LoadWith<JobPost>(j => j.JobPostDetails);
+                db.LoadOptions = loadOptions;
+
                 var jobService = GetJobService(db);
                 var jobRepository = new JobRepository(db);
 
-                // Get job details using service
+                // Get job entity first (with LoadOptions already set above)
                 var job = jobRepository.GetByIdWithDetails(id.Value);
                 if (job == null)
                 {
                     return RedirectToAction("JobsListing");
                 }
 
-                var jobDetailsViewModel = jobService.GetJobDetails(id.Value);
+                // Get job details view model using mapper (reuse job entity)
+                JobStatusHelper.NormalizeStatuses(db);
+                var jobDetailsViewModel = JobMapper.MapToDetails(job);
+                
+                // Get related jobs
                 var relatedJobsViewModels = jobService.GetRelatedJobs(id.Value, job.CompanyID ?? 0, job.Location);
 
                 bool isAuthenticated = User.Identity.IsAuthenticated;
@@ -237,13 +248,16 @@ namespace Project_Recruiment_Huce.Controllers
 
             using (var db = DbContextFactory.Create())
             {
-                // Get recruiter to get CompanyID
+            // Get recruiter to get CompanyID
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId.Value);
                 if (recruiter == null)
                 {
                     TempData["ErrorMessage"] = "Không tìm thấy thông tin Recruiter.";
                     return RedirectToAction("RecruitersManage", "Recruiters");
                 }
+
+                // Extract CompanyID as primitive value to avoid any tracking issues
+                int? companyIdValue = recruiter.CompanyID;
 
                 // Generate JobCode if not provided
                 string jobCode = viewModel.JobCode;
@@ -357,12 +371,13 @@ namespace Project_Recruiment_Huce.Controllers
                         employmentType = "Full-time";
                 }
 
-                // Create new JobPost
+                // Create new JobPost - use primitive values only, not entity references
+                // companyIdValue was already extracted above
                 var jobPost = new JobPost
                 {
                     JobCode = jobCode,
                     RecruiterID = recruiterId.Value,
-                    CompanyID = recruiter.CompanyID,
+                    CompanyID = companyIdValue, // Use primitive value, not entity reference
                     Title = viewModel.Title,
                     Description = sanitizedDescription,
                     Requirements = sanitizedRequirements,
@@ -377,8 +392,27 @@ namespace Project_Recruiment_Huce.Controllers
                     UpdatedAt = DateTime.Now
                 };
 
-                db.JobPosts.InsertOnSubmit(jobPost);
-                db.SubmitChanges();
+                try
+                {
+                    db.JobPosts.InsertOnSubmit(jobPost);
+                    db.SubmitChanges();
+                }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Lỗi khi lưu công việc: {ex.Message}";
+                    if (ex.InnerException != null)
+                    {
+                        TempData["ErrorMessage"] += $" | Chi tiết: {ex.InnerException.Message}";
+                    }
+                    // Reload companies for dropdown
+                    var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
+                    ViewBag.Companies = companies.Select(c => new SelectListItem
+                    {
+                        Value = c.CompanyID.ToString(),
+                        Text = c.CompanyName
+                    }).ToList();
+                    return View("JobsCreate", viewModel);
+                }
 
                 // Create JobPostDetail
                 string sanitizedSkills = string.IsNullOrWhiteSpace(viewModel.Skills)
@@ -437,7 +471,6 @@ namespace Project_Recruiment_Huce.Controllers
 
             using (var db = DbContextFactory.CreateReadOnly())
             {
-                db.ObjectTrackingEnabled = false;
 
                 // Load job and verify it belongs to this recruiter
                 var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
@@ -703,7 +736,7 @@ namespace Project_Recruiment_Huce.Controllers
                 status = "Closed";
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            using (var db = DbContextFactory.Create())
             {
                 // Get job and verify it belongs to this recruiter
                 var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
@@ -768,7 +801,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyJobs", "Jobs");
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            using (var db = DbContextFactory.Create())
             {
                 // Get job and verify it belongs to this recruiter
                 var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
@@ -804,7 +837,7 @@ namespace Project_Recruiment_Huce.Controllers
                     // Ở đây ta sẽ cảnh báo và yêu cầu user cập nhật deadline
                     TempData["WarningMessage"] = "Hạn nộp hồ sơ đã qua. Vui lòng cập nhật hạn nộp mới trước khi mở lại tin tuyển dụng.";
                     // Redirect đến trang edit để cập nhật deadline
-                    return RedirectToAction("Edit", "JobsCreate", new { id = job.JobPostID });
+                    return RedirectToAction("Edit", "Jobs", new { id = job.JobPostID });
                 }
 
                 // Update status to Published

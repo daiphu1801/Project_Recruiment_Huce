@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Data.Linq;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Jobs;
 using Project_Recruiment_Huce.Repositories;
@@ -30,10 +31,23 @@ namespace Project_Recruiment_Huce.Services
         /// </summary>
         public JobDetailsViewModel GetJobDetails(int jobId)
         {
+            // NormalizeStatuses may execute queries, so ensure LoadOptions is set first
+            // LoadOptions should already be set by controller, but check to be safe
+            if (_db.LoadOptions == null)
+            {
+                var loadOptions = new System.Data.Linq.DataLoadOptions();
+                loadOptions.LoadWith<JobPost>(j => j.Company);
+                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
+                loadOptions.LoadWith<JobPost>(j => j.JobPostDetails);
+                _db.LoadOptions = loadOptions;
+            }
+
+            // Normalize statuses BEFORE getting job to avoid LoadOptions error
+            JobStatusHelper.NormalizeStatuses(_db);
+            
             var job = _jobRepository.GetByIdWithDetails(jobId);
             if (job == null) return null;
 
-            JobStatusHelper.NormalizeStatuses(_db);
             return JobMapper.MapToDetails(job);
         }
 
@@ -68,8 +82,8 @@ namespace Project_Recruiment_Huce.Services
                 .Take(pageSize)
                 .ToList();
 
-            // Map to ViewModels
-            var jobViewModels = pagedJobs.Select(j => JobMapper.MapToListingItem(j)).ToList();
+            // Map to ViewModels with db context
+            var jobViewModels = pagedJobs.Select(j => JobMapper.MapToListingItem(j, _db)).ToList();
 
             return (jobViewModels, totalItems, totalPages);
         }
@@ -104,6 +118,16 @@ namespace Project_Recruiment_Huce.Services
         /// </summary>
         public List<JobListingItemViewModel> GetRecentPublishedJobs(int take = 7)
         {
+            // Set LoadOptions to eager load Company and Recruiter for logo
+            if (_db.LoadOptions == null)
+            {
+                var loadOptions = new DataLoadOptions();
+                loadOptions.LoadWith<JobPost>(j => j.Company);
+                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
+                loadOptions.LoadWith<Recruiter>(r => r.Company);
+                _db.LoadOptions = loadOptions;
+            }
+
             JobStatusHelper.NormalizeStatuses(_db);
             
             var recentJobs = _db.JobPosts

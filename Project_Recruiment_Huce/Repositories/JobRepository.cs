@@ -116,6 +116,16 @@ namespace Project_Recruiment_Huce.Repositories
 
         public IEnumerable<JobPost> GetJobsByRecruiter(int recruiterId)
         {
+            // Set LoadOptions to eager load Company and Recruiter for logo
+            if (_db.LoadOptions == null)
+            {
+                var loadOptions = new DataLoadOptions();
+                loadOptions.LoadWith<JobPost>(j => j.Company);
+                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
+                loadOptions.LoadWith<Recruiter>(r => r.Company);
+                _db.LoadOptions = loadOptions;
+            }
+
             return _db.JobPosts
                 .Where(j => j.RecruiterID == recruiterId)
                 .OrderByDescending(j => j.PostedAt > j.UpdatedAt ? j.PostedAt : j.UpdatedAt)
@@ -145,6 +155,16 @@ namespace Project_Recruiment_Huce.Repositories
 
         public IEnumerable<JobPost> SearchJobs(string keyword, string location, string employmentType)
         {
+            // Set LoadOptions to eager load Company and Recruiter for logo
+            if (_db.LoadOptions == null)
+            {
+                var loadOptions = new DataLoadOptions();
+                loadOptions.LoadWith<JobPost>(j => j.Company);
+                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
+                loadOptions.LoadWith<Recruiter>(r => r.Company);
+                _db.LoadOptions = loadOptions;
+            }
+
             JobStatusHelper.NormalizeStatuses(_db);
             var query = _db.JobPosts.Where(j => j.Status == JobStatusHelper.Published);
 
@@ -177,21 +197,31 @@ namespace Project_Recruiment_Huce.Repositories
 
         public JobPost GetByIdWithDetails(int id)
         {
-            var loadOptions = new DataLoadOptions();
-            loadOptions.LoadWith<JobPost>(j => j.Company);
-            loadOptions.LoadWith<JobPost>(j => j.Recruiter);
-            loadOptions.LoadWith<JobPost>(j => j.JobPostDetails);
-            _db.LoadOptions = loadOptions;
+            // Set LoadOptions BEFORE any query is executed
+            // Check if LoadOptions is already set to avoid error
+            if (_db.LoadOptions == null)
+            {
+                var loadOptions = new DataLoadOptions();
+                loadOptions.LoadWith<JobPost>(j => j.Company);
+                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
+                loadOptions.LoadWith<JobPost>(j => j.JobPostDetails);
+                _db.LoadOptions = loadOptions;
+            }
 
             return _db.JobPosts.FirstOrDefault(j => j.JobPostID == id);
         }
 
         public IEnumerable<JobPost> GetAllWithDetails()
         {
-            var loadOptions = new DataLoadOptions();
-            loadOptions.LoadWith<JobPost>(j => j.Company);
-            loadOptions.LoadWith<JobPost>(j => j.Recruiter);
-            _db.LoadOptions = loadOptions;
+            // Set LoadOptions BEFORE any query is executed
+            // Check if LoadOptions is already set to avoid error
+            if (_db.LoadOptions == null)
+            {
+                var loadOptions = new DataLoadOptions();
+                loadOptions.LoadWith<JobPost>(j => j.Company);
+                loadOptions.LoadWith<JobPost>(j => j.Recruiter);
+                _db.LoadOptions = loadOptions;
+            }
 
             return _db.JobPosts.ToList();
         }

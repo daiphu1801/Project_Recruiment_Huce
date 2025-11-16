@@ -55,7 +55,10 @@
 
                     <div class="mb-3">
                         @Html.LabelFor(m => m.Password, new { @class = "form-label" })
-                        @Html.TextBoxFor(m => m.Password, new { @class = "form-control", type = "password", placeholder = "Nhập mật khẩu mới (để trống nếu không đổi)" })
+                        <div style="position: relative;">
+                          @Html.TextBoxFor(m => m.Password, new { @class = "form-control", type = "password", placeholder = "Nhập mật khẩu mới (để trống nếu không đổi)", id = "Password", style = "padding-right: 40px;" })
+                          <span class="password-toggle-icon icon-eye" onclick="togglePassword('Password', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+                        </div>
                         @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
                     </div>
 
@@ -131,5 +134,18 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        function togglePassword(inputId, iconElement) {
+            var input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                iconElement.classList.remove("icon-eye");
+                iconElement.classList.add("icon-eye-slash");
+            } else {
+                input.type = "password";
+                iconElement.classList.remove("icon-eye-slash");
+                iconElement.classList.add("icon-eye");
+            }
+        }
     </script>
 }

@@ -281,33 +281,33 @@
     }
 
     // Update textarea fields before form submit
-    document.getElementById('job-create-form').addEventListener('submit', function(e) {
-        // Prevent default submission to ensure values are set
-        e.preventDefault();
-        
-        // Get HTML content from Quill editors
-        var descriptionHtml = quillDescription.root.innerHTML;
-        var requirementsHtml = quillRequirements.root.innerHTML;
-        var skillsHtml = quillSkills.root.innerHTML;
-        
-        // Get textarea elements (they are hidden)
-        var descriptionTextarea = document.getElementById('description-textarea');
-        var requirementsTextarea = document.getElementById('requirements-textarea');
-        var skillsTextarea = document.getElementById('skills-textarea');
-        
-        // Set values to textarea elements
-        if (descriptionTextarea) {
-            descriptionTextarea.value = descriptionHtml;
-        }
-        if (requirementsTextarea) {
-            requirementsTextarea.value = requirementsHtml;
-        }
-        if (skillsTextarea) {
-            skillsTextarea.value = skillsHtml;
-        }
-        
-        // Now submit the form
-        this.submit();
-    });
+    var form = document.getElementById('job-create-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Get HTML content from Quill editors BEFORE form submission
+            var descriptionHtml = quillDescription.root.innerHTML;
+            var requirementsHtml = quillRequirements.root.innerHTML;
+            var skillsHtml = quillSkills.root.innerHTML;
+            
+            // Get textarea elements (they are hidden)
+            var descriptionTextarea = document.getElementById('description-textarea');
+            var requirementsTextarea = document.getElementById('requirements-textarea');
+            var skillsTextarea = document.getElementById('skills-textarea');
+            
+            // Set values to textarea elements
+            if (descriptionTextarea) {
+                descriptionTextarea.value = descriptionHtml;
+            }
+            if (requirementsTextarea) {
+                requirementsTextarea.value = requirementsHtml;
+            }
+            if (skillsTextarea) {
+                skillsTextarea.value = skillsHtml;
+            }
+            
+            // Let the form submit normally - don't prevent default
+            // The values are already set, so the form will submit with correct data
+        });
+    }
 </script>
 

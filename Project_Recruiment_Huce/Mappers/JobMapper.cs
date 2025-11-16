@@ -26,9 +26,10 @@ namespace Project_Recruiment_Huce.Mappers
             // Normalize status
             job.Status = JobStatusHelper.NormalizeStatus(job.Status);
 
-            // Get company name
+            // Get company name - prioritize Company, then Recruiter's company, then Recruiter name
             string companyName = job.Company != null ? job.Company.CompanyName :
-                                (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
+                                (job.Recruiter?.Company != null ? job.Recruiter.Company.CompanyName :
+                                (job.Recruiter != null ? job.Recruiter.FullName : string.Empty));
 
             // Get logo URL using helper
             string logoUrl = CompanyLogoHelper.GetLogoUrl(job);
@@ -79,9 +80,10 @@ namespace Project_Recruiment_Huce.Mappers
             // Normalize status
             job.Status = JobStatusHelper.NormalizeStatus(job.Status);
 
-            // Get company name
+            // Get company name - prioritize Company, then Recruiter's company, then Recruiter name
             string companyName = job.Company != null ? job.Company.CompanyName :
-                                (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
+                                (job.Recruiter?.Company != null ? job.Recruiter.Company.CompanyName :
+                                (job.Recruiter != null ? job.Recruiter.FullName : string.Empty));
 
             // Get logo URL using helper
             string logoUrl = CompanyLogoHelper.GetLogoUrl(job);
@@ -134,9 +136,10 @@ namespace Project_Recruiment_Huce.Mappers
             // Normalize status
             job.Status = JobStatusHelper.NormalizeStatus(job.Status);
 
-            // Get company name
+            // Get company name - prioritize Company, then Recruiter's company, then Recruiter name
             string companyName = job.Company != null ? job.Company.CompanyName :
-                                (job.Recruiter != null ? job.Recruiter.FullName : "N/A");
+                                (job.Recruiter?.Company != null ? job.Recruiter.Company.CompanyName :
+                                (job.Recruiter != null ? job.Recruiter.FullName : string.Empty));
 
             // Get logo URL using helper
             string logoUrl = CompanyLogoHelper.GetLogoUrl(job);
@@ -170,8 +173,10 @@ namespace Project_Recruiment_Huce.Mappers
             var job = savedJob.JobPost;
             if (job == null) return null;
 
-            // Get company name
-            string companyName = job.Company != null ? job.Company.CompanyName : "N/A";
+            // Get company name - prioritize Company, then Recruiter's company, then Recruiter name
+            string companyName = job.Company != null ? job.Company.CompanyName :
+                                (job.Recruiter?.Company != null ? job.Recruiter.Company.CompanyName :
+                                (job.Recruiter != null ? job.Recruiter.FullName : string.Empty));
 
             // Get logo URL using helper
             string logoUrl = CompanyLogoHelper.GetLogoUrl(job);

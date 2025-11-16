@@ -188,6 +188,7 @@
     </Compile>
     <Compile Include="Models\Accounts\AccountViewModels.cs" />
     <Compile Include="Models\Accounts\ManageViewModels.cs" />
+    <Compile Include="Models\Accounts\MyAccountViewModels.cs" />
     <Compile Include="Models\Candidates\CandidateManageViewModel.cs" />
     <Compile Include="Models\Candidates\ApplicationListViewModel.cs" />
     <Compile Include="Models\Candidates\ApplicationApplyViewModel.cs" />
@@ -217,6 +218,7 @@
     <Compile Include="Helpers\CompanyLogoHelper.cs" />
     <Compile Include="Infrastructure\DbContextFactory.cs" />
     <Compile Include="Mappers\JobMapper.cs" />
+    <Compile Include="Repositories\IAccountRepository.cs" />
     <Compile Include="Repositories\AccountRepository.cs" />
     <Compile Include="Repositories\JobPostRepository.cs" />
     <Compile Include="Repositories\IJobRepository.cs" />
@@ -225,6 +227,7 @@
     <Compile Include="Repositories\ApplicationRepository.cs" />
     <Compile Include="Services\JobService.cs" />
     <Compile Include="Services\ValidationService.cs" />
+    <Compile Include="Services\MyAccountService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\Admin\css\adminlte.css" />

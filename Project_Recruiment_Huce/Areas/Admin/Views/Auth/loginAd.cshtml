@@ -24,9 +24,10 @@
       </div>
       <div class="mb-3">
         <label class="form-label">Mật khẩu</label>
-        <div class="input-group">
+        <div class="input-group" style="position: relative;">
           <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-          @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Mật khẩu", required = "required" })
+          @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Mật khẩu", required = "required", id = "Password", style = "padding-right: 40px;" })
+          <span class="password-toggle-icon icon-eye" onclick="togglePassword('Password', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
         </div>
         @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
       </div>
@@ -48,3 +49,20 @@
     </div>
   </div>
 </div>
+
+@section Scripts {
+    <script>
+        function togglePassword(inputId, iconElement) {
+            var input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                iconElement.classList.remove("icon-eye");
+                iconElement.classList.add("icon-eye-slash");
+            } else {
+                input.type = "password";
+                iconElement.classList.remove("icon-eye-slash");
+                iconElement.classList.add("icon-eye");
+            }
+        }
+    </script>
+}

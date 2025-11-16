@@ -4,13 +4,21 @@ using Project_Recruiment_Huce.Models;
 
 namespace Project_Recruiment_Huce.Repositories
 {
-    public class AccountRepository
+    /// <summary>
+    /// Repository for Account data access operations
+    /// </summary>
+    public class AccountRepository : IAccountRepository
     {
         private readonly JOBPORTAL_ENDataContext _db;
 
         public AccountRepository(JOBPORTAL_ENDataContext db)
         {
-            _db = db;
+            _db = db ?? throw new ArgumentNullException(nameof(db));
+        }
+
+        public Account GetById(int accountId)
+        {
+            return _db.Accounts.FirstOrDefault(a => a.AccountID == accountId);
         }
 
         public Account FindByUsernameOrEmail(string emailOrUsername)
@@ -47,6 +55,24 @@ namespace Project_Recruiment_Huce.Repositories
             _db.Accounts.InsertOnSubmit(account);
             _db.SubmitChanges();
             return account;
+        }
+
+        public void UpdatePassword(int accountId, string passwordHash, string salt)
+        {
+            var account = _db.Accounts.FirstOrDefault(a => a.AccountID == accountId);
+            if (account == null)
+                throw new InvalidOperationException($"Account with ID {accountId} not found");
+            
+            if (!_db.ObjectTrackingEnabled)
+                throw new InvalidOperationException("Cannot update password: ObjectTrackingEnabled is false. Use DbContextFactory.Create() instead of CreateReadOnly()");
+            
+            account.PasswordHash = passwordHash;
+            account.Salt = salt;
+        }
+
+        public void SaveChanges()
+        {
+            _db.SubmitChanges();
         }
     }
 }
