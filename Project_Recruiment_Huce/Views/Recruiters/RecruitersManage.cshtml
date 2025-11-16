@@ -45,6 +45,7 @@
         @using (Html.BeginForm("RecruitersManage", "Recruiters", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "recruiter-form", enctype = "multipart/form-data" }))
         {
           @Html.AntiForgeryToken()
+          @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
           @Html.HiddenFor(m => m.RecruiterID)
           @Html.HiddenFor(m => m.AccountID)
           @Html.HiddenFor(m => m.CompanyID)
@@ -101,10 +102,12 @@
             <div class="form-group col-md-6">
               <label for="CompanyEmail">Email công việc</label>
               @Html.TextBoxFor(m => m.CompanyEmail, new { @class = "form-control", type = "email", placeholder = "you@company.com" })
+              @Html.ValidationMessageFor(m => m.CompanyEmail, "", new { @class = "text-danger" })
             </div>
             <div class="form-group col-md-6">
               <label for="Phone">Số điện thoại</label>
               @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "090..." })
+              @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
             </div>
           </div>
 

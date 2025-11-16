@@ -20,12 +20,19 @@ namespace Project_Recruiment_Huce.Helpers
         /// <returns>Logo URL or default logo</returns>
         public static string GetLogoUrl(JobPost job)
         {
-            if (job?.Company?.PhotoID == null || !job.Company.PhotoID.HasValue)
+            // Try to get logo from Company first
+            if (job?.Company?.PhotoID != null && job.Company.PhotoID.HasValue)
             {
-                return DefaultLogoUrl;
+                return GetLogoUrlByPhotoId(job.Company.PhotoID.Value);
             }
 
-            return GetLogoUrlByPhotoId(job.Company.PhotoID.Value);
+            // If no Company, try to get from Recruiter's Company
+            if (job?.Recruiter?.Company?.PhotoID != null && job.Recruiter.Company.PhotoID.HasValue)
+            {
+                return GetLogoUrlByPhotoId(job.Recruiter.Company.PhotoID.Value);
+            }
+
+            return DefaultLogoUrl;
         }
 
         /// <summary>

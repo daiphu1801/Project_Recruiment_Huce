@@ -1,7 +1,7 @@
-@model Project_Recruiment_Huce.Controllers.MyAccount.MyAccountViewModel
+@model Project_Recruiment_Huce.Models.Accounts.MyAccountViewModel
 @{
     ViewBag.Title = "Tài khoản của tôi";
-    var changePasswordModel = ViewBag.ChangePasswordModel as Project_Recruiment_Huce.Controllers.MyAccount.ChangePasswordViewModel ?? new Project_Recruiment_Huce.Controllers.MyAccount.ChangePasswordViewModel();
+    var changePasswordModel = ViewBag.ChangePasswordModel as Project_Recruiment_Huce.Models.Accounts.ChangePasswordViewModel ?? new Project_Recruiment_Huce.Models.Accounts.ChangePasswordViewModel();
 }
 
 <section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
@@ -95,29 +95,38 @@
         <div class="col-md-6 mb-4">
             <div class="p-4 p-md-5 border rounded bg-light">
                 <h3 class="text-black mb-4 border-bottom pb-2"><span class="icon-lock mr-2"></span> Đổi mật khẩu</h3>
-                @using (Html.BeginForm("ChangePassword", "MyAccount", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded" }))
+                @using (Html.BeginForm("ChangePassword", "MyAccount", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "changePasswordForm" }))
                 {
                     @Html.AntiForgeryToken()
                     
-                    @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
+                    @Html.ValidationSummary(false, "", new { @class = "text-danger mb-3" })
 
                     <div class="form-group mb-4">
-                        @Html.LabelFor(m => changePasswordModel.CurrentPassword, new { @class = "text-black font-weight-bold" })
-                        @Html.PasswordFor(m => changePasswordModel.CurrentPassword, new { @class = "form-control", required = "required" })
-                        @Html.ValidationMessageFor(m => changePasswordModel.CurrentPassword, "", new { @class = "text-danger" })
+                        @Html.Label("CurrentPassword", "Mật khẩu hiện tại", new { @class = "text-black font-weight-bold" })
+                        <div class="password-toggle-wrapper" style="position: relative;">
+                            @Html.Password("CurrentPassword", changePasswordModel?.CurrentPassword, new { @class = "form-control", required = "required", autocomplete = "current-password", id = "CurrentPassword", style = "padding-right: 40px;" })
+                            <span class="password-toggle-icon icon-eye" onclick="togglePassword('CurrentPassword', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+                        </div>
+                        @Html.ValidationMessage("CurrentPassword", "", new { @class = "text-danger" })
                     </div>
 
                     <div class="form-group mb-4">
-                        @Html.LabelFor(m => changePasswordModel.NewPassword, new { @class = "text-black font-weight-bold" })
-                        @Html.PasswordFor(m => changePasswordModel.NewPassword, new { @class = "form-control", required = "required", minlength = "6" })
-                        @Html.ValidationMessageFor(m => changePasswordModel.NewPassword, "", new { @class = "text-danger" })
+                        @Html.Label("NewPassword", "Mật khẩu mới", new { @class = "text-black font-weight-bold" })
+                        <div class="password-toggle-wrapper" style="position: relative;">
+                            @Html.Password("NewPassword", changePasswordModel?.NewPassword, new { @class = "form-control", required = "required", minlength = "6", autocomplete = "new-password", id = "NewPassword", style = "padding-right: 40px;" })
+                            <span class="password-toggle-icon icon-eye" onclick="togglePassword('NewPassword', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+                        </div>
+                        @Html.ValidationMessage("NewPassword", "", new { @class = "text-danger" })
                         <small class="form-text text-muted">Mật khẩu phải tối thiểu 6 ký tự, gồm chữ hoa, chữ thường và số.</small>
                     </div>
 
                     <div class="form-group mb-4">
-                        @Html.LabelFor(m => changePasswordModel.ConfirmPassword, new { @class = "text-black font-weight-bold" })
-                        @Html.PasswordFor(m => changePasswordModel.ConfirmPassword, new { @class = "form-control", required = "required" })
-                        @Html.ValidationMessageFor(m => changePasswordModel.ConfirmPassword, "", new { @class = "text-danger" })
+                        @Html.Label("ConfirmPassword", "Xác nhận mật khẩu", new { @class = "text-black font-weight-bold" })
+                        <div class="password-toggle-wrapper" style="position: relative;">
+                            @Html.Password("ConfirmPassword", changePasswordModel?.ConfirmPassword, new { @class = "form-control", required = "required", autocomplete = "new-password", id = "ConfirmPassword", style = "padding-right: 40px;" })
+                            <span class="password-toggle-icon icon-eye" onclick="togglePassword('ConfirmPassword', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+                        </div>
+                        @Html.ValidationMessage("ConfirmPassword", "", new { @class = "text-danger" })
                     </div>
 
                     <div class="form-group">
@@ -177,6 +186,21 @@
                 });
             }, false);
         })();
+    </script>
+
+    <script>
+        function togglePassword(inputId, iconElement) {
+            var input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                iconElement.classList.remove("icon-eye");
+                iconElement.classList.add("icon-eye-slash");
+            } else {
+                input.type = "password";
+                iconElement.classList.remove("icon-eye-slash");
+                iconElement.classList.add("icon-eye");
+            }
+        }
     </script>
 }
 
