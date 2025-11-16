@@ -21,6 +21,12 @@
                 </ul>
             </div>
         }
+        @{
+    if (ViewBag.AccountOptions == null)
+    {
+        ViewBag.AccountOptions = new SelectList(new List<object>());
+    }
+}
 
         @using (Html.BeginForm("Edit", "Candidates", FormMethod.Post, new { enctype = "multipart/form-data" }))
         {
@@ -57,6 +63,11 @@
                         @Html.LabelFor(m => m.Phone, new { @class = "form-label" })
                         @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
                         @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.Address, new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Nhập địa chỉ" })
+                        @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
                     </div>
 
                     <div class="mb-3">

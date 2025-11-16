@@ -200,6 +200,7 @@ BEGIN
         Gender       NVARCHAR(10) NOT NULL CHECK (Gender IN (N'Nam', N'Nữ')),
         Phone        NVARCHAR(15) NULL,
         Email        NVARCHAR(100) NULL,
+        ApplicationEmail        NVARCHAR(100) NULL,
         Address      NVARCHAR(255) NULL,
         Summary      NVARCHAR(500) NULL,
         PhotoID      INT NULL,
