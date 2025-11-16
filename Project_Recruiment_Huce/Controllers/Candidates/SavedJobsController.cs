@@ -151,7 +151,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return Json(new { success = false, message = "Không tìm thấy công việc." });
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            using (var db = DbContextFactory.Create())
             {
                 JobStatusHelper.NormalizeStatuses(db);
                 // Get candidate
@@ -230,7 +230,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return Json(new { success = false, message = "Không tìm thấy công việc." });
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            using (var db = DbContextFactory.Create())
             {
                 // Get candidate
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Web.Mvc;
 using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Infrastructure;
 
 namespace Project_Recruiment_Huce.Controllers
 {
@@ -33,10 +34,10 @@ namespace Project_Recruiment_Huce.Controllers
         /// Tạo database context với connection string từ config
         /// </summary>
         /// <returns>JOBPORTAL_ENDataContext instance</returns>
+        [Obsolete("Use DbContextFactory.Create() or DbContextFactory.CreateReadOnly() instead")]
         protected JOBPORTAL_ENDataContext CreateDbContext()
         {
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            return new JOBPORTAL_ENDataContext(connectionString);
+            return DbContextFactory.Create();
         }
 
         /// <summary>
@@ -48,7 +49,7 @@ namespace Project_Recruiment_Huce.Controllers
             var accountId = GetCurrentAccountId();
             if (accountId == null) return null;
 
-            using (var db = CreateDbContext())
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
                 return recruiter?.RecruiterID;
@@ -64,7 +65,7 @@ namespace Project_Recruiment_Huce.Controllers
             var accountId = GetCurrentAccountId();
             if (accountId == null) return null;
 
-            using (var db = CreateDbContext())
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 return candidate?.CandidateID;

@@ -40,7 +40,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return View(model);
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 // Normalize input (allow username OR email)
                 var input = (model.EmailOrUsername ?? string.Empty).Trim();
@@ -105,7 +105,7 @@ namespace Project_Recruiment_Huce.Controllers
         {
             if (ModelState.IsValid)
             {
-                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                using (var db = DbContextFactory.Create())
                 {
                     // Check if Username already exists
                     if (db.Accounts.Any(a => a.Username == model.TenDangNhap))
@@ -249,7 +249,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return View(model);
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 var email = (model.Email ?? string.Empty).Trim().ToLower();
                 var account = db.Accounts.FirstOrDefault(a => a.Email.ToLower() == email && a.ActiveFlag == 1);
@@ -320,7 +320,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return View(model);
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 var email = (model.Email ?? string.Empty).Trim().ToLower();
                 var resetCode = (model.ResetCode ?? string.Empty).Trim().ToUpper();

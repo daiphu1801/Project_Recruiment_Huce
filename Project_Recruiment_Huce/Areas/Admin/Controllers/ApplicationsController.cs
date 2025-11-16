@@ -29,15 +29,13 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                             join candidate in db.Candidates on app.CandidateID equals candidate.CandidateID
                             join job in db.JobPosts on app.JobPostID equals job.JobPostID
                             join company in db.Companies on job.CompanyID equals company.CompanyID
-                            // Nếu bạn có JobPosts, hãy join:
-                            // join job in db.JobPosts on app.JobPostID equals job.JobPostID
                             select new ApplicationListVm
                             {
                                 ApplicationId = app.ApplicationID,
                                 CandidateId = app.CandidateID,
                                 JobPostId = app.JobPostID,
                                 CandidateName = candidate.FullName,
-                                JobTitle = "Tên công việc (Cần JobPost)", // Thay bằng job.Title nếu đã join
+                                JobTitle = job.Title,
                                 AppliedAt = app.AppliedAt,
                                 AppStatus = app.Status,
                                 CompanyName = company.CompanyName,
@@ -80,7 +78,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var query = from app in db.Applications
                             join candidate in db.Candidates on app.CandidateID equals candidate.CandidateID
                             join job in db.JobPosts on app.JobPostID equals job.JobPostID
-
                             join company in db.Companies on job.CompanyID equals company.CompanyID
                             where app.ApplicationID == id
                             select new ApplicationListVm
@@ -89,7 +86,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                                 CandidateId = app.CandidateID,
                                 JobPostId = app.JobPostID,
                                 CandidateName = candidate.FullName,
-                                JobTitle = "Tên công việc (Cần JobPost)",
+                                JobTitle = job.Title,
                                 AppliedAt = app.AppliedAt,
                                 AppStatus = app.Status,
                                 ResumeFilePath = app.ResumeFilePath,
@@ -305,12 +302,13 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             {
                 var query = from app in db.Applications
                             join candidate in db.Candidates on app.CandidateID equals candidate.CandidateID
+                            join job in db.JobPosts on app.JobPostID equals job.JobPostID
                             where app.ApplicationID == id
                             select new ApplicationListVm
                             {
                                 ApplicationId = app.ApplicationID,
                                 CandidateName = candidate.FullName,
-                                JobTitle = "Tên công việc (Cần JobPost)",
+                                JobTitle = job.Title,
                                 AppliedAt = app.AppliedAt,
                                 AppStatus = app.Status
                             };

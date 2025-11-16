@@ -8,6 +8,7 @@ using System.Configuration;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Candidates;
 using Project_Recruiment_Huce.Helpers;
+using Project_Recruiment_Huce.Infrastructure;
 
 namespace Project_Recruiment_Huce.Controllers
 {
@@ -24,7 +25,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 if (candidate == null)
@@ -70,7 +71,7 @@ namespace Project_Recruiment_Huce.Controllers
 
             // Do not return early on invalid model; we still allow saving avatar
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 if (candidate == null)
@@ -79,10 +80,11 @@ namespace Project_Recruiment_Huce.Controllers
                     db.Candidates.InsertOnSubmit(candidate);
                 }
 
-                // Validate phone number format and normalize (if provided)
+                // Validate phone number format, uniqueness and normalize (if provided)
                 var phone = (viewModel.Phone ?? string.Empty).Trim();
                 if (!string.IsNullOrWhiteSpace(phone))
                 {
+                    // Validate phone format
                     if (!ValidationHelper.IsValidVietnamesePhone(phone))
                     {
                         ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
@@ -91,6 +93,12 @@ namespace Project_Recruiment_Huce.Controllers
                     {
                         // Normalize phone number
                         phone = ValidationHelper.NormalizePhone(phone);
+
+                        // Check phone uniqueness (exclude current account)
+                        if (!ValidationHelper.IsAccountPhoneUnique(phone, accountId.Value))
+                        {
+                            ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng bởi tài khoản hoặc hồ sơ khác.");
+                        }
                     }
                 }
                 else
@@ -98,34 +106,51 @@ namespace Project_Recruiment_Huce.Controllers
                     phone = null;
                 }
 
-                // Update profile fields only when model is valid
-                if (ModelState.IsValid)
+                // Validate email uniqueness if changed (email in Candidate is contact email, different from Account.Email)
+                var email = (viewModel.Email ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(email))
                 {
-                    candidate.FullName = viewModel.FullName;
-                    candidate.BirthDate = viewModel.BirthDate;
-                    candidate.Gender = string.IsNullOrWhiteSpace(viewModel.Gender) ? "Nam" : viewModel.Gender;
-                    candidate.Phone = phone; // Use normalized phone
-                    candidate.Email = viewModel.Email;
-                    candidate.Address = viewModel.Address;
-                    
-                    // NOTE: Email trong Candidate.Email là email liên lạc, không đồng bộ với Account.Email
-                    
-                    // Sanitize HTML before saving to prevent XSS attacks
-                    // [AllowHtml] allows the HTML to be posted, but we still sanitize it
-                    if (!string.IsNullOrEmpty(viewModel.Summary))
+                    // Validate email format
+                    if (!ValidationHelper.IsValidEmail(email))
                     {
-                        // Sanitize HTML to remove dangerous tags and attributes
-                        string sanitizedHtml = HtmlSanitizerHelper.Sanitize(viewModel.Summary);
-                        
-                        // Limit to 500 characters (Summary field constraint)
-                        if (sanitizedHtml.Length > 500)
-                        {
-                            candidate.Summary = sanitizedHtml.Substring(0, 500);
-                        }
-                        else
-                        {
-                            candidate.Summary = sanitizedHtml;
-                        }
+                        ModelState.AddModelError("Email", "Email không hợp lệ.");
+                    }
+                    // Note: Candidate.Email is contact email, not login email, so we don't check uniqueness against Account.Email
+                    // But we can check if it's different from other candidates' contact emails if needed
+                }
+
+                // Check if there are validation errors before updating
+                if (!ModelState.IsValid)
+                {
+                    TempData["ErrorMessage"] = "Vui lòng kiểm tra lại thông tin. Có lỗi trong form.";
+                    return View(viewModel);
+                }
+
+                // Update profile fields only when model is valid
+                candidate.FullName = viewModel.FullName;
+                candidate.BirthDate = viewModel.BirthDate;
+                candidate.Gender = string.IsNullOrWhiteSpace(viewModel.Gender) ? "Nam" : viewModel.Gender;
+                candidate.Phone = phone; // Use normalized phone
+                candidate.Email = viewModel.Email;
+                candidate.Address = viewModel.Address;
+                
+                // NOTE: Email trong Candidate.Email là email liên lạc, không đồng bộ với Account.Email
+                
+                // Sanitize HTML before saving to prevent XSS attacks
+                // [AllowHtml] allows the HTML to be posted, but we still sanitize it
+                if (!string.IsNullOrEmpty(viewModel.Summary))
+                {
+                    // Sanitize HTML to remove dangerous tags and attributes
+                    string sanitizedHtml = HtmlSanitizerHelper.Sanitize(viewModel.Summary);
+                    
+                    // Limit to 500 characters (Summary field constraint)
+                    if (sanitizedHtml.Length > 500)
+                    {
+                        candidate.Summary = sanitizedHtml.Substring(0, 500);
+                    }
+                    else
+                    {
+                        candidate.Summary = sanitizedHtml;
                     }
                 }
 
@@ -192,22 +217,8 @@ namespace Project_Recruiment_Huce.Controllers
                 }
 
                 db.SubmitChanges();
-                if (ModelState.IsValid)
-                {
-                    TempData["SuccessMessage"] = "Cập nhật hồ sơ thành công.";
-                    return RedirectToAction("CandidatesManage");
-                }
-                // If model invalid, stay on page but keep newly uploaded avatar
-                // Map entity back to ViewModel for return
-                viewModel.CandidateID = candidate.CandidateID;
-                viewModel.FullName = candidate.FullName;
-                viewModel.BirthDate = candidate.BirthDate;
-                viewModel.Gender = candidate.Gender;
-                viewModel.Phone = candidate.Phone;
-                viewModel.Email = candidate.Email;
-                viewModel.Address = candidate.Address;
-                viewModel.Summary = candidate.Summary;
-                return View(viewModel);
+                TempData["SuccessMessage"] = "Cập nhật hồ sơ thành công.";
+                return RedirectToAction("CandidatesManage");
             }
         }
 
@@ -220,7 +231,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 // Load related entities using DataLoad
                 // Options - MUST be set BEFORE any queries
@@ -301,7 +312,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("JobsListing", "Jobs");
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 // Load related entities
                 var loadOptions = new System.Data.Linq.DataLoadOptions();
@@ -429,7 +440,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return Apply(viewModel.JobPostID);
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 JobStatusHelper.NormalizeStatuses(db);
                 // Get candidate

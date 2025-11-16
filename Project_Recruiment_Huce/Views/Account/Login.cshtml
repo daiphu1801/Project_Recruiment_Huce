@@ -39,7 +39,10 @@
             <div class="row form-group mb-4">
               <div class="col-md-12 mb-3 mb-md-0">
                 @Html.LabelFor(m => m.Password, new { @class = "text-black" })
-                @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Nhập mật khẩu" })
+                <div style="position: relative;">
+                  @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Nhập mật khẩu", id = "Password", style = "padding-right: 40px;" })
+                  <span class="password-toggle-icon icon-eye" onclick="togglePassword('Password', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+                </div>
                 @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
               </div>
             </div>
@@ -77,4 +80,18 @@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        function togglePassword(inputId, iconElement) {
+            var input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                iconElement.classList.remove("icon-eye");
+                iconElement.classList.add("icon-eye-slash");
+            } else {
+                input.type = "password";
+                iconElement.classList.remove("icon-eye-slash");
+                iconElement.classList.add("icon-eye");
+            }
+        }
+    </script>
 }
