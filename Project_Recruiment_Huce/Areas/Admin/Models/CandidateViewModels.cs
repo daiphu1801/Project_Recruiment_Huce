@@ -47,14 +47,26 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
     }
     public class CreateCandidateListVm
     {
+        [Display(Name = "ID tài khoản")]
+        [Required(ErrorMessage = "Vui lòng nhập ID tài khoản")]
         public int AccountId { get; set; }
+        [Display(Name = "ID ứng viên")]
+        [Required(ErrorMessage = "Vui lòng nhập ID ứng viên")]
         public string FullName { get; set; }
+        [Display(Name = "Ngày sinh")]
+        [Required(ErrorMessage = "Vui lòng nhập ngày sinh")]
         public DateTime? DateOfBirth { get; set; }
+        [Display(Name = "Giới tính")]
+        [Required(ErrorMessage = "Vui lòng nhập giới tính")]
         public string Gender { get; set; }
+        [Display(Name = "Số điện thoại")]
+        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         public string Phone { get; set; }
         public int? PhotoId { get; set; }
         public DateTime? CreatedAt { get; set; }
         public byte? ActiveFlag { get; set; }
+        [Display(Name = "Email")]
+        [Required(ErrorMessage = "Vui lòng nhập email")]
         public string Email { get; set; }
         public bool Active => ActiveFlag == 1;
         public DateTime? BirthDate => DateOfBirth;
@@ -65,21 +77,38 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         {
             get; set;
         }
+        [Display(Name = "Địa chỉ")]
+        [Required(ErrorMessage = "Vui lòng nhập địa chỉ")]
         public string Address { get; set; }
         public string Summary { get; set; }
         public string CandidateID { get; set; }
+        [Display(Name = "Email ứng tuyển")]
+        [Required(ErrorMessage = "Vui lòng nhập email ứng tuyển")]
         public string ApplicationEmail { get; set; }
         public string CurrentPhotoUrl { get; set; }
     }
     public class EditCandidateListVm
     {
+        [Display(Name = "ID ứng viên")]
+        [Required(ErrorMessage = "Vui lòng chon ID ứng viên")]
         public int CandidateId { get; set; }
+        [Display(Name = "Họ và tên")]
+        [Required(ErrorMessage = "Vui lòng nhập họ và tên")]
         public string FullName { get; set; }
+        
         public string Email { get; set; }
         [Display(Name = "Tài khoản")]
+        [Required(ErrorMessage = "Vui lòng chọn tài khoản")]
         public int AccountId { get; set; }
+        [Display(Name = "Ngày sinh")]
+        [Required(ErrorMessage = "Vui lòng nhập ngày sinh")]
         public DateTime? DateOfBirth { get; set; }
+        [Display(Name = "Giới tính")]
+        [Required(ErrorMessage = "Vui lòng nhập giới tính")]
         public string Gender { get; set; }
+        [Display(Name = "Số điện thoại")]
+
+        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         public string Phone { get; set; }
         public byte? ActiveFlag { get; set; }
 
@@ -94,6 +123,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public HttpPostedFileBase PhotoFile { get; set; }
         public int? PhotoId { get;   set; }     
         public DateTime? CreatedAt { get; set; }
+        [Display(Name = "Địa chỉ")]
+        [Required(ErrorMessage = "Vui lòng nhập địa chỉ")]
         public string Address { get; set; }
         public string PhotoUrl { get; set; }
         public string Summary { get;   set; }
