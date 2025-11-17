@@ -72,12 +72,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         query = query.Where(x => string.Equals(x.CompanyName, comp, StringComparison.OrdinalIgnoreCase));
                 }
 
-                // Lọc theo nhà tuyển dụng
-                if (recruiterId.HasValue)
-                {
-                    query = query.Where(x => x.RecruiterID == recruiterId.Value);
-                }
-
+              
                 // ViewBag dropdowns
                 ViewBag.StatusOptions = BuildStatusSelectList(status);
                 ViewBag.CompanyOptions = new SelectList(
@@ -90,37 +85,28 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 );
 
                 // Map sang ViewModel
-                var JobPosts = query.ToList().Select(r => new JobPostListVm
-                {
-                    JobCode = r.JobCode,
-                    Title = r.Title,
-                    CompanyName = r.CompanyName,
-                    FullName = r.FullName,
-                    SalaryFrom = r.SalaryFrom,
-                    SalaryTo = r.SalaryTo,
-                    EmploymentType = r.EmploymentType,
-                    PostedAt = (DateTime)r.PostedAt,
-                    UpdatedAt = (DateTime)r.UpdatedAt,
-                    Status = r.Status,
-                    JobPostID=r.JobPostID
+                var JobPosts = query.OrderByDescending(j => j.PostedAt)
+                             .ToList() // Thực thi query tại đây
+                             .Select(r => new JobPostListVm
+                             {
+                                 JobCode = r.JobCode,
+                                 Title = r.Title,
+                                 CompanyName = r.CompanyName,
+                                 FullName = r.FullName,
+                                 SalaryFrom = r.SalaryFrom,
+                                 SalaryTo = r.SalaryTo,
+                                 EmploymentType = r.EmploymentType,
+                                 PostedAt = (DateTime)r.PostedAt,
+                                 UpdatedAt = (DateTime)r.UpdatedAt,
+                                 Status = r.Status,
+                                 JobPostID = r.JobPostID
 
-                }).ToList();
+                             }).ToList();
 
                 return View(JobPosts);
             }
 
         }
-
-
-
-
-
-
-
-
-
-
-
         //GET: Admin/JobPosts/Details/5
         // NOTE: This action uses MockData as a template/base.
         // Team members should follow AccountsController pattern to implement CRUD with database.
