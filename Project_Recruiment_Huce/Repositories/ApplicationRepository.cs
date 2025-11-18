@@ -114,6 +114,15 @@ namespace Project_Recruiment_Huce.Repositories
 
         public IEnumerable<Application> GetApplicationsByRecruiter(int recruiterId)
         {
+            // Set up eager loading for related entities
+            var loadOptions = new DataLoadOptions();
+            loadOptions.LoadWith<Application>(a => a.JobPost);
+            loadOptions.LoadWith<Application>(a => a.Candidate);
+            loadOptions.LoadWith<JobPost>(j => j.Company);
+            loadOptions.LoadWith<JobPost>(j => j.Recruiter);
+            loadOptions.LoadWith<Recruiter>(r => r.Company);
+            _db.LoadOptions = loadOptions;
+
             var applications = from app in _db.Applications
                               join job in _db.JobPosts on app.JobPostID equals job.JobPostID
                               where job.RecruiterID == recruiterId

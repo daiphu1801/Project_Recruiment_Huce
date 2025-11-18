@@ -32,6 +32,13 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("JobsListing");
             }
 
+            // Increment view count (use writable context for this single operation)
+            using (var writeDb = DbContextFactory.Create())
+            {
+                var analyticsService = new RecruiterAnalyticsService(writeDb);
+                analyticsService.IncrementViewCount(id.Value);
+            }
+
             using (var db = DbContextFactory.CreateReadOnly())
             {
                 // Set LoadOptions BEFORE creating repository/service to avoid "LoadOptions already set" error
