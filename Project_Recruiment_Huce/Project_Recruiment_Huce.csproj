@@ -178,6 +178,7 @@
     <Compile Include="Controllers\Candidates\SavedJobsController.cs" />
     <Compile Include="Controllers\Recruiters\RecruitersController.cs" />
     <Compile Include="Controllers\Recruiters\RecruitersApplicationController.cs" />
+    <Compile Include="Controllers\Recruiters\RecruiterAnalyticsController.cs" />
     <Compile Include="Controllers\MyAccount\MyAccountController.cs" />
     <Compile Include="Controllers\Companies\CompaniesController.cs" />
     <Compile Include="Controllers\Jobs\JobsController.cs" />
@@ -201,6 +202,7 @@
       <DependentUpon>JOBPORTAL_EN.dbml</DependentUpon>
     </Compile>
     <Compile Include="Models\Recruiters\RecruiterApplicationViewModel.cs" />
+    <Compile Include="Models\Recruiters\RecruiterAnalyticsViewModels.cs" />
     <Compile Include="Models\Home\HomeIndexViewModel.cs" />
     <Compile Include="Models\Jobs\JobViewModels.cs" />
     <Compile Include="Models\Jobs\JobCreateViewModel.cs" />
@@ -228,6 +230,7 @@
     <Compile Include="Services\JobService.cs" />
     <Compile Include="Services\ValidationService.cs" />
     <Compile Include="Services\MyAccountService.cs" />
+    <Compile Include="Services\RecruiterAnalyticsService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\Admin\css\adminlte.css" />

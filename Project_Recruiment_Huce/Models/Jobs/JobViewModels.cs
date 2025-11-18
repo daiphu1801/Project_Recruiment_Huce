@@ -25,6 +25,7 @@ namespace Project_Recruiment_Huce.Models.Jobs
         public string Status { get; set; }
         public string LogoUrl { get; set; }
         public int PendingApplicationsCount { get; set; }
+        public int ViewCount { get; set; }
     }
 
     /// <summary>
@@ -60,6 +61,7 @@ namespace Project_Recruiment_Huce.Models.Jobs
         public int? AgeFrom { get; set; }
         public int? AgeTo { get; set; }
         public string DetailStatus { get; set; }
+        public int ViewCount { get; set; }
 
         public bool HasJobDetail =>
             !string.IsNullOrWhiteSpace(Industry) ||

@@ -148,6 +148,7 @@
       <Column Name="Status" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="PostedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Column Name="UpdatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="ViewCount" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Association Name="JobPost_Application" Member="Applications" ThisKey="JobPostID" OtherKey="JobPostID" Type="Application" />
       <Association Name="JobPost_JobPostDetail" Member="JobPostDetails" ThisKey="JobPostID" OtherKey="JobPostID" Type="JobPostDetail" />
       <Association Name="JobPost_PostingHistory" Member="PostingHistories" ThisKey="JobPostID" OtherKey="JobPostID" Type="PostingHistory" />

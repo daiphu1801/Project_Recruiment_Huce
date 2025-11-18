@@ -1,0 +1,326 @@
+@model Project_Recruiment_Huce.Models.Recruiters.JobAnalyticsItemViewModel
+@{
+    ViewBag.Title = "Phân tích chi tiết công việc";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+<style>
+    .analytics-detail-card {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+    }
+    .metric-box {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 10px;
+        padding: 25px;
+        text-align: center;
+        height: 100%;
+    }
+    .metric-box-icon {
+        font-size: 36px;
+        margin-bottom: 15px;
+        color: var(--primary-color);
+    }
+    .metric-box-value {
+        font-size: 36px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    .metric-box-label {
+        font-size: 14px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .job-title-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 25px 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .badge-published { background: #d4edda; color: #155724; }
+    .badge-closed { background: #f8d7da; color: #721c24; }
+    .badge-expired { background: #fff3cd; color: #856404; }
+</style>
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Phân tích chi tiết</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("Index","RecruiterAnalytics")">Phân tích</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Chi tiết công việc</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @if (Model != null)
+        {
+            <text>
+            // Job Detail Chart - Horizontal Bar
+            var ctx = document.getElementById('jobDetailChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Số liệu'],
+                    datasets: [
+                        {
+                            label: 'Lượt xem',
+                            data: [@Model.Views],
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        },
+                        {
+                            label: 'Hồ sơ ứng tuyển',
+                            data: [@Model.Applications],
+                            backgroundColor: 'rgba(245, 87, 108, 0.8)',
+                            borderColor: 'rgba(245, 87, 108, 1)',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: { size: 14, weight: '600' },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 15,
+                            titleFont: { size: 15, weight: 'bold' },
+                            bodyFont: { size: 14 },
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.dataset.label || '';
+                                    var value = context.parsed.x;
+                                    return label + ': ' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: { size: 12 }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                font: { size: 13, weight: '600' }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+    });
+</script>
+}
+
+<section class="site-section">
+    <div class="container">
+        @if (Model != null)
+        {
+            <!-- Job Title Header -->
+            <div class="job-title-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">@Model.JobTitle</h2>
+                        <p class="mb-0">
+                            <span class="icon-calendar mr-2"></span>
+                            Đăng ngày: @Model.PostedAt.ToString("dd/MM/yyyy HH:mm")
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-right mt-3 mt-md-0">
+                        @{
+                            var statusClass = "badge-published";
+                            if (Model.JobStatus == "Closed") statusClass = "badge-closed";
+                            else if (Model.JobStatus == "Expired") statusClass = "badge-expired";
+                        }
+                        <span class="status-badge @statusClass">@Model.JobStatus</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="row mb-5">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="metric-box">
+                        <div class="metric-box-icon">
+                            <span class="icon-eye"></span>
+                        </div>
+                        <div class="metric-box-value">@Model.Views.ToString("N0")</div>
+                        <div class="metric-box-label">Lượt xem</div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="metric-box">
+                        <div class="metric-box-icon">
+                            <span class="icon-file-text"></span>
+                        </div>
+                        <div class="metric-box-value">@Model.Applications.ToString("N0")</div>
+                        <div class="metric-box-label">Hồ sơ ứng tuyển</div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="metric-box">
+                        <div class="metric-box-icon">
+                            <span class="icon-percent"></span>
+                        </div>
+                        <div class="metric-box-value" style="color: var(--primary-color);">@Model.ConversionRatePercent.ToString("0.00")%</div>
+                        <div class="metric-box-label">Tỷ lệ chuyển đổi</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="analytics-detail-card">
+                        <h5 class="mb-4"><span class="icon-bar-chart mr-2"></span> Biểu đồ so sánh</h5>
+                        <canvas id="jobDetailChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Card -->
+            <div class="analytics-detail-card">
+                <h4 class="mb-4"><span class="icon-bar-chart mr-2"></span> Phân tích hiệu quả</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="font-weight-bold">Tỷ lệ chuyển đổi (Conversion Rate)</h6>
+                        <p>
+                            Tỷ lệ chuyển đổi của tin tuyển dụng này là <strong style="color: var(--primary-color);">@Model.ConversionRatePercent.ToString("0.00")%</strong>.
+                            @if (Model.ConversionRatePercent >= 5)
+                            {
+                                <span class="text-success">✓ Tỷ lệ chuyển đổi tốt!</span>
+                            }
+                            else if (Model.ConversionRatePercent >= 2)
+                            {
+                                <span class="text-warning">⚠ Tỷ lệ chuyển đổi trung bình.</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger">⚠ Tỷ lệ chuyển đổi thấp, cần cải thiện.</span>
+                            }
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="font-weight-bold">Mức độ quan tâm</h6>
+                        <p>
+                            Tin tuyển dụng đã có <strong>@Model.Views.ToString("N0")</strong> lượt xem.
+                            @if (Model.Views >= 100)
+                            {
+                                <span class="text-success">✓ Được nhiều ứng viên quan tâm!</span>
+                            }
+                            else if (Model.Views >= 50)
+                            {
+                                <span class="text-info">→ Mức độ quan tâm khá tốt.</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">→ Cần quảng bá thêm để tiếp cận nhiều ứng viên hơn.</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suggestions Card -->
+            <div class="analytics-detail-card" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                <h5 class="mb-3"><span class="icon-lightbulb-o mr-2"></span> Gợi ý cải thiện</h5>
+                <ul class="mb-0">
+                    @if (Model.ConversionRatePercent < 3)
+                    {
+                        <li>Xem xét lại tiêu đề và mô tả công việc để hấp dẫn hơn</li>
+                        <li>Kiểm tra mức lương và phúc lợi có cạnh tranh không</li>
+                        <li>Đảm bảo yêu cầu công việc không quá cao so với vị trí</li>
+                    }
+                    @if (Model.Views < 50)
+                    {
+                        <li>Chia sẻ tin tuyển dụng trên các kênh mạng xã hội</li>
+                        <li>Cập nhật thông tin công ty và logo để tăng độ tin cậy</li>
+                        <li>Sử dụng từ khóa phù hợp để ứng viên dễ tìm thấy</li>
+                    }
+                    @if (Model.Applications == 0 && Model.Views > 0)
+                    {
+                        <li><strong>Có lượt xem nhưng không có hồ sơ:</strong> Kiểm tra quy trình ứng tuyển có đơn giản không</li>
+                        <li>Xem xét lại deadline và yêu cầu hồ sơ</li>
+                    }
+                    <li>Trả lời nhanh các hồ sơ ứng viên để tạo ấn tượng tốt</li>
+                    <li>Cập nhật trạng thái tin tuyển dụng thường xuyên</li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary mr-2">
+                        <span class="icon-arrow-left mr-2"></span> Quay lại Dashboard
+                    </a>
+                    <a href="@Url.Action("JobDetails", "Jobs", new { id = Model.JobPostID })" class="btn btn-primary mr-2">
+                        <span class="icon-eye mr-2"></span> Xem tin tuyển dụng
+                    </a>
+                    <a href="@Url.Action("MyApplications", "RecruitersApplication")" class="btn btn-success">
+                        <span class="icon-file-text mr-2"></span> Xem hồ sơ ứng tuyển
+                    </a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                <span class="icon-exclamation-triangle mr-2"></span>
+                Không tìm thấy dữ liệu phân tích cho tin tuyển dụng này.
+            </div>
+            <div class="text-center">
+                <a href="@Url.Action("Index")" class="btn btn-primary">
+                    <span class="icon-arrow-left mr-2"></span> Quay lại Dashboard
+                </a>
+            </div>
+        }
+    </div>
+</section>
