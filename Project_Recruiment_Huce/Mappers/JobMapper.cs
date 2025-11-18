@@ -64,7 +64,8 @@ namespace Project_Recruiment_Huce.Mappers
                 ApplicationDeadline = job.ApplicationDeadline,
                 Status = job.Status,
                 LogoUrl = logoUrl,
-                PendingApplicationsCount = pendingCount
+                PendingApplicationsCount = pendingCount,
+                ViewCount = job.ViewCount
             };
         }
 
@@ -120,7 +121,8 @@ namespace Project_Recruiment_Huce.Mappers
                 GenderRequirement = jobDetail?.GenderRequirement,
                 AgeFrom = jobDetail?.AgeFrom,
                 AgeTo = jobDetail?.AgeTo,
-                DetailStatus = jobDetail?.Status
+                DetailStatus = jobDetail?.Status,
+                ViewCount = job.ViewCount
             };
         }
 

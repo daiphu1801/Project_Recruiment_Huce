@@ -57,26 +57,33 @@
         }
 
         <!-- Filter Section -->
-        <div class="card mb-4">
-            <div class="card-body">
-                @using (Html.BeginForm("MyApplications", "RecruitersApplication", FormMethod.Get, new { @class = "form-inline" }))
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-header bg-gradient-primary text-white border-0">
+                <h5 class="mb-0"><i class="icon-filter mr-2"></i>Bộ lọc đơn ứng tuyển</h5>
+            </div>
+            <div class="card-body p-4">
+                @using (Html.BeginForm("MyApplications", "RecruitersApplication", FormMethod.Get, new { @class = "filter-form" }))
                 {
-                    <div class="row">
-                        <div class="col-md-4 mb-3 mb-md-0">
-                            <label for="jobId" class="mr-2">Lọc theo công việc:</label>
-                            @Html.DropDownList("jobId", ViewBag.Jobs as SelectList, "Tất cả công việc", new { @class = "form-control", @id = "jobId" })
+                    <div class="row align-items-end">
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <label for="jobId" class="form-label font-weight-bold text-dark">
+                                <i class="icon-briefcase mr-1 text-primary"></i>Công việc
+                            </label>
+                            @Html.DropDownList("jobId", ViewBag.Jobs as SelectList, "-- Tất cả công việc --", new { @class = "form-control form-control-lg custom-select", @id = "jobId" })
                         </div>
-                        <div class="col-md-4 mb-3 mb-md-0">
-                            <label for="status" class="mr-2">Lọc theo trạng thái:</label>
-                            @Html.DropDownList("status", ViewBag.StatusOptions as SelectList, new { @class = "form-control", @id = "status" })
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <label for="status" class="form-label font-weight-bold text-dark">
+                                <i class="icon-flag mr-1 text-success"></i>Trạng thái
+                            </label>
+                            @Html.DropDownList("status", ViewBag.StatusOptions as SelectList, new { @class = "form-control form-control-lg custom-select", @id = "status" })
                         </div>
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-end flex-nowrap" style="height: 100%;">
-                                <button type="submit" class="btn btn-primary mr-2" style="white-space: nowrap;">
-                                    <i class="icon-filter mr-1"></i>Lọc
+                        <div class="col-lg-4 col-md-12 mb-3">
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg px-4 flex-grow-1 filter-btn">
+                                    <i class="icon-search mr-2"></i>Tìm kiếm
                                 </button>
-                                <a href="@Url.Action("MyApplications", "RecruitersApplication")" class="btn btn-secondary" style="white-space: nowrap;">
-                                    <i class="icon-refresh mr-1"></i>Xóa bộ lọc
+                                <a href="@Url.Action("MyApplications", "RecruitersApplication")" class="btn btn-outline-secondary btn-lg px-4 reset-btn">
+                                    <i class="icon-refresh mr-2"></i>Đặt lại
                                 </a>
                             </div>
                         </div>
@@ -88,66 +95,88 @@
         <!-- Applications List -->
         @if (Model != null && Model.Any())
         {
-            <div class="row">
+            <div class="applications-container">
                 @foreach (var app in Model)
                 {
-                    <div class="col-md-12 mb-4">
-                        <div class="card application-card">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <h5 class="card-title mb-3">
-                                            <a href="@Url.Action("ApplicationDetails", "RecruitersApplication", new { id = app.ApplicationID })" class="text-primary">
-                                                @app.CandidateName
-                                            </a>
-                                        </h5>
-                                        <div class="application-info mb-3">
-                                            <p class="mb-2">
-                                                <strong><i class="icon-briefcase mr-2"></i>Công việc:</strong>
-                                                <a href="@Url.Action("Details", "JobDetails", new { id = app.JobPostID })" class="text-info">
-                                                    @app.JobTitle
+                    <div class="application-item mb-4">
+                        <div class="card application-card border-0 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center">
+                                    <!-- Candidate Info -->
+                                    <div class="col-lg-6 col-md-12 mb-3 mb-lg-0">
+                                        <div class="candidate-info">
+                                            <h5 class="candidate-name mb-2">
+                                                <a href="@Url.Action("ApplicationDetails", "RecruitersApplication", new { id = app.ApplicationID })" class="text-decoration-none">
+                                                    <i class="icon-user mr-2 text-primary"></i>@app.CandidateName
                                                 </a>
-                                                @if (!string.IsNullOrEmpty(app.JobCode))
-                                                {
-                                                    <span class="text-muted">(@app.JobCode)</span>
-                                                }
-                                            </p>
-                                            <p class="mb-2">
-                                                <strong><i class="icon-building mr-2"></i>Công ty:</strong> @app.CompanyName
-                                            </p>
+                                            </h5>
+                                            <div class="job-info mb-3">
+                                                <h6 class="job-title mb-1">
+                                                    <a href="@Url.Action("Details", "JobDetails", new { id = app.JobPostID })" class="text-info text-decoration-none">
+                                                        <i class="icon-briefcase mr-1"></i>@app.JobTitle
+                                                    </a>
+                                                    @if (!string.IsNullOrEmpty(app.JobCode))
+                                                    {
+                                                        <span class="badge badge-light badge-sm ml-2">@app.JobCode</span>
+                                                    }
+                                                </h6>
+                                                <p class="company-name text-muted mb-0">
+                                                    <i class="icon-building mr-1"></i>@app.CompanyName
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Contact & Date Info -->
+                                    <div class="col-lg-3 col-md-6 mb-3 mb-lg-0">
+                                        <div class="contact-info">
                                             @if (!string.IsNullOrEmpty(app.CandidateEmail))
                                             {
-                                                <p class="mb-2">
-                                                    <strong><i class="icon-envelope mr-2"></i>Email:</strong> @app.CandidateEmail
+                                                <p class="mb-1 small">
+                                                    <i class="icon-envelope mr-1 text-muted"></i>
+                                                    <a href="mailto:@app.CandidateEmail" class="text-decoration-none">@app.CandidateEmail</a>
                                                 </p>
                                             }
                                             @if (!string.IsNullOrEmpty(app.CandidatePhone))
                                             {
-                                                <p class="mb-2">
-                                                    <strong><i class="icon-phone mr-2"></i>Điện thoại:</strong> @app.CandidatePhone
+                                                <p class="mb-1 small">
+                                                    <i class="icon-phone mr-1 text-muted"></i>
+                                                    <a href="tel:@app.CandidatePhone" class="text-decoration-none">@app.CandidatePhone</a>
                                                 </p>
                                             }
-                                            <p class="mb-2">
-                                                <strong><i class="icon-calendar mr-2"></i>Ngày ứng tuyển:</strong> 
-                                                @(app.AppliedAt?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")
+                                            <p class="mb-1 small text-muted">
+                                                <i class="icon-calendar mr-1"></i>
+                                                Ứng tuyển: @(app.AppliedAt?.ToString("dd/MM/yyyy") ?? "N/A")
                                             </p>
-                                            <p class="mb-2">
-                                                <strong><i class="icon-clock-o mr-2"></i>Cập nhật lúc:</strong> 
-                                                @(app.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")
-                                            </p>
+                                            @if (app.UpdatedAt.HasValue)
+                                            {
+                                                <p class="mb-0 small text-muted">
+                                                    <i class="icon-clock-o mr-1"></i>
+                                                    Cập nhật: @app.UpdatedAt.Value.ToString("dd/MM/yyyy")
+                                                </p>
+                                            }
                                         </div>
                                     </div>
-                                    <div class="col-md-4 text-right">
-                                        <div class="mb-3">
-                                            <span class="badge @app.StatusBadgeClass badge-lg">@app.StatusDisplay</span>
-                                        </div>
-                                        <div class="application-actions">
-                                            <a href="@Url.Action("ApplicationDetails", "RecruitersApplication", new { id = app.ApplicationID })" class="btn btn-sm btn-outline-primary mb-2">
-                                                <i class="icon-eye mr-1"></i>Xem chi tiết
-                                            </a>
-                                            <a href="@Url.Action("UpdateApplicationStatus", "RecruitersApplication", new { id = app.ApplicationID })" class="btn btn-sm btn-outline-success mb-2">
-                                                <i class="icon-edit mr-1"></i>Cập nhật trạng thái
-                                            </a>
+                                    
+                                    <!-- Status & Actions -->
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="status-actions text-lg-right">
+                                            <div class="status-badge mb-3">
+                                                <span class="badge @app.StatusBadgeClass badge-lg px-3 py-2">@app.StatusDisplay</span>
+                                            </div>
+                                            <div class="action-buttons">
+                                                <div class="btn-group-vertical btn-group-sm w-100" role="group">
+                                                    <a href="@Url.Action("ApplicationDetails", "RecruitersApplication", new { id = app.ApplicationID })" 
+                                                       class="btn btn-outline-primary mb-2">
+                                                        <i class="icon-eye mr-1"></i>Xem chi tiết
+                                                    </a>
+                                                    <a href="@Url.Action("UpdateApplicationStatus", "RecruitersApplication", new { id = app.ApplicationID })" 
+                                                       class="btn btn-primary update-status-btn" 
+                                                       data-status="@app.Status">
+                                                        <i class="icon-edit mr-1"></i>Cập nhật trạng thái
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -210,22 +239,7 @@
 </section>
 
 @section Styles {
-    <style>
-        .application-card {
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            transition: box-shadow 0.3s;
-        }
-        .application-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .badge-lg {
-            font-size: 1rem;
-            padding: 8px 16px;
-        }
-        .application-info p {
-            margin-bottom: 5px;
-        }
-    </style>
+    <link href="@Url.Content("~/Content/css/recruiters-application.css")?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
 }
+
 

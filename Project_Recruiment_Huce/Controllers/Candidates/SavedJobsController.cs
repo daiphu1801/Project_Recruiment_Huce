@@ -290,10 +290,6 @@ namespace Project_Recruiment_Huce.Controllers
                 return Json(new { isSaved = isSaved }, JsonRequestBehavior.AllowGet);
             }
         }
-
-        // Removed duplicate mapping methods - now using JobMapper class
-        // Removed duplicate GetEmploymentTypeDisplay - now using EmploymentTypeHelper
-        // Removed duplicate FormatSalaryRange - now using SalaryHelper
     }
 }
 

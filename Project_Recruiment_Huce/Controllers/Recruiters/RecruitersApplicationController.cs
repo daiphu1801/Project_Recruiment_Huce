@@ -63,27 +63,38 @@ namespace Project_Recruiment_Huce.Controllers
 
                 var applicationsList = applications.ToList();
 
-                // Map to ViewModels
-                var applicationsViewModels = applicationsList.Select(app => new RecruiterApplicationViewModel
-                {
-                    ApplicationID = app.ApplicationID,
-                    JobPostID = app.JobPostID,
-                    CandidateID = app.CandidateID,
-                    CandidateName = app.Candidate?.FullName ?? "N/A",
-                    CandidateEmail = app.Candidate?.Email ?? "",
-                    CandidatePhone = app.Candidate?.Phone ?? "",
-                    JobTitle = app.JobPost?.Title ?? "N/A",
-                    JobCode = app.JobPost?.JobCode ?? "",
-                    CompanyName = app.JobPost?.Company != null ? app.JobPost.Company.CompanyName :
-                                 (app.JobPost?.Recruiter?.Company != null ? app.JobPost.Recruiter.Company.CompanyName : "N/A"),
-                    AppliedAt = app.AppliedAt,
-                    Status = app.Status ?? "Under review",
-                    ResumeFilePath = app.ResumeFilePath,
-                    CertificateFilePath = app.CertificateFilePath,
-                    Note = app.Note,
-                    UpdatedAt = app.UpdatedAt,
-                    StatusDisplay = GetApplicationStatusDisplay(app.Status ?? "Under review"),
-                    StatusBadgeClass = GetApplicationStatusBadgeClass(app.Status ?? "Under review")
+                // Map to ViewModels với xử lý cẩn thận để tránh hiển thị N/A
+                var applicationsViewModels = applicationsList.Select(app => {
+                    string companyName = "Không có thông tin";
+                    if (app.JobPost?.Company?.CompanyName != null)
+                    {
+                        companyName = app.JobPost.Company.CompanyName;
+                    }
+                    else if (app.JobPost?.Recruiter?.Company?.CompanyName != null)
+                    {
+                        companyName = app.JobPost.Recruiter.Company.CompanyName;
+                    }
+
+                    return new RecruiterApplicationViewModel
+                    {
+                        ApplicationID = app.ApplicationID,
+                        JobPostID = app.JobPostID,
+                        CandidateID = app.CandidateID,
+                        CandidateName = !string.IsNullOrEmpty(app.Candidate?.FullName) ? app.Candidate.FullName : "Ứng viên ẩn danh",
+                        CandidateEmail = app.Candidate?.Email ?? "",
+                        CandidatePhone = app.Candidate?.Phone ?? "",
+                        JobTitle = !string.IsNullOrEmpty(app.JobPost?.Title) ? app.JobPost.Title : "Công việc không có tiêu đề",
+                        JobCode = app.JobPost?.JobCode ?? "",
+                        CompanyName = companyName,
+                        AppliedAt = app.AppliedAt,
+                        Status = app.Status ?? "Under review",
+                        ResumeFilePath = app.ResumeFilePath,
+                        CertificateFilePath = app.CertificateFilePath,
+                        Note = app.Note,
+                        UpdatedAt = app.UpdatedAt,
+                        StatusDisplay = GetApplicationStatusDisplay(app.Status ?? "Under review"),
+                        StatusBadgeClass = GetApplicationStatusBadgeClass(app.Status ?? "Under review")
+                    };
                 }).ToList();
 
                 // Pagination
@@ -171,19 +182,28 @@ namespace Project_Recruiment_Huce.Controllers
                     return RedirectToAction("MyApplications", "RecruitersApplication");
                 }
 
-                // Map to ViewModel
+                // Map to ViewModel với xử lý cẩn thận để tránh hiển thị N/A
+                string companyName = "Không có thông tin";
+                if (job.Company?.CompanyName != null)
+                {
+                    companyName = job.Company.CompanyName;
+                }
+                else if (job.Recruiter?.Company?.CompanyName != null)
+                {
+                    companyName = job.Recruiter.Company.CompanyName;
+                }
+
                 var viewModel = new RecruiterApplicationViewModel
                 {
                     ApplicationID = application.ApplicationID,
                     JobPostID = application.JobPostID,
                     CandidateID = application.CandidateID,
-                    CandidateName = application.Candidate?.FullName ?? "N/A",
+                    CandidateName = !string.IsNullOrEmpty(application.Candidate?.FullName) ? application.Candidate.FullName : "Ứng viên ẩn danh",
                     CandidateEmail = application.Candidate?.Email ?? "",
                     CandidatePhone = application.Candidate?.Phone ?? "",
-                    JobTitle = job.Title ?? "N/A",
+                    JobTitle = !string.IsNullOrEmpty(job.Title) ? job.Title : "Công việc không có tiêu đề",
                     JobCode = job.JobCode ?? "",
-                    CompanyName = job.Company != null ? job.Company.CompanyName :
-                                 (job.Recruiter?.Company != null ? job.Recruiter.Company.CompanyName : "N/A"),
+                    CompanyName = companyName,
                     AppliedAt = application.AppliedAt,
                     Status = application.Status ?? "Under review",
                     ResumeFilePath = application.ResumeFilePath,
@@ -248,13 +268,13 @@ namespace Project_Recruiment_Huce.Controllers
                     return RedirectToAction("MyApplications", "RecruitersApplication");
                 }
 
-                // Map to ViewModel
+                // Map to ViewModel với xử lý cẩn thận để tránh hiển thị N/A
                 var viewModel = new UpdateApplicationStatusViewModel
                 {
                     ApplicationID = application.ApplicationID,
                     JobPostID = application.JobPostID,
-                    CandidateName = application.Candidate?.FullName ?? "N/A",
-                    JobTitle = job.Title ?? "N/A",
+                    CandidateName = !string.IsNullOrEmpty(application.Candidate?.FullName) ? application.Candidate.FullName : "Ứng viên ẩn danh",
+                    JobTitle = !string.IsNullOrEmpty(job.Title) ? job.Title : "Công việc không có tiêu đề",
                     Status = application.Status ?? "Under review",
                     Note = application.Note
                 };

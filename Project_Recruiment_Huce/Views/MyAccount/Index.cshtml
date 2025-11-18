@@ -4,6 +4,10 @@
     var changePasswordModel = ViewBag.ChangePasswordModel as Project_Recruiment_Huce.Models.Accounts.ChangePasswordViewModel ?? new Project_Recruiment_Huce.Models.Accounts.ChangePasswordViewModel();
 }
 
+@section Styles {
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/myaccount.css")" />
+}
+
 <section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
   <div class="container">
     <div class="row">
@@ -43,125 +47,137 @@
 
     <div class="row">
         <!-- Thông tin đăng nhập -->
-        <div class="col-md-6 mb-4">
-            <div class="p-4 p-md-5 border rounded bg-light">
-                <h3 class="text-black mb-4 border-bottom pb-2"><span class="icon-user mr-2"></span> Thông tin đăng nhập</h3>
-                <div>
-                    <div class="form-group mb-4">
-                        <label class="text-black font-weight-bold">Tên đăng nhập</label>
-                        <div class="form-control-plaintext">@Model.Username</div>
-                        <small class="text-muted">Không thể thay đổi</small>
+        <div class="col-lg-6 mb-4">
+            <div class="account-card">
+                <div class="account-card-header">
+                    <h3><span class="icon-user"></span> Thông tin đăng nhập</h3>
+                </div>
+                <div class="account-card-body">
+                    <div class="info-group">
+                        <label class="info-label">Tên đăng nhập</label>
+                        <div class="info-value">@Model.Username</div>
+                        <small class="info-hint">Không thể thay đổi</small>
                     </div>
-                    <div class="form-group mb-4">
-                        <label class="text-black font-weight-bold">Email đăng nhập</label>
-                        <div class="form-control-plaintext">@(Model.LoginEmail ?? "-")</div>
-                        <small class="text-muted">Dùng để đăng nhập và xử lý quên mật khẩu. Không thể thay đổi.</small>
+                    <div class="info-group">
+                        <label class="info-label">Email đăng nhập</label>
+                        <div class="info-value">@(Model.LoginEmail ?? "-")</div>
+                        <small class="info-hint">Dùng để đăng nhập và xử lý quên mật khẩu. Không thể thay đổi.</small>
                     </div>
-                    <div class="form-group mb-4">
-                        <label class="text-black font-weight-bold">Email liên lạc</label>
-                        <div class="form-control-plaintext">@(Model.ContactEmail ?? "<em class='text-muted'>Chưa cập nhật</em>")</div>
-                        <small class="text-muted">Email này được lấy từ hồ sơ của bạn. Bạn có thể cập nhật trong phần quản lý hồ sơ.</small>
+                    <div class="info-group">
+                        <label class="info-label">Email liên lạc</label>
+                        <div class="info-value">@Html.Raw(Model.ContactEmail ?? "<em class='text-muted'>Chưa cập nhật</em>")</div>
+                        <small class="info-hint">Email này được lấy từ hồ sơ của bạn. Bạn có thể cập nhật trong phần quản lý hồ sơ.</small>
                     </div>
-                    <div class="form-group mb-4">
-                        <label class="text-black font-weight-bold">Số điện thoại</label>
-                        <div class="form-control-plaintext">@(Model.Phone ?? "-")</div>
+                    <div class="info-group">
+                        <label class="info-label">Số điện thoại</label>
+                        <div class="info-value">@(Model.Phone ?? "-")</div>
                     </div>
-                    <div class="form-group mb-4">
-                        <label class="text-black font-weight-bold">Vai trò</label>
-                        <div class="form-control-plaintext">
+                    <div class="info-group">
+                        <label class="info-label">Vai trò</label>
+                        <div class="info-value">
                             @if (Model.Role == "Candidate")
                             {
-                                <span class="badge badge-info">Ứng viên</span>
+                                <span class="role-badge role-badge-candidate">Ứng viên</span>
                             }
                             else if (Model.Role == "Recruiter")
                             {
-                                <span class="badge badge-warning">Nhà tuyển dụng</span>
+                                <span class="role-badge role-badge-recruiter">Nhà tuyển dụng</span>
                             }
                             else
                             {
-                                <span class="badge badge-secondary">@Model.Role</span>
+                                <span class="role-badge role-badge-default">@Model.Role</span>
                             }
                         </div>
                     </div>
-                    <div class="form-group mb-4">
-                        <label class="text-black font-weight-bold">Ngày tạo tài khoản</label>
-                        <div class="form-control-plaintext">@(Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+                    <div class="info-group">
+                        <label class="info-label">Ngày tạo tài khoản</label>
+                        <div class="info-value">@(Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Đổi mật khẩu -->
-        <div class="col-md-6 mb-4">
-            <div class="p-4 p-md-5 border rounded bg-light">
-                <h3 class="text-black mb-4 border-bottom pb-2"><span class="icon-lock mr-2"></span> Đổi mật khẩu</h3>
-                @using (Html.BeginForm("ChangePassword", "MyAccount", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "changePasswordForm" }))
-                {
-                    @Html.AntiForgeryToken()
-                    
-                    @Html.ValidationSummary(false, "", new { @class = "text-danger mb-3" })
+        <div class="col-lg-6 mb-4">
+            <div class="account-card">
+                <div class="account-card-header">
+                    <h3><span class="icon-lock"></span> Đổi mật khẩu</h3>
+                </div>
+                <div class="account-card-body password-form-wrapper">
+                    <div class="password-form-container">
+                        @using (Html.BeginForm("ChangePassword", "MyAccount", FormMethod.Post, new { id = "changePasswordForm" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        
+                        @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors", style = "display: none;" })
 
-                    <div class="form-group mb-4">
-                        @Html.Label("CurrentPassword", "Mật khẩu hiện tại", new { @class = "text-black font-weight-bold" })
-                        <div class="password-toggle-wrapper" style="position: relative;">
-                            @Html.Password("CurrentPassword", changePasswordModel?.CurrentPassword, new { @class = "form-control", required = "required", autocomplete = "current-password", id = "CurrentPassword", style = "padding-right: 40px;" })
-                            <span class="password-toggle-icon icon-eye" onclick="togglePassword('CurrentPassword', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+                        <div class="form-group-modern">
+                            @Html.Label("CurrentPassword", "Mật khẩu hiện tại", new { @class = "info-label" })
+                            <div class="password-toggle-wrapper">
+                                @Html.Password("CurrentPassword", changePasswordModel?.CurrentPassword, new { @class = "form-control form-control-modern", required = "required", autocomplete = "current-password", id = "CurrentPassword" })
+                                <span class="password-toggle-icon icon-eye" onclick="togglePassword('CurrentPassword', this)"></span>
+                            </div>
+                            @Html.ValidationMessage("CurrentPassword", "", new { @class = "text-danger" })
                         </div>
-                        @Html.ValidationMessage("CurrentPassword", "", new { @class = "text-danger" })
-                    </div>
 
-                    <div class="form-group mb-4">
-                        @Html.Label("NewPassword", "Mật khẩu mới", new { @class = "text-black font-weight-bold" })
-                        <div class="password-toggle-wrapper" style="position: relative;">
-                            @Html.Password("NewPassword", changePasswordModel?.NewPassword, new { @class = "form-control", required = "required", minlength = "6", autocomplete = "new-password", id = "NewPassword", style = "padding-right: 40px;" })
-                            <span class="password-toggle-icon icon-eye" onclick="togglePassword('NewPassword', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+                        <div class="form-group-modern">
+                            @Html.Label("NewPassword", "Mật khẩu mới", new { @class = "info-label" })
+                            <div class="password-toggle-wrapper">
+                                @Html.Password("NewPassword", changePasswordModel?.NewPassword, new { @class = "form-control form-control-modern", required = "required", minlength = "6", autocomplete = "new-password", id = "NewPassword" })
+                                <span class="password-toggle-icon icon-eye" onclick="togglePassword('NewPassword', this)"></span>
+                            </div>
+                            @Html.ValidationMessage("NewPassword", "", new { @class = "text-danger" })
+                            <small class="info-hint">Mật khẩu phải tối thiểu 6 ký tự, gồm chữ hoa, chữ thường và số.</small>
                         </div>
-                        @Html.ValidationMessage("NewPassword", "", new { @class = "text-danger" })
-                        <small class="form-text text-muted">Mật khẩu phải tối thiểu 6 ký tự, gồm chữ hoa, chữ thường và số.</small>
-                    </div>
 
-                    <div class="form-group mb-4">
-                        @Html.Label("ConfirmPassword", "Xác nhận mật khẩu", new { @class = "text-black font-weight-bold" })
-                        <div class="password-toggle-wrapper" style="position: relative;">
-                            @Html.Password("ConfirmPassword", changePasswordModel?.ConfirmPassword, new { @class = "form-control", required = "required", autocomplete = "new-password", id = "ConfirmPassword", style = "padding-right: 40px;" })
-                            <span class="password-toggle-icon icon-eye" onclick="togglePassword('ConfirmPassword', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+                        <div class="form-group-modern">
+                            @Html.Label("ConfirmPassword", "Xác nhận mật khẩu", new { @class = "info-label" })
+                            <div class="password-toggle-wrapper">
+                                @Html.Password("ConfirmPassword", changePasswordModel?.ConfirmPassword, new { @class = "form-control form-control-modern", required = "required", autocomplete = "new-password", id = "ConfirmPassword" })
+                                <span class="password-toggle-icon icon-eye" onclick="togglePassword('ConfirmPassword', this)"></span>
+                            </div>
+                            @Html.ValidationMessage("ConfirmPassword", "", new { @class = "text-danger" })
                         </div>
-                        @Html.ValidationMessage("ConfirmPassword", "", new { @class = "text-danger" })
-                    </div>
 
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary py-2 px-4">
-                            <span class="icon-key mr-2"></span> Đổi mật khẩu
-                        </button>
+                        <div class="form-group-modern">
+                            <button type="submit" class="btn-modern">
+                                <span class="icon-key"></span> Đổi mật khẩu
+                            </button>
+                        </div>
+                    }
                     </div>
-                }
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Thông tin bổ sung -->
     <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="p-4 p-md-5 border rounded bg-light">
-                <h3 class="text-black mb-4 border-bottom pb-2"><span class="icon-info mr-2"></span> Thông tin bổ sung</h3>
-                <p class="mb-2"><strong>Email đăng nhập:</strong> Dùng để đăng nhập vào hệ thống và nhận mã token khi quên mật khẩu. Email này không thể thay đổi.</p>
-                <p class="mb-2"><strong>Email liên lạc:</strong> Email này được lưu trong hồ sơ của bạn, dùng để nhà tuyển dụng/ứng viên liên hệ với bạn. Bạn có thể cập nhật email này trong phần quản lý hồ sơ.</p>
-                @if (Model.Role == "Candidate")
-                {
-                    <p class="mb-0">
-                        <a href="@Url.Action("CandidatesManage", "Candidates")" class="btn btn-primary py-2 px-4">
-                            <span class="icon-user mr-2"></span> Quản lý hồ sơ ứng viên
-                        </a>
-                    </p>
-                }
-                else if (Model.Role == "Recruiter")
-                {
-                    <p class="mb-0">
-                        <a href="@Url.Action("RecruitersManage", "Recruiters")" class="btn btn-primary py-2 px-4">
-                            <span class="icon-briefcase mr-2"></span> Quản lý hồ sơ nhà tuyển dụng
-                        </a>
-                    </p>
-                }
+        <div class="col-12">
+            <div class="info-card">
+                <div class="info-card-header">
+                    <h3><span class="icon-info"></span> Thông tin bổ sung</h3>
+                </div>
+                <div class="info-card-content">
+                    <p><strong>Email đăng nhập:</strong> Dùng để đăng nhập vào hệ thống và nhận mã token khi quên mật khẩu. Email này không thể thay đổi.</p>
+                    <p><strong>Email liên lạc:</strong> Email này được lưu trong hồ sơ của bạn, dùng để nhà tuyển dụng/ứng viên liên hệ với bạn. Bạn có thể cập nhật email này trong phần quản lý hồ sơ.</p>
+                    @if (Model.Role == "Candidate")
+                    {
+                        <p class="mb-0">
+                            <a href="@Url.Action("CandidatesManage", "Candidates")" class="btn-modern">
+                                <span class="icon-user"></span> Quản lý hồ sơ ứng viên
+                            </a>
+                        </p>
+                    }
+                    else if (Model.Role == "Recruiter")
+                    {
+                        <p class="mb-0">
+                            <a href="@Url.Action("RecruitersManage", "Recruiters")" class="btn-modern">
+                                <span class="icon-briefcase"></span> Quản lý hồ sơ nhà tuyển dụng
+                            </a>
+                        </p>
+                    }
+                </div>
             </div>
         </div>
     </div>
@@ -170,25 +186,35 @@
 
 @section Scripts {
     <script>
-        // Form validation
-        (function() {
-            'use strict';
-            window.addEventListener('load', function() {
-                var forms = document.getElementsByTagName('form');
-                var validation = Array.prototype.filter.call(forms, function(form) {
-                    form.addEventListener('submit', function(event) {
-                        if (form.checkValidity() === false) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                        }
-                        form.classList.add('was-validated');
-                    }, false);
+        $(document).ready(function() {
+            // Ẩn validation summary nếu không có lỗi
+            var validationSummary = $('.validation-summary-errors');
+            if (validationSummary.length > 0) {
+                var errorList = validationSummary.find('ul li');
+                var hasErrors = false;
+                
+                errorList.each(function() {
+                    if ($(this).text().trim() !== '' && $(this).css('display') !== 'none') {
+                        hasErrors = true;
+                    }
                 });
-            }, false);
-        })();
-    </script>
+                
+                if (hasErrors) {
+                    validationSummary.show();
+                }
+            }
 
-    <script>
+            // Form validation
+            $('#changePasswordForm').on('submit', function(e) {
+                var form = this;
+                if (form.checkValidity() === false) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                $(form).addClass('was-validated');
+            });
+        });
+
         function togglePassword(inputId, iconElement) {
             var input = document.getElementById(inputId);
             if (input.type === "password") {
