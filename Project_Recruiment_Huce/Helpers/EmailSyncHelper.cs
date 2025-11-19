@@ -1,3 +1,4 @@
+//email sync helper
 using System;
 using System.Linq;
 using Project_Recruiment_Huce.Models;
@@ -31,7 +32,8 @@ namespace Project_Recruiment_Huce.Helpers
                     var candidate = new Candidate
                     {
                         AccountID = accountId,
-                        FullName = fullName ?? account.Username ?? "Chưa cập nhật",
+                        //FullName = fullName ?? account.Username ?? "Chưa cập nhật",
+                        FullName = fullName ?? string.Empty,
                         Gender = "Nam", // Default
                         Email = null, // Email liên lạc - để trống, user sẽ tự cập nhật
                         CreatedAt = DateTime.Now,
@@ -49,7 +51,8 @@ namespace Project_Recruiment_Huce.Helpers
                     var recruiter = new Recruiter
                     {
                         AccountID = accountId,
-                        FullName = fullName ?? account.Username ?? "Chưa cập nhật",
+                        //FullName = fullName ?? account.Username ?? "Chưa cập nhật",
+                        FullName = fullName ?? string.Empty,
                         CompanyEmail = null, // Email liên lạc - để trống, user sẽ tự cập nhật
                         CreatedAt = DateTime.Now,
                         ActiveFlag = 1

@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Web;
+using System.Web.Mvc;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Models
 {
@@ -27,6 +28,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Display(Name = "Số điện thoại")]
         public string Phone { get; set; }
 
+        [Display(Name = "Số Fax")]
+        public string Fax { get; set; }
+
         [Display(Name = "Email")]
         public string CompanyEmail { get; set; }
 
@@ -49,6 +53,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         }
         public int? PhotoId { get; set; }
         public string PhotoUrl { get; set; }
+        public int? RecruiterId { get; set; }
+        public string RecruiterName { get; set; }
     }
     public class CreateCompanyVm
     {
@@ -73,9 +79,14 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string Address { get; set; }
 
         [Display(Name = "Số điện thoại")]
-        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
+        [Required(ErrorMessage = "Số điện thoại tối đa 20 ký tự")]
         [StringLength(20)]
         public string Phone { get; set; }
+
+        [Display(Name = "Số Fax")]
+        [Required(ErrorMessage = "Số Fax tối đa 20 ký tự")]
+        [StringLength(20)]
+        public string Fax { get; set; }
 
         [Display(Name = "Email")]
         [Required(ErrorMessage = "Vui lòng nhập email")]
@@ -89,6 +100,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
 
         [Display(Name = "Mô tả")]
         [Required(ErrorMessage = "Vui lòng nhập mô tả")]
+        [AllowHtml]
         [StringLength(1000, ErrorMessage = "Mô tả không hợp lệ")]
         public string Description { get; set; }
 
@@ -129,8 +141,14 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string Address { get; set; }
 
         [Display(Name = "Số điện thoại")]
+        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         [StringLength(20, ErrorMessage = "Số điện thoại tối đa 20 ký tự")]
         public string Phone { get; set; }
+
+        [Display(Name = "Số Fax")]
+        [Required(ErrorMessage = "Vui lòng nhập số Fax")]
+        [StringLength(20, ErrorMessage = "Số Fax không hợp lệ")]
+        public string Fax { get; set; }
 
         [Display(Name = "Email")]
         [Required(ErrorMessage = "Vui lòng nhập email công ty")]
@@ -144,6 +162,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
 
         [Display(Name = "Mô tả")]
         [Required(ErrorMessage = "Vui lòng nhập mô tả")]
+        [AllowHtml]
         [StringLength(1000, ErrorMessage = "Mô tả tối đa 1000 ký tự")]
         public string Description { get; set; }
 
