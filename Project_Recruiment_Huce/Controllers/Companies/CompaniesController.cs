@@ -42,7 +42,7 @@ namespace Project_Recruiment_Huce.Controllers
                 // Generate unique filename
                 var fileName = Guid.NewGuid().ToString() + fileExt;
                 var uploadPath = Server.MapPath("~/Content/Uploads/Photos/");
-                
+
                 // Create directory if not exists
                 if (!Directory.Exists(uploadPath))
                 {
@@ -135,7 +135,7 @@ namespace Project_Recruiment_Huce.Controllers
                     Industry = company?.Industry,
                     Address = company?.Address,
                     Phone = company?.Phone,
-                    Fax = null, // Fax field not in database yet, will be null for now
+                    Fax = company?.Fax,
                     CompanyEmail = company?.CompanyEmail,
                     Website = company?.Website,
                     Description = company?.Description,
@@ -211,24 +211,30 @@ namespace Project_Recruiment_Huce.Controllers
                 }
             }
 
-            // Validate fax number format (if provided)
+            // Validate fax number format and uniqueness (if provided)
             var fax = (viewModel.Fax ?? string.Empty).Trim();
             if (!string.IsNullOrWhiteSpace(fax))
             {
+                // Validate fax format
                 if (!ValidationHelper.IsValidFax(fax))
                 {
                     ModelState.AddModelError("Fax", ValidationHelper.GetFaxErrorMessage());
+                }
+                else
+                {
+                    // Normalize fax number
+                    fax = ValidationHelper.NormalizeFax(fax);
+
+                    // Check if fax already exists in Companies (exclude current company)
+                    if (!ValidationHelper.IsCompanyFaxUnique(fax, viewModel.CompanyID))
+                    {
+                        ModelState.AddModelError("Fax", "Số Fax này đã được sử dụng bởi công ty khác.");
+                    }
                 }
             }
             else
             {
                 fax = null;
-            }
-
-            if (!ModelState.IsValid)
-            {
-                TempData["ErrorMessage"] = "Vui lòng kiểm tra lại thông tin. Có lỗi trong form.";
-                return View(viewModel);
             }
 
             using (var db = DbContextFactory.Create())
@@ -264,10 +270,11 @@ namespace Project_Recruiment_Huce.Controllers
                                 Industry = viewModel.Industry,
                                 Address = viewModel.Address,
                                 Phone = phone, // Use normalized phone
+                                Fax = fax, // Use trimmed fax
                                 CompanyEmail = companyEmail, // Use trimmed email
                                 Website = viewModel.Website,
-                                Description = !string.IsNullOrWhiteSpace(viewModel.Description) 
-                                    ? HtmlSanitizerHelper.Sanitize(viewModel.Description) 
+                                Description = !string.IsNullOrWhiteSpace(viewModel.Description)
+                                    ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
                                     : null,
                                 CreatedAt = DateTime.Now,
                                 ActiveFlag = 1,
@@ -284,16 +291,17 @@ namespace Project_Recruiment_Huce.Controllers
                         {
                             // Store old photo ID before updating
                             var oldPhotoId = company.PhotoID;
-                            
+
                             // Reload company entity to avoid concurrency issues
                             db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, company);
-                            
+
                             // Update existing company
                             company.CompanyName = viewModel.CompanyName;
                             company.TaxCode = viewModel.TaxCode;
                             company.Industry = viewModel.Industry;
                             company.Address = viewModel.Address;
                             company.Phone = phone; // Use normalized phone
+                            company.Fax = fax; // Use trimmed fax
                             company.CompanyEmail = companyEmail; // Use trimmed email
                             company.Website = viewModel.Website;
                             company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
@@ -304,7 +312,7 @@ namespace Project_Recruiment_Huce.Controllers
                             try
                             {
                                 db.SubmitChanges();
-                                
+
                                 // Delete old logo after successful update
                                 if (oldPhotoId.HasValue)
                                 {
@@ -315,22 +323,23 @@ namespace Project_Recruiment_Huce.Controllers
                             {
                                 // Handle concurrency conflict - refresh and retry
                                 db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, company);
-                                
+
                                 // Retry update with fresh entity
                                 company.CompanyName = viewModel.CompanyName;
                                 company.TaxCode = viewModel.TaxCode;
                                 company.Industry = viewModel.Industry;
                                 company.Address = viewModel.Address;
                                 company.Phone = viewModel.Phone;
+                                company.Fax = viewModel.Fax;
                                 company.CompanyEmail = viewModel.CompanyEmail;
                                 company.Website = viewModel.Website;
                                 company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
                                     ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
                                     : null;
                                 company.PhotoID = newPhotoId.Value;
-                                
+
                                 db.SubmitChanges();
-                                
+
                                 // Delete old logo after successful update
                                 if (oldPhotoId.HasValue)
                                 {
@@ -353,10 +362,11 @@ namespace Project_Recruiment_Huce.Controllers
                             Industry = viewModel.Industry,
                             Address = viewModel.Address,
                             Phone = viewModel.Phone,
+                            Fax = viewModel.Fax,
                             CompanyEmail = viewModel.CompanyEmail,
                             Website = viewModel.Website,
-                            Description = !string.IsNullOrWhiteSpace(viewModel.Description) 
-                                ? HtmlSanitizerHelper.Sanitize(viewModel.Description) 
+                            Description = !string.IsNullOrWhiteSpace(viewModel.Description)
+                                ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
                                 : null,
                             CreatedAt = DateTime.Now,
                             ActiveFlag = 1
@@ -376,6 +386,7 @@ namespace Project_Recruiment_Huce.Controllers
                         company.Industry = viewModel.Industry;
                         company.Address = viewModel.Address;
                         company.Phone = viewModel.Phone;
+                        company.Fax = viewModel.Fax;
                         company.CompanyEmail = viewModel.CompanyEmail;
                         company.Website = viewModel.Website;
                         company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
@@ -392,4 +403,3 @@ namespace Project_Recruiment_Huce.Controllers
         }
     }
 }
-

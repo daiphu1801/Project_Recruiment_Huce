@@ -107,6 +107,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
 
     public class EditRecruiterVm
     {
+        [Display(Name = "Tên đăng nhập")]
+        [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
+        [StringLength(100, ErrorMessage = "Tên đăng nhập tối đa 100 ký tự")]
+        public string Username { get; set; }
+
         [Display(Name = "ID Nhà tuyển dụng")]
         public int RecruiterId { get; set; }
 
@@ -116,7 +121,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Display(Name = "Công ty")]
         public int? CompanyId { get; set; }
 
-        [Display(Name = "Họ tên")] 
+        [Display(Name = "Họ tên")]
         [Required(ErrorMessage = "Vui lòng nhập tên nhà tuyển dụng")]
         [StringLength(100, ErrorMessage = "Tên nhà tuyển dụng tối đa 100 ký tự")]
         public string FullName { get; set; }
