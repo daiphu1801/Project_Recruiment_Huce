@@ -2,7 +2,7 @@ using System.Web.Mvc;
 
 namespace Project_Recruiment_Huce.Controllers
 {
-    public class JobDetailsController : Controller
+    public class JobDetailsController : BaseController
     {
         public ActionResult Details(int? id)
         {

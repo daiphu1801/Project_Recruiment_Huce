@@ -6,22 +6,14 @@ using System.Web;
 using System.Web.Mvc;
 using System.Configuration;
 using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Helpers;
+using Project_Recruiment_Huce.Infrastructure;
 
 namespace Project_Recruiment_Huce.Controllers
 {
     [Authorize]
-    public class RecruitersController : Controller
+    public class RecruitersController : BaseController
     {
-        private int? GetCurrentAccountId()
-        {
-            if (User?.Identity == null || !User.Identity.IsAuthenticated)
-                return null;
-
-            var idClaim = ((ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.NameIdentifier);
-            if (idClaim == null) return null;
-            int accountId;
-            return int.TryParse(idClaim.Value, out accountId) ? (int?)accountId : null;
-        }
 
         [HttpGet]
         public ActionResult RecruitersManage()
@@ -29,7 +21,7 @@ namespace Project_Recruiment_Huce.Controllers
             var accountId = GetCurrentAccountId();
             if (accountId == null) return RedirectToAction("Login", "Account");
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
                 if (recruiter == null)
@@ -63,7 +55,79 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            // Validate phone number format, uniqueness and normalize (if provided)
+            var phone = (recruiter.Phone ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(phone))
+            {
+                // Validate phone format
+                if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                {
+                    ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                }
+                else
+                {
+                    // Normalize phone number
+                    phone = ValidationHelper.NormalizePhone(phone);
+
+                    // Check phone uniqueness (exclude current account)
+                    if (!ValidationHelper.IsAccountPhoneUnique(phone, accountId.Value))
+                    {
+                        ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng bởi tài khoản hoặc hồ sơ khác.");
+                    }
+                }
+            }
+            else
+            {
+                phone = null;
+            }
+
+            // Validate company email format and uniqueness (if provided)
+            var companyEmail = (recruiter.CompanyEmail ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(companyEmail))
+            {
+                // Validate email format
+                if (!ValidationHelper.IsValidEmail(companyEmail))
+                {
+                    ModelState.AddModelError("CompanyEmail", "Email không hợp lệ.");
+                }
+                else
+                {
+                    // Check email uniqueness in Accounts table (exclude current account)
+                    if (!ValidationHelper.IsEmailUniqueInAccounts(companyEmail, accountId.Value))
+                    {
+                        ModelState.AddModelError("CompanyEmail", "Email này đã được sử dụng bởi tài khoản khác.");
+                    }
+                }
+            }
+            else
+            {
+                companyEmail = null;
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Vui lòng kiểm tra lại thông tin. Có lỗi trong form.";
+                // Reload entity for view
+                using (var db = DbContextFactory.Create())
+                {
+                    var existingRecruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
+                    if (existingRecruiter == null)
+                    {
+                        existingRecruiter = new Recruiter
+                        {
+                            AccountID = accountId.Value,
+                            FullName = User.Identity.Name,
+                            CreatedAt = DateTime.Now,
+                            ActiveFlag = 1
+                        };
+                        db.Recruiters.InsertOnSubmit(existingRecruiter);
+                        db.SubmitChanges();
+                    }
+                    return View(existingRecruiter);
+                }
+            }
+
+            using (var db = DbContextFactory.Create())
             {
                 // Load entity from database
                 var existingRecruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
@@ -75,8 +139,8 @@ namespace Project_Recruiment_Huce.Controllers
                         AccountID = accountId.Value,
                         FullName = recruiter.FullName ?? User.Identity.Name,
                         PositionTitle = recruiter.PositionTitle,
-                        CompanyEmail = recruiter.CompanyEmail,
-                        Phone = recruiter.Phone,
+                        CompanyEmail = companyEmail, // Use validated email
+                        Phone = phone, // Use normalized phone
                         CompanyID = recruiter.CompanyID,
                         CreatedAt = DateTime.Now,
                         ActiveFlag = 1
@@ -94,8 +158,8 @@ namespace Project_Recruiment_Huce.Controllers
                     
                     // Update nullable fields - allow setting to null/empty if user clears them
                     existingRecruiter.PositionTitle = recruiter.PositionTitle;
-                    existingRecruiter.CompanyEmail = recruiter.CompanyEmail;
-                    existingRecruiter.Phone = recruiter.Phone;
+                    existingRecruiter.CompanyEmail = companyEmail; // Use validated email
+                    existingRecruiter.Phone = phone; // Use normalized phone
                     
                     // Update CompanyID if provided (including null to clear it)
                     existingRecruiter.CompanyID = recruiter.CompanyID;

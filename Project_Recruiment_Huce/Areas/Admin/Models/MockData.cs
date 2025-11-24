@@ -37,13 +37,13 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
             new RecruiterListVm{ RecruiterId=5, AccountId=2, CompanyId=1, FullName="Hoang Van E", CompanyName="Alpha Co.", PositionTitle="Recruiter", CompanyEmail="e@alpha.vn", Phone="0909678901", ActiveFlag=0, CreatedAt=DateTime.Today.AddDays(-5)},
         });
 
-        private static readonly Lazy<List<CandidateListVm>> _candidates = new Lazy<List<CandidateListVm>>(() => new List<CandidateListVm>
+        private static readonly Lazy<List<CandidatesListVm>> _candidates = new Lazy<List<CandidatesListVm>>(() => new List<CandidatesListVm>
         {
-            new CandidateListVm{ CandidateId=1, AccountId=4, FullName="Pham Quang C", Email="candy@example.com", Phone="0909555666", DateOfBirth=new DateTime(1996,5,12), Gender="Nam", PhotoId=1, ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-12)},
-            new CandidateListVm{ CandidateId=2, AccountId=5, FullName="Le Thi D", Email="hung@example.com", Phone="0909666777", DateOfBirth=new DateTime(1998,10,1), Gender="Nữ", PhotoId=2, ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-8)},
-            new CandidateListVm{ CandidateId=3, AccountId=4, FullName="Tran Minh F", Email="tranf@example.com", Phone="0909777888", DateOfBirth=new DateTime(1995,3,15), Gender="Nam", PhotoId=null, ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-6)},
-            new CandidateListVm{ CandidateId=4, AccountId=5, FullName="Nguyen Thi G", Email="nguyeng@example.com", Phone="0909888999", DateOfBirth=new DateTime(1997,7,20), Gender="Nữ", PhotoId=null, ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-4)},
-            new CandidateListVm{ CandidateId=5, AccountId=4, FullName="Vo Van H", Email="voh@example.com", Phone="0909999000", DateOfBirth=new DateTime(1999,11,25), Gender="Nam", PhotoId=null, ActiveFlag=0, CreatedAt=DateTime.Today.AddDays(-2)},
+            new CandidatesListVm{ CandidateId=1, AccountId=4, FullName="Pham Quang C", Email="candy@example.com", Phone="0909555666", DateOfBirth=new DateTime(1996,5,12), Gender="Nam", PhotoId=1, ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-12)},
+            new CandidatesListVm{ CandidateId=2, AccountId=5, FullName="Le Thi D", Email="hung@example.com", Phone="0909666777", DateOfBirth=new DateTime(1998,10,1), Gender="Nữ", PhotoId=2, ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-8)},
+            new CandidatesListVm{ CandidateId=3, AccountId=4, FullName="Tran Minh F", Email="tranf@example.com", Phone="0909777888", DateOfBirth=new DateTime(1995,3,15), Gender="Nam", PhotoId=null, ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-6)},
+            new CandidatesListVm{ CandidateId=4, AccountId=5, FullName="Nguyen Thi G", Email="nguyeng@example.com", Phone="0909888999", DateOfBirth=new DateTime(1997,7,20), Gender="Nữ", PhotoId=null, ActiveFlag=1, CreatedAt=DateTime.Today.AddDays(-4)},
+            new CandidatesListVm{ CandidateId=5, AccountId=4, FullName="Vo Van H", Email="voh@example.com", Phone="0909999000", DateOfBirth=new DateTime(1999,11,25), Gender="Nam", PhotoId=null, ActiveFlag=0, CreatedAt=DateTime.Today.AddDays(-2)},
         });
 
         private static readonly Lazy<List<WorkExperienceVm>> _workExperiences = new Lazy<List<WorkExperienceVm>>(() => new List<WorkExperienceVm>
@@ -120,7 +120,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public static List<AccountListVm> Accounts => _accounts.Value;
         public static List<CompanyListVm> Companies => _companies.Value;
         public static List<RecruiterListVm> Recruiters => _recruiters.Value;
-        public static List<CandidateListVm> Candidates => _candidates.Value;
+        public static List<CandidatesListVm> Candidates => _candidates.Value;
         public static List<WorkExperienceVm> WorkExperiences => _workExperiences.Value;
         public static List<ApplicationListVm> Applications => _applications.Value;
         public static List<TransactionListVm> Transactions => _transactions.Value;
