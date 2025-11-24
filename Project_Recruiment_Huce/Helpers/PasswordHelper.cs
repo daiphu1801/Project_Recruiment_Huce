@@ -1,115 +1,103 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNet.Identity;
 
 namespace Project_Recruiment_Huce.Helpers
 {
     /// <summary>
     /// Helper class để xử lý mã hóa và xác thực mật khẩu
-    /// Sử dụng SHA256 với salt để bảo mật mật khẩu người dùng
+    /// Hỗ trợ migration từ SHA256 (Legacy) sang PBKDF2 (ASP.NET Identity Standard)
     /// </summary>
     public static class PasswordHelper
     {
+        // Sử dụng PasswordHasher của ASP.NET Identity (PBKDF2)
+        private static readonly PasswordHasher _hasher = new PasswordHasher();
+
         /// <summary>
-        /// Tạo salt ngẫu nhiên cho mật khẩu (32 bytes)
-        /// Salt được sử dụng để tăng cường bảo mật khi hash mật khẩu
+        /// Kết quả xác thực mật khẩu
         /// </summary>
-        /// <returns>Chuỗi Base64 của salt</returns>
+        public enum VerifyResult
+        {
+            Success,              // Mật khẩu đúng (PBKDF2 format)
+            SuccessRehashNeeded,  // Mật khẩu đúng (SHA256 format) - cần update
+            Failed                // Mật khẩu sai
+        }
+
+        /// <summary>
+        /// Tạo hash mật khẩu theo chuẩn mới (PBKDF2)
+        /// </summary>
+        /// <param name="password">Mật khẩu cần hash</param>
+        /// <returns>Chuỗi hash (đã bao gồm salt)</returns>
+        public static string HashPassword(string password)
+        {
+            return _hasher.HashPassword(password);
+        }
+
+        /// <summary>
+        /// Xác thực mật khẩu với hỗ trợ migration tự động (SHA256 → PBKDF2)
+        /// </summary>
+        /// <param name="password">Mật khẩu người dùng nhập</param>
+        /// <param name="dbHash">Hash lưu trong DB</param>
+        /// <param name="dbSalt">Salt lưu trong DB (null nếu dùng PBKDF2)</param>
+        /// <returns>Kết quả xác thực</returns>
+        public static VerifyResult VerifyPasswordV2(string password, string dbHash, string dbSalt)
+        {
+            if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(dbHash))
+                return VerifyResult.Failed;
+
+            // 1. Thử verify theo PBKDF2 (format mới)
+            var result = _hasher.VerifyHashedPassword(dbHash, password);
+            if (result == PasswordVerificationResult.Success)
+                return VerifyResult.Success;
+
+            // 2. Nếu fail và có Salt → verify theo SHA256 (format cũ)
+            if (result == PasswordVerificationResult.Failed && !string.IsNullOrEmpty(dbSalt))
+            {
+                string legacyHash = HashPasswordLegacy(password, dbSalt);
+                if (string.Equals(legacyHash, dbHash, StringComparison.OrdinalIgnoreCase))
+                    return VerifyResult.SuccessRehashNeeded;
+            }
+
+            return VerifyResult.Failed;
+        }
+
+        #region Legacy Support (SHA256) - For Migration Only
+
+        /// <summary>
+        /// Hash password theo format cũ (SHA256 + Salt) - chỉ dùng cho verify legacy passwords
+        /// </summary>
+        private static string HashPasswordLegacy(string password, string salt)
+        {
+            if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(salt))
+                return null;
+
+            string passwordWithSalt = password + salt;
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(passwordWithSalt));
+                var builder = new StringBuilder(bytes.Length * 2);
+                foreach (byte b in bytes)
+                    builder.Append(b.ToString("x2"));
+                return builder.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Generate salt - chỉ dùng cho testing/migration scripts
+        /// </summary>
+        [Obsolete("Salt không còn cần thiết với PBKDF2. Chỉ dùng cho migration scripts.")]
         public static string GenerateSalt()
         {
             byte[] saltBytes = new byte[32];
-            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+            using (var rng = new RNGCryptoServiceProvider())
             {
                 rng.GetBytes(saltBytes);
             }
             return Convert.ToBase64String(saltBytes);
         }
 
-        /// <summary>
-        /// Hash mật khẩu với salt sử dụng thuật toán SHA256
-        /// Kết hợp password + salt trước khi hash để tăng cường bảo mật
-        /// </summary>
-        /// <param name="password">Mật khẩu gốc cần hash</param>
-        /// <param name="salt">Salt để kết hợp với mật khẩu</param>
-        /// <returns>Chuỗi hash của mật khẩu (64 ký tự hex)</returns>
-        public static string HashPassword(string password, string salt)
-        {
-            if (string.IsNullOrEmpty(password))
-                return null;
-
-            if (string.IsNullOrEmpty(salt))
-                salt = GenerateSalt();
-
-            // Kết hợp password và salt
-            string passwordWithSalt = password + salt;
-            
-            using (SHA256 sha256Hash = SHA256.Create())
-            {
-                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(passwordWithSalt));
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    builder.Append(bytes[i].ToString("x2"));
-                }
-                return builder.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Xác thực mật khẩu với hash và salt
-        /// So sánh hash của input password với hash đã lưu
-        /// </summary>
-        /// <param name="password">Mật khẩu cần xác thực</param>
-        /// <param name="hashedPassword">Hash đã lưu trong database</param>
-        /// <param name="salt">Salt đã lưu trong database</param>
-        /// <returns>True nếu mật khẩu đúng, false nếu sai</returns>
-        public static bool VerifyPassword(string password, string hashedPassword, string salt)
-        {
-            if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hashedPassword))
-                return false;
-
-            string hashOfInput = HashPassword(password, salt);
-            return hashOfInput.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// [Phương thức cũ] Hash mật khẩu không sử dụng salt
-        /// Chỉ dùng để tương thích ngược với dữ liệu cũ
-        /// </summary>
-        /// <param name="password">Mật khẩu cần hash</param>
-        /// <returns>Chuỗi hash của mật khẩu</returns>
-        public static string HashPassword(string password)
-        {
-            if (string.IsNullOrEmpty(password))
-                return null;
-
-            using (SHA256 sha256Hash = SHA256.Create())
-            {
-                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    builder.Append(bytes[i].ToString("x2"));
-                }
-                return builder.ToString();
-            }
-        }
-
-        /// <summary>
-        /// [Phương thức cũ] Xác thực mật khẩu không sử dụng salt
-        /// Chỉ dùng để tương thích ngược với dữ liệu cũ
-        /// </summary>
-        /// <param name="password">Mật khẩu cần xác thực</param>
-        /// <param name="hashedPassword">Hash đã lưu</param>
-        /// <returns>True nếu đúng, false nếu sai</returns>
-        public static bool VerifyPassword(string password, string hashedPassword)
-        {
-            if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hashedPassword))
-                return false;
-
-            string hashOfInput = HashPassword(password);
-            return hashOfInput.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase);
-        }
+        #endregion
     }
 }
 

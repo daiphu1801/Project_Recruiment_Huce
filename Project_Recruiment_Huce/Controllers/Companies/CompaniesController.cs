@@ -17,7 +17,7 @@ namespace Project_Recruiment_Huce.Controllers
     /// Controller quản lý thông tin công ty - logo, address, industry, website, description
     /// Liên kết với Recruiter qua CompanyID
     /// </summary>
-    [Authorize]
+    [Authorize(Roles="Recruiter")]
     public class CompaniesController : BaseController
     {
         /// <summary>

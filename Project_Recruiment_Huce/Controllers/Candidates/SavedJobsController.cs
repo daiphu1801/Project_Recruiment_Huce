@@ -14,7 +14,7 @@ using Project_Recruiment_Huce.Repositories.SavedJobRepo;
 
 namespace Project_Recruiment_Huce.Controllers
 {
-    [Authorize]
+    [Authorize(Roles="Candidate")]
     public class SavedJobsController : BaseController
     {
         private readonly ISavedJobService _savedJobService;

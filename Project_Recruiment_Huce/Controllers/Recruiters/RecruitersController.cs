@@ -17,7 +17,7 @@ namespace Project_Recruiment_Huce.Controllers
     /// Controller quản lý hồ sơ recruiter - thông tin cá nhân, vị trí, company, avatar
     /// Chỉ dành cho người dùng đã đăng nhập với vai trò Recruiter
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = "Recruiter")]
     public class RecruitersController : BaseController
     {
         private readonly IRecruiterService _recruiterService;

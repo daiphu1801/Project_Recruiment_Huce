@@ -32,7 +32,6 @@ namespace Project_Recruiment_Huce.Controllers
         }
 
         /// <summary>
-        /// [Đã lỗi thời] Tạo database context với connection string từ config
         /// Sử dụng DbContextFactory.Create() hoặc DbContextFactory.CreateReadOnly() thay thế
         /// </summary>
         /// <returns>Instance của JOBPORTAL_ENDataContext</returns>

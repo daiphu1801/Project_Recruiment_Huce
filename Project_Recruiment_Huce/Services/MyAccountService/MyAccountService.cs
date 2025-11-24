@@ -67,9 +67,9 @@ namespace Project_Recruiment_Huce.Services
             if (account == null || string.IsNullOrEmpty(currentPassword))
                 return false;
 
-            return string.IsNullOrEmpty(account.Salt)
-                ? PasswordHelper.VerifyPassword(currentPassword, account.PasswordHash)
-                : PasswordHelper.VerifyPassword(currentPassword, account.PasswordHash, account.Salt);
+            // Sử dụng VerifyPasswordV2 - hỗ trợ cả format cũ và mới
+            var verifyResult = PasswordHelper.VerifyPasswordV2(currentPassword, account.PasswordHash, account.Salt);
+            return verifyResult != PasswordHelper.VerifyResult.Failed;
         }
 
         /// <summary>
@@ -183,9 +183,9 @@ namespace Project_Recruiment_Huce.Services
             if (account == null || string.IsNullOrEmpty(newPassword))
                 return false;
 
-            return string.IsNullOrEmpty(account.Salt)
-                ? PasswordHelper.VerifyPassword(newPassword, account.PasswordHash)
-                : PasswordHelper.VerifyPassword(newPassword, account.PasswordHash, account.Salt);
+            // Sử dụng VerifyPasswordV2 - hỗ trợ cả format cũ và mới
+            var verifyResult = PasswordHelper.VerifyPasswordV2(newPassword, account.PasswordHash, account.Salt);
+            return verifyResult != PasswordHelper.VerifyResult.Failed;
         }
 
         /// <summary>
@@ -196,9 +196,9 @@ namespace Project_Recruiment_Huce.Services
             if (string.IsNullOrWhiteSpace(newPassword))
                 throw new ArgumentException("Mật khẩu mới không được rỗng", nameof(newPassword));
 
-            string salt = PasswordHelper.GenerateSalt();
-            string passwordHash = PasswordHelper.HashPassword(newPassword, salt);
-            _repo.UpdatePassword(accountId, passwordHash, salt);
+            // Sử dụng HashPassword mới (PBKDF2) - không cần salt riêng
+            string passwordHash = PasswordHelper.HashPassword(newPassword);
+            _repo.UpdatePassword(accountId, passwordHash, null);
             _repo.SaveChanges();
         }
     }
