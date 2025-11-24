@@ -236,11 +236,11 @@
                             <span class="fw-semibold">
                                 @if (Model.AgeFrom.HasValue || Model.AgeTo.HasValue)
                                 {
-                                    @:(Model.AgeFrom ?? 18) - @(Model.AgeTo ?? 60) tuổi
+                                    <text>@(Model.AgeFrom ?? 18) - @(Model.AgeTo ?? 60) tuổi</text>
                                 }
                                 else
                                 {
-                                    @:Không yêu cầu
+                                    <text>Không yêu cầu</text>
                                 }
                             </span>
                         </div>
