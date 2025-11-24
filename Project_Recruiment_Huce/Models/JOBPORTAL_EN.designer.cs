@@ -256,8 +256,6 @@ namespace Project_Recruiment_Huce.Models
 		
 		private string _PasswordHash;
 		
-		private string _Salt;
-		
 		private string _Email;
 		
 		private string _Phone;
@@ -292,8 +290,6 @@ namespace Project_Recruiment_Huce.Models
     partial void OnUsernameChanged();
     partial void OnPasswordHashChanging(string value);
     partial void OnPasswordHashChanged();
-    partial void OnSaltChanging(string value);
-    partial void OnSaltChanged();
     partial void OnEmailChanging(string value);
     partial void OnEmailChanged();
     partial void OnPhoneChanging(string value);
@@ -375,26 +371,6 @@ namespace Project_Recruiment_Huce.Models
 					this._PasswordHash = value;
 					this.SendPropertyChanged("PasswordHash");
 					this.OnPasswordHashChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Salt", DbType="NVarChar(255)")]
-		public string Salt
-		{
-			get
-			{
-				return this._Salt;
-			}
-			set
-			{
-				if ((this._Salt != value))
-				{
-					this.OnSaltChanging(value);
-					this.SendPropertyChanging();
-					this._Salt = value;
-					this.SendPropertyChanged("Salt");
-					this.OnSaltChanged();
 				}
 			}
 		}

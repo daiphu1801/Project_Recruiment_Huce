@@ -178,7 +178,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Phone = phone, // Use normalized phone
                     Role = model.Role,
                     PasswordHash = passwordHash,
-                    Salt = null, // Không cần salt riêng nữa
                     ActiveFlag = 1,
                     CreatedAt = DateTime.Now,
                 };
@@ -349,7 +348,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 {
                     // Hash password sử dụng PBKDF2 (không cần salt riêng)
                     account.PasswordHash = PasswordHelper.HashPassword(model.Password);
-                    account.Salt = null; // Không cần salt riêng nữa
                 }
 
                 // Đồng bộ dữ liệu
