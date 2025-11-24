@@ -6,27 +6,28 @@ using Project_Recruiment_Huce.Models;
 namespace Project_Recruiment_Huce.Helpers
 {
     /// <summary>
-    /// Helper class for company logo URL retrieval
-    /// Centralized logic to avoid duplication across controllers
+    /// Helper class để lấy URL logo công ty
+    /// Tập trung logic để tránh trùng lặp giữa các controllers
     /// </summary>
     public static class CompanyLogoHelper
     {
         private const string DefaultLogoUrl = "/Content/images/job_logo_1.jpg";
 
         /// <summary>
-        /// Get company logo URL from JobPost
+        /// Lấy URL logo công ty từ tin tuyển dụng
+        /// Ưu tiên lấy từ Company, nếu không có thì lấy từ Recruiter's Company
         /// </summary>
-        /// <param name="job">JobPost entity</param>
-        /// <returns>Logo URL or default logo</returns>
+        /// <param name="job">Entity JobPost</param>
+        /// <returns>URL logo hoặc logo mặc định nếu không tìm thấy</returns>
         public static string GetLogoUrl(JobPost job)
         {
-            // Try to get logo from Company first
+            // Thử lấy logo từ Company trước
             if (job?.Company?.PhotoID != null && job.Company.PhotoID.HasValue)
             {
                 return GetLogoUrlByPhotoId(job.Company.PhotoID.Value);
             }
 
-            // If no Company, try to get from Recruiter's Company
+            // Nếu không có Company, thử lấy từ Company của Recruiter
             if (job?.Recruiter?.Company?.PhotoID != null && job.Recruiter.Company.PhotoID.HasValue)
             {
                 return GetLogoUrlByPhotoId(job.Recruiter.Company.PhotoID.Value);
@@ -36,10 +37,10 @@ namespace Project_Recruiment_Huce.Helpers
         }
 
         /// <summary>
-        /// Get company logo URL from Company entity
+        /// Lấy URL logo công ty từ entity Company
         /// </summary>
-        /// <param name="company">Company entity</param>
-        /// <returns>Logo URL or default logo</returns>
+        /// <param name="company">Entity Company</param>
+        /// <returns>URL logo hoặc logo mặc định nếu không có</returns>
         public static string GetLogoUrl(Company company)
         {
             if (company?.PhotoID == null || !company.PhotoID.HasValue)
@@ -51,10 +52,11 @@ namespace Project_Recruiment_Huce.Helpers
         }
 
         /// <summary>
-        /// Get company logo URL from PhotoID
+        /// Lấy URL logo công ty từ PhotoID
+        /// Tạo database context mới để truy vấn
         /// </summary>
-        /// <param name="photoId">Photo ID</param>
-        /// <returns>Logo URL or default logo</returns>
+        /// <param name="photoId">ID của ảnh</param>
+        /// <returns>URL logo hoặc logo mặc định nếu không tìm thấy</returns>
         public static string GetLogoUrlByPhotoId(int photoId)
         {
             try
@@ -62,7 +64,7 @@ namespace Project_Recruiment_Huce.Helpers
                 var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
                 using (var db = new JOBPORTAL_ENDataContext(connectionString))
                 {
-                    db.ObjectTrackingEnabled = false;
+                    db.ObjectTrackingEnabled = false; // Tắt tracking vì chỉ đọc
                     var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId);
                     if (photo != null && !string.IsNullOrEmpty(photo.FilePath))
                     {
@@ -72,7 +74,7 @@ namespace Project_Recruiment_Huce.Helpers
             }
             catch (Exception)
             {
-                // If any error occurs, return default logo
+                // Nếu có lỗi, trả về logo mặc định
                 return DefaultLogoUrl;
             }
 
@@ -80,11 +82,12 @@ namespace Project_Recruiment_Huce.Helpers
         }
 
         /// <summary>
-        /// Get company logo URL with existing database context (more efficient)
+        /// Lấy URL logo công ty với database context đã có sẵn (hiệu quả hơn)
+        /// Sử dụng khi đã có context để tránh tạo connection mới
         /// </summary>
-        /// <param name="db">Database context</param>
-        /// <param name="photoId">Photo ID</param>
-        /// <returns>Logo URL or default logo</returns>
+        /// <param name="db">Database context hiện tại</param>
+        /// <param name="photoId">ID của ảnh</param>
+        /// <returns>URL logo hoặc logo mặc định nếu không tìm thấy</returns>
         public static string GetLogoUrlWithContext(JOBPORTAL_ENDataContext db, int? photoId)
         {
             if (!photoId.HasValue)
@@ -109,9 +112,9 @@ namespace Project_Recruiment_Huce.Helpers
         }
 
         /// <summary>
-        /// Get default logo URL
+        /// Lấy URL logo mặc định
         /// </summary>
-        /// <returns>Default logo URL</returns>
+        /// <returns>URL logo mặc định</returns>
         public static string GetDefaultLogoUrl()
         {
             return DefaultLogoUrl;

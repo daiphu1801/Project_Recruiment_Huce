@@ -1,0 +1,57 @@
+/* Toast sizing + header/body layout tweaks moved out of Razor view
+   to avoid Razor parsing issues with @media and keep styles centralized */
+.toast {
+  min-width: 320px;
+  max-width: 520px;
+  font-size: 1.02rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  overflow: visible;
+  padding: 0;
+  position: relative;
+  z-index: 11001; /* ensure toast is above most UI elements */
+  pointer-events: auto; /* allow clicks on toast and its children (close button) */
+}
+.toast .toast-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  padding: 0.45rem 0.8rem;
+  font-size: 1rem;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  margin: 0.45rem 0.6rem 0; /* inset so header looks like a pill */
+  z-index: 2;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 11002; /* header should be above toast body */
+}
+/* ensure close button receives pointer events */
+.toast .toast-header .close {
+  pointer-events: auto;
+}
+.toast .toast-header .mr-auto { margin-right: auto; }
+.toast .toast-header .close { color: #fff; opacity: 1; }
+.toast .toast-body {
+  padding: 0.9rem 0.9rem;
+  font-size: 1rem;
+  background: rgba(255,255,255,0.98);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  margin: 0.6rem 0.4rem 0.6rem;
+  position: relative;
+  z-index: 1;
+}
+/* optional small avatar inside header */
+.toast .toast-header img.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.25);
+}
+@media (max-width: 576px) {
+  .toast { min-width: 260px; max-width: 92vw; font-size: 0.98rem; }
+  .toast .toast-header img.avatar { width: 28px; height: 28px; }
+}

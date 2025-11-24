@@ -7,68 +7,75 @@ using Project_Recruiment_Huce.Models;
 namespace Project_Recruiment_Huce.Helpers
 {
     /// <summary>
-    /// Helper class for validating various input fields
+    /// Helper class để validate các trường input từ người dùng
+    /// Cung cấp các phương thức kiểm tra định dạng và tính duy nhất của dữ liệu
     /// </summary>
     public static class ValidationHelper
     {
-        // Regex pattern for Vietnamese phone numbers
-        // Supports: 0xxxxxxxxx (10 số), +84xxxxxxxxx hoặc 84xxxxxxxxx (11 số)
-        // Số điện thoại Việt Nam: 10 số (0 + 9 số) hoặc 11 số (84 + 9 số)
+        // Pattern để kiểm tra số điện thoại Việt Nam
+        // Hỗ trợ: 0xxxxxxxxx (10 số), +84xxxxxxxxx hoặc 84xxxxxxxxx (11 số)
         // Đầu số phổ biến: 03, 05, 07, 08, 09
         private static readonly Regex VietnamesePhoneRegex = new Regex(
             @"^(0[35789][0-9]{8}|(\+84|84)[35789][0-9]{8})$",
             RegexOptions.Compiled
         );
 
-        // Regex pattern for fax numbers (similar to phone but can have extensions)
+        // Pattern để kiểm tra số fax (tương tự số điện thoại cố định Việt Nam)
+        // Hỗ trợ: 0[2-9]xxxxxxxx (10 số bắt đầu bằng 02x cho Hà Nội, 028 cho TP.HCM, etc.)
         private static readonly Regex FaxRegex = new Regex(
-            @"^(0|\+84|84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-6|8|9]|9[0-4|6-9])[0-9]{7}(?:[-\s]?ext[-\s]?[0-9]{1,4})?$",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase
+            @"^(0[2-9][0-9]{8}|(\+84|84)[2-9][0-9]{8})$",
+            RegexOptions.Compiled
         );
 
         /// <summary>
-        /// Validates Vietnamese phone number format
+        /// Kiểm tra định dạng số điện thoại Việt Nam
         /// </summary>
-        /// <param name="phone">Phone number to validate</param>
-        /// <returns>True if valid, false otherwise</returns>
+        /// <param name="phone">Số điện thoại cần kiểm tra</param>
+        /// <returns>True nếu hợp lệ, false nếu không</returns>
         public static bool IsValidVietnamesePhone(string phone)
         {
             if (string.IsNullOrWhiteSpace(phone))
                 return false;
 
-            // Remove spaces, dashes, and parentheses
+            // Loại bỏ khoảng trắng, dấu gạch ngang và dấu ngoặc
             var cleaned = Regex.Replace(phone, @"[\s\-\(\)]", "");
 
-            // Check regex pattern
+            // Kiểm tra pattern
             if (!VietnamesePhoneRegex.IsMatch(cleaned))
                 return false;
 
-            // Additional validation: must be 10 or 11 digits total
+            // Validation bổ sung: phải có 10 hoặc 11 chữ số
             var digitsOnly = Regex.Replace(cleaned, @"[^\d]", "");
             return digitsOnly.Length == 10 || digitsOnly.Length == 11;
         }
 
         /// <summary>
-        /// Validates fax number format
+        /// Kiểm tra định dạng số fax
         /// </summary>
-        /// <param name="fax">Fax number to validate</param>
-        /// <returns>True if valid, false otherwise</returns>
+        /// <param name="fax">Số fax cần kiểm tra</param>
+        /// <returns>True nếu hợp lệ, false nếu không</returns>
         public static bool IsValidFax(string fax)
         {
             if (string.IsNullOrWhiteSpace(fax))
                 return false;
 
-            // Remove spaces, dashes
-            var cleaned = Regex.Replace(fax, @"[\s\-]", "");
+            // Loại bỏ khoảng trắng, dấu gạch ngang và dấu ngoặc
+            var cleaned = Regex.Replace(fax, @"[\s\-\(\)]", "");
 
-            return FaxRegex.IsMatch(cleaned);
+            // Kiểm tra pattern
+            if (!FaxRegex.IsMatch(cleaned))
+                return false;
+
+            // Validation phải có 10 hoặc 11 chữ số
+            var digitsOnly = Regex.Replace(cleaned, @"[^\d]", "");
+            return digitsOnly.Length == 10 || digitsOnly.Length == 11;
         }
 
         /// <summary>
-        /// Validates email format
+        /// Kiểm tra định dạng email
         /// </summary>
-        /// <param name="email">Email to validate</param>
-        /// <returns>True if valid, false otherwise</returns>
+        /// <param name="email">Email cần kiểm tra</param>
+        /// <returns>True nếu hợp lệ, false nếu không</returns>
         public static bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -86,11 +93,11 @@ namespace Project_Recruiment_Huce.Helpers
         }
 
         /// <summary>
-        /// Checks if email is unique in Accounts table
+        /// Kiểm tra email có duy nhất trong bảng Accounts hay không
         /// </summary>
-        /// <param name="email">Email to check</param>
-        /// <param name="excludeAccountId">Account ID to exclude from check (for updates)</param>
-        /// <returns>True if unique, false if duplicate</returns>
+        /// <param name="email">Email cần kiểm tra</param>
+        /// <param name="excludeAccountId">ID của Account được loại trừ khỏi kiểm tra (cho trường hợp update)</param>
+        /// <returns>True nếu duy nhất, false nếu trùng lặp</returns>
         public static bool IsEmailUniqueInAccounts(string email, int? excludeAccountId = null)
         {
             if (string.IsNullOrWhiteSpace(email))

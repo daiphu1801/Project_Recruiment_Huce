@@ -264,6 +264,189 @@
     margin-bottom: 0.25rem;
 }
 
+/* Password Change Section - Compact & Centered */
+.password-change-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.password-change-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid #e9ecef;
+    width: 100%;
+    max-width: 900px;
+    overflow: hidden;
+}
+
+.password-change-header {
+    background: linear-gradient(135deg, #89ba16 0%, #6a9013 100%);
+    color: white;
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.password-change-header span.icon-lock {
+    font-size: 1.5rem;
+}
+
+.password-change-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.password-change-body {
+    padding: 2.5rem 2rem;
+    background: #fafbfc;
+}
+
+/* Compact Form Layout */
+.compact-form {
+    max-width: 100%;
+}
+
+.form-group-compact {
+    margin-bottom: 1rem;
+}
+
+.form-group-compact .password-toggle-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.form-label-compact {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control-compact {
+    border: 2px solid #e0e6ed;
+    border-radius: 8px;
+    padding: 0.625rem 2.75rem 0.625rem 0.875rem;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    background: white;
+    height: 42px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-control-compact:focus {
+    border-color: #89ba16;
+    box-shadow: 0 0 0 0.2rem rgba(137, 186, 22, 0.15);
+    outline: none;
+}
+
+.form-control-compact::placeholder {
+    color: #adb5bd;
+    font-size: 0.85rem;
+}
+
+.validation-msg-compact {
+    font-size: 0.8rem;
+    margin-top: 0.35rem;
+}
+
+/* Override password toggle for compact form */
+.form-group-compact .password-toggle-icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #6c757d;
+    user-select: none;
+    z-index: 10;
+    transition: color 0.3s ease;
+}
+
+.form-group-compact .password-toggle-icon:hover {
+    color: #89ba16;
+}
+
+/* Password hint box */
+.password-hint-box {
+    background: #f8f9fa;
+    border-left: 3px solid #89ba16;
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.password-hint-box .icon-info-circle {
+    color: #89ba16;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.password-hint-box small {
+    color: #6c757d;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Form Footer */
+.form-footer-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.password-hint {
+    color: #6c757d;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.password-hint .icon-info-circle {
+    color: #89ba16;
+    font-size: 1rem;
+}
+
+.btn-change-password {
+    background: linear-gradient(135deg, #89ba16 0%, #6a9013 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    width: 100%;
+}
+
+.btn-change-password:hover {
+    background: linear-gradient(135deg, #6a9013 0%, #89ba16 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(137, 186, 22, 0.3);
+    color: white;
+}
+
+.btn-change-password .icon-key {
+    font-size: 1.1rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .account-card-body {
@@ -285,5 +468,28 @@
 
     .btn-modern {
         width: 100%;
+    }
+    
+    .btn-change-password {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .form-label-compact {
+        font-size: 0.85rem;
+    }
+    
+    .form-control-compact {
+        font-size: 0.875rem;
+        height: 40px;
+        padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+    }
+    
+    .password-hint-box {
+        padding: 0.6rem 0.85rem;
+    }
+    
+    .password-hint-box small {
+        font-size: 0.8rem;
     }
 }

@@ -73,7 +73,7 @@
           <div class="form-row">
             <div class="form-group col-md-6">
               <label for="TaxCode">Mã số thuế</label>
-              @Html.TextBoxFor(m => m.TaxCode, new { @class = "form-control", placeholder = "0123456789" })
+              @Html.TextBoxFor(m => m.TaxCode, new { @class = "form-control", placeholder = "0223456789" })
               @Html.ValidationMessageFor(m => m.TaxCode, "", new { @class = "text-danger" })
             </div>
             <div class="form-group col-md-6">
@@ -135,6 +135,7 @@
 
 <script>
     // Initialize Quill editor for Description
+    
     var quill = new Quill('#description-editor', {
         theme: 'snow',
         modules: {

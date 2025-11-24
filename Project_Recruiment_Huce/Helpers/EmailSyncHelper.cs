@@ -5,18 +5,21 @@ using Project_Recruiment_Huce.Models;
 namespace Project_Recruiment_Huce.Helpers
 {
     /// <summary>
-    /// Helper class để đồng bộ email giữa Accounts và Candidates/Recruiters
+    /// Helper class để tạo profile (Candidate/Recruiter) tự động khi tạo Account
+    /// Lưu ý: Email trong Account và profile được quản lý độc lập
+    /// - Account.Email: Đăng nhập, quên mật khẩu (không thể sửa)
+    /// - Candidate.Email / Recruiter.CompanyEmail: Email liên lạc (có thể sửa)
     /// </summary>
     public static class EmailSyncHelper
     {
-        // NOTE: Không còn đồng bộ email giữa Account và profile
-        // Email trong Account.Email: dùng để đăng nhập và xử lý token (quên mật khẩu) - không thể sửa từ user
-        // Email trong Candidate.Email / Recruiter.CompanyEmail: email liên lạc, có thể sửa độc lập
-
         /// <summary>
-        /// Tự động tạo profile Candidate hoặc Recruiter khi tạo Account
-        /// NOTE: Không set email từ Account - email trong profile là email liên lạc riêng
+        /// Tự động tạo profile Candidate hoặc Recruiter khi tạo Account mới
+        /// Email trong profile để trống, cho phép người dùng tự cập nhật
         /// </summary>
+        /// <param name="db">Database context</param>
+        /// <param name="accountId">ID của Account vừa tạo</param>
+        /// <param name="role">Vai trò (Candidate hoặc Recruiter)</param>
+        /// <param name="fullName">Tên đầy đủ (tùy chọn)</param>
         public static void CreateProfile(JOBPORTAL_ENDataContext db, int accountId, string role, string fullName = null)
         {
             var account = db.Accounts.FirstOrDefault(a => a.AccountID == accountId);

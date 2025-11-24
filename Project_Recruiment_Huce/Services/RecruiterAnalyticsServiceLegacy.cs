@@ -10,36 +10,67 @@ using Project_Recruiment_Huce.Infrastructure;
 namespace Project_Recruiment_Huce.Services
 {
     /// <summary>
-    /// Service layer for recruiter analytics
-    /// Encapsulates business logic for analytics calculations and keeps controllers thin
+    /// LEGACY: Service layer cho analytics của recruiter
+    /// Kept for backward compatibility with existing code (e.g., JobsController for IncrementViewCount)
+    /// New code should use Project_Recruiment_Huce.Services.RecruiterAnalyticsService.RecruiterAnalyticsService
     /// </summary>
-    public class RecruiterAnalyticsService
+    public class LegacyRecruiterAnalyticsService
     {
         private readonly JOBPORTAL_ENDataContext _db;
 
-        public RecruiterAnalyticsService(JOBPORTAL_ENDataContext db)
+        public LegacyRecruiterAnalyticsService(JOBPORTAL_ENDataContext db)
         {
             _db = db ?? throw new ArgumentNullException(nameof(db));
         }
 
         /// <summary>
-        /// Get complete analytics dashboard data for a recruiter
+        /// Lấy dữ liệu dashboard analytics đầy đủ cho recruiter với phân trang
+        /// Bao gồm: summary metrics và breakdown theo từng tin tuyển dụng
         /// </summary>
-        public RecruiterAnalyticsDashboardViewModel GetDashboardData(int recruiterId, DateTime? fromDate = null, DateTime? toDate = null)
+        /// <param name="recruiterId">ID của recruiter</param>
+        /// <param name="fromDate">Ngày bắt đầu lọc</param>
+        /// <param name="toDate">Ngày kết thúc lọc</param>
+        /// <param name="page">Trang hiện tại</param>
+        /// <param name="pageSize">Số items mỗi trang</param>
+        /// <returns>ViewModel chứa summary và breakdown có phân trang</returns>
+        public RecruiterAnalyticsDashboardViewModel GetDashboardData(int recruiterId, DateTime? fromDate = null, DateTime? toDate = null, int page = 1, int pageSize = 10)
         {
             var summary = GetSummaryMetrics(recruiterId, fromDate, toDate);
-            var breakdown = GetJobBreakdown(recruiterId, fromDate, toDate);
+            var allBreakdown = GetJobBreakdown(recruiterId, fromDate, toDate);
+            
+            // Calculate pagination
+            var totalItems = allBreakdown.Count;
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            
+            // Ensure page is within valid range
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+            
+            // Get paginated items
+            var pagedBreakdown = allBreakdown
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
             return new RecruiterAnalyticsDashboardViewModel
             {
                 Summary = summary,
-                JobBreakdown = breakdown
+                JobBreakdown = pagedBreakdown,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                PageSize = pageSize,
+                TotalItems = totalItems
             };
         }
 
         /// <summary>
-        /// Get summary metrics for a recruiter using stored procedure
+        /// Lấy summary metrics cho recruiter sử dụng stored procedure
+        /// Gồm: TotalViews, TotalApplications, TotalJobs, ConversionRate
         /// </summary>
+        /// <param name="recruiterId">ID của recruiter</param>
+        /// <param name="fromDate">Ngày bắt đầu lọc</param>
+        /// <param name="toDate">Ngày kết thúc lọc</param>
+        /// <returns>ViewModel chứa các chỉ số tổng hợp</returns>
         public RecruiterAnalyticsSummaryViewModel GetSummaryMetrics(int recruiterId, DateTime? fromDate = null, DateTime? toDate = null)
         {
             try
@@ -57,7 +88,7 @@ namespace Project_Recruiment_Huce.Services
 
                         using (var reader = cmd.ExecuteReader())
                         {
-                            // First result set: summary
+                            // Result set đầu tiên: summary
                             if (reader.Read())
                             {
                                 return new RecruiterAnalyticsSummaryViewModel
@@ -92,8 +123,13 @@ namespace Project_Recruiment_Huce.Services
         }
 
         /// <summary>
-        /// Get per-job breakdown for a recruiter using stored procedure
+        /// Lấy breakdown theo từng tin tuyển dụng sử dụng stored procedure
+        /// Mỗi tin có: JobTitle, Status, PostedAt, Views, Applications, ConversionRate
         /// </summary>
+        /// <param name="recruiterId">ID của recruiter</param>
+        /// <param name="fromDate">Ngày bắt đầu lọc</param>
+        /// <param name="toDate">Ngày kết thúc lọc</param>
+        /// <returns>Danh sách analytics của từng tin tuyển dụng</returns>
         public List<JobAnalyticsItemViewModel> GetJobBreakdown(int recruiterId, DateTime? fromDate = null, DateTime? toDate = null)
         {
             var breakdown = new List<JobAnalyticsItemViewModel>();
@@ -113,10 +149,10 @@ namespace Project_Recruiment_Huce.Services
 
                         using (var reader = cmd.ExecuteReader())
                         {
-                            // Skip first result set (summary)
+                            // Bỏ qua result set đầu tiên (summary)
                             reader.NextResult();
 
-                            // Second result set: per-job breakdown
+                            // Result set thứ hai: breakdown theo từng job
                             while (reader.Read())
                             {
                                 breakdown.Add(new JobAnalyticsItemViewModel
