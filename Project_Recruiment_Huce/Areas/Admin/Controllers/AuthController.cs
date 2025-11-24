@@ -67,7 +67,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     new Claim(ClaimTypes.NameIdentifier, user.AccountID.ToString()),
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                    new Claim("VaiTro", user.Role),
+                    new Claim(ClaimTypes.Role, user.Role), // Dùng ClaimTypes.Role để [Authorize(Roles=...)] hoạt động
+                    new Claim("VaiTro", user.Role), // Giữ lại để tương thích với code cũ
                     new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                 };
 
@@ -234,7 +235,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         new Claim(ClaimTypes.NameIdentifier, newAccount.AccountID.ToString()),
                         new Claim(ClaimTypes.Name, newAccount.Username),
                         new Claim(ClaimTypes.Email, newAccount.Email ?? string.Empty),
-                        new Claim("VaiTro", newAccount.Role),
+                        new Claim(ClaimTypes.Role, newAccount.Role), // Dùng ClaimTypes.Role để [Authorize(Roles=...)] hoạt động
+                        new Claim("VaiTro", newAccount.Role), // Giữ lại để tương thích với code cũ
                         new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                     };
                     var identity = new ClaimsIdentity(claims, "AdminCookie");
