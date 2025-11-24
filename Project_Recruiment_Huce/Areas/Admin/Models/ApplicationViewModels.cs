@@ -24,6 +24,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string ResumeFilePath { get; set; }
         public string CertificateFilePath { get; set; }
         public string CompanyName { get; internal set; }
+        public object JobPost { get; internal set; }
+        public object Candidate { get; internal set; }
+        public string Status { get; internal set; }
     }
     public class CreateApplicationListVm
     {

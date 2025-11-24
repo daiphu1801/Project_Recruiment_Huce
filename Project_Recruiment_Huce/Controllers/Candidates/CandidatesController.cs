@@ -164,10 +164,18 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+
+            //if (!ModelState.IsValid)
+            //{
+            //    // Reload data for view
+            //    return Apply(viewModel.JobPostID);
+            //}
+
             if (!ModelState.IsValid)
             {
                 return Apply(viewModel.JobPostID);
             }
+
 
             var result = _candidateService.SubmitApplication(viewModel, accountId.Value, newResumeFile, Server);
 

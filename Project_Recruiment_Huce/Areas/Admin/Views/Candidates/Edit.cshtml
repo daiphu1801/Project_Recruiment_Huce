@@ -1,4 +1,4 @@
-@model Project_Recruiment_Huce.Areas.Admin.Models.EditCandidateListVm
+@model Project_Recruiment_Huce.Areas.Admin.Models.EditCandidatesListVm
 @{
     ViewBag.Title = "Sửa ứng viên";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
@@ -21,6 +21,12 @@
                 </ul>
             </div>
         }
+        @{
+    if (ViewBag.AccountOptions == null)
+    {
+        ViewBag.AccountOptions = new SelectList(new List<object>());
+    }
+}
 
         @using (Html.BeginForm("Edit", "Candidates", FormMethod.Post, new { enctype = "multipart/form-data" }))
         {
@@ -58,6 +64,7 @@
                         @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
                         @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
                     </div>
+
 
                     <div class="mb-3">
                         @Html.LabelFor(m => m.ApplicationEmail, new { @class = "form-label" })
