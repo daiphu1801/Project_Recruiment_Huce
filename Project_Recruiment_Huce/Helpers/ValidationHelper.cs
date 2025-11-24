@@ -20,10 +20,9 @@ namespace Project_Recruiment_Huce.Helpers
             RegexOptions.Compiled
         );
 
-        // Pattern để kiểm tra số fax (tương tự số điện thoại cố định Việt Nam)
-        // Hỗ trợ: 0[2-9]xxxxxxxx (10 số bắt đầu bằng 02x cho Hà Nội, 028 cho TP.HCM, etc.)
+        // Pattern để kiểm tra số fax (chấp nhận các định dạng bắt đầu bằng 0 hoặc +84/84, theo sau là mã vùng và số)
         private static readonly Regex FaxRegex = new Regex(
-            @"^(0[2-9][0-9]{8}|(\+84|84)[2-9][0-9]{8})$",
+            @"^(0[2-9]\d{7,9}|(\+84|84)[2-9]\d{7,9})$",
             RegexOptions.Compiled
         );
 
@@ -59,16 +58,16 @@ namespace Project_Recruiment_Huce.Helpers
             if (string.IsNullOrWhiteSpace(fax))
                 return false;
 
-            // Loại bỏ khoảng trắng, dấu gạch ngang và dấu ngoặc
-            var cleaned = Regex.Replace(fax, @"[\s\-\(\)]", "");
+            // Remove spaces, dashes, parentheses and dots
+            var cleaned = Regex.Replace(fax, @"[\s\-\(\)\.]", "");
 
-            // Kiểm tra pattern
+            // Check pattern against cleaned value
             if (!FaxRegex.IsMatch(cleaned))
                 return false;
 
-            // Validation phải có 10 hoặc 11 chữ số
+            // Ensure digit count is reasonable (9-11 digits after stripping non-digits)
             var digitsOnly = Regex.Replace(cleaned, @"[^\d]", "");
-            return digitsOnly.Length == 10 || digitsOnly.Length == 11;
+            return digitsOnly.Length >= 9 && digitsOnly.Length <= 11;
         }
 
         /// <summary>
@@ -166,7 +165,7 @@ namespace Project_Recruiment_Huce.Helpers
                         continue;
 
                     var dbPhoneNormalized = SafeNormalizePhone(company.Phone);
-                    if (dbPhoneNormalized != null && 
+                    if (dbPhoneNormalized != null &&
                         string.Equals(dbPhoneNormalized, normalizedPhone, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
@@ -206,7 +205,7 @@ namespace Project_Recruiment_Huce.Helpers
                         continue;
 
                     var dbPhoneNormalized = SafeNormalizePhone(account.Phone);
-                    if (dbPhoneNormalized != null && 
+                    if (dbPhoneNormalized != null &&
                         string.Equals(dbPhoneNormalized, normalizedPhone, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
@@ -255,6 +254,92 @@ namespace Project_Recruiment_Huce.Helpers
             try
             {
                 return NormalizePhone(phone);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Checks if fax number is unique in Companies table
+        /// Normalizes fax numbers from database before comparison to handle different formats
+        /// </summary>
+        /// <param name="fax">fax to check (should already be normalized)</param>
+        /// <param name="excludeCompanyId">Company ID to exclude from check (for updates)</param>
+        /// <returns>True if unique, false if duplicate</returns>
+        public static bool IsCompanyFaxUnique(string fax, int? excludeCompanyId = null)
+        {
+            if (string.IsNullOrWhiteSpace(fax))
+                return true;
+
+            var normalizedFax = NormalizeFax(fax);
+            if (string.IsNullOrWhiteSpace(normalizedFax))
+                return true;
+
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            {
+                var companiesWithFax = db.Companies
+                    .Where(c => c.Fax != null)
+                    .ToList()
+                    .Where(c => !string.IsNullOrWhiteSpace(c.Fax))
+                    .ToList();
+
+                foreach (var company in companiesWithFax)
+                {
+                    if (excludeCompanyId.HasValue && company.CompanyID == excludeCompanyId.Value)
+                        continue;
+
+                    var dbFaxNormalized = SafeNormalizeFax(company.Fax);
+                    if (dbFaxNormalized != null &&
+                        string.Equals(dbFaxNormalized, normalizedFax, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Normalizes fax number to standard format (0xxxxxxxxx)
+        /// </summary>
+        /// <param name="fax">Faxx number to normalize</param>
+        /// <returns>Normalized fax number</returns>
+        public static string NormalizeFax(string fax)
+        {
+            if (string.IsNullOrWhiteSpace(fax))
+                return fax;
+
+            var cleaned = Regex.Replace(fax, @"[^\d]", "");
+            if (string.IsNullOrWhiteSpace(cleaned))
+                return fax;
+
+            if (cleaned.StartsWith("84") && (cleaned.Length == 11 || cleaned.Length == 10))
+            {
+                cleaned = "0" + cleaned.Substring(2);
+            }
+            else if (!cleaned.StartsWith("0") && cleaned.Length >= 9)
+            {
+                cleaned = "0" + cleaned;
+            }
+
+            return cleaned;
+        }
+
+        /// <summary>
+        /// Safely normalizes fax number, returns null if normalization fails
+        /// </summary>
+        /// <param name="fax">fax number to normalize</param>
+        /// <returns>Normalized fax number or null if invalid</returns>
+        private static string SafeNormalizeFax(string fax)
+        {
+            if (string.IsNullOrWhiteSpace(fax))
+                return null;
+
+            try
+            {
+                return NormalizeFax(fax);
             }
             catch
             {

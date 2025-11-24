@@ -54,6 +54,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Industry = c.Industry,
                     Address = c.Address,
                     Phone = c.Phone,
+                    Fax = c.Fax,
                     CompanyEmail = c.CompanyEmail,
                     Website = c.Website,
                     Description = c.Description,
@@ -75,6 +76,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var company = db.Companies.FirstOrDefault(c => c.CompanyID == id);
                 if (company == null) return HttpNotFound();
 
+                var recruiter = db.Recruiters.FirstOrDefault(r => r.CompanyID == id);
+
                 var vm = new CompanyListVm
                 {
                     CompanyId = company.CompanyID,
@@ -83,13 +86,16 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Industry = company.Industry,
                     Address = company.Address,
                     Phone = company.Phone,
+                    Fax = company.Fax,
                     CompanyEmail = company.CompanyEmail,
                     Website = company.Website,
                     Description = company.Description,
                     CreatedAt = company.CreatedAt,
                     ActiveFlag = company.ActiveFlag,
                     PhotoId = company.PhotoID,
-                    PhotoUrl = company.ProfilePhoto != null ? company.ProfilePhoto.FilePath : null
+                    PhotoUrl = company.ProfilePhoto != null ? company.ProfilePhoto.FilePath : null,
+                    RecruiterId = recruiter?.RecruiterID,
+                    RecruiterName = recruiter?.FullName
                 };
 
                 ViewBag.Title = "Chi tiết công ty";
@@ -173,6 +179,28 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     phone = null;
                 }
 
+                var fax = (model.Fax ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(fax))
+                {
+                    if (!ValidationHelper.IsValidFax(fax))
+                    {
+                        ModelState.AddModelError("Fax", ValidationHelper.GetFaxErrorMessage());
+                        return View(model);
+                    }
+
+                    fax = ValidationHelper.NormalizePhone(fax);
+
+                    if (!ValidationHelper.IsCompanyFaxUnique(fax))
+                    {
+                        ModelState.AddModelError("Fax", "Số Fax này đã được sử dụng bởi công ty khác.");
+                        return View(model);
+                    }
+                }
+                else
+                {
+                    fax = null;
+                }
+
                 // Validate company email uniqueness (if provided)
                 var companyEmail = (model.CompanyEmail ?? string.Empty).Trim();
                 if (!string.IsNullOrWhiteSpace(companyEmail))
@@ -200,32 +228,31 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     TaxCode = model.TaxCode,
                     Industry = model.Industry,
                     Address = model.Address,
-                    Phone = phone, // Use normalized phone
-                    CompanyEmail = companyEmail, // Use trimmed email
+                    Phone = phone,
+                    Fax = fax,
+                    CompanyEmail = companyEmail,
                     Website = model.Website,
-                    Description = model.Description,
+                    Description = !string.IsNullOrWhiteSpace(model.Description) ? HtmlSanitizerHelper.Sanitize(model.Description) : null,
                     CreatedAt = DateTime.Now,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,
                 };
 
-                // [FIX] Handle photo upload
+                //  Handle photo upload
                 if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {
-                    ProfilePhoto photo = SavePhoto(db, model.PhotoFile); // [FIX] Pass 'db'
+                    ProfilePhoto photo = SavePhoto(db, model.PhotoFile);
                     if (photo != null)
                     {
-                        company.ProfilePhoto = photo; // [FIX] Gán thực thể
+                        company.ProfilePhoto = photo;
                     }
                     else
                     {
-                        // Lỗi validation ảnh từ SavePhoto
                         return View(model);
                     }
                 }
 
                 db.Companies.InsertOnSubmit(company);
 
-                // [FIX] Submit 1 lần
                 db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Tạo công ty thành công!";
@@ -249,6 +276,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Industry = company.Industry ?? string.Empty,
                     Address = company.Address ?? string.Empty,
                     Phone = company.Phone ?? string.Empty,
+                    Fax = company.Fax ?? string.Empty,
                     CompanyEmail = company.CompanyEmail ?? string.Empty,
                     Website = company.Website ?? string.Empty,
                     Description = company.Description ?? string.Empty,
@@ -273,7 +301,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         public ActionResult Edit(EditCompanyVm model)
         {
             // Tải lại thông tin ảnh nếu validation fail
-            Action<Company> refreshPhotoInfo = (company) => {
+            Action<Company> refreshPhotoInfo = (company) =>
+            {
                 if (company != null)
                 {
                     model.CurrentPhotoId = company.PhotoID;
@@ -337,7 +366,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     // Check if phone already exists (except current company)
                     if (!ValidationHelper.IsCompanyPhoneUnique(phone, model.CompanyId))
                     {
-                        ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng bởi công ty khác.");
+                        ModelState.AddModelError("Phone", "Số điện thoại đã tồn tại.");
                         refreshPhotoInfo(company);
                         return View(model);
                     }
@@ -347,13 +376,36 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     phone = null;
                 }
 
+                // Check duplicate tax code
+                var fax = (model.Fax ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(fax))
+                {
+                    if (!ValidationHelper.IsValidFax(fax))
+                    {
+                        ModelState.AddModelError("Fax", ValidationHelper.GetFaxErrorMessage());
+                        refreshPhotoInfo(company);
+                        return View(model);
+                    }
+
+                    fax = ValidationHelper.NormalizePhone(fax);
+
+                    // Check trùng, TRUYỀN VÀO CompanyID để loại trừ chính nó
+                    if (!ValidationHelper.IsCompanyFaxUnique(fax, model.CompanyId))
+                    {
+                        ModelState.AddModelError("Fax", "Số Fax đã tồn tại.");
+                        refreshPhotoInfo(company);
+                        return View(model);
+                    }
+                }
+                else { fax = null; }
+
                 // Validate company email uniqueness (if provided)
                 var companyEmail = (model.CompanyEmail ?? string.Empty).Trim();
                 if (!string.IsNullOrWhiteSpace(companyEmail))
                 {
                     if (!ValidationHelper.IsCompanyEmailUnique(companyEmail, model.CompanyId))
                     {
-                        ModelState.AddModelError("CompanyEmail", "Email này đã được sử dụng bởi công ty khác.");
+                        ModelState.AddModelError("CompanyEmail", "Email đã tồn tại.");
                         refreshPhotoInfo(company);
                         return View(model);
                     }
@@ -370,24 +422,21 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
                 }
 
-                // [FIX] Handle photo upload
+                // Handle photo upload
                 if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {
-                    // [FIX] Xóa ảnh cũ
                     if (company.PhotoID.HasValue)
                     {
-                        DeletePhoto(db, company.PhotoID.Value); // [FIX] Pass 'db'
+                        DeletePhoto(db, company.PhotoID.Value);
                     }
 
-                    // [FIX] Thêm ảnh mới
-                    ProfilePhoto newPhotoId = SavePhoto(db, model.PhotoFile); // [FIX] Pass 'db'
+                    ProfilePhoto newPhotoId = SavePhoto(db, model.PhotoFile);
                     if (newPhotoId != null)
                     {
-                        company.ProfilePhoto = newPhotoId; // [FIX] Gán thực thể
+                        company.ProfilePhoto = newPhotoId;
                     }
                     else
                     {
-                        // Lỗi validation từ SavePhoto
                         refreshPhotoInfo(company);
                         return View(model);
                     }
@@ -399,12 +448,12 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 company.Industry = model.Industry;
                 company.Address = model.Address;
                 company.Phone = phone; // Use normalized phone
+                company.Fax = fax;
                 company.CompanyEmail = companyEmail; // Use trimmed email
                 company.Website = model.Website;
-                company.Description = model.Description;
+                company.Description = !string.IsNullOrWhiteSpace(model.Description) ? HtmlSanitizerHelper.Sanitize(model.Description) : null;
                 company.ActiveFlag = model.ActiveFlag ?? (byte)1; // Cast byte? to byte
 
-                // [FIX] Submit 1 lần
                 db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Cập nhật công ty thành công!";
@@ -428,6 +477,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Industry = company.Industry ?? string.Empty,
                     Address = company.Address ?? string.Empty,
                     Phone = company.Phone ?? string.Empty,
+                    Fax = company.Fax ?? string.Empty,
                     CompanyEmail = company.CompanyEmail ?? string.Empty,
                     Website = company.Website ?? string.Empty,
                     Description = company.Description ?? string.Empty,
@@ -458,15 +508,14 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var company = db.Companies.FirstOrDefault(c => c.CompanyID == id);
                 if (company == null) return HttpNotFound();
 
-                // [FIX] Delete photo if exists
+                // Delete photo if exists
                 if (company.PhotoID.HasValue)
                 {
-                    DeletePhoto(db, company.PhotoID.Value); // [FIX] Pass 'db'
+                    DeletePhoto(db, company.PhotoID.Value);
                 }
 
                 db.Companies.DeleteOnSubmit(company);
 
-                // [FIX] Submit 1 lần
                 db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Xóa công ty thành công!";
@@ -474,7 +523,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
-        // [FIX] Sửa hàm SavePhoto
         // Helper: Save uploaded photo
         private ProfilePhoto SavePhoto(JOBPORTAL_ENDataContext db, HttpPostedFileBase file)
         {
@@ -511,7 +559,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var fullPath = Path.Combine(uploadPath, fileName);
                 file.SaveAs(fullPath);
 
-                // [FIX] Save to database - ProfilePhotos table
+                // Save to database - ProfilePhotos table
                 var photo = new ProfilePhoto
                 {
                     FileName = file.FileName,
@@ -522,8 +570,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 };
 
                 db.ProfilePhotos.InsertOnSubmit(photo);
-                // [FIX] KHÔNG gọi SubmitChanges() ở đây
-                return photo; // [FIX] Trả về thực thể
+                return photo;
             }
             catch (Exception ex)
             {
@@ -532,7 +579,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
-        // [FIX] Sửa hàm DeletePhoto
         // Helper: Delete photo from ProfilePhotos
         private void DeletePhoto(JOBPORTAL_ENDataContext db, int photoId)
         {
@@ -550,7 +596,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 // Delete database record
                 db.ProfilePhotos.DeleteOnSubmit(photo);
-                // [FIX] KHÔNG gọi SubmitChanges() ở đây
             }
             catch (Exception ex)
             {

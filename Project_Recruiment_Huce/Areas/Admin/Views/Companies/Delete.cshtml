@@ -42,12 +42,31 @@
                         <td>@Model.Phone</td>
                     </tr>
                     <tr>
+                        <th>Số Fax:</th>
+                        <td>@Model.Fax</td>
+                    </tr>
+                    <tr>
                         <th>Email:</th>
                         <td>@Model.CompanyEmail</td>
                     </tr>
                     <tr>
                         <th>Website:</th>
                         <td>@Model.Website</td>
+                    </tr>
+                    <tr>
+                        <th>Mô tả:</th>
+                        <td>
+                            <div class="border p-2 rounded bg-light small" style="max-height: 150px; overflow-y: auto;">
+                                @if (!string.IsNullOrEmpty(Model.Description))
+                                {
+                                    @Html.Raw(Model.Description)
+                                }
+                                else
+                                {
+                                    <span class="text-muted accordion-body">Chưa có mô tả</span>
+                                }
+                            </div>
+                        </td>
                     </tr>
                     <tr>
                         <th>Trạng thái:</th>

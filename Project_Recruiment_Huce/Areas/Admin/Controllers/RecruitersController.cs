@@ -76,7 +76,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
-        // ... (Toàn bộ các hàm Details, Create, Edit, Delete, SavePhoto, DeletePhoto giữ nguyên) ...
         // GET: Admin/Recruiters/Details/5
         public ActionResult Details(int id)
         {
@@ -94,7 +93,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 {
                     RecruiterId = recruiter.RecruiterID,
                     AccountId = recruiter.AccountID,
-                    Username = account.Username,
+                    Username = recruiter.Account.Username,
                     CompanyId = recruiter.CompanyID,
                     FullName = recruiter.FullName,
                     PositionTitle = recruiter.PositionTitle,
@@ -102,7 +101,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     CompanyEmail = recruiter.CompanyEmail,
                     CreatedAt = recruiter.CreatedAt,
                     ActiveFlag = recruiter.ActiveFlag,
-                    CompanyName = company != null ? company.CompanyName : null,
+                    CompanyName = recruiter.Company != null ? recruiter.Company.CompanyName : "Chưa có công ty",
                     PhotoId = photoId,
                     PhotoUrl = photo != null ? photo.FilePath : null
                 };
@@ -134,7 +133,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName");
             }
 
-            return View(new CreateRecruiterVm { Active = true }); // Khởi tạo giá trị Active
+            return View(new CreateRecruiterVm { Active = true });
         }
 
         // POST: Admin/Recruiters/Create
@@ -146,7 +145,16 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             {
                 ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
 
-                // Validation cho các trường Account mới
+                if (model.CompanyId.HasValue)
+                {
+                    bool isCompanyTaken = db.Recruiters.Any(r => r.CompanyID == model.CompanyId.Value);
+                    if (isCompanyTaken)
+                    {
+                        ModelState.AddModelError("CompanyId", "Công ty này đã có nhà tuyển dụng.");
+                        return View(model);
+                    }
+                }
+
                 if (db.Accounts.Any(a => a.Username == model.Username))
                 {
                     ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
@@ -156,24 +164,20 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     ModelState.AddModelError("Email", "Email (login) đã được sử dụng");
                 }
 
-                // Validate phone number format and uniqueness (if provided)
                 var phone = (model.Phone ?? string.Empty).Trim();
                 if (!string.IsNullOrWhiteSpace(phone))
                 {
-                    // Validate phone format
                     if (!ValidationHelper.IsValidVietnamesePhone(phone))
                     {
                         ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
                     }
                     else
                     {
-                        // Normalize phone number
                         phone = ValidationHelper.NormalizePhone(phone);
 
-                        // Check if phone already exists in Accounts
                         if (!ValidationHelper.IsAccountPhoneUnique(phone))
                         {
-                            ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng. Mỗi số điện thoại chỉ có thể đăng ký một tài khoản.");
+                            ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng.");
                         }
                     }
                 }
@@ -182,33 +186,19 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     phone = null;
                 }
 
-                // Validate company email format and uniqueness (if provided)
-                var companyEmail = (model.CompanyEmail ?? string.Empty).Trim();
-                if (!string.IsNullOrWhiteSpace(companyEmail))
+                if (!string.IsNullOrWhiteSpace(model.CompanyEmail))
                 {
-                    // Validate email format
-                    if (!ValidationHelper.IsValidEmail(companyEmail))
+                    var emailLower = model.CompanyEmail.ToLowerInvariant();
+                    if (db.Recruiters.Any(r => r.CompanyEmail != null && r.CompanyEmail.ToLower() == emailLower))
                     {
-                        ModelState.AddModelError("CompanyEmail", "Email không hợp lệ.");
+                        ModelState.AddModelError("CompanyEmail", "Email (liên lạc) đã được sử dụng");
                     }
-                    else
-                    {
-                        // Check if email already exists in Recruiters
-                        var emailLower = companyEmail.ToLowerInvariant();
-                        if (db.Recruiters.Any(r => r.CompanyEmail != null && r.CompanyEmail.ToLower() == emailLower))
-                        {
-                            ModelState.AddModelError("CompanyEmail", "Email (liên lạc) đã được sử dụng");
-                        }
-                    }
-                }
-                else
-                {
-                    companyEmail = null;
                 }
 
-                if (!string.IsNullOrWhiteSpace(model.FullName) && db.Recruiters.Any(r => r.FullName == model.FullName))
+                if (db.Accounts.Any(a => a.Username == model.Username))
                 {
-                    ModelState.AddModelError("FullName", "Tên nhà tuyển dụng (Họ tên) đã tồn tại");
+                    ModelState.AddModelError("Username", "Tên đăng nhập này đã tồn tại");
+                    return View(model);
                 }
 
                 if (!ModelState.IsValid)
@@ -216,7 +206,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View(model);
                 }
 
-                // Tạo Account mới
                 string salt = PasswordHelper.GenerateSalt();
                 string passwordHash = PasswordHelper.HashPassword(model.Password, salt);
 
@@ -224,7 +213,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 {
                     Username = model.Username,
                     Email = model.Email,
-                    Phone = phone, // Use normalized phone
+                    Phone = model.Phone,
                     Role = "Recruiter",
                     PasswordHash = passwordHash,
                     Salt = salt,
@@ -232,13 +221,12 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     CreatedAt = DateTime.Now
                 };
 
-                // [FIX] Xử lý ảnh (lưu vào Account)
                 if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {
-                    ProfilePhoto photo = SavePhoto(db, model.PhotoFile); // [FIX] Pass 'db'
+                    ProfilePhoto photo = SavePhoto(db, model.PhotoFile);
                     if (photo != null)
                     {
-                        account.ProfilePhoto = photo; // [FIX] Gán thực thể
+                        account.ProfilePhoto = photo;
                     }
                     else
                     {
@@ -248,22 +236,20 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 db.Accounts.InsertOnSubmit(account);
 
-                // Tạo Recruiter mới và liên kết với Account
                 var recruiter = new Recruiter
                 {
-                    Account = account, // Liên kết trực tiếp
+                    Account = account,
                     CompanyID = model.CompanyId,
                     FullName = model.FullName,
                     PositionTitle = model.PositionTitle,
-                    CompanyEmail = companyEmail, // Use validated email
-                    Phone = phone, // Use normalized phone
+                    CompanyEmail = model.CompanyEmail,
+                    Phone = model.Phone,
                     CreatedAt = DateTime.Now,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0
                 };
 
                 db.Recruiters.InsertOnSubmit(recruiter);
 
-                // [FIX] Submit 1 lần duy nhất
                 db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Tạo nhà tuyển dụng và tài khoản thành công!";
@@ -279,7 +265,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == id);
                 if (recruiter == null) return HttpNotFound();
 
-                // Lấy Account liên kết
                 var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
                 if (account == null)
                 {
@@ -297,6 +282,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     RecruiterId = recruiter.RecruiterID,
                     AccountId = recruiter.AccountID,
                     CompanyId = recruiter.CompanyID,
+                    Username = account.Username,
                     FullName = recruiter.FullName ?? string.Empty,
                     PositionTitle = recruiter.PositionTitle ?? string.Empty,
                     Phone = recruiter.Phone ?? string.Empty,
@@ -326,6 +312,16 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             {
                 ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName", model.CompanyId);
 
+                if (model.CompanyId.HasValue)
+                {
+                    bool isCompanyTaken = db.Recruiters.Any(r => r.CompanyID == model.CompanyId.Value && r.RecruiterID != model.RecruiterId);
+                    if (isCompanyTaken)
+                    {
+                        ModelState.AddModelError("CompanyId", "Công ty này đã có nhà tuyển dụng.");
+                        return View(model);
+                    }
+                }
+
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == model.RecruiterId);
                 if (recruiter == null) return HttpNotFound();
 
@@ -336,25 +332,20 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View(model);
                 }
 
-                // Gán lại ảnh phòng trường hợp validation fail
                 model.CurrentPhotoId = accountRecord.PhotoID;
                 model.CurrentPhotoUrl = accountRecord.ProfilePhoto?.FilePath;
 
-                // Validate phone number format and uniqueness (if provided)
                 var phone = (model.Phone ?? string.Empty).Trim();
                 if (!string.IsNullOrWhiteSpace(phone))
                 {
-                    // Validate phone format
                     if (!ValidationHelper.IsValidVietnamesePhone(phone))
                     {
                         ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
                     }
                     else
                     {
-                        // Normalize phone number
                         phone = ValidationHelper.NormalizePhone(phone);
 
-                        // Check if phone already exists in Accounts (except current account)
                         if (!ValidationHelper.IsAccountPhoneUnique(phone, accountRecord.AccountID))
                         {
                             ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng. Mỗi số điện thoại chỉ có thể đăng ký một tài khoản.");
@@ -366,34 +357,18 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     phone = null;
                 }
 
-                // Validate company email format and uniqueness (if provided)
-                var companyEmail = (model.CompanyEmail ?? string.Empty).Trim();
-                if (!string.IsNullOrWhiteSpace(companyEmail))
+                if (db.Accounts.Any(a => a.Username == model.Username && a.AccountID != accountRecord.AccountID))
                 {
-                    // Validate email format
-                    if (!ValidationHelper.IsValidEmail(companyEmail))
-                    {
-                        ModelState.AddModelError("CompanyEmail", "Email không hợp lệ.");
-                    }
-                    else
-                    {
-                        // Check if email already exists in Recruiters (except current recruiter)
-                        var emailLower = companyEmail.ToLowerInvariant();
-                        if (db.Recruiters.Any(c => c.CompanyEmail != null && c.CompanyEmail.ToLower() == emailLower && c.RecruiterID != model.RecruiterId))
-                        {
-                            ModelState.AddModelError("CompanyEmail", "Email (liên lạc) đã được sử dụng");
-                        }
-                    }
-                }
-                else
-                {
-                    companyEmail = null;
+                    ModelState.AddModelError("Username", "Tên đăng nhập này đã được tài khoản khác sử dụng");
                 }
 
-                // Validation
-                if (db.Accounts.Any(a => a.Username == model.FullName && a.AccountID != accountRecord.AccountID))
+                if (!string.IsNullOrWhiteSpace(model.CompanyEmail))
                 {
-                    ModelState.AddModelError("FullName", "Tên (Username) này đã được tài khoản khác sử dụng");
+                    var emailLower = model.CompanyEmail.ToLowerInvariant();
+                    if (db.Recruiters.Any(c => c.CompanyEmail != null && c.CompanyEmail.ToLower() == emailLower && c.RecruiterID != model.RecruiterId))
+                    {
+                        ModelState.AddModelError("CompanyEmail", "Email (liên lạc) đã được sử dụng");
+                    }
                 }
 
                 if (!ModelState.IsValid)
@@ -401,20 +376,18 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View(model);
                 }
 
-                // [FIX] Handle photo upload
+                // Handle photo upload
                 if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {
-                    // [FIX] Xóa ảnh cũ khỏi context
                     if (accountRecord.PhotoID.HasValue)
                     {
-                        DeletePhoto(db, accountRecord.PhotoID.Value); // Pass 'db'
+                        DeletePhoto(db, accountRecord.PhotoID.Value);
                     }
 
-                    // [FIX] Thêm ảnh mới vào context
-                    ProfilePhoto newPhoto = SavePhoto(db, model.PhotoFile); // Pass 'db'
+                    ProfilePhoto newPhoto = SavePhoto(db, model.PhotoFile);
                     if (newPhoto != null)
                     {
-                        accountRecord.ProfilePhoto = newPhoto; // [FIX] Gán thực thể
+                        accountRecord.ProfilePhoto = newPhoto;
                     }
                     else
                     {
@@ -422,9 +395,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
                 }
 
-                // Cập nhật Account
-                accountRecord.Username = model.FullName;
-                accountRecord.Phone = phone; // Use normalized phone
+                accountRecord.Username = model.Username;
+                accountRecord.Phone = model.Phone;
                 accountRecord.ActiveFlag = model.Active ? (byte)1 : (byte)0;
 
                 if (!string.IsNullOrWhiteSpace(model.Password))
@@ -434,15 +406,13 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     accountRecord.Salt = salt;
                 }
 
-                // Cập nhật Recruiter
                 recruiter.CompanyID = model.CompanyId;
                 recruiter.FullName = model.FullName;
                 recruiter.PositionTitle = model.PositionTitle;
-                recruiter.CompanyEmail = companyEmail; // Use validated email
-                recruiter.Phone = phone; // Use normalized phone
+                recruiter.CompanyEmail = model.CompanyEmail;
+                recruiter.Phone = model.Phone;
                 recruiter.ActiveFlag = model.Active ? (byte)1 : (byte)0;
 
-                // [FIX] Submit 1 lần duy nhất
                 db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Cập nhật nhà tuyển dụng thành công!";
@@ -475,9 +445,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     CreatedAt = recruiter.CreatedAt,
                     ActiveFlag = recruiter.ActiveFlag,
                     CompanyName = company != null ? company.CompanyName : null,
-                    PhotoId = photoId,
-                    PhotoUrl = photo != null ? photo.FilePath : null,
-                    Username = account.Username,
+                    PhotoId = recruiter.PhotoID,
+                    PhotoUrl = recruiter.ProfilePhoto != null ? recruiter.ProfilePhoto.FilePath : null,
+                    Username = recruiter.Account.Username,
                 };
 
                 ViewBag.Title = "Xóa nhà tuyển dụng";
@@ -505,10 +475,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 if (account != null)
                 {
-                    // [FIX] Xóa ảnh thủ công trước
                     if (account.PhotoID.HasValue)
                     {
-                        DeletePhoto(db, account.PhotoID.Value); // Pass 'db'
+                        DeletePhoto(db, account.PhotoID.Value);
                     }
                     db.Accounts.DeleteOnSubmit(account);
                 }
@@ -517,14 +486,13 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     db.Recruiters.DeleteOnSubmit(recruiter);
                 }
 
-                db.SubmitChanges(); // Submit 1 lần
+                db.SubmitChanges();
 
                 TempData["SuccessMessage"] = "Xóa nhà tuyển dụng (và tài khoản liên kết) thành công!";
                 return RedirectToAction("Index");
             }
         }
 
-        // [FIX] Sửa hàm SavePhoto
         // Helper: Save uploaded photo
         private ProfilePhoto SavePhoto(JOBPORTAL_ENDataContext db, HttpPostedFileBase file)
         {
@@ -572,8 +540,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 };
 
                 db.ProfilePhotos.InsertOnSubmit(photo);
-                // [FIX] KHÔNG gọi SubmitChanges() ở đây
-                return photo; // [FIX] Trả về thực thể
+                return photo;
             }
             catch (Exception ex)
             {
@@ -582,7 +549,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
-        // [FIX] Sửa hàm DeletePhoto
         // Helper: Delete photo from ProfilePhotos
         private void DeletePhoto(JOBPORTAL_ENDataContext db, int photoId)
         {
@@ -600,7 +566,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 // Delete database record
                 db.ProfilePhotos.DeleteOnSubmit(photo);
-                // [FIX] KHÔNG gọi SubmitChanges() ở đây
             }
             catch (Exception ex)
             {

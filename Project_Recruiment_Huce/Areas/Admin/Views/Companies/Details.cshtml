@@ -12,6 +12,7 @@
                 <div class="row mb-2"><div class="col-4 text-secondary">Lĩnh vực</div><div class="col-8">@Model.Industry</div></div>
                 <div class="row mb-2"><div class="col-4 text-secondary">Địa chỉ</div><div class="col-8">@(Model.Address ?? "-")</div></div>
                 <div class="row mb-2"><div class="col-4 text-secondary">SĐT</div><div class="col-8">@Model.Phone</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Số Fax</div><div class="col-8">@Model.Fax</div></div>
                 <div class="row mb-2"><div class="col-4 text-secondary">Email</div><div class="col-8">@Model.CompanyEmail</div></div>
                 <div class="row mb-2">
                     <div class="col-4 text-secondary">Website</div><div class="col-8">
@@ -21,7 +22,21 @@
                     { <text>-</text>}
                     </div>
                 </div>
-                <div class="row mb-2"><div class="col-4 text-secondary">Mô tả</div><div class="col-8">@Model.Description</div></div>
+                <div class="row mb-2">
+                    <label class="col-4 text-secondary">Mô tả:</label>
+                    <div class="col-sm-8">
+                        <div class="border p-3 rounded bg-light" style="line-height:1;">
+                            @if (!string.IsNullOrEmpty(Model.Description))
+                            {
+                                @Html.Raw(Model.Description)
+                            }
+                            else
+                            {
+                                <span class="text-muted">Chưa có mô tả</span>
+                            }
+                        </div>
+                    </div>
+                </div>
                 <div class="row mb-2"><div class="col-4 text-secondary">Trạng thái</div><div class="col-8">@(Model.ActiveFlag == 1 ? "Hoạt động" : "Tạm khóa")</div></div>
                 <div class="row mb-2"><div class="col-4 text-secondary">Ngày tạo</div><div class="col-8">@(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</div></div>
                 <div class="row mb-2"><div class="col-4 text-secondary">Photo ID</div><div class="col-8">@(Model.PhotoId?.ToString() ?? "-")</div></div>
@@ -47,7 +62,14 @@
         <div class="card mt-3">
             <div class="card-header"><h6 class="mb-0">Liên kết</h6></div>
             <div class="card-body">
-                <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","Recruiters", new { area="Admin", companyId = Model.CompanyId })">Nhà tuyển dụng</a>
+                @if (Model.RecruiterId.HasValue)
+                {
+                    <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Details", "Recruiters", new { area = "Admin", id = Model.RecruiterId })">Nhà tuyển dụng</a>
+                }
+                else
+                {
+                    <span class="btn btn-outline-secondary btn-sm disabled" aria-disabled="true">Chưa có NTD</span>
+                }
                 <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","JobPosts", new { area="Admin", companyId = Model.CompanyId })">Tin tuyển dụng</a>
                 <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index","BankCards", new { area="Admin", companyId = Model.CompanyId })">Thẻ ngân hàng</a>
             </div>
