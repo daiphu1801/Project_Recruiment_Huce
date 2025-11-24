@@ -29,7 +29,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Attributes
             var identity = authenticationResult.Identity as ClaimsIdentity;
             if (identity != null)
             {
-                var roleClaim = identity.FindFirst("VaiTro");
+                var roleClaim = identity.FindFirst(ClaimTypes.Role);
                 if (roleClaim != null && roleClaim.Value == "Admin")
                 {
                     return true;

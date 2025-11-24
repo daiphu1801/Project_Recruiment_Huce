@@ -7,7 +7,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
     /// <summary>
     /// ViewModel cho danh sách ứng viên
     /// </summary>
-    public class CandidateListVm
+    public class CandidatesListVm
     {
         [Display(Name = "ID ứng viên")]
         public int CandidateId { get; set; }
@@ -16,7 +16,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Display(Name = "Họ và tên")]
         public string FullName { get; set; }
         [Display(Name = "Ngày sinh")]
-        public DateTime? DateOfBirth { get; set; } // DateOfBirth in database
+        public DateTime? DateOfBirth { get; set; } 
         [Display(Name = "Giới tính")]
         public string Gender { get; set; }
         [Display(Name = "Số điện thoại")]
@@ -45,18 +45,34 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string ApplicationEmail { get;   set; }
         public string CurrentPhotoUrl { get; set; }
     }
-    public class CreateCandidateListVm
+    public class CreateCandidatesListVm
     {
+        [Display(Name = "ID tài khoản")]
+        [Required(ErrorMessage = "Vui lòng nhập ID tài khoản")]
         public int AccountId { get; set; }
+        [Display(Name = "Họ và tên")]
+        [Required(ErrorMessage = "Vui lòng nhập họ và tên")]
         public string FullName { get; set; }
+        [Display(Name = "Ngày sinh")]
+        [Required(ErrorMessage = "Vui lòng nhập ngày sinh")]
         public DateTime? DateOfBirth { get; set; }
+        [Display(Name = "Giới tính")]
+        [Required(ErrorMessage = "Vui lòng nhập giới tính")]
         public string Gender { get; set; }
+        [Display(Name = "Số điện thoại")]
+        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         public string Phone { get; set; }
         public int? PhotoId { get; set; }
         public DateTime? CreatedAt { get; set; }
         public byte? ActiveFlag { get; set; }
+        [Display(Name = "Email")]
+        [Required(ErrorMessage = "Vui lòng nhập email")]
         public string Email { get; set; }
-        public bool Active => ActiveFlag == 1;
+        public bool Active
+        {
+            get => ActiveFlag == 1;
+            set => ActiveFlag = value ? (byte?)1 : (byte?)0; // Thêm setter
+        }
         public DateTime? BirthDate => DateOfBirth;
         public HttpPostedFileBase PhotoFile { get; set; }
 
@@ -68,18 +84,39 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string Address { get; set; }
         public string Summary { get; set; }
         public string CandidateID { get; set; }
+        [Display(Name = "Email ứng tuyển")]
+        [Required(ErrorMessage = "Vui lòng nhập email ứng tuyển")]
         public string ApplicationEmail { get; set; }
         public string CurrentPhotoUrl { get; set; }
+        public string Username { get; set; }
+        
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự")]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
     }
-    public class EditCandidateListVm
+    public class EditCandidatesListVm
     {
+        [Display(Name = "ID ứng viên")]
+        [Required(ErrorMessage = "Vui lòng chon ID ứng viên")]
         public int CandidateId { get; set; }
+        [Display(Name = "Họ và tên")]
+        [Required(ErrorMessage = "Vui lòng nhập họ và tên")]
         public string FullName { get; set; }
+        
         public string Email { get; set; }
         [Display(Name = "Tài khoản")]
+        [Required(ErrorMessage = "Vui lòng chọn tài khoản")]
         public int AccountId { get; set; }
+        [Display(Name = "Ngày sinh")]
+        [Required(ErrorMessage = "Vui lòng nhập ngày sinh")]
         public DateTime? DateOfBirth { get; set; }
+        [Display(Name = "Giới tính")]
+        [Required(ErrorMessage = "Vui lòng nhập giới tính")]
         public string Gender { get; set; }
+        [Display(Name = "Số điện thoại")]
+
+        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         public string Phone { get; set; }
         public byte? ActiveFlag { get; set; }
 
@@ -94,6 +131,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public HttpPostedFileBase PhotoFile { get; set; }
         public int? PhotoId { get;   set; }     
         public DateTime? CreatedAt { get; set; }
+
+
+
         public string Address { get; set; }
         public string PhotoUrl { get; set; }
         public string Summary { get;   set; }

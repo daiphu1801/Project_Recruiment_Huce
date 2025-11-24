@@ -37,5 +37,14 @@ namespace Project_Recruiment_Huce.Models.Recruiters
     {
         public RecruiterAnalyticsSummaryViewModel Summary { get; set; }
         public List<JobAnalyticsItemViewModel> JobBreakdown { get; set; }
+        
+        // Pagination properties
+        public int CurrentPage { get; set; }
+        public int TotalPages { get; set; }
+        public int PageSize { get; set; }
+        public int TotalItems { get; set; }
+        
+        public bool HasPreviousPage => CurrentPage > 1;
+        public bool HasNextPage => CurrentPage < TotalPages;
     }
 }

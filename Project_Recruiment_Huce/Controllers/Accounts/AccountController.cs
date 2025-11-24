@@ -5,38 +5,73 @@ using System.Security.Claims;
 using System.Configuration;
 using System.Web;
 using System.Web.Mvc;
+using System.Net;
 using Microsoft.Owin.Security;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Accounts;
 using Project_Recruiment_Huce.Helpers;
 using Project_Recruiment_Huce.Services;
 using Project_Recruiment_Huce.Infrastructure;
+using Project_Recruiment_Huce.Repositories;
 
 namespace Project_Recruiment_Huce.Controllers
 {
+    /// <summary>
+    /// Controller xử lý đăng nhập, đăng ký, quên mật khẩu và authentication
+    /// Sử dụng OWIN Cookie Authentication với Claims-based identity
+    /// </summary>
     public class AccountController : Controller
     {
-        // Using ValidationService for centralized validation
-        private readonly ValidationService _validationService = new ValidationService();
+        // validation được chuyển vào AccountValidationService
+        // (nếu cần, có thể inject AccountValidationService thay vì new'ing)
 
-        //
-        // GET: /Account/Login
+        /// <summary>
+        /// Hiển thị trang đăng nhập
+        /// GET: /Account/Login
+        /// </summary>
+        /// <param name="returnUrl">URL để redirect sau khi đăng nhập thành công</param>
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
+            // Nếu đã đăng nhập, hiển thị thông báo và redirect về trang phù hợp
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                TempData["InfoMessage"] = "Bạn đã đăng nhập rồi.";
+                // Redirect tới dashboard recruiter nếu là recruiter, ngược lại về home
+                var roleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.Role);
+                if (roleClaim != null && roleClaim.Value == "Recruiter")
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                return RedirectToAction("Index", "Home");
+            }
+
             ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
-        //
-        // POST: /Account/Login
+        /// <summary>
+        /// Xử lý đăng nhập
+        /// POST: /Account/Login
+        /// </summary>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public ActionResult Login(LoginViewModel model, string returnUrl)
         {
+            // Chặn login attempts khi đã authenticated
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                if (Request.IsAjaxRequest())
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Already authenticated");
+                }
+                return RedirectToLocal(returnUrl);
+            }
+
             if (!ModelState.IsValid)
             {
+                ViewBag.ReturnUrl = returnUrl;
                 return View(model);
             }
 
@@ -46,178 +81,117 @@ namespace Project_Recruiment_Huce.Controllers
                 var input = (model.EmailOrUsername ?? string.Empty).Trim();
                 bool isEmail = input.Contains("@");
                 var lower = input.ToLower();
-                var user = db.Accounts.FirstOrDefault(a =>
+                
+                var account = db.Accounts.FirstOrDefault(a =>
                     (isEmail ? a.Email.ToLower() == lower : a.Username == input) && a.ActiveFlag == 1);
 
-                if (user != null && (string.IsNullOrEmpty(user.Salt) 
-                    ? PasswordHelper.VerifyPassword(model.Password, user.PasswordHash) 
-                    : PasswordHelper.VerifyPassword(model.Password, user.PasswordHash, user.Salt)))
+                if (account == null)
                 {
-                    // Reject Admin users from main site login
-                    if (user.Role == "Admin")
-                    {
-                        ModelState.AddModelError("", "Tài khoản Admin phải đăng nhập tại trang Quản trị.");
-                        return View(model);
-                    }
+                    ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
+                    ViewBag.ReturnUrl = returnUrl;
+                    return View(model);
+                }
 
-                    // Create claims identity for OWIN authentication (User Cookie)
+                // Xác thực mật khẩu sử dụng PBKDF2
+                if (!PasswordHelper.VerifyPassword(model.Password, account.PasswordHash))
+                {
+                    ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
+                    ViewBag.ReturnUrl = returnUrl;
+                    return View(model);
+                }
+
+                // Tạo claims và đăng nhập
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.AccountID.ToString()),
-                    new Claim(ClaimTypes.Name, user.Username),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim("VaiTro", user.Role),
+                    new Claim(ClaimTypes.NameIdentifier, account.AccountID.ToString()),
+                    new Claim(ClaimTypes.Name, account.Username),
+                    new Claim(ClaimTypes.Email, account.Email),
+                    new Claim(ClaimTypes.Role, account.Role),
                     new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                 };
 
-                    var identity = new ClaimsIdentity(claims, "UserCookie");
-                    AuthenticationManager.SignIn(new AuthenticationProperties 
-                    { 
-                        IsPersistent = model.RememberMe 
-                    }, identity);
+                var identity = new ClaimsIdentity(claims, "UserCookie");
+                AuthenticationManager.SignIn(new AuthenticationProperties { IsPersistent = model.RememberMe }, identity);
 
-                    return RedirectToLocal(returnUrl);
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
-                }
+                return RedirectToLocal(returnUrl);
             }
-
-            return View(model);
         }
 
-
-        //
-        // GET: /Account/Register
+        /// <summary>
+        /// Hiển thị trang đăng ký
+        /// GET: /Account/Register
+        /// </summary>
         [AllowAnonymous]
         public ActionResult Register()
         {
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                TempData["InfoMessage"] = "Bạn đã đăng nhập rồi. Nếu muốn tạo tài khoản khác, vui lòng đăng xuất trước.";
+                var roleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.Role);
+                if (roleClaim != null && roleClaim.Value == "Recruiter")
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                return RedirectToAction("Index", "Home");
+            }
+
             return View();
         }
 
-        //
-        // POST: /Account/Register
+        /// <summary>
+        /// Xử lý đăng ký tài khoản mới
+        /// POST: /Account/Register
+        /// Validate: username unique, email unique, phone unique, password strength, role mapping
+        /// </summary>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public ActionResult Register(RegisterViewModel model)
         {
+            // Chặn register attempts khi đã authenticated
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                if (Request.IsAjaxRequest())
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Already authenticated");
+                }
+                TempData["InfoMessage"] = "Bạn đã đăng nhập rồi. Nếu muốn tạo tài khoản khác, vui lòng đăng xuất trước.";
+                return RedirectToAction("Index", "Home");
+            }
+
             if (ModelState.IsValid)
             {
                 using (var db = DbContextFactory.Create())
                 {
-                    // Check if Username already exists
-                    if (db.Accounts.Any(a => a.Username == model.TenDangNhap))
-                    {
-                        ModelState.AddModelError("TenDangNhap", "Tên đăng nhập đã tồn tại.");
-                        return View(model);
-                    }
+                    var repo = new Repositories.AccountRepository(db);
+                    var svc = new Project_Recruiment_Huce.Services.AccountService(repo);
 
-                    // Check if Email already exists
-                    var email = (model.Email ?? string.Empty).Trim();
-                    if (db.Accounts.Any(a => a.Email.ToLower() == email.ToLower()))
+                    var res = svc.Register(model);
+                    if (!res.IsValid)
                     {
-                        ModelState.AddModelError("Email", "Email đã được sử dụng.");
-                        return View(model);
-                    }
-
-                    // Validate phone number format and uniqueness (if provided)
-                    var phone = (model.SoDienThoai ?? string.Empty).Trim();
-                    if (!string.IsNullOrWhiteSpace(phone))
-                    {
-                        // Validate phone format
-                        if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                        foreach (var err in res.Errors)
                         {
-                            ModelState.AddModelError("SoDienThoai", ValidationHelper.GetPhoneErrorMessage());
-                            return View(model);
-                        }
-
-                        // Normalize phone number
-                        phone = ValidationHelper.NormalizePhone(phone);
-
-                        // Check if phone already exists
-                        if (!ValidationHelper.IsAccountPhoneUnique(phone))
-                        {
-                            ModelState.AddModelError("SoDienThoai", "Số điện thoại này đã được sử dụng. Mỗi số điện thoại chỉ có thể đăng ký một tài khoản.");
-                            return View(model);
-                        }
-                    }
-                    else
-                    {
-                        phone = null; // Set to null if empty
-                    }
-
-                    // Extra server-side password complexity validation using ValidationService
-                    var passwordValidation = _validationService.ValidatePassword(model.Password, model.ConfirmPassword);
-                    if (!passwordValidation.IsValid)
-                    {
-                        foreach (var error in passwordValidation.Errors)
-                        {
-                            ModelState.AddModelError(error.Key, error.Value);
+                            ModelState.AddModelError(err.Key, err.Value);
                         }
                         return View(model);
                     }
 
-                    // Validate VaiTro -> Role mapping to new schema (Company is now a profile, not an account type)
-                    var validVaiTro = new[] { "NhaTuyenDung", "NguoiUngTuyen" };
-                    if (!validVaiTro.Contains(model.VaiTro))
+                    var account = res.Data.ContainsKey("Account") ? res.Data["Account"] as Account : null;
+                    if (account == null)
                     {
-                        ModelState.AddModelError("VaiTro", "Vai trò không hợp lệ.");
+                        ModelState.AddModelError("", "Không thể tạo tài khoản, vui lòng thử lại sau.");
                         return View(model);
-                    }
-
-                    // Map roles from old labels to new schema values (Company removed - it's now a profile only)
-                    string mappedRole;
-                    if (model.VaiTro == "NhaTuyenDung")
-                    {
-                        mappedRole = "Recruiter";
-                    }
-                    else if (model.VaiTro == "NguoiUngTuyen")
-                    {
-                        mappedRole = "Candidate";
-                    }
-                    else
-                    {
-                        mappedRole = "Candidate"; // Default to Candidate
-                    }
-
-                    // Generate salt and hash password
-                    string salt = PasswordHelper.GenerateSalt();
-                    string passwordHash = PasswordHelper.HashPassword(model.Password, salt);
-
-                    // Create new Account
-                    var newAccount = new Account
-                    {
-                        Username = model.TenDangNhap,
-                        Email = email,
-                        Phone = phone, // Use normalized phone
-                        Role = mappedRole,
-                        PasswordHash = passwordHash,
-                        Salt = salt,
-                        CreatedAt = DateTime.Now,
-                        ActiveFlag = 1
-                    };
-
-                    db.Accounts.InsertOnSubmit(newAccount);
-                    db.SubmitChanges();
-
-                    // Tự động tạo profile Candidate/Recruiter (không set email - email trong profile là email liên lạc riêng)
-                    if (mappedRole == "Candidate" || mappedRole == "Recruiter")
-                    {
-                        EmailSyncHelper.CreateProfile(db, newAccount.AccountID, mappedRole);
-                        db.SubmitChanges();
                     }
 
                     // Auto login after registration (User Cookie)
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.NameIdentifier, newAccount.AccountID.ToString()),
-                    new Claim(ClaimTypes.Name, newAccount.Username),
-                    new Claim(ClaimTypes.Email, newAccount.Email),
-                    new Claim("VaiTro", newAccount.Role),
-                    new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
-                };
+                    var claims = new List<Claim>
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, account.AccountID.ToString()),
+                        new Claim(ClaimTypes.Name, account.Username),
+                        new Claim(ClaimTypes.Email, account.Email),
+                        new Claim(ClaimTypes.Role, account.Role),
+                        new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
+                    };
 
                     var identity = new ClaimsIdentity(claims, "UserCookie");
                     AuthenticationManager.SignIn(identity);
@@ -229,16 +203,20 @@ namespace Project_Recruiment_Huce.Controllers
             return View(model);
         }
 
-        //
-        // GET: /Account/ForgotPassword
+        /// <summary>
+        /// Hiển thị trang quên mật khẩu
+        /// GET: /Account/ForgotPassword
+        /// </summary>
         [AllowAnonymous]
         public ActionResult ForgotPassword()
         {
             return View();
         }
 
-        //
-        // POST: /Account/ForgotPassword
+        /// <summary>
+        /// Xử lý yêu cầu quên mật khẩu - gửi mã reset qua email
+        /// POST: /Account/ForgotPassword
+        /// </summary>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -286,8 +264,10 @@ namespace Project_Recruiment_Huce.Controllers
             return View(model);
         }
 
-        //
-        // GET: /Account/ResetPassword
+        /// <summary>
+        /// Hiển thị trang đặt lại mật khẩu với mã xác thực
+        /// GET: /Account/ResetPassword
+        /// </summary>
         [AllowAnonymous]
         public ActionResult ResetPassword()
         {
@@ -308,8 +288,11 @@ namespace Project_Recruiment_Huce.Controllers
             return View(model);
         }
 
-        //
-        // POST: /Account/ResetPassword
+        /// <summary>
+        /// Xử lý đặt lại mật khẩu với mã xác thực
+        /// POST: /Account/ResetPassword
+        /// Validate: reset code, password complexity, attempts count
+        /// </summary>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -322,69 +305,32 @@ namespace Project_Recruiment_Huce.Controllers
 
             using (var db = DbContextFactory.Create())
             {
-                var email = (model.Email ?? string.Empty).Trim().ToLower();
-                var resetCode = (model.ResetCode ?? string.Empty).Trim().ToUpper();
+                var repo = new Repositories.AccountRepository(db);
+                var svc = new Project_Recruiment_Huce.Services.AccountService(repo);
 
-                // Xác thực mã reset
-                var token = PasswordResetHelper.ValidateResetCode(db, email, resetCode);
-
-                if (token == null)
+                var res = svc.ResetPassword(model);
+                if (!res.IsValid)
                 {
-                    ModelState.AddModelError("ResetCode", "Mã xác thực không đúng hoặc đã hết hạn. Vui lòng thử lại.");
+                    foreach (var err in res.Errors)
+                    {
+                        ModelState.AddModelError(err.Key, err.Value);
+                    }
                     return View(model);
                 }
 
-                // Kiểm tra số lần thử (tối đa 5 lần)
-                if (token.AttemptCount > 5)
-                {
-                    ModelState.AddModelError("ResetCode", "Bạn đã nhập sai mã quá nhiều lần. Vui lòng yêu cầu mã mới.");
-                    return View(model);
-                }
+                // remove reset email from session if present
+                Session.Remove("ResetPasswordEmail");
 
-                // Validate password complexity
-                var password = model.NewPassword ?? string.Empty;
-                bool hasLower = password.Any(char.IsLower);
-                bool hasUpper = password.Any(char.IsUpper);
-                bool hasDigit = password.Any(char.IsDigit);
-                if (password.Length < 6 || !hasLower || !hasUpper || !hasDigit)
-                {
-                    ModelState.AddModelError("NewPassword", "Mật khẩu phải tối thiểu 6 ký tự gồm chữ hoa, chữ thường và số.");
-                    return View(model);
-                }
-
-                // Cập nhật mật khẩu mới
-                var account = db.Accounts.FirstOrDefault(a => a.AccountID == token.AccountID);
-                if (account != null)
-                {
-                    string salt = PasswordHelper.GenerateSalt();
-                    string passwordHash = PasswordHelper.HashPassword(model.NewPassword, salt);
-                    
-                    account.PasswordHash = passwordHash;
-                    account.Salt = salt;
-                    
-                    // Đánh dấu token đã sử dụng
-                    PasswordResetHelper.MarkTokenAsUsed(db, token.TokenID);
-                    
-                    db.SubmitChanges();
-
-                    // Xóa email khỏi session
-                    Session.Remove("ResetPasswordEmail");
-
-                    TempData["SuccessMessage"] = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập với mật khẩu mới.";
-                    return RedirectToAction("Login");
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Không tìm thấy tài khoản. Vui lòng thử lại.");
-                }
+                TempData["SuccessMessage"] = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập với mật khẩu mới.";
+                return RedirectToAction("Login");
             }
-
-            return View(model);
         }
 
 
-        //
-        // POST: /Account/LogOff
+        /// <summary>
+        /// Xử lý đăng xuất
+        /// POST: /Account/LogOff
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
@@ -393,8 +339,10 @@ namespace Project_Recruiment_Huce.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        //
-        // GET: /Account/LogOff (for easy testing)
+        /// <summary>
+        /// Đăng xuất qua GET (cho testing thuận tiện)
+        /// GET: /Account/LogOff
+        /// </summary>
         [AllowAnonymous]
         public ActionResult LogOffGet()
         {

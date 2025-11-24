@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Web;
 using System.Web.Mvc;
 using System.Configuration;
+using System.Data.Linq;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Companies;
 using Project_Recruiment_Huce.Helpers;
@@ -12,11 +13,17 @@ using Project_Recruiment_Huce.Infrastructure;
 
 namespace Project_Recruiment_Huce.Controllers
 {
-    [Authorize]
+    /// <summary>
+    /// Controller quản lý thông tin công ty - logo, address, industry, website, description
+    /// Liên kết với Recruiter qua CompanyID
+    /// </summary>
+    [Authorize(Roles="Recruiter")]
     public class CompaniesController : BaseController
     {
-
-        // Helper: Save uploaded logo
+        /// <summary>
+        /// Helper: Lưu logo đã upload vào ProfilePhotos table
+        /// Validate: file type, file size (max 5MB)
+        /// </summary>
         private int? SaveLogo(HttpPostedFileBase file)
         {
             if (file == null || file.ContentLength == 0) return null;
@@ -76,7 +83,9 @@ namespace Project_Recruiment_Huce.Controllers
             }
         }
 
-        // Helper: Delete photo from ProfilePhotos
+        /// <summary>
+        /// Helper: Xóa photo khỏi ProfilePhotos table và file vật lý
+        /// </summary>
         private void DeletePhoto(int photoId)
         {
             try
@@ -86,14 +95,14 @@ namespace Project_Recruiment_Huce.Controllers
                     var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId);
                     if (photo == null) return;
 
-                    // Delete physical file
+                    // Xóa file vật lý
                     var filePath = Server.MapPath("~" + photo.FilePath);
                     if (System.IO.File.Exists(filePath))
                     {
                         System.IO.File.Delete(filePath);
                     }
 
-                    // Delete database record
+                    // Xóa record trong database
                     db.ProfilePhotos.DeleteOnSubmit(photo);
                     db.SubmitChanges();
                 }
@@ -104,6 +113,11 @@ namespace Project_Recruiment_Huce.Controllers
             }
         }
 
+        /// <summary>
+        /// Hiển thị trang quản lý thông tin công ty
+        /// GET: Companies/CompaniesManage
+        /// Yêu cầu phải có Recruiter profile
+        /// </summary>
         [HttpGet]
         public ActionResult CompaniesManage()
         {
@@ -112,8 +126,10 @@ namespace Project_Recruiment_Huce.Controllers
 
             using (var db = DbContextFactory.CreateReadOnly())
             {
-                // Get recruiter and their company
-                var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
+                var repo = new Repositories.CompanyRepository(db);
+
+                // Lấy recruiter và company của họ qua repository
+                var recruiter = repo.GetRecruiterByAccountId(accountId.Value);
                 if (recruiter == null)
                 {
                     TempData["ErrorMessage"] = "Vui lòng tạo hồ sơ nhà tuyển dụng trước.";
@@ -123,7 +139,7 @@ namespace Project_Recruiment_Huce.Controllers
                 Company company = null;
                 if (recruiter.CompanyID.HasValue)
                 {
-                    company = db.Companies.FirstOrDefault(c => c.CompanyID == recruiter.CompanyID.Value);
+                    company = repo.GetCompanyById(recruiter.CompanyID.Value);
                 }
 
                 // Map to ViewModel
@@ -142,10 +158,10 @@ namespace Project_Recruiment_Huce.Controllers
                     PhotoID = company?.PhotoID
                 };
 
-                // Get logo URL if exists
+                // Get logo URL nếu có
                 if (company?.PhotoID.HasValue == true)
                 {
-                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == company.PhotoID.Value);
+                    var photo = repo.GetProfilePhotoById(company.PhotoID.Value);
                     if (photo != null)
                     {
                         viewModel.LogoUrl = photo.FilePath;
@@ -215,7 +231,6 @@ namespace Project_Recruiment_Huce.Controllers
             var fax = (viewModel.Fax ?? string.Empty).Trim();
             if (!string.IsNullOrWhiteSpace(fax))
             {
-                // Validate fax format
                 if (!ValidationHelper.IsValidFax(fax))
                 {
                     ModelState.AddModelError("Fax", ValidationHelper.GetFaxErrorMessage());
@@ -224,11 +239,9 @@ namespace Project_Recruiment_Huce.Controllers
                 {
                     // Normalize fax number
                     fax = ValidationHelper.NormalizeFax(fax);
-
-                    // Check if fax already exists in Companies (exclude current company)
                     if (!ValidationHelper.IsCompanyFaxUnique(fax, viewModel.CompanyID))
                     {
-                        ModelState.AddModelError("Fax", "Số Fax này đã được sử dụng bởi công ty khác.");
+                        ModelState.AddModelError("Fax", "Số Fax này đã được sử dụng.");
                     }
                 }
             }
@@ -239,8 +252,10 @@ namespace Project_Recruiment_Huce.Controllers
 
             using (var db = DbContextFactory.Create())
             {
-                // Get recruiter
-                var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
+                var repo = new Repositories.CompanyRepository(db);
+
+                // Get recruiter via repository
+                var recruiter = repo.GetRecruiterByAccountId(accountId.Value);
                 if (recruiter == null)
                 {
                     TempData["ErrorMessage"] = "Vui lòng tạo hồ sơ nhà tuyển dụng trước.";
@@ -250,150 +265,103 @@ namespace Project_Recruiment_Huce.Controllers
                 Company company = null;
                 if (recruiter.CompanyID.HasValue)
                 {
-                    company = db.Companies.FirstOrDefault(c => c.CompanyID == recruiter.CompanyID.Value);
+                    company = repo.GetCompanyById(recruiter.CompanyID.Value);
                 }
 
-                // Handle logo upload
+                // Save uploaded logo (if any) in advance so we have newPhotoId
+                int? newPhotoId = null;
                 if (viewModel.Logo != null && viewModel.Logo.ContentLength > 0)
                 {
-                    // Save new logo first
-                    var newPhotoId = SaveLogo(viewModel.Logo);
-                    if (newPhotoId.HasValue)
+                    newPhotoId = SaveLogo(viewModel.Logo);
+                }
+
+                // Create or update company
+                if (company == null)
+                {
+                    // Create new company (attach newPhotoId if any)
+                    company = new Company
                     {
-                        if (company == null)
-                        {
-                            // Create new company
-                            company = new Company
-                            {
-                                CompanyName = viewModel.CompanyName,
-                                TaxCode = viewModel.TaxCode,
-                                Industry = viewModel.Industry,
-                                Address = viewModel.Address,
-                                Phone = phone, // Use normalized phone
-                                Fax = fax, // Use trimmed fax
-                                CompanyEmail = companyEmail, // Use trimmed email
-                                Website = viewModel.Website,
-                                Description = !string.IsNullOrWhiteSpace(viewModel.Description)
-                                    ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
-                                    : null,
-                                CreatedAt = DateTime.Now,
-                                ActiveFlag = 1,
-                                PhotoID = newPhotoId.Value
-                            };
-                            db.Companies.InsertOnSubmit(company);
-                            db.SubmitChanges();
+                        CompanyName = viewModel.CompanyName,
+                        TaxCode = viewModel.TaxCode,
+                        Industry = viewModel.Industry,
+                        Address = viewModel.Address,
+                        Phone = phone,
+                        Fax = fax,
+                        CompanyEmail = companyEmail,
+                        Website = viewModel.Website,
+                        Description = !string.IsNullOrWhiteSpace(viewModel.Description)
+                            ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
+                            : null,
+                        CreatedAt = DateTime.Now,
+                        ActiveFlag = 1,
+                        PhotoID = newPhotoId
+                    };
 
-                            // Link company to recruiter
-                            recruiter.CompanyID = company.CompanyID;
-                            db.SubmitChanges();
-                        }
-                        else
-                        {
-                            // Store old photo ID before updating
-                            var oldPhotoId = company.PhotoID;
+                    repo.InsertCompany(company);
+                    repo.SaveChanges();
 
-                            // Reload company entity to avoid concurrency issues
-                            db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, company);
-
-                            // Update existing company
-                            company.CompanyName = viewModel.CompanyName;
-                            company.TaxCode = viewModel.TaxCode;
-                            company.Industry = viewModel.Industry;
-                            company.Address = viewModel.Address;
-                            company.Phone = phone; // Use normalized phone
-                            company.Fax = fax; // Use trimmed fax
-                            company.CompanyEmail = companyEmail; // Use trimmed email
-                            company.Website = viewModel.Website;
-                            company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
-                                ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
-                                : null;
-                            company.PhotoID = newPhotoId.Value;
-
-                            try
-                            {
-                                db.SubmitChanges();
-
-                                // Delete old logo after successful update
-                                if (oldPhotoId.HasValue)
-                                {
-                                    DeletePhoto(oldPhotoId.Value);
-                                }
-                            }
-                            catch (System.Data.Linq.ChangeConflictException)
-                            {
-                                // Handle concurrency conflict - refresh and retry
-                                db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, company);
-
-                                // Retry update with fresh entity
-                                company.CompanyName = viewModel.CompanyName;
-                                company.TaxCode = viewModel.TaxCode;
-                                company.Industry = viewModel.Industry;
-                                company.Address = viewModel.Address;
-                                company.Phone = viewModel.Phone;
-                                company.Fax = viewModel.Fax;
-                                company.CompanyEmail = viewModel.CompanyEmail;
-                                company.Website = viewModel.Website;
-                                company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
-                                    ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
-                                    : null;
-                                company.PhotoID = newPhotoId.Value;
-
-                                db.SubmitChanges();
-
-                                // Delete old logo after successful update
-                                if (oldPhotoId.HasValue)
-                                {
-                                    DeletePhoto(oldPhotoId.Value);
-                                }
-                            }
-                        }
-                    }
+                    // Link company to recruiter
+                    recruiter.CompanyID = company.CompanyID;
+                    repo.SaveChanges();
                 }
                 else
                 {
-                    // No new logo uploaded, just update other fields
-                    if (company == null)
-                    {
-                        // Create new company
-                        company = new Company
-                        {
-                            CompanyName = viewModel.CompanyName,
-                            TaxCode = viewModel.TaxCode,
-                            Industry = viewModel.Industry,
-                            Address = viewModel.Address,
-                            Phone = viewModel.Phone,
-                            Fax = viewModel.Fax,
-                            CompanyEmail = viewModel.CompanyEmail,
-                            Website = viewModel.Website,
-                            Description = !string.IsNullOrWhiteSpace(viewModel.Description)
-                                ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
-                                : null,
-                            CreatedAt = DateTime.Now,
-                            ActiveFlag = 1
-                        };
-                        db.Companies.InsertOnSubmit(company);
-                        db.SubmitChanges();
+                    // Update existing company
+                    var oldPhotoId = company.PhotoID;
 
-                        // Link company to recruiter
-                        recruiter.CompanyID = company.CompanyID;
-                        db.SubmitChanges();
-                    }
-                    else
+                    company.CompanyName = viewModel.CompanyName;
+                    company.TaxCode = viewModel.TaxCode;
+                    company.Industry = viewModel.Industry;
+                    company.Address = viewModel.Address;
+                    company.Phone = phone;
+                    company.Fax = fax;
+                    company.CompanyEmail = companyEmail;
+                    company.Website = viewModel.Website;
+                    company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
+                        ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
+                        : null;
+
+                    // If new photo uploaded, set PhotoID
+                    if (newPhotoId.HasValue)
+                        company.PhotoID = newPhotoId;
+
+                    try
                     {
-                        // Update existing company
+                        repo.SaveChanges();
+
+                        // Remove old photo file if we replaced it
+                        if (newPhotoId.HasValue && oldPhotoId.HasValue)
+                        {
+                            DeletePhoto(oldPhotoId.Value);
+                        }
+                    }
+                    catch (ChangeConflictException)
+                    {
+                        // Concurrency conflict: refresh and retry
+                        db.Refresh(RefreshMode.OverwriteCurrentValues, company);
+
+                        // Reapply values and save again
                         company.CompanyName = viewModel.CompanyName;
                         company.TaxCode = viewModel.TaxCode;
                         company.Industry = viewModel.Industry;
                         company.Address = viewModel.Address;
-                        company.Phone = viewModel.Phone;
-                        company.Fax = viewModel.Fax;
-                        company.CompanyEmail = viewModel.CompanyEmail;
+                        company.Phone = phone;
+                        company.Fax = fax;
+                        company.CompanyEmail = companyEmail;
                         company.Website = viewModel.Website;
                         company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
                             ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
                             : null;
 
-                        db.SubmitChanges();
+                        if (newPhotoId.HasValue)
+                            company.PhotoID = newPhotoId;
+
+                        repo.SaveChanges();
+
+                        if (newPhotoId.HasValue && oldPhotoId.HasValue)
+                        {
+                            DeletePhoto(oldPhotoId.Value);
+                        }
                     }
                 }
 
