@@ -67,9 +67,8 @@ namespace Project_Recruiment_Huce.Services
             if (account == null || string.IsNullOrEmpty(currentPassword))
                 return false;
 
-            // Sử dụng VerifyPasswordV2 - hỗ trợ cả format cũ và mới
-            var verifyResult = PasswordHelper.VerifyPasswordV2(currentPassword, account.PasswordHash, account.Salt);
-            return verifyResult != PasswordHelper.VerifyResult.Failed;
+            // Xác thực mật khẩu sử dụng PBKDF2
+            return PasswordHelper.VerifyPassword(currentPassword, account.PasswordHash);
         }
 
         /// <summary>
@@ -183,9 +182,8 @@ namespace Project_Recruiment_Huce.Services
             if (account == null || string.IsNullOrEmpty(newPassword))
                 return false;
 
-            // Sử dụng VerifyPasswordV2 - hỗ trợ cả format cũ và mới
-            var verifyResult = PasswordHelper.VerifyPasswordV2(newPassword, account.PasswordHash, account.Salt);
-            return verifyResult != PasswordHelper.VerifyResult.Failed;
+            // Kiểm tra xem mật khẩu mới có trùng với mật khẩu hiện tại không
+            return PasswordHelper.VerifyPassword(newPassword, account.PasswordHash);
         }
 
         /// <summary>
