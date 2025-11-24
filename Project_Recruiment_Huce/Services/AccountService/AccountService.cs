@@ -116,19 +116,9 @@ namespace Project_Recruiment_Huce.Services
             var user = _repo.FindByUsernameOrEmail(userOrEmail);
             if (user == null) return null;
 
-            // Sử dụng VerifyPasswordV2 - hỗ trợ cả format cũ (SHA256) và mới (PBKDF2)
-            var verifyResult = PasswordHelper.VerifyPasswordV2(password, user.PasswordHash, user.Salt);
-            
-            if (verifyResult == PasswordHelper.VerifyResult.Failed)
+            // Xác thực mật khẩu sử dụng PBKDF2
+            if (!PasswordHelper.VerifyPassword(password, user.PasswordHash))
                 return null;
-
-            // Nếu password đang dùng format cũ, tự động upgrade sang format mới
-            if (verifyResult == PasswordHelper.VerifyResult.SuccessRehashNeeded)
-            {
-                user.PasswordHash = PasswordHelper.HashPassword(password);
-                user.Salt = null; // Không cần salt riêng nữa
-                _repo.SaveChanges();
-            }
 
             return user;
         }
