@@ -8,33 +8,34 @@ using Project_Recruiment_Huce.Helpers;
 namespace Project_Recruiment_Huce.Mappers
 {
     /// <summary>
-    /// Mapper class for JobPost entity to various ViewModels
-    /// Centralizes mapping logic to avoid duplication across controllers
+    /// Mapper class cho JobPost entity sang các ViewModels khác nhau
+    /// Tập trung mapping logic để tránh trùng lặp qua các controllers
+    /// Sử dụng các Helpers: CompanyLogoHelper, EmploymentTypeHelper, SalaryHelper
     /// </summary>
     public static class JobMapper
     {
         /// <summary>
-        /// Map JobPost entity to JobListingItemViewModel
+        /// Map JobPost entity sang JobListingItemViewModel cho danh sách tin tuyển dụng
         /// </summary>
         /// <param name="job">JobPost entity</param>
-        /// <param name="db">Optional database context for calculating pending applications</param>
+        /// <param name="db">Optional database context để tính pending applications</param>
         /// <returns>JobListingItemViewModel</returns>
         public static JobListingItemViewModel MapToListingItem(JobPost job, JOBPORTAL_ENDataContext db = null)
         {
             if (job == null) return null;
 
-            // Normalize status
+            // Chuẩn hóa status
             job.Status = JobStatusHelper.NormalizeStatus(job.Status);
 
-            // Get company name - prioritize Company, then Recruiter's company, then Recruiter name
+            // Lấy company name - ưu tiên Company, sau đó Recruiter's company, cuối cùng Recruiter name
             string companyName = job.Company != null ? job.Company.CompanyName :
                                 (job.Recruiter?.Company != null ? job.Recruiter.Company.CompanyName :
                                 (job.Recruiter != null ? job.Recruiter.FullName : string.Empty));
 
-            // Get logo URL using helper
+            // Lấy logo URL sử dụng helper
             string logoUrl = CompanyLogoHelper.GetLogoUrl(job);
 
-            // Calculate pending applications count if db context is provided
+            // Tính số lượng đơn ứng tuyển pending nếu có db context
             int pendingCount = 0;
             if (db != null)
             {
@@ -70,7 +71,8 @@ namespace Project_Recruiment_Huce.Mappers
         }
 
         /// <summary>
-        /// Map JobPost entity to JobDetailsViewModel
+        /// Map JobPost entity sang JobDetailsViewModel cho chi tiết tin tuyển dụng
+        /// Bao gồm JobPostDetails (industry, major, skills, headcount, etc.)
         /// </summary>
         /// <param name="job">JobPost entity</param>
         /// <returns>JobDetailsViewModel</returns>
@@ -78,18 +80,18 @@ namespace Project_Recruiment_Huce.Mappers
         {
             if (job == null) return null;
 
-            // Normalize status
+            // Chuẩn hóa status
             job.Status = JobStatusHelper.NormalizeStatus(job.Status);
 
-            // Get company name - prioritize Company, then Recruiter's company, then Recruiter name
+            // Lấy company name - ưu tiên Company, sau đó Recruiter's company, cuối cùng Recruiter name
             string companyName = job.Company != null ? job.Company.CompanyName :
                                 (job.Recruiter?.Company != null ? job.Recruiter.Company.CompanyName :
                                 (job.Recruiter != null ? job.Recruiter.FullName : string.Empty));
 
-            // Get logo URL using helper
+            // Lấy logo URL sử dụng helper
             string logoUrl = CompanyLogoHelper.GetLogoUrl(job);
 
-            // Get job detail
+            // Lấy job detail
             var jobDetail = job.JobPostDetails?.FirstOrDefault();
 
             return new JobDetailsViewModel
@@ -127,7 +129,7 @@ namespace Project_Recruiment_Huce.Mappers
         }
 
         /// <summary>
-        /// Map JobPost entity to RelatedJobViewModel
+        /// Map JobPost entity sang RelatedJobViewModel cho các tin tuyển dụng liên quan
         /// </summary>
         /// <param name="job">JobPost entity</param>
         /// <returns>RelatedJobViewModel</returns>
@@ -135,15 +137,15 @@ namespace Project_Recruiment_Huce.Mappers
         {
             if (job == null) return null;
 
-            // Normalize status
+            // Chuẩn hóa status
             job.Status = JobStatusHelper.NormalizeStatus(job.Status);
 
-            // Get company name - prioritize Company, then Recruiter's company, then Recruiter name
+            // Lấy company name - ưu tiên Company, sau đó Recruiter's company, cuối cùng Recruiter name
             string companyName = job.Company != null ? job.Company.CompanyName :
                                 (job.Recruiter?.Company != null ? job.Recruiter.Company.CompanyName :
                                 (job.Recruiter != null ? job.Recruiter.FullName : string.Empty));
 
-            // Get logo URL using helper
+            // Lấy logo URL sử dụng helper
             string logoUrl = CompanyLogoHelper.GetLogoUrl(job);
 
             return new RelatedJobViewModel
@@ -164,7 +166,7 @@ namespace Project_Recruiment_Huce.Mappers
         }
 
         /// <summary>
-        /// Map SavedJob entity to SavedJobViewModel
+        /// Map SavedJob entity sang SavedJobViewModel cho các tin đã lưu
         /// </summary>
         /// <param name="savedJob">SavedJob entity</param>
         /// <returns>SavedJobViewModel</returns>
@@ -175,12 +177,12 @@ namespace Project_Recruiment_Huce.Mappers
             var job = savedJob.JobPost;
             if (job == null) return null;
 
-            // Get company name - prioritize Company, then Recruiter's company, then Recruiter name
+            // Lấy company name - ưu tiên Company, sau đó Recruiter's company, cuối cùng Recruiter name
             string companyName = job.Company != null ? job.Company.CompanyName :
                                 (job.Recruiter?.Company != null ? job.Recruiter.Company.CompanyName :
                                 (job.Recruiter != null ? job.Recruiter.FullName : string.Empty));
 
-            // Get logo URL using helper
+            // Lấy logo URL sử dụng helper
             string logoUrl = CompanyLogoHelper.GetLogoUrl(job);
 
             return new SavedJobViewModel

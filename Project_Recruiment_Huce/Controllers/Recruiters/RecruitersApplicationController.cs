@@ -7,6 +7,8 @@ using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Recruiters;
 using Project_Recruiment_Huce.Repositories;
 using Project_Recruiment_Huce.Infrastructure;
+using Project_Recruiment_Huce.Repositories.RecruiterApplicationRepo;
+using Project_Recruiment_Huce.Services.RecruiterApplicationService;
 
 namespace Project_Recruiment_Huce.Controllers
 {
@@ -16,10 +18,14 @@ namespace Project_Recruiment_Huce.Controllers
     [Authorize]
     public class RecruitersApplicationController : BaseController
     {
-        // Using Repository Pattern for data access
-        private ApplicationRepository GetApplicationRepository(JOBPORTAL_ENDataContext db)
+        private readonly IRecruiterApplicationService _applicationService;
+        private readonly IRecruiterApplicationRepository _repository;
+
+        public RecruitersApplicationController()
         {
-            return new ApplicationRepository(db);
+            var db = DbContextFactory.CreateReadOnly();
+            _repository = new RecruiterApplicationRepository(db);
+            _applicationService = new RecruiterApplicationService(_repository);
         }
 
         /// <summary>
@@ -42,93 +48,39 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("RecruitersManage", "Recruiters");
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            // Get applications list from service
+            var result = _applicationService.GetApplicationsList(
+                recruiterId.Value, 
+                jobId, 
+                status, 
+                page ?? 1, 
+                10);
+
+            if (!result.Success)
             {
-                var applicationRepository = GetApplicationRepository(db);
-
-                // Get applications for jobs posted by this recruiter using repository
-                var applications = applicationRepository.GetApplicationsByRecruiter(recruiterId.Value);
-
-                // Filter by job if specified
-                if (jobId.HasValue)
-                {
-                    applications = applications.Where(a => a.JobPostID == jobId.Value);
-                }
-
-                // Filter by status if specified
-                if (!string.IsNullOrEmpty(status))
-                {
-                    applications = applications.Where(a => a.Status == status);
-                }
-
-                var applicationsList = applications.ToList();
-
-                // Map to ViewModels với xử lý cẩn thận để tránh hiển thị N/A
-                var applicationsViewModels = applicationsList.Select(app => {
-                    string companyName = "Không có thông tin";
-                    if (app.JobPost?.Company?.CompanyName != null)
-                    {
-                        companyName = app.JobPost.Company.CompanyName;
-                    }
-                    else if (app.JobPost?.Recruiter?.Company?.CompanyName != null)
-                    {
-                        companyName = app.JobPost.Recruiter.Company.CompanyName;
-                    }
-
-                    return new RecruiterApplicationViewModel
-                    {
-                        ApplicationID = app.ApplicationID,
-                        JobPostID = app.JobPostID,
-                        CandidateID = app.CandidateID,
-                        CandidateName = !string.IsNullOrEmpty(app.Candidate?.FullName) ? app.Candidate.FullName : "Ứng viên ẩn danh",
-                        CandidateEmail = app.Candidate?.Email ?? "",
-                        CandidatePhone = app.Candidate?.Phone ?? "",
-                        JobTitle = !string.IsNullOrEmpty(app.JobPost?.Title) ? app.JobPost.Title : "Công việc không có tiêu đề",
-                        JobCode = app.JobPost?.JobCode ?? "",
-                        CompanyName = companyName,
-                        AppliedAt = app.AppliedAt,
-                        Status = app.Status ?? "Under review",
-                        ResumeFilePath = app.ResumeFilePath,
-                        CertificateFilePath = app.CertificateFilePath,
-                        Note = app.Note,
-                        UpdatedAt = app.UpdatedAt,
-                        StatusDisplay = GetApplicationStatusDisplay(app.Status ?? "Under review"),
-                        StatusBadgeClass = GetApplicationStatusBadgeClass(app.Status ?? "Under review")
-                    };
-                }).ToList();
-
-                // Pagination
-                int pageSize = 10;
-                int pageNumber = page ?? 1;
-                int totalItems = applicationsViewModels.Count();
-                int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
-
-                var pagedApplications = applicationsViewModels.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
-
-                // Get list of jobs for filter dropdown
-                var jobs = db.JobPosts
-                    .Where(j => j.RecruiterID == recruiterId.Value)
-                    .OrderByDescending(j => j.PostedAt)
-                    .Select(j => new { j.JobPostID, j.Title, j.JobCode })
-                    .ToList();
-
-                ViewBag.CurrentPage = pageNumber;
-                ViewBag.TotalPages = totalPages;
-                ViewBag.TotalItems = totalItems;
-                ViewBag.JobId = jobId;
-                ViewBag.Status = status;
-                ViewBag.Jobs = new SelectList(jobs, "JobPostID", "Title", jobId);
-                ViewBag.StatusOptions = new SelectList(new[] {
-                    new { Value = "", Text = "Tất cả trạng thái" },
-                    new { Value = "Under review", Text = "Đang xem xét" },
-                    new { Value = "Interview", Text = "Phỏng vấn" },
-                    new { Value = "Offered", Text = "Đã đề xuất" },
-                    new { Value = "Hired", Text = "Đã tuyển" },
-                    new { Value = "Rejected", Text = "Đã từ chối" }
-                }, "Value", "Text", status);
-
-                return View(pagedApplications);
+                TempData["ErrorMessage"] = result.ErrorMessage;
+                return RedirectToAction("Index", "Home");
             }
+
+            // Get jobs for filter dropdown
+            var jobs = _applicationService.GetJobsForFilter(recruiterId.Value);
+
+            ViewBag.CurrentPage = result.CurrentPage;
+            ViewBag.TotalPages = result.TotalPages;
+            ViewBag.TotalItems = result.TotalItems;
+            ViewBag.JobId = result.JobId;
+            ViewBag.Status = result.Status;
+            ViewBag.Jobs = new SelectList(jobs, "JobPostID", "Title", jobId);
+            ViewBag.StatusOptions = new SelectList(new[] {
+                new { Value = "", Text = "Tất cả trạng thái" },
+                new { Value = "Under review", Text = "Đang xem xét" },
+                new { Value = "Interview", Text = "Phỏng vấn" },
+                new { Value = "Offered", Text = "Đã đề xuất" },
+                new { Value = "Hired", Text = "Đã tuyển" },
+                new { Value = "Rejected", Text = "Đã từ chối" }
+            }, "Value", "Text", status);
+
+            return View(result.Applications);
         }
 
         /// <summary>
@@ -157,65 +109,16 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyApplications", "RecruitersApplication");
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            // Get application details from service
+            var result = _applicationService.GetApplicationDetails(id.Value, recruiterId.Value);
+
+            if (!result.Success)
             {
-
-                // Load related entities
-                var loadOptions = new System.Data.Linq.DataLoadOptions();
-                loadOptions.LoadWith<Application>(a => a.JobPost);
-                loadOptions.LoadWith<Application>(a => a.Candidate);
-                loadOptions.LoadWith<JobPost>(j => j.Company);
-                db.LoadOptions = loadOptions;
-
-                // Get application and verify it belongs to this recruiter's job
-                var application = db.Applications.FirstOrDefault(a => a.ApplicationID == id.Value);
-                if (application == null)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy đơn ứng tuyển.";
-                    return RedirectToAction("MyApplications", "RecruitersApplication");
-                }
-
-                var job = application.JobPost;
-                if (job == null || job.RecruiterID != recruiterId.Value)
-                {
-                    TempData["ErrorMessage"] = "Bạn không có quyền xem đơn ứng tuyển này.";
-                    return RedirectToAction("MyApplications", "RecruitersApplication");
-                }
-
-                // Map to ViewModel với xử lý cẩn thận để tránh hiển thị N/A
-                string companyName = "Không có thông tin";
-                if (job.Company?.CompanyName != null)
-                {
-                    companyName = job.Company.CompanyName;
-                }
-                else if (job.Recruiter?.Company?.CompanyName != null)
-                {
-                    companyName = job.Recruiter.Company.CompanyName;
-                }
-
-                var viewModel = new RecruiterApplicationViewModel
-                {
-                    ApplicationID = application.ApplicationID,
-                    JobPostID = application.JobPostID,
-                    CandidateID = application.CandidateID,
-                    CandidateName = !string.IsNullOrEmpty(application.Candidate?.FullName) ? application.Candidate.FullName : "Ứng viên ẩn danh",
-                    CandidateEmail = application.Candidate?.Email ?? "",
-                    CandidatePhone = application.Candidate?.Phone ?? "",
-                    JobTitle = !string.IsNullOrEmpty(job.Title) ? job.Title : "Công việc không có tiêu đề",
-                    JobCode = job.JobCode ?? "",
-                    CompanyName = companyName,
-                    AppliedAt = application.AppliedAt,
-                    Status = application.Status ?? "Under review",
-                    ResumeFilePath = application.ResumeFilePath,
-                    CertificateFilePath = application.CertificateFilePath,
-                    Note = application.Note,
-                    UpdatedAt = application.UpdatedAt,
-                    StatusDisplay = GetApplicationStatusDisplay(application.Status ?? "Under review"),
-                    StatusBadgeClass = GetApplicationStatusBadgeClass(application.Status ?? "Under review")
-                };
-
-                return View(viewModel);
+                TempData["ErrorMessage"] = result.ErrorMessage;
+                return RedirectToAction("MyApplications", "RecruitersApplication");
             }
+
+            return View(result.Application);
         }
 
         /// <summary>
@@ -244,51 +147,24 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyApplications", "RecruitersApplication");
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            // Get application for status update from service
+            var result = _applicationService.GetApplicationForStatusUpdate(id.Value, recruiterId.Value);
+
+            if (!result.Success)
             {
-
-                // Load related entities
-                var loadOptions = new System.Data.Linq.DataLoadOptions();
-                loadOptions.LoadWith<Application>(a => a.JobPost);
-                loadOptions.LoadWith<Application>(a => a.Candidate);
-                db.LoadOptions = loadOptions;
-
-                // Get application and verify it belongs to this recruiter's job
-                var application = db.Applications.FirstOrDefault(a => a.ApplicationID == id.Value);
-                if (application == null)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy đơn ứng tuyển.";
-                    return RedirectToAction("MyApplications", "RecruitersApplication");
-                }
-
-                var job = application.JobPost;
-                if (job == null || job.RecruiterID != recruiterId.Value)
-                {
-                    TempData["ErrorMessage"] = "Bạn không có quyền cập nhật đơn ứng tuyển này.";
-                    return RedirectToAction("MyApplications", "RecruitersApplication");
-                }
-
-                // Map to ViewModel với xử lý cẩn thận để tránh hiển thị N/A
-                var viewModel = new UpdateApplicationStatusViewModel
-                {
-                    ApplicationID = application.ApplicationID,
-                    JobPostID = application.JobPostID,
-                    CandidateName = !string.IsNullOrEmpty(application.Candidate?.FullName) ? application.Candidate.FullName : "Ứng viên ẩn danh",
-                    JobTitle = !string.IsNullOrEmpty(job.Title) ? job.Title : "Công việc không có tiêu đề",
-                    Status = application.Status ?? "Under review",
-                    Note = application.Note
-                };
-
-                ViewBag.StatusOptions = new SelectList(new[] {
-                    new { Value = "Under review", Text = "Đang xem xét" },
-                    new { Value = "Interview", Text = "Phỏng vấn" },
-                    new { Value = "Offered", Text = "Đã đề xuất" },
-                    new { Value = "Hired", Text = "Đã tuyển" },
-                    new { Value = "Rejected", Text = "Đã từ chối" }
-                }, "Value", "Text", viewModel.Status);
-
-                return View(viewModel);
+                TempData["ErrorMessage"] = result.ErrorMessage;
+                return RedirectToAction("MyApplications", "RecruitersApplication");
             }
+
+            ViewBag.StatusOptions = new SelectList(new[] {
+                new { Value = "Under review", Text = "Đang xem xét" },
+                new { Value = "Interview", Text = "Phỏng vấn" },
+                new { Value = "Offered", Text = "Đã đề xuất" },
+                new { Value = "Hired", Text = "Đã tuyển" },
+                new { Value = "Rejected", Text = "Đã từ chối" }
+            }, "Value", "Text", result.ViewModel.Status);
+
+            return View(result.ViewModel);
         }
 
         /// <summary>
@@ -324,98 +200,28 @@ namespace Project_Recruiment_Huce.Controllers
                 return View(viewModel);
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            // Update status through service
+            var result = _applicationService.UpdateApplicationStatus(
+                viewModel.ApplicationID,
+                recruiterId.Value,
+                viewModel.Status,
+                viewModel.Note);
+
+            if (!result.Success)
             {
-                // Get application and verify it belongs to this recruiter's job
-                var application = db.Applications.FirstOrDefault(a => a.ApplicationID == viewModel.ApplicationID);
-                if (application == null)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy đơn ứng tuyển.";
-                    return RedirectToAction("MyApplications", "RecruitersApplication");
-                }
-
-                var job = application.JobPost;
-                if (job == null || job.RecruiterID != recruiterId.Value)
-                {
-                    TempData["ErrorMessage"] = "Bạn không có quyền cập nhật đơn ứng tuyển này.";
-                    return RedirectToAction("MyApplications", "RecruitersApplication");
-                }
-
-                // Validate status
-                var validStatuses = new[] { "Under review", "Interview", "Offered", "Hired", "Rejected" };
-                if (!validStatuses.Contains(viewModel.Status))
-                {
-                    ModelState.AddModelError("Status", "Trạng thái không hợp lệ.");
-                    ViewBag.StatusOptions = new SelectList(new[] {
-                        new { Value = "Under review", Text = "Đang xem xét" },
-                        new { Value = "Interview", Text = "Phỏng vấn" },
-                        new { Value = "Offered", Text = "Đã đề xuất" },
-                        new { Value = "Hired", Text = "Đã tuyển" },
-                        new { Value = "Rejected", Text = "Đã từ chối" }
-                    }, "Value", "Text", viewModel.Status);
-                    return View(viewModel);
-                }
-
-                // Update application
-                application.Status = viewModel.Status;
-                application.Note = viewModel.Note;
-                application.UpdatedAt = DateTime.Now;
-
-                db.SubmitChanges();
-
-                TempData["SuccessMessage"] = $"Đã cập nhật trạng thái đơn ứng tuyển thành '{GetApplicationStatusDisplay(viewModel.Status)}'.";
-                return RedirectToAction("ApplicationDetails", "RecruitersApplication", new { id = viewModel.ApplicationID });
+                ModelState.AddModelError("Status", result.ErrorMessage);
+                ViewBag.StatusOptions = new SelectList(new[] {
+                    new { Value = "Under review", Text = "Đang xem xét" },
+                    new { Value = "Interview", Text = "Phỏng vấn" },
+                    new { Value = "Offered", Text = "Đã đề xuất" },
+                    new { Value = "Hired", Text = "Đã tuyển" },
+                    new { Value = "Rejected", Text = "Đã từ chối" }
+                }, "Value", "Text", viewModel.Status);
+                return View(viewModel);
             }
-        }
 
-        /// <summary>
-        /// Get display text for application status
-        /// </summary>
-        private string GetApplicationStatusDisplay(string status)
-        {
-            if (string.IsNullOrEmpty(status))
-                return "Đang xem xét";
-
-            switch (status.ToLower())
-            {
-                case "under review":
-                    return "Đang xem xét";
-                case "interview":
-                    return "Phỏng vấn";
-                case "offered":
-                    return "Đã đề xuất";
-                case "hired":
-                    return "Đã tuyển";
-                case "rejected":
-                    return "Đã từ chối";
-                default:
-                    return status;
-            }
-        }
-
-        /// <summary>
-        /// Get badge class for application status
-        /// </summary>
-        private string GetApplicationStatusBadgeClass(string status)
-        {
-            if (string.IsNullOrEmpty(status))
-                return "badge-warning";
-
-            switch (status.ToLower())
-            {
-                case "under review":
-                    return "badge-warning";
-                case "interview":
-                    return "badge-info";
-                case "offered":
-                    return "badge-primary";
-                case "hired":
-                    return "badge-success";
-                case "rejected":
-                    return "badge-danger";
-                default:
-                    return "badge-secondary";
-            }
+            TempData["SuccessMessage"] = result.SuccessMessage;
+            return RedirectToAction("ApplicationDetails", "RecruitersApplication", new { id = result.ApplicationId });
         }
     }
 }

@@ -12,19 +12,39 @@ using Project_Recruiment_Huce.Helpers;
 using Project_Recruiment_Huce.Mappers;
 using Project_Recruiment_Huce.Infrastructure;
 using Project_Recruiment_Huce.Services;
+using IJobService = Project_Recruiment_Huce.Services.JobService.IJobService;
+using NewJobService = Project_Recruiment_Huce.Services.JobService.JobService;
+using NewJobRepository = Project_Recruiment_Huce.Repositories.JobRepo.JobRepository;
+using LegacyJobRepository = Project_Recruiment_Huce.Repositories.JobRepository;
 
 namespace Project_Recruiment_Huce.Controllers
 {
+    /// <summary>
+    /// Controller xử lý danh sách tin tuyển dụng, chi tiết, tạo tin, lưu tin, ứng tuyển
+    /// Sử dụng Service Layer và Repository Pattern cho kiến trúc tốt hơn
+    /// </summary>
     public class JobsController : BaseController
     {
-        // Using Service Layer and Repository Pattern for better architecture
-        private JobService GetJobService(JOBPORTAL_ENDataContext db)
+        private readonly IJobService _jobService;
+
+        public JobsController()
         {
-            var jobRepository = new JobRepository(db);
-            return new JobService(jobRepository, db);
+            var repository = new NewJobRepository();
+            _jobService = new NewJobService(repository);
         }
 
+        /// <summary>
+        /// Tạo JobService instance với database context đã cho (legacy method for existing code)
+        /// </summary>
+        private LegacyJobService GetJobService(JOBPORTAL_ENDataContext db)
+        {
+            var jobRepository = new LegacyJobRepository(db);
+            return new LegacyJobService(jobRepository, db);
+        }
 
+        /// <summary>
+        /// Hiển thị chi tiết tin tuyển dụng và tăng view count
+        /// </summary>
         public ActionResult JobDetails(int? id)
         {
             if (!id.HasValue)
@@ -35,7 +55,7 @@ namespace Project_Recruiment_Huce.Controllers
             // Increment view count (use writable context for this single operation)
             using (var writeDb = DbContextFactory.Create())
             {
-                var analyticsService = new RecruiterAnalyticsService(writeDb);
+                var analyticsService = new LegacyRecruiterAnalyticsService(writeDb);
                 analyticsService.IncrementViewCount(id.Value);
             }
 
@@ -105,20 +125,23 @@ namespace Project_Recruiment_Huce.Controllers
                 return View("JobsDetails", jobDetailsViewModel);
             }
         }
+        /// <summary>
+        /// Danh sách tin tuyển dụng với bộ lọc và phân trang
+        /// </summary>
         public ActionResult JobsListing(string keyword = null, string location = null, string employmentType = null, int? page = null)
         {
             using (var db = DbContextFactory.CreateReadOnly())
             {
                 var jobService = GetJobService(db);
 
-                // Map employment type from Vietnamese to English
+                // Map employment type từ tiếng Việt sang tiếng Anh (database format)
                 string dbEmploymentType = employmentType;
                 if (!string.IsNullOrWhiteSpace(employmentType))
                 {
                     dbEmploymentType = EmploymentTypeHelper.GetDatabaseValue(employmentType);
                 }
 
-                // Use service to search jobs with pagination
+                // Sử dụng service để tìm kiếm jobs với pagination
                 int pageNumber = page ?? 1;
                 var (jobs, totalItems, totalPages) = jobService.SearchJobs(keyword, location, dbEmploymentType, pageNumber);
 
@@ -190,7 +213,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("RecruitersManage", "Recruiters");
             }
 
-            // Load companies for dropdown if needed
+            // Load companies for dropdown
             using (var db = DbContextFactory.CreateReadOnly())
             {
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId.Value);
@@ -199,7 +222,6 @@ namespace Project_Recruiment_Huce.Controllers
                     ViewBag.CompanyID = recruiter.CompanyID.Value;
                 }
 
-                // Load list of companies for dropdown (optional)
                 var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
                 ViewBag.Companies = companies.Select(c => new SelectListItem
                 {
@@ -234,219 +256,34 @@ namespace Project_Recruiment_Huce.Controllers
 
             if (!ModelState.IsValid)
             {
-                // Reload companies for dropdown
-                using (var db = DbContextFactory.Create())
-                {
-                    var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId.Value);
-                    if (recruiter != null && recruiter.CompanyID.HasValue)
-                    {
-                        ViewBag.CompanyID = recruiter.CompanyID.Value;
-                    }
-
-                    var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
-                    ViewBag.Companies = companies.Select(c => new SelectListItem
-                    {
-                        Value = c.CompanyID.ToString(),
-                        Text = c.CompanyName
-                    }).ToList();
-                }
+                LoadCompaniesForDropdown(recruiterId.Value);
                 return View("JobsCreate", viewModel);
             }
 
-            using (var db = DbContextFactory.Create())
+            // Call service to create job
+            var result = _jobService.ValidateAndCreateJob(viewModel, recruiterId.Value);
+
+            if (!result.Success)
             {
-            // Get recruiter to get CompanyID
-                var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId.Value);
-                if (recruiter == null)
+                // Handle validation errors
+                if (result.Errors.Count > 0)
                 {
-                    TempData["ErrorMessage"] = "Không tìm thấy thông tin Recruiter.";
-                    return RedirectToAction("RecruitersManage", "Recruiters");
-                }
-
-                // Extract CompanyID as primitive value to avoid any tracking issues
-                int? companyIdValue = recruiter.CompanyID;
-
-                // Generate JobCode if not provided
-                string jobCode = viewModel.JobCode;
-                if (string.IsNullOrWhiteSpace(jobCode))
-                {
-                    var lastJob = db.JobPosts.OrderByDescending(j => j.JobPostID).FirstOrDefault();
-                    int nextNumber = 1;
-                    if (lastJob != null && !string.IsNullOrEmpty(lastJob.JobCode))
+                    foreach (var error in result.Errors)
                     {
-                        // Try to extract number from JobCode (format: JOB#### or similar)
-                        string code = lastJob.JobCode.ToUpper();
-                        if (code.StartsWith("JOB"))
-                        {
-                            string numStr = code.Substring(3);
-                            if (int.TryParse(numStr, out int lastNum))
-                            {
-                                nextNumber = lastNum + 1;
-                            }
-                        }
-                        else
-                        {
-                            // If format is different, just use JobPostID + 1
-                            nextNumber = lastJob.JobPostID + 1;
-                        }
-                    }
-                    jobCode = $"JOB{nextNumber:D4}";
-                }
-                
-                // Validate SalaryTo >= SalaryFrom
-                if (viewModel.SalaryFrom.HasValue && viewModel.SalaryTo.HasValue && viewModel.SalaryTo < viewModel.SalaryFrom)
-                {
-                    ModelState.AddModelError("SalaryTo", "Lương đến phải lớn hơn hoặc bằng lương từ");
-                    // Reload companies for dropdown (recruiter already loaded above)
-                    if (recruiter != null && recruiter.CompanyID.HasValue)
-                    {
-                        ViewBag.CompanyID = recruiter.CompanyID.Value;
-                    }
-                    var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
-                    ViewBag.Companies = companies.Select(c => new SelectListItem
-                    {
-                        Value = c.CompanyID.ToString(),
-                        Text = c.CompanyName
-                    }).ToList();
-                    return View("JobsCreate", viewModel);
-                }
-
-                // Validate AgeTo >= AgeFrom
-                if (viewModel.AgeFrom.HasValue && viewModel.AgeTo.HasValue && viewModel.AgeTo < viewModel.AgeFrom)
-                {
-                    ModelState.AddModelError("AgeTo", "Độ tuổi đến phải lớn hơn hoặc bằng độ tuổi từ");
-                    // Reload companies for dropdown
-                    if (recruiter != null && recruiter.CompanyID.HasValue)
-                    {
-                        ViewBag.CompanyID = recruiter.CompanyID.Value;
-                    }
-                    var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
-                    ViewBag.Companies = companies.Select(c => new SelectListItem
-                    {
-                        Value = c.CompanyID.ToString(),
-                        Text = c.CompanyName
-                    }).ToList();
-                    return View("JobsCreate", viewModel);
-                }
-
-                // Sanitize HTML content
-                // Debug: Check if Description is received
-                string rawDescription = viewModel.Description;
-                string sanitizedDescription = null;
-                
-                if (!string.IsNullOrWhiteSpace(rawDescription))
-                {
-                    // Trim whitespace first
-                    rawDescription = rawDescription.Trim();
-                    
-                    // Only sanitize if not empty after trim
-                    if (!string.IsNullOrEmpty(rawDescription))
-                    {
-                        sanitizedDescription = HtmlSanitizerHelper.Sanitize(rawDescription);
-                        
-                        // If sanitization results in empty or only whitespace, use original
-                        if (string.IsNullOrWhiteSpace(sanitizedDescription))
-                        {
-                            sanitizedDescription = rawDescription;
-                        }
+                        ModelState.AddModelError(error.Key, error.Value);
                     }
                 }
-                
-                string rawRequirements = viewModel.Requirements;
-                string sanitizedRequirements = null;
-                
-                if (!string.IsNullOrWhiteSpace(rawRequirements))
+                else if (!string.IsNullOrEmpty(result.ErrorMessage))
                 {
-                    rawRequirements = rawRequirements.Trim();
-                    if (!string.IsNullOrEmpty(rawRequirements))
-                    {
-                        sanitizedRequirements = HtmlSanitizerHelper.Sanitize(rawRequirements);
-                        if (string.IsNullOrWhiteSpace(sanitizedRequirements))
-                        {
-                            sanitizedRequirements = rawRequirements;
-                        }
-                    }
+                    TempData["ErrorMessage"] = result.ErrorMessage;
                 }
 
-                // Convert employment type from Vietnamese to database format
-                string employmentType = viewModel.EmploymentType;
-                if (!string.IsNullOrWhiteSpace(employmentType))
-                {
-                    if (employmentType == "Bán thời gian")
-                        employmentType = "Part-time";
-                    else if (employmentType == "Toàn thời gian")
-                        employmentType = "Full-time";
-                }
-
-                // Create new JobPost - use primitive values only, not entity references
-                // companyIdValue was already extracted above
-                var jobPost = new JobPost
-                {
-                    JobCode = jobCode,
-                    RecruiterID = recruiterId.Value,
-                    CompanyID = companyIdValue, // Use primitive value, not entity reference
-                    Title = viewModel.Title,
-                    Description = sanitizedDescription,
-                    Requirements = sanitizedRequirements,
-                    SalaryFrom = viewModel.SalaryFrom,
-                    SalaryTo = viewModel.SalaryTo,
-                    SalaryCurrency = viewModel.SalaryCurrency ?? "VND",
-                    Location = viewModel.Location,
-                    EmploymentType = employmentType,
-                    ApplicationDeadline = viewModel.ApplicationDeadline,
-                    Status = "Published",
-                    PostedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
-                };
-
-                try
-                {
-                    db.JobPosts.InsertOnSubmit(jobPost);
-                    db.SubmitChanges();
-                }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = $"Lỗi khi lưu công việc: {ex.Message}";
-                    if (ex.InnerException != null)
-                    {
-                        TempData["ErrorMessage"] += $" | Chi tiết: {ex.InnerException.Message}";
-                    }
-                    // Reload companies for dropdown
-                    var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
-                    ViewBag.Companies = companies.Select(c => new SelectListItem
-                    {
-                        Value = c.CompanyID.ToString(),
-                        Text = c.CompanyName
-                    }).ToList();
-                    return View("JobsCreate", viewModel);
-                }
-
-                // Create JobPostDetail
-                string sanitizedSkills = string.IsNullOrWhiteSpace(viewModel.Skills)
-                    ? null
-                    : HtmlSanitizerHelper.Sanitize(viewModel.Skills);
-
-                var jobPostDetail = new JobPostDetail
-                {
-                    JobPostID = jobPost.JobPostID,
-                    Industry = viewModel.Industry ?? "Khác",
-                    Major = viewModel.Major,
-                    YearsExperience = viewModel.YearsExperience ?? 0,
-                    DegreeRequired = viewModel.DegreeRequired,
-                    Skills = sanitizedSkills,
-                    Headcount = viewModel.Headcount ?? 1,
-                    GenderRequirement = viewModel.GenderRequirement ?? "Not required",
-                    AgeFrom = viewModel.AgeFrom,
-                    AgeTo = viewModel.AgeTo,
-                    Status = "Published"
-                };
-
-                db.JobPostDetails.InsertOnSubmit(jobPostDetail);
-                db.SubmitChanges();
-
-                TempData["SuccessMessage"] = "Đăng tin tuyển dụng thành công!";
-                return RedirectToAction("MyJobs", "Jobs");
+                LoadCompaniesForDropdown(recruiterId.Value);
+                return View("JobsCreate", viewModel);
             }
+
+            TempData["SuccessMessage"] = "Đăng tin tuyển dụng thành công!";
+            return RedirectToAction("MyJobs", "Jobs");
         }
 
         /// <summary>
@@ -476,68 +313,19 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyJobs", "Jobs");
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            // Call service to get job for edit
+            var result = _jobService.GetJobForEdit(id.Value, recruiterId.Value);
+
+            if (!result.Success)
             {
-
-                // Load job and verify it belongs to this recruiter
-                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
-                if (job == null)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng hoặc bạn không có quyền chỉnh sửa tin này.";
-                    return RedirectToAction("MyJobs", "Jobs");
-                }
-
-                // Load job details
-                var jobDetail = db.JobPostDetails.FirstOrDefault(jd => jd.JobPostID == job.JobPostID);
-
-                // Convert employment type from database format to Vietnamese
-                string employmentType = job.EmploymentType;
-                if (!string.IsNullOrWhiteSpace(employmentType))
-                {
-                    if (employmentType == "Part-time")
-                        employmentType = "Bán thời gian";
-                    else if (employmentType == "Full-time")
-                        employmentType = "Toàn thời gian";
-                }
-
-                // Map to ViewModel
-                var viewModel = new JobCreateViewModel
-                {
-                    Title = job.Title,
-                    Description = job.Description,
-                    Requirements = job.Requirements,
-                    SalaryFrom = job.SalaryFrom,
-                    SalaryTo = job.SalaryTo,
-                    SalaryCurrency = job.SalaryCurrency ?? "VND",
-                    Location = job.Location,
-                    EmploymentType = employmentType,
-                    ApplicationDeadline = job.ApplicationDeadline,
-                    JobCode = job.JobCode,
-                    CompanyID = job.CompanyID,
-                    Industry = jobDetail?.Industry,
-                    Major = jobDetail?.Major,
-                    YearsExperience = jobDetail?.YearsExperience,
-                    DegreeRequired = jobDetail?.DegreeRequired,
-                    Skills = jobDetail?.Skills,
-                    Headcount = jobDetail?.Headcount ?? 1,
-                    GenderRequirement = jobDetail?.GenderRequirement ?? "Not required",
-                    AgeFrom = jobDetail?.AgeFrom,
-                    AgeTo = jobDetail?.AgeTo
-                };
-
-                // Load companies for dropdown
-                var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
-                ViewBag.Companies = companies.Select(c => new SelectListItem
-                {
-                    Value = c.CompanyID.ToString(),
-                    Text = c.CompanyName,
-                    Selected = c.CompanyID == job.CompanyID
-                }).ToList();
-
-                ViewBag.JobPostID = job.JobPostID;
-
-                return View(viewModel);
+                TempData["ErrorMessage"] = result.ErrorMessage;
+                return RedirectToAction("MyJobs", "Jobs");
             }
+
+            ViewBag.Companies = result.Companies;
+            ViewBag.JobPostID = result.JobPostId;
+
+            return View(result.ViewModel);
         }
 
         /// <summary>
@@ -570,143 +358,36 @@ namespace Project_Recruiment_Huce.Controllers
 
             if (!ModelState.IsValid)
             {
-                // Reload companies for dropdown
-                using (var db = DbContextFactory.Create())
-                {
-                    var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
-                    ViewBag.Companies = companies.Select(c => new SelectListItem
-                    {
-                        Value = c.CompanyID.ToString(),
-                        Text = c.CompanyName
-                    }).ToList();
-                }
+                LoadCompaniesForDropdown(recruiterId.Value);
                 ViewBag.JobPostID = id.Value;
                 return View(viewModel);
             }
 
-            using (var db = DbContextFactory.Create())
+            // Call service to update job
+            var result = _jobService.ValidateAndUpdateJob(id.Value, viewModel, recruiterId.Value);
+
+            if (!result.Success)
             {
-                // Get job and verify it belongs to this recruiter
-                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
-                if (job == null)
+                // Handle validation errors
+                if (result.Errors.Count > 0)
                 {
-                    TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng hoặc bạn không có quyền chỉnh sửa tin này.";
-                    return RedirectToAction("MyJobs", "Jobs");
-                }
-
-                // Validate SalaryTo >= SalaryFrom
-                if (viewModel.SalaryFrom.HasValue && viewModel.SalaryTo.HasValue && viewModel.SalaryTo < viewModel.SalaryFrom)
-                {
-                    ModelState.AddModelError("SalaryTo", "Lương đến phải lớn hơn hoặc bằng lương từ");
-                    var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
-                    ViewBag.Companies = companies.Select(c => new SelectListItem
+                    foreach (var error in result.Errors)
                     {
-                        Value = c.CompanyID.ToString(),
-                        Text = c.CompanyName
-                    }).ToList();
-                    ViewBag.JobPostID = id.Value;
-                    return View(viewModel);
-                }
-
-                // Validate AgeTo >= AgeFrom
-                if (viewModel.AgeFrom.HasValue && viewModel.AgeTo.HasValue && viewModel.AgeTo < viewModel.AgeFrom)
-                {
-                    ModelState.AddModelError("AgeTo", "Độ tuổi đến phải lớn hơn hoặc bằng độ tuổi từ");
-                    var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
-                    ViewBag.Companies = companies.Select(c => new SelectListItem
-                    {
-                        Value = c.CompanyID.ToString(),
-                        Text = c.CompanyName
-                    }).ToList();
-                    ViewBag.JobPostID = id.Value;
-                    return View(viewModel);
-                }
-
-                // Sanitize HTML content
-                string sanitizedDescription = null;
-                if (!string.IsNullOrWhiteSpace(viewModel.Description))
-                {
-                    string rawDescription = viewModel.Description.Trim();
-                    if (!string.IsNullOrEmpty(rawDescription))
-                    {
-                        sanitizedDescription = HtmlSanitizerHelper.Sanitize(rawDescription);
-                        if (string.IsNullOrWhiteSpace(sanitizedDescription))
-                        {
-                            sanitizedDescription = rawDescription;
-                        }
+                        ModelState.AddModelError(error.Key, error.Value);
                     }
                 }
-
-                string sanitizedRequirements = null;
-                if (!string.IsNullOrWhiteSpace(viewModel.Requirements))
+                else if (!string.IsNullOrEmpty(result.ErrorMessage))
                 {
-                    string rawRequirements = viewModel.Requirements.Trim();
-                    if (!string.IsNullOrEmpty(rawRequirements))
-                    {
-                        sanitizedRequirements = HtmlSanitizerHelper.Sanitize(rawRequirements);
-                        if (string.IsNullOrWhiteSpace(sanitizedRequirements))
-                        {
-                            sanitizedRequirements = rawRequirements;
-                        }
-                    }
+                    TempData["ErrorMessage"] = result.ErrorMessage;
                 }
 
-                // Convert employment type from Vietnamese to database format
-                string employmentType = viewModel.EmploymentType;
-                if (!string.IsNullOrWhiteSpace(employmentType))
-                {
-                    if (employmentType == "Bán thời gian")
-                        employmentType = "Part-time";
-                    else if (employmentType == "Toàn thời gian")
-                        employmentType = "Full-time";
-                }
-
-                // Update JobPost
-                job.Title = viewModel.Title;
-                job.Description = sanitizedDescription;
-                job.Requirements = sanitizedRequirements;
-                job.SalaryFrom = viewModel.SalaryFrom;
-                job.SalaryTo = viewModel.SalaryTo;
-                job.SalaryCurrency = viewModel.SalaryCurrency ?? "VND";
-                job.Location = viewModel.Location;
-                job.EmploymentType = employmentType;
-                job.ApplicationDeadline = viewModel.ApplicationDeadline;
-                job.UpdatedAt = DateTime.Now;
-                // PostedAt giờ là non-nullable, luôn có giá trị, không cần check HasValue
-
-                db.SubmitChanges();
-
-                // Update or create JobPostDetail
-                var jobDetail = db.JobPostDetails.FirstOrDefault(jd => jd.JobPostID == job.JobPostID);
-                if (jobDetail == null)
-                {
-                    jobDetail = new JobPostDetail
-                    {
-                        JobPostID = job.JobPostID,
-                        Status = job.Status ?? "Published"
-                    };
-                    db.JobPostDetails.InsertOnSubmit(jobDetail);
-                }
-
-                string sanitizedSkills = string.IsNullOrWhiteSpace(viewModel.Skills)
-                    ? null
-                    : HtmlSanitizerHelper.Sanitize(viewModel.Skills);
-
-                jobDetail.Industry = viewModel.Industry ?? "Khác";
-                jobDetail.Major = viewModel.Major;
-                jobDetail.YearsExperience = viewModel.YearsExperience ?? 0;
-                jobDetail.DegreeRequired = viewModel.DegreeRequired;
-                jobDetail.Skills = sanitizedSkills;
-                jobDetail.Headcount = viewModel.Headcount ?? 1;
-                jobDetail.GenderRequirement = viewModel.GenderRequirement ?? "Not required";
-                jobDetail.AgeFrom = viewModel.AgeFrom;
-                jobDetail.AgeTo = viewModel.AgeTo;
-
-                db.SubmitChanges();
-
-                TempData["SuccessMessage"] = "Cập nhật tin tuyển dụng thành công!";
-                return RedirectToAction("MyJobs", "Jobs");
+                LoadCompaniesForDropdown(recruiterId.Value);
+                ViewBag.JobPostID = id.Value;
+                return View(viewModel);
             }
+
+            TempData["SuccessMessage"] = "Cập nhật tin tuyển dụng thành công!";
+            return RedirectToAction("MyJobs", "Jobs");
         }
 
         /// <summary>
@@ -737,47 +418,18 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyJobs", "Jobs");
             }
 
-            // Validate status values
-            if (status != "Closed" && status != "Expired")
+            // Call service to close job
+            var result = _jobService.CloseJob(id.Value, recruiterId.Value, status ?? "Closed");
+
+            if (!result.Success)
             {
-                status = "Closed";
-            }
-
-            using (var db = DbContextFactory.Create())
-            {
-                // Get job and verify it belongs to this recruiter
-                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
-                
-                if (job == null)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng hoặc bạn không có quyền thực hiện thao tác này.";
-                    return RedirectToAction("MyJobs", "Jobs");
-                }
-
-                // Kiểm tra xem có hồ sơ ứng viên đang trong quá trình xử lý không
-                var pendingStatuses = new[] { "Under review", "Interview", "Offered" };
-                var pendingApplications = db.Applications
-                    .Where(a => a.JobPostID == id.Value && 
-                               a.Status != null && 
-                               pendingStatuses.Contains(a.Status))
-                    .Count();
-
-                if (pendingApplications > 0)
-                {
-                    TempData["ErrorMessage"] = $"Không thể đóng tin tuyển dụng này. Vui lòng xử lý hết {pendingApplications} hồ sơ ứng viên đang trong quá trình xử lý (Đang xem xét, Phỏng vấn, hoặc Đã đề xuất) trước khi đóng tin.";
-                    return RedirectToAction("MyJobs", "Jobs");
-                }
-
-                // Update status
-                job.Status = status;
-                job.UpdatedAt = DateTime.Now;
-                
-                db.SubmitChanges();
-
-                string statusText = status == "Closed" ? "đóng" : "hết hạn";
-                TempData["SuccessMessage"] = $"Đã {statusText} tin tuyển dụng thành công!";
+                TempData["ErrorMessage"] = result.ErrorMessage;
                 return RedirectToAction("MyJobs", "Jobs");
             }
+
+            string statusText = status == "Closed" ? "đóng" : "hết hạn";
+            TempData["SuccessMessage"] = $"Đã {statusText} tin tuyển dụng thành công!";
+            return RedirectToAction("MyJobs", "Jobs");
         }
 
         /// <summary>
@@ -808,58 +460,55 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyJobs", "Jobs");
             }
 
-            using (var db = DbContextFactory.Create())
+            // Call service to reopen job
+            var result = _jobService.ReopenJob(id.Value, recruiterId.Value);
+
+            if (!result.Success)
             {
-                // Get job and verify it belongs to this recruiter
-                var job = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value && j.RecruiterID == recruiterId.Value);
-                
-                if (job == null)
+                if (!string.IsNullOrEmpty(result.WarningMessage))
                 {
-                    TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng hoặc bạn không có quyền thực hiện thao tác này.";
-                    return RedirectToAction("MyJobs", "Jobs");
-                }
-
-                // Chỉ cho phép mở lại tin có status "Closed", không cho phép mở lại "Expired"
-                if (job.Status != "Closed")
-                {
-                    if (job.Status == "Expired")
+                    TempData["WarningMessage"] = result.WarningMessage;
+                    if (!string.IsNullOrEmpty(result.RedirectAction))
                     {
-                        TempData["ErrorMessage"] = "Không thể mở lại tin đã hết hạn. Vui lòng tạo tin tuyển dụng mới hoặc cập nhật hạn nộp trước khi mở lại.";
+                        return RedirectToAction(result.RedirectAction, "Jobs", result.RedirectRouteValues);
                     }
-                    else
-                    {
-                        TempData["ErrorMessage"] = "Chỉ có thể mở lại tin tuyển dụng đã đóng.";
-                    }
-                    return RedirectToAction("MyJobs", "Jobs");
                 }
-
-                // Kiểm tra ApplicationDeadline - nếu đã quá hạn, cần cảnh báo
-                bool isDeadlinePassed = job.ApplicationDeadline.HasValue && 
-                                       job.ApplicationDeadline.Value < DateTime.Now.Date;
-
-                if (isDeadlinePassed)
+                if (!string.IsNullOrEmpty(result.ErrorMessage))
                 {
-                    // Vẫn cho phép mở lại nhưng cảnh báo cần cập nhật deadline
-                    // Có thể tự động cập nhật deadline thêm 30 ngày hoặc yêu cầu user cập nhật
-                    // Ở đây ta sẽ cảnh báo và yêu cầu user cập nhật deadline
-                    TempData["WarningMessage"] = "Hạn nộp hồ sơ đã qua. Vui lòng cập nhật hạn nộp mới trước khi mở lại tin tuyển dụng.";
-                    // Redirect đến trang edit để cập nhật deadline
-                    return RedirectToAction("Edit", "Jobs", new { id = job.JobPostID });
+                    TempData["ErrorMessage"] = result.ErrorMessage;
                 }
-
-                // Update status to Published
-                job.Status = "Published";
-                job.UpdatedAt = DateTime.Now;
-                
-                // PostedAt giờ là non-nullable, luôn có giá trị, không cần check HasValue
-                
-                db.SubmitChanges();
-
-                TempData["SuccessMessage"] = "Đã mở lại tin tuyển dụng thành công!";
                 return RedirectToAction("MyJobs", "Jobs");
+            }
+
+            TempData["SuccessMessage"] = "Đã mở lại tin tuyển dụng thành công!";
+            return RedirectToAction("MyJobs", "Jobs");
+        }
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Load companies for dropdown helper method
+        /// </summary>
+        private void LoadCompaniesForDropdown(int recruiterId)
+        {
+            using (var db = DbContextFactory.CreateReadOnly())
+            {
+                var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId);
+                if (recruiter != null && recruiter.CompanyID.HasValue)
+                {
+                    ViewBag.CompanyID = recruiter.CompanyID.Value;
+                }
+
+                var companies = db.Companies.Where(c => c.ActiveFlag == 1).ToList();
+                ViewBag.Companies = companies.Select(c => new SelectListItem
+                {
+                    Value = c.CompanyID.ToString(),
+                    Text = c.CompanyName
+                }).ToList();
             }
         }
 
+        #endregion
     }
 }
 

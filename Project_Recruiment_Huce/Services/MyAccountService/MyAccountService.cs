@@ -4,43 +4,42 @@ using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Accounts;
 using Project_Recruiment_Huce.Repositories;
 using Project_Recruiment_Huce.Helpers;
-using Project_Recruiment_Huce.Services;
 
 namespace Project_Recruiment_Huce.Services
 {
     /// <summary>
-    /// Service layer for MyAccount operations
-    /// Encapsulates business logic for account management
+    /// Service layer cho các thao tác quản lý tài khoản cá nhân
+    /// Đóng gói business logic cho quản lý account, đổi mật khẩu, và validation
     /// </summary>
-    public class MyAccountService
+    public class MyAccountService : IMyAccountService
     {
-        private readonly IAccountRepository _accountRepository;
-        private readonly JOBPORTAL_ENDataContext _db;
+        private readonly IMyAccountRepository _repo;
 
-        public MyAccountService(IAccountRepository accountRepository, JOBPORTAL_ENDataContext db)
+        public MyAccountService(IMyAccountRepository repo)
         {
-            _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
-            _db = db ?? throw new ArgumentNullException(nameof(db));
+            _repo = repo ?? throw new ArgumentNullException(nameof(repo));
         }
 
         /// <summary>
-        /// Get account information with contact email from profile
+        /// Lấy thông tin tài khoản bao gồm email liên lạc từ profile
         /// </summary>
+        /// <param name="accountId">ID của tài khoản</param>
+        /// <returns>ViewModel chứa thông tin tài khoản</returns>
         public MyAccountViewModel GetAccountInfo(int accountId)
         {
-            var account = _accountRepository.GetById(accountId);
+            var account = _repo.GetAccountById(accountId);
             if (account == null) return null;
 
             // Get contact email from profile
             string contactEmail = null;
             if (account.Role == "Candidate")
             {
-                var candidate = _db.Candidates.FirstOrDefault(c => c.AccountID == accountId);
+                var candidate = _repo.GetCandidateByAccountId(accountId);
                 contactEmail = candidate?.Email;
             }
             else if (account.Role == "Recruiter")
             {
-                var recruiter = _db.Recruiters.FirstOrDefault(r => r.AccountID == accountId);
+                var recruiter = _repo.GetRecruiterByAccountId(accountId);
                 contactEmail = recruiter?.CompanyEmail;
             }
 
@@ -57,51 +56,62 @@ namespace Project_Recruiment_Huce.Services
         }
 
         /// <summary>
-        /// Verify current password
+        /// Xác thực mật khẩu hiện tại của người dùng
         /// </summary>
-        public bool VerifyCurrentPassword(int accountId, string currentPassword)
+        /// <param name="accountId">ID của tài khoản</param>
+        /// <param name="currentPassword">Mật khẩu hiện tại</param>
+        /// <returns>True nếu mật khẩu đúng, false nếu sai</returns>
+        private bool VerifyCurrentPassword(int accountId, string currentPassword)
         {
-            var account = _accountRepository.GetById(accountId);
+            var account = _repo.GetAccountById(accountId);
             if (account == null || string.IsNullOrEmpty(currentPassword))
                 return false;
 
-            // Use same logic as AccountController.Login
             return string.IsNullOrEmpty(account.Salt)
                 ? PasswordHelper.VerifyPassword(currentPassword, account.PasswordHash)
                 : PasswordHelper.VerifyPassword(currentPassword, account.PasswordHash, account.Salt);
         }
 
         /// <summary>
-        /// Validate change password request
+        /// Validate yêu cầu đổi mật khẩu
+        /// Kiểm tra mật khẩu hiện tại, độ phức tạp mật khẩu mới, và xác nhận
         /// </summary>
-        public ValidationService.ValidationResult ValidateChangePassword(ChangePasswordViewModel model, int accountId)
+        /// <param name="model">Model chứa thông tin đổi mật khẩu</param>
+        /// <param name="accountId">ID của tài khoản</param>
+        /// <returns>Kết quả validation</returns>
+        public ValidationResult ValidateChangePassword(ChangePasswordViewModel model, int accountId)
         {
-            var result = new ValidationService.ValidationResult();
+            var result = new ValidationResult();
 
             if (model == null)
             {
-                result.AddError("", "Dữ liệu form không hợp lệ. Vui lòng thử lại.");
+                result.IsValid = false;
+                result.Errors[""] = "Dữ liệu form không hợp lệ. Vui lòng thử lại.";
                 return result;
             }
 
             // Validate required fields
             if (string.IsNullOrWhiteSpace(model.CurrentPassword))
             {
-                result.AddError("CurrentPassword", "Mật khẩu hiện tại là bắt buộc");
+                result.IsValid = false;
+                result.Errors["CurrentPassword"] = "Mật khẩu hiện tại là bắt buộc";
             }
 
             if (string.IsNullOrWhiteSpace(model.NewPassword))
             {
-                result.AddError("NewPassword", "Mật khẩu mới là bắt buộc");
+                result.IsValid = false;
+                result.Errors["NewPassword"] = "Mật khẩu mới là bắt buộc";
             }
 
             if (string.IsNullOrWhiteSpace(model.ConfirmPassword))
             {
-                result.AddError("ConfirmPassword", "Xác nhận mật khẩu là bắt buộc");
+                result.IsValid = false;
+                result.Errors["ConfirmPassword"] = "Xác nhận mật khẩu là bắt buộc";
             }
             else if (model.NewPassword != model.ConfirmPassword)
             {
-                result.AddError("ConfirmPassword", "Mật khẩu xác nhận không khớp.");
+                result.IsValid = false;
+                result.Errors["ConfirmPassword"] = "Mật khẩu xác nhận không khớp.";
             }
 
             // If basic validation passes, check password verification and complexity
@@ -110,23 +120,26 @@ namespace Project_Recruiment_Huce.Services
                 // Verify current password
                 if (!VerifyCurrentPassword(accountId, model.CurrentPassword))
                 {
-                    result.AddError("CurrentPassword", "Mật khẩu hiện tại không đúng");
+                    result.IsValid = false;
+                    result.Errors["CurrentPassword"] = "Mật khẩu hiện tại không đúng";
                 }
 
                 // Validate new password complexity
                 var passwordValidation = ValidateNewPasswordComplexity(model.NewPassword);
                 if (!passwordValidation.IsValid)
                 {
+                    result.IsValid = false;
                     foreach (var error in passwordValidation.Errors)
                     {
-                        result.AddError(error.Key, error.Value);
+                        result.Errors[error.Key] = error.Value;
                     }
                 }
 
                 // Check if new password is same as current
                 if (IsNewPasswordSameAsCurrent(accountId, model.NewPassword))
                 {
-                    result.AddError("NewPassword", "Mật khẩu mới phải khác mật khẩu hiện tại.");
+                    result.IsValid = false;
+                    result.Errors["NewPassword"] = "Mật khẩu mới phải khác mật khẩu hiện tại.";
                 }
             }
 
@@ -136,13 +149,14 @@ namespace Project_Recruiment_Huce.Services
         /// <summary>
         /// Validate new password complexity only
         /// </summary>
-        public ValidationService.ValidationResult ValidateNewPasswordComplexity(string newPassword)
+        private ValidationResult ValidateNewPasswordComplexity(string newPassword)
         {
-            var result = new ValidationService.ValidationResult();
+            var result = new ValidationResult();
 
             if (string.IsNullOrWhiteSpace(newPassword))
             {
-                result.AddError("NewPassword", "Mật khẩu mới là bắt buộc");
+                result.IsValid = false;
+                result.Errors["NewPassword"] = "Mật khẩu mới là bắt buộc";
             }
             else
             {
@@ -152,7 +166,8 @@ namespace Project_Recruiment_Huce.Services
 
                 if (newPassword.Length < 6 || !hasLower || !hasUpper || !hasDigit)
                 {
-                    result.AddError("NewPassword", "Mật khẩu mới phải tối thiểu 6 ký tự gồm chữ hoa, chữ thường và số.");
+                    result.IsValid = false;
+                    result.Errors["NewPassword"] = "Mật khẩu mới phải tối thiểu 6 ký tự gồm chữ hoa, chữ thường và số.";
                 }
             }
 
@@ -162,9 +177,9 @@ namespace Project_Recruiment_Huce.Services
         /// <summary>
         /// Check if new password is same as current password
         /// </summary>
-        public bool IsNewPasswordSameAsCurrent(int accountId, string newPassword)
+        private bool IsNewPasswordSameAsCurrent(int accountId, string newPassword)
         {
-            var account = _accountRepository.GetById(accountId);
+            var account = _repo.GetAccountById(accountId);
             if (account == null || string.IsNullOrEmpty(newPassword))
                 return false;
 
@@ -173,18 +188,18 @@ namespace Project_Recruiment_Huce.Services
                 : PasswordHelper.VerifyPassword(newPassword, account.PasswordHash, account.Salt);
         }
 
+        /// <summary>
+        /// Đổi mật khẩu cho tài khoản
+        /// </summary>
         public void ChangePassword(int accountId, string newPassword)
         {
             if (string.IsNullOrWhiteSpace(newPassword))
-                throw new ArgumentException("New password cannot be empty", nameof(newPassword));
-
-            if (!_db.ObjectTrackingEnabled)
-                throw new InvalidOperationException("Cannot change password: ObjectTrackingEnabled is false. Use DbContextFactory.Create() instead of CreateReadOnly()");
+                throw new ArgumentException("Mật khẩu mới không được rỗng", nameof(newPassword));
 
             string salt = PasswordHelper.GenerateSalt();
             string passwordHash = PasswordHelper.HashPassword(newPassword, salt);
-            _accountRepository.UpdatePassword(accountId, passwordHash, salt);
-            _accountRepository.SaveChanges();
+            _repo.UpdatePassword(accountId, passwordHash, salt);
+            _repo.SaveChanges();
         }
     }
 }

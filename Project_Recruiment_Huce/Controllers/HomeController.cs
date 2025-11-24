@@ -12,33 +12,40 @@ using Project_Recruiment_Huce.Helpers;
 using Project_Recruiment_Huce.Mappers;
 using Project_Recruiment_Huce.Infrastructure;
 using Project_Recruiment_Huce.Services;
-using Project_Recruiment_Huce.Repositories;
+using LegacyJobRepository = Project_Recruiment_Huce.Repositories.JobRepository;
 
 namespace Project_Recruiment_Huce.Controllers
 {
+    /// <summary>
+    /// Controller trang chủ hiển thị thống kê tổng quan và danh sách tin tuyển dụng mới
+    /// Sử dụng JobService cho business logic, CreateReadOnly() để tối ưu hiệu suất read
+    /// </summary>
     public class HomeController : Controller
     {
+        /// <summary>
+        /// Trang chủ - hiển thị statistics, recent jobs, locations và popular keywords
+        /// </summary>
         public ActionResult Index()
         {
             using (var db = DbContextFactory.CreateReadOnly())
             {
-                // Use JobService for business logic
-                var jobRepository = new JobRepository(db);
-                var jobService = new JobService(jobRepository, db);
+                // Sử dụng JobService cho business logic
+                var jobRepository = new LegacyJobRepository(db);
+                var jobService = new LegacyJobService(jobRepository, db);
 
-                // Get statistics
+                // Lấy thống kê tổng quan
                 var totalCandidates = db.Candidates.Count(c => c.ActiveFlag == 1);
                 var totalJobPosts = db.JobPosts.Count(j => j.Status == JobStatusHelper.Published);
                 var totalHiredJobs = db.Applications.Count(a => a.Status == "Hired" || a.Status == "Accepted");
                 var totalCompanies = db.Companies.Count(c => c.ActiveFlag == 1);
 
-                // Get recent published jobs using service
+                // Lấy danh sách tin tuyển dụng mới nhất (7 tin)
                 var jobViewModels = jobService.GetRecentPublishedJobs(7);
 
-                // Get total jobs count
+                // Tổng số tin đang published
                 var totalJobsCount = db.JobPosts.Count(j => j.Status == JobStatusHelper.Published);
 
-                // Get distinct locations from published jobs for filter dropdown
+                // Lấy danh sách locations duy nhất cho filter dropdown
                 var locations = db.JobPosts
                     .Where(j => j.Status == JobStatusHelper.Published && j.Location != null)
                     .Select(j => j.Location)
@@ -48,7 +55,7 @@ namespace Project_Recruiment_Huce.Controllers
                     .OrderBy(l => l)
                     .ToList();
 
-                // Get popular keywords (most common words in job titles)
+                // Lấy từ khóa phổ biến (các từ xuất hiện nhiều trong job titles)
                 var popularKeywords = new List<string>();
                 try
                 {
@@ -93,9 +100,9 @@ namespace Project_Recruiment_Huce.Controllers
             }
         }
 
-        // Removed duplicate mapping methods - now using JobMapper class
-        // Removed duplicate GetEmploymentTypeDisplay - now using EmploymentTypeHelper
-        // Removed duplicate FormatSalaryRange - now using SalaryHelper
+        // Đã loại bỏ các phương thức trùng lặp - hiện sử dụng JobMapper class
+        // Đã loại bỏ GetEmploymentTypeDisplay trùng lặp - hiện sử dụng EmploymentTypeHelper
+        // Đã loại bỏ FormatSalaryRange trùng lặp - hiện sử dụng SalaryHelper
 
         [AllowAnonymous]
         public ActionResult Login()
