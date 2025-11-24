@@ -106,7 +106,8 @@ namespace Project_Recruiment_Huce.Controllers
                     new Claim(ClaimTypes.NameIdentifier, account.AccountID.ToString()),
                     new Claim(ClaimTypes.Name, account.Username),
                     new Claim(ClaimTypes.Email, account.Email),
-                    new Claim("VaiTro", account.Role),
+                    new Claim(ClaimTypes.Role, account.Role), // Dùng ClaimTypes.Role để [Authorize(Roles=...)] hoạt động
+                    new Claim("VaiTro", account.Role), // Giữ lại để tương thích với code cũ
                     new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                 };
 
@@ -189,7 +190,8 @@ namespace Project_Recruiment_Huce.Controllers
                         new Claim(ClaimTypes.NameIdentifier, account.AccountID.ToString()),
                         new Claim(ClaimTypes.Name, account.Username),
                         new Claim(ClaimTypes.Email, account.Email),
-                        new Claim("VaiTro", account.Role),
+                        new Claim(ClaimTypes.Role, account.Role), // Dùng ClaimTypes.Role để [Authorize(Roles=...)] hoạt động
+                        new Claim("VaiTro", account.Role), // Giữ lại để tương thích với code cũ
                         new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                     };
 

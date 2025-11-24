@@ -218,6 +218,14 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     // Dropdowns đã được nạp ở đầu action
                     return View(model);
                 }
+
+                // Validate password not null
+                if (string.IsNullOrWhiteSpace(model.Password))
+                {
+                    ModelState.AddModelError("Password", "Mật khẩu không được để trống");
+                    return View(model);
+                }
+
                 // Tạo hash mật khẩu sử dụng PBKDF2
                 string passwordHash = PasswordHelper.HashPassword(model.Password);
 

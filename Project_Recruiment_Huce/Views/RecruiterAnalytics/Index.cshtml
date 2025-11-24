@@ -310,8 +310,8 @@
         <div class="filter-card">
             <form method="get" action="@Url.Action("Index")" class="form-inline">
                 <label class="mr-2 font-weight-bold">Lọc theo thời gian:</label>
-                <input type="date" name="fromDate" class="form-control mr-2" value="@ViewBag.FromDate?.ToString("yyyy-MM-dd")" placeholder="Từ ngày" />
-                <input type="date" name="toDate" class="form-control mr-2" value="@ViewBag.ToDate?.ToString("yyyy-MM-dd")" placeholder="Đến ngày" />
+                <input type="date" name="fromDate" class="form-control mr-2" value="@(ViewBag.FromDate != null ? ((DateTime)ViewBag.FromDate).ToString("yyyy-MM-dd") : "")" placeholder="Từ ngày" />
+                <input type="date" name="toDate" class="form-control mr-2" value="@(ViewBag.ToDate != null ? ((DateTime)ViewBag.ToDate).ToString("yyyy-MM-dd") : "")" placeholder="Đến ngày" />
                 <button type="submit" class="btn btn-primary mr-2">
                     <span class="icon-search mr-1"></span> Lọc
                 </button>
