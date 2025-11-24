@@ -222,8 +222,15 @@
               return string.Empty;
             }
 
-            string noHtml = Regex.Replace(raw, "<.*?>", string.Empty).Trim();
-            if (noHtml.StartsWith("-"))
+            // Remove HTML tags
+            string noHtml = Regex.Replace(raw, "<.*?>", string.Empty);
+            // Decode HTML entities
+            noHtml = HttpUtility.HtmlDecode(noHtml);
+            // Trim whitespace
+            noHtml = noHtml.Trim();
+            
+            // Remove leading dashes, bullets, or other markers
+            if (noHtml.StartsWith("-") || noHtml.StartsWith("•") || noHtml.StartsWith("*"))
             {
               noHtml = noHtml.Substring(1).Trim();
             }
@@ -231,9 +238,74 @@
             return noHtml;
           };
 
-          var skills = (Model?.Skills ?? string.Empty)
-            .Split(new[] { ',', ';', '|', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-            .Select(s => cleanSkill(s))
+          // Parse skills from HTML or plain text
+          var skillsRaw = Model?.Skills ?? string.Empty;
+          var skills = new List<string>();
+
+          if (!string.IsNullOrWhiteSpace(skillsRaw))
+          {
+            // First, try to extract from HTML list items (<li>)
+            var liMatches = Regex.Matches(skillsRaw, @"<li[^>]*>(.*?)</li>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            if (liMatches.Count > 0)
+            {
+              foreach (Match match in liMatches)
+              {
+                var skill = cleanSkill(match.Groups[1].Value);
+                if (!string.IsNullOrEmpty(skill))
+                {
+                  skills.Add(skill);
+                }
+              }
+            }
+            else
+            {
+              // Try to extract from paragraphs (<p>)
+              var pMatches = Regex.Matches(skillsRaw, @"<p[^>]*>(.*?)</p>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+              if (pMatches.Count > 0)
+              {
+                foreach (Match match in pMatches)
+                {
+                  var skill = cleanSkill(match.Groups[1].Value);
+                  if (!string.IsNullOrEmpty(skill))
+                  {
+                    skills.Add(skill);
+                  }
+                }
+              }
+              else
+              {
+                // Try to extract from divs (<div>)
+                var divMatches = Regex.Matches(skillsRaw, @"<div[^>]*>(.*?)</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                if (divMatches.Count > 0)
+                {
+                  foreach (Match match in divMatches)
+                  {
+                    var skill = cleanSkill(match.Groups[1].Value);
+                    if (!string.IsNullOrEmpty(skill))
+                    {
+                      skills.Add(skill);
+                    }
+                  }
+                }
+                else
+                {
+                  // Fallback: split by common delimiters and line breaks
+                  // Replace <br> and <br/> with newlines first
+                  var textWithNewlines = Regex.Replace(skillsRaw, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
+                  var splitSkills = textWithNewlines
+                    .Split(new[] { ',', ';', '|', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => cleanSkill(s))
+                    .Where(s => !string.IsNullOrEmpty(s));
+                  
+                  skills.AddRange(splitSkills);
+                }
+              }
+            }
+          }
+
+          // Remove duplicates and empty entries, then trim each skill
+          skills = skills
+            .Select(s => s.Trim())
             .Where(s => !string.IsNullOrEmpty(s))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -342,10 +414,10 @@
                 {
                   <div class="mt-4">
                     <span class="text-muted text-uppercase small">Kỹ năng ưu tiên</span>
-                    <div class="mt-2">
+                    <div class="mt-2 d-flex flex-wrap">
                       @foreach (var skill in skills)
                       {
-                        <span class="badge badge-pill badge-primary mr-2 mb-2 px-3 py-2">@skill</span>
+                        <span class="badge badge-pill mr-2 mb-2 px-3 py-2" style="background-color: #90EE90; color: #333; font-weight: normal;">@skill</span>
                       }
                     </div>
                   </div>
@@ -362,7 +434,7 @@
           <ul class="list-unstyled pl-3 mb-0">
             @if (Model?.PostedAt != null)
             {
-              <li class="mb-2"><strong class="text-black">Ngày đăng:</strong> @Model.PostedAt.ToString("dd/MM/yyyy")</li>
+              <li class="mb-2"><strong class="text-black">Ngày đăng:</strong> @Model.PostedAt.Value.ToString("dd/MM/yyyy")</li>
             }
             @if (!string.IsNullOrEmpty(Model?.EmploymentTypeDisplay))
             {
@@ -554,7 +626,7 @@
         });
       }
 
-      function showAlert(type, message) {
+      function showAlert(type, message, doScroll = true) {
         if (!$alert.length) {
           return;
         }
@@ -585,7 +657,7 @@
         $alert.addClass('show');
 
         var alertEl = $alert[0];
-        if (alertEl && typeof alertEl.scrollIntoView === 'function') {
+        if (doScroll && alertEl && typeof alertEl.scrollIntoView === 'function') {
           alertEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -617,7 +689,7 @@
         }
 
         if (!token) {
-          showAlert('danger', 'Không tìm thấy mã xác thực. Vui lòng tải lại trang.');
+          showAlert('danger', 'Không tìm thấy mã xác thực. Vui lòng tải lại trang.', false);
           return;
         }
 
@@ -640,7 +712,7 @@
             $btn.prop('disabled', true).addClass('disabled');
           }
         }).done(function (response) {
-          if (response && response.success) {
+            if (response && response.success) {
             isSaved = !isSaved;
             $btn.data('saved', isSaved.toString());
             $btn
@@ -652,16 +724,16 @@
               .toggleClass('text-danger', !isSaved);
             $btn.find('.save-label').text(isSaved ? 'Đã lưu' : 'Lưu việc làm');
 
-            showAlert('success', response.message || (isSaved ? 'Đã lưu công việc thành công.' : 'Đã bỏ lưu công việc.'));
+            showAlert('success', response.message || (isSaved ? 'Đã lưu công việc thành công.' : 'Đã bỏ lưu công việc.'), false);
           }
           else if (response && response.message) {
-            showAlert('warning', response.message);
+            showAlert('warning', response.message, false);
           }
           else {
-            showAlert('danger', 'Không thể cập nhật trạng thái lưu công việc.');
+            showAlert('danger', 'Không thể cập nhật trạng thái lưu công việc.', false);
           }
         }).fail(function () {
-          showAlert('danger', 'Không thể kết nối máy chủ. Vui lòng thử lại sau.');
+          showAlert('danger', 'Không thể kết nối máy chủ. Vui lòng thử lại sau.', false);
         }).always(function () {
           $btn.prop('disabled', false).removeClass('disabled');
         });

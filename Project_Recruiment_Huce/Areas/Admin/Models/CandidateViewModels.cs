@@ -7,7 +7,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
     /// <summary>
     /// ViewModel cho danh sách ứng viên
     /// </summary>
-    public class CandidateListVm
+    public class CandidatesListVm
     {
         [Display(Name = "ID ứng viên")]
         public int CandidateId { get; set; }
@@ -45,7 +45,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string ApplicationEmail { get;   set; }
         public string CurrentPhotoUrl { get; set; }
     }
-    public class CreateCandidateListVm
+    public class CreateCandidatesListVm
     {
         [Display(Name = "ID tài khoản")]
         [Required(ErrorMessage = "Vui lòng nhập ID tài khoản")]
@@ -68,7 +68,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Display(Name = "Email")]
         [Required(ErrorMessage = "Vui lòng nhập email")]
         public string Email { get; set; }
-        public bool Active => ActiveFlag == 1;
+        public bool Active
+        {
+            get => ActiveFlag == 1;
+            set => ActiveFlag = value ? (byte?)1 : (byte?)0; // Thêm setter
+        }
         public DateTime? BirthDate => DateOfBirth;
         public HttpPostedFileBase PhotoFile { get; set; }
 
@@ -77,8 +81,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         {
             get; set;
         }
-        [Display(Name = "Địa chỉ")]
-        [Required(ErrorMessage = "Vui lòng nhập địa chỉ")]
         public string Address { get; set; }
         public string Summary { get; set; }
         public string CandidateID { get; set; }
@@ -86,8 +88,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Required(ErrorMessage = "Vui lòng nhập email ứng tuyển")]
         public string ApplicationEmail { get; set; }
         public string CurrentPhotoUrl { get; set; }
+        public string Username { get;  set; }
+        public string Password { get; internal set; }
     }
-    public class EditCandidateListVm
+    public class EditCandidatesListVm
     {
         [Display(Name = "ID ứng viên")]
         [Required(ErrorMessage = "Vui lòng chon ID ứng viên")]
@@ -123,8 +127,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public HttpPostedFileBase PhotoFile { get; set; }
         public int? PhotoId { get;   set; }     
         public DateTime? CreatedAt { get; set; }
-        [Display(Name = "Địa chỉ")]
-        [Required(ErrorMessage = "Vui lòng nhập địa chỉ")]
+
+
+
         public string Address { get; set; }
         public string PhotoUrl { get; set; }
         public string Summary { get;   set; }

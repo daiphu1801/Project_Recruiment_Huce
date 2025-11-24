@@ -131,8 +131,9 @@ namespace Project_Recruiment_Huce.Helpers
 
         /// <summary>
         /// Checks if phone number is unique in Companies table
+        /// Normalizes phone numbers from database before comparison to handle different formats
         /// </summary>
-        /// <param name="phone">Phone to check</param>
+        /// <param name="phone">Phone to check (should already be normalized)</param>
         /// <param name="excludeCompanyId">Company ID to exclude from check (for updates)</param>
         /// <returns>True if unique, false if duplicate</returns>
         public static bool IsCompanyPhoneUnique(string phone, int? excludeCompanyId = null)
@@ -140,20 +141,39 @@ namespace Project_Recruiment_Huce.Helpers
             if (string.IsNullOrWhiteSpace(phone))
                 return true;
 
+            var normalizedPhone = NormalizePhone(phone);
+            if (string.IsNullOrWhiteSpace(normalizedPhone))
+                return true;
+
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                if (excludeCompanyId.HasValue)
+                var companiesWithPhone = db.Companies
+                    .Where(c => c.Phone != null)
+                    .ToList()
+                    .Where(c => !string.IsNullOrWhiteSpace(c.Phone))
+                    .ToList();
+
+                foreach (var company in companiesWithPhone)
                 {
-                    return !db.Companies.Any(c => c.Phone != null && c.Phone == phone && c.CompanyID != excludeCompanyId.Value);
+                    if (excludeCompanyId.HasValue && company.CompanyID == excludeCompanyId.Value)
+                        continue;
+
+                    var dbPhoneNormalized = SafeNormalizePhone(company.Phone);
+                    if (dbPhoneNormalized != null && 
+                        string.Equals(dbPhoneNormalized, normalizedPhone, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
                 }
-                return !db.Companies.Any(c => c.Phone != null && c.Phone == phone);
+                return true;
             }
         }
 
         /// <summary>
         /// Checks if phone number is unique in Accounts table
+        /// Normalizes phone numbers from database before comparison to handle different formats
         /// </summary>
-        /// <param name="phone">Phone to check</param>
+        /// <param name="phone">Phone to check (should already be normalized)</param>
         /// <param name="excludeAccountId">Account ID to exclude from check (for updates)</param>
         /// <returns>True if unique, false if duplicate</returns>
         public static bool IsAccountPhoneUnique(string phone, int? excludeAccountId = null)
@@ -161,13 +181,31 @@ namespace Project_Recruiment_Huce.Helpers
             if (string.IsNullOrWhiteSpace(phone))
                 return true;
 
+            var normalizedPhone = NormalizePhone(phone);
+            if (string.IsNullOrWhiteSpace(normalizedPhone))
+                return true;
+
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                if (excludeAccountId.HasValue)
+                var accountsWithPhone = db.Accounts
+                    .Where(a => a.Phone != null)
+                    .ToList()
+                    .Where(a => !string.IsNullOrWhiteSpace(a.Phone))
+                    .ToList();
+
+                foreach (var account in accountsWithPhone)
                 {
-                    return !db.Accounts.Any(a => a.Phone != null && a.Phone == phone && a.AccountID != excludeAccountId.Value);
+                    if (excludeAccountId.HasValue && account.AccountID == excludeAccountId.Value)
+                        continue;
+
+                    var dbPhoneNormalized = SafeNormalizePhone(account.Phone);
+                    if (dbPhoneNormalized != null && 
+                        string.Equals(dbPhoneNormalized, normalizedPhone, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
                 }
-                return !db.Accounts.Any(a => a.Phone != null && a.Phone == phone);
+                return true;
             }
         }
 
@@ -181,20 +219,40 @@ namespace Project_Recruiment_Huce.Helpers
             if (string.IsNullOrWhiteSpace(phone))
                 return phone;
 
-            // Remove spaces, dashes, parentheses
-            var cleaned = Regex.Replace(phone, @"[\s\-\(\)]", "");
+            var cleaned = Regex.Replace(phone, @"[^\d]", "");
+            if (string.IsNullOrWhiteSpace(cleaned))
+                return phone;
 
-            // Convert +84 or 84 to 0
-            if (cleaned.StartsWith("+84"))
-            {
-                cleaned = "0" + cleaned.Substring(3);
-            }
-            else if (cleaned.StartsWith("84") && cleaned.Length >= 10)
+            if (cleaned.StartsWith("84") && (cleaned.Length == 11 || cleaned.Length == 10))
             {
                 cleaned = "0" + cleaned.Substring(2);
             }
+            else if (!cleaned.StartsWith("0") && cleaned.Length >= 9)
+            {
+                cleaned = "0" + cleaned;
+            }
 
             return cleaned;
+        }
+
+        /// <summary>
+        /// Safely normalizes phone number, returns null if normalization fails
+        /// </summary>
+        /// <param name="phone">Phone number to normalize</param>
+        /// <returns>Normalized phone number or null if invalid</returns>
+        private static string SafeNormalizePhone(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+                return null;
+
+            try
+            {
+                return NormalizePhone(phone);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>
