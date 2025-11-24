@@ -16,7 +16,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Display(Name = "Họ và tên")]
         public string FullName { get; set; }
         [Display(Name = "Ngày sinh")]
-        public DateTime? DateOfBirth { get; set; } // DateOfBirth in database
+        public DateTime? DateOfBirth { get; set; } 
         [Display(Name = "Giới tính")]
         public string Gender { get; set; }
         [Display(Name = "Số điện thoại")]
@@ -50,8 +50,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Display(Name = "ID tài khoản")]
         [Required(ErrorMessage = "Vui lòng nhập ID tài khoản")]
         public int AccountId { get; set; }
-        [Display(Name = "ID ứng viên")]
-        [Required(ErrorMessage = "Vui lòng nhập ID ứng viên")]
+        [Display(Name = "Họ và tên")]
+        [Required(ErrorMessage = "Vui lòng nhập họ và tên")]
         public string FullName { get; set; }
         [Display(Name = "Ngày sinh")]
         [Required(ErrorMessage = "Vui lòng nhập ngày sinh")]

@@ -8,13 +8,29 @@
 <section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
     <div class="container">
         <div class="row">
-            <div class="col-md-7">
-                <h1 class="text-white font-weight-bold">Cập nhật trạng thái đơn ứng tuyển</h1>
-                <div class="custom-breadcrumbs">
-                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
-                    <a href="@Url.Action("MyApplications","RecruitersApplication")">Đơn ứng tuyển</a> <span class="mx-2 slash">/</span>
-                    <a href="@Url.Action("ApplicationDetails","RecruitersApplication", new { id = Model.ApplicationID })">Chi tiết</a> <span class="mx-2 slash">/</span>
-                    <span class="text-white"><strong>Cập nhật trạng thái</strong></span>
+            <div class="col-md-8">
+                <h1 class="text-white font-weight-bold d-flex align-items-center">
+                    <i class="icon-edit mr-3"></i>Cập nhật trạng thái đơn ứng tuyển
+                </h1>
+                <div class="custom-breadcrumbs d-flex align-items-center">
+                    <a href="@Url.Action("Index","Home")" class="breadcrumb-link">
+                        <i class="icon-home mr-1"></i>Trang chủ
+                    </a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("MyApplications","RecruitersApplication")" class="breadcrumb-link">
+                        <i class="icon-list mr-1"></i>Đơn ứng tuyển
+                    </a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("ApplicationDetails","RecruitersApplication", new { id = Model.ApplicationID })" class="breadcrumb-link">
+                        <i class="icon-eye mr-1"></i>Chi tiết
+                    </a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong><i class="icon-edit mr-1"></i>Cập nhật trạng thái</strong></span>
+                </div>
+                <div class="mt-3">
+                    <div class="d-flex align-items-center text-white-50">
+                        <i class="icon-user mr-2"></i>
+                        <span class="mr-4"><strong>@Model.CandidateName</strong></span>
+                        <i class="icon-briefcase mr-2"></i>
+                        <span>@Model.JobTitle</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -35,51 +51,129 @@
 
         <div class="row">
             <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0"><i class="icon-edit mr-2"></i>Cập nhật trạng thái</h4>
+                <div class="card border-0 shadow-lg update-form-card">
+                    <div class="card-header bg-gradient-primary text-white border-0">
+                        <h4 class="mb-0 d-flex align-items-center">
+                            <i class="icon-edit mr-3"></i>Cập nhật trạng thái đơn ứng tuyển
+                        </h4>
                     </div>
-                    <div class="card-body">
-                        <!-- Application Info -->
-                        <div class="alert alert-info">
-                            <strong>Ứng viên:</strong> @Model.CandidateName<br>
-                            <strong>Công việc:</strong> @Model.JobTitle
+                    <div class="card-body p-5">
+                        <!-- Application Info Card -->
+                        <div class="application-info-card mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <i class="icon-user info-icon"></i>
+                                        <div class="info-content">
+                                            <span class="info-label">Ứng viên</span>
+                                            <span class="info-value">@Model.CandidateName</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <i class="icon-briefcase info-icon"></i>
+                                        <div class="info-content">
+                                            <span class="info-label">Công việc</span>
+                                            <span class="info-value">@Model.JobTitle</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        @using (Html.BeginForm("UpdateApplicationStatus", "RecruitersApplication", FormMethod.Post))
+                        @using (Html.BeginForm("UpdateApplicationStatus", "RecruitersApplication", FormMethod.Post, new { @class = "status-update-form", @id = "statusForm" }))
                         {
                             @Html.AntiForgeryToken()
                             @Html.HiddenFor(m => m.ApplicationID)
                             @Html.HiddenFor(m => m.JobPostID)
 
-                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
 
-                            <div class="form-group">
-                                @Html.LabelFor(m => m.Status, new { @class = "form-label font-weight-bold" })
-                                @Html.DropDownListFor(m => m.Status, ViewBag.StatusOptions as SelectList, "-- Chọn trạng thái --", new { @class = "form-control form-control-lg" })
-                                @Html.ValidationMessageFor(m => m.Status, "", new { @class = "text-danger" })
-                                <small class="form-text text-muted">
-                                    <strong>Trạng thái hiện tại:</strong> 
-                                    <span id="currentStatus">@Model.Status</span>
-                                </small>
+                            <!-- Current Status Display -->
+                            <div class="current-status-display mb-4">
+                                <label class="form-label font-weight-bold text-dark mb-2">
+                                    <i class="icon-flag mr-2 text-primary"></i>Trạng thái hiện tại
+                                </label>
+                                <div class="current-status-badge">
+                                    @{
+                                        string badgeClass = "badge-secondary";
+                                        string displayText = Model.Status;
+                                        switch(Model.Status) {
+                                            case "Under review":
+                                                badgeClass = "badge-warning";
+                                                displayText = "Đang xem xét";
+                                                break;
+                                            case "Interview":
+                                                badgeClass = "badge-info";
+                                                displayText = "Phỏng vấn";
+                                                break;
+                                            case "Offered":
+                                                badgeClass = "badge-primary";
+                                                displayText = "Đã đề xuất";
+                                                break;
+                                            case "Hired":
+                                                badgeClass = "badge-success";
+                                                displayText = "Đã tuyển";
+                                                break;
+                                            case "Rejected":
+                                                badgeClass = "badge-danger";
+                                                displayText = "Đã từ chối";
+                                                break;
+                                        }
+                                    }
+                                    <span class="badge @badgeClass badge-lg px-3 py-2" id="currentStatusBadge" style="font-size: 1rem;">@displayText</span>
+                                </div>
                             </div>
 
-                            <div class="form-group">
-                                @Html.LabelFor(m => m.Note, new { @class = "form-label font-weight-bold" })
-                                @Html.TextAreaFor(m => m.Note, new { @class = "form-control", rows = "5", placeholder = "Nhập ghi chú về trạng thái này (tùy chọn)..." })
-                                @Html.ValidationMessageFor(m => m.Note, "", new { @class = "text-danger" })
-                                <small class="form-text text-muted">
-                                    Ghi chú này sẽ được lưu cùng với đơn ứng tuyển và có thể xem lại sau.
-                                </small>
+                            <!-- New Status Selection -->
+                            <div class="form-group mb-5">
+                                @Html.LabelFor(m => m.Status, new { @class = "form-label font-weight-bold text-dark mb-3" })
+                                <div class="status-selection">
+                                    @Html.DropDownListFor(m => m.Status, ViewBag.StatusOptions as SelectList, "-- Chọn trạng thái mới --", new { @class = "form-control form-control-lg custom-select", @id = "statusSelect" })
+                                    @Html.ValidationMessageFor(m => m.Status, "", new { @class = "text-danger mt-2 d-block" })
+                                    <div class="status-preview mt-3" id="statusPreview" style="display: none;">
+                                        <small class="text-muted d-block mb-2">Trạng thái mới:</small>
+                                        <span class="badge badge-info ml-0" id="newStatusBadge"></span>
+                                    </div>
+                                </div>
+                            </div>               
+                                 
+                            <!-- Notes Section -->
+                            <div class="form-group mb-4">
+                                @Html.LabelFor(m => m.Note, new { @class = "form-label font-weight-bold text-dark mb-3" })
+                                <div class="notes-section">
+                                    @Html.TextAreaFor(m => m.Note, new { @class = "form-control form-control-lg", rows = "5", placeholder = "Nhập ghi chú về việc cập nhật trạng thái này (tùy chọn)...", @id = "noteTextarea" })
+                                    @Html.ValidationMessageFor(m => m.Note, "", new { @class = "text-danger mt-2 d-block" })
+                                    <div class="character-count mt-2">
+                                        <small class="text-muted">0/500 ký tự</small>
+                                    </div>
+                                    <small class="form-text text-muted mt-2">
+                                        <i class="icon-info-circle mr-1"></i>
+                                        Ghi chú này sẽ được lưu vào lịch sử cập nhật của đơn ứng tuyển.
+                                    </small>
+                                </div>
                             </div>
 
-                            <div class="form-group mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="icon-check mr-2"></i>Cập nhật trạng thái
-                                </button>
-                                <a href="@Url.Action("ApplicationDetails", "RecruitersApplication", new { id = Model.ApplicationID })" class="btn btn-secondary btn-lg">
-                                    <i class="icon-arrow-left mr-2"></i>Hủy
-                                </a>
+                            <!-- Action Buttons -->
+                            <div class="form-actions mt-5">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <button type="submit" class="btn btn-success btn-lg btn-block update-btn" id="updateBtn" disabled>
+                                            <i class="icon-check mr-2"></i>Cập nhật trạng thái
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex">
+                                            <a href="@Url.Action("ApplicationDetails", "RecruitersApplication", new { id = Model.ApplicationID })" class="btn btn-outline-secondary btn-lg flex-fill mr-2">
+                                                <i class="icon-eye mr-2"></i>Chi tiết
+                                            </a>
+                                            <a href="@Url.Action("MyApplications", "RecruitersApplication")" class="btn btn-outline-primary btn-lg flex-fill">
+                                                <i class="icon-list mr-2"></i>Danh sách
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         }
                     </div>
@@ -141,14 +235,95 @@
     </div>
 </section>
 
+@section Styles {
+    <link href="@Url.Content("~/Content/css/recruiters-application.css")?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
+}
+
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Update current status display based on selected value
-            $('#Status').on('change', function() {
-                var selectedText = $(this).find('option:selected').text();
-                $('#currentStatus').text(selectedText);
+            const statusSelect = $('#statusSelect');
+            const updateBtn = $('#updateBtn');
+            const statusPreview = $('#statusPreview');
+            const newStatusBadge = $('#newStatusBadge');
+            const currentStatus = '@Model.Status';
+            const noteTextarea = $('#noteTextarea');
+            const characterCount = $('.character-count small');
+            
+            // Status change handler
+            statusSelect.on('change', function() {
+                const selectedValue = $(this).val();
+                const selectedText = $(this).find('option:selected').text();
+                
+                if (selectedValue && selectedValue !== currentStatus) {
+                    // Show preview with animation
+                    statusPreview.hide().fadeIn(300);
+                    newStatusBadge.text(selectedText);
+                    
+                    // Update badge class based on status
+                    newStatusBadge.removeClass().addClass('badge ml-2');
+                    switch(selectedValue) {
+                        case 'Under review':
+                            newStatusBadge.addClass('badge-warning');
+                            break;
+                        case 'Interview':
+                            newStatusBadge.addClass('badge-info');
+                            break;
+                        case 'Offered':
+                            newStatusBadge.addClass('badge-primary');
+                            break;
+                        case 'Hired':
+                            newStatusBadge.addClass('badge-success');
+                            break;
+                        case 'Rejected':
+                            newStatusBadge.addClass('badge-danger');
+                            break;
+                        default:
+                            newStatusBadge.addClass('badge-secondary');
+                    }
+                    
+                    // Enable update button with effect
+                    updateBtn.prop('disabled', false).addClass('btn-pulse');
+                } else {
+                    // Hide preview and disable button
+                    statusPreview.fadeOut(300);
+                    updateBtn.prop('disabled', true).removeClass('btn-pulse');
+                }
             });
+            
+            // Character count for notes
+            noteTextarea.on('input', function() {
+                const length = $(this).val().length;
+                const maxLength = 500;
+                characterCount.text(length + '/' + maxLength + ' ký tự');
+                
+                if (length > maxLength) {
+                    characterCount.addClass('text-danger');
+                } else if (length > maxLength * 0.8) {
+                    characterCount.removeClass('text-danger').addClass('text-warning');
+                } else {
+                    characterCount.removeClass('text-danger text-warning');
+                }
+            });
+            
+            // Form submission with confirmation
+            $('#statusForm').on('submit', function(e) {
+                const selectedText = statusSelect.find('option:selected').text();
+                const confirmMessage = `Bản có chắc chắn muốn cập nhật trạng thái thành "${selectedText}"?`;
+                
+                if (!confirm(confirmMessage)) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Show loading state
+                updateBtn.html('<i class="icon-spinner icon-spin mr-2"></i>Đang cập nhật...');
+                updateBtn.prop('disabled', true);
+            });
+            
+            // Initialize
+            statusSelect.trigger('change');
+            noteTextarea.trigger('input');
         });
     </script>
 }

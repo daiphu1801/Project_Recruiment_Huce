@@ -9,15 +9,16 @@ using Project_Recruiment_Huce.Infrastructure;
 namespace Project_Recruiment_Huce.Controllers
 {
     /// <summary>
-    /// Base controller cho tất cả controllers trong User area
-    /// Cung cấp các helper methods chung
+    /// Controller cơ sở cho tất cả controllers trong User area (không phải Admin)
+    /// Cung cấp các phương thức trợ giúp chung để truy xuất thông tin người dùng hiện tại
     /// </summary>
     public abstract class BaseController : Controller
     {
         /// <summary>
-        /// Lấy AccountID của user hiện tại từ Claims
+        /// Lấy AccountID của người dùng hiện tại từ Claims Identity
+        /// Được sử dụng để xác định người dùng đã đăng nhập
         /// </summary>
-        /// <returns>AccountID hoặc null nếu không tìm thấy</returns>
+        /// <returns>AccountID nếu người dùng đã đăng nhập, null nếu chưa đăng nhập hoặc không tìm thấy claim</returns>
         protected int? GetCurrentAccountId()
         {
             if (User?.Identity == null || !User.Identity.IsAuthenticated)
@@ -31,19 +32,21 @@ namespace Project_Recruiment_Huce.Controllers
         }
 
         /// <summary>
-        /// Tạo database context với connection string từ config
+        /// [Đã lỗi thời] Tạo database context với connection string từ config
+        /// Sử dụng DbContextFactory.Create() hoặc DbContextFactory.CreateReadOnly() thay thế
         /// </summary>
-        /// <returns>JOBPORTAL_ENDataContext instance</returns>
-        [Obsolete("Use DbContextFactory.Create() or DbContextFactory.CreateReadOnly() instead")]
+        /// <returns>Instance của JOBPORTAL_ENDataContext</returns>
+        [Obsolete("Sử dụng DbContextFactory.Create() hoặc DbContextFactory.CreateReadOnly() thay thế")]
         protected JOBPORTAL_ENDataContext CreateDbContext()
         {
             return DbContextFactory.Create();
         }
 
         /// <summary>
-        /// Lấy RecruiterID của user hiện tại
+        /// Lấy RecruiterID của người dùng hiện tại dựa trên AccountID
+        /// Sử dụng cho các chức năng dành cho nhà tuyển dụng
         /// </summary>
-        /// <returns>RecruiterID hoặc null nếu không tìm thấy</returns>
+        /// <returns>RecruiterID nếu tìm thấy, null nếu người dùng không phải recruiter hoặc chưa đăng nhập</returns>
         protected int? GetCurrentRecruiterId()
         {
             var accountId = GetCurrentAccountId();
@@ -57,9 +60,10 @@ namespace Project_Recruiment_Huce.Controllers
         }
 
         /// <summary>
-        /// Lấy CandidateID của user hiện tại
+        /// Lấy CandidateID của người dùng hiện tại dựa trên AccountID
+        /// Sử dụng cho các chức năng dành cho ứng viên
         /// </summary>
-        /// <returns>CandidateID hoặc null nếu không tìm thấy</returns>
+        /// <returns>CandidateID nếu tìm thấy, null nếu người dùng không phải candidate hoặc chưa đăng nhập</returns>
         protected int? GetCurrentCandidateId()
         {
             var accountId = GetCurrentAccountId();

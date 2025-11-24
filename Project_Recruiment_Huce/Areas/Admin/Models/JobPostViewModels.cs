@@ -42,52 +42,51 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
     // ---------------------------------------------------------------------
 
 
-    //public class JobPostDetailVm
-    //{
-    //    // Thông tin JobPost cơ bản
-    //    public int JobPostID { get; set; }
-    //    public string Industry { get; set; }
-    //    public int DetailID { get; set; }
+    // File: JobPostDetailVm.cs (hoặc trong file Models chung)
+    public class JobPostDetailVm
+    {
+        // Thông tin JobPost cơ bản
+        public int JobPostID { get; set; }
+        public string JobCode { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Requirements { get; set; }
+        public decimal? SalaryFrom { get; set; }
+        public decimal? SalaryTo { get; set; }
+        public string SalaryCurrency { get; set; }
+        public string Location { get; set; }
+        public string EmploymentType { get; set; }
+        public DateTime? ApplicationDeadline { get; set; }
+        public string Status { get; set; }
+        public DateTime PostedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
 
-    //    public string Skills { get;set; }
-    //    public string JobCode { get; set; }
-    //    public string Title { get; set; }
-    //    public string Description { get; set; }
-    //    public string Requirements { get; set; }
-    //    public string SalaryRange { get; set; } // Ví dụ: "10,000,000 - 15,000,000 VND"
-    //    public string Location { get; set; }
-    //    public string EmploymentType { get; set; }
-    //    public DateTime? ApplicationDeadline { get; set; }
-    //    public string Status { get; set; }
-    //    public DateTime PostedAt { get; set; }
-    //    public DateTime UpdatedAt { get; set; }
+        // Thông tin chi tiết (từ JobPostDetails)
+        public int DetailID { get; set; } // Khóa chính của bảng Detail
+        public string Industry { get; set; }
+        public string Major { get; set; }
+        public int YearsExperience { get; set; }
+        public string DegreeRequired { get; set; }
+        public string Skills { get; set; }
+        public int Headcount { get; set; }
+        public string GenderRequirement { get; set; }
+        public int? AgeFrom { get; set; }
+        public int? AgeTo { get; set; }
 
-    //    // Thông tin chi tiết (từ JobPostDetails)
-    //    public int YearsExperience { get; set; }
-    //    public string DegreeRequired { get; set; }
+        // Thông tin Công ty (từ Companies)
+        public int? CompanyID { get; set; }
+        public string CompanyName { get; set; }
+        public string Address { get; set; }
+        public string Website { get; set; }
+        public int? CompanyPhotoID { get; set; } // Nếu cần hiển thị logo
 
-    //    public int Headcount { get; set; }
-    //    public string GenderRequirement { get; set; }
-
-    //    public string Major { get; set; }
-    //    public int? AgeFrom { get; set; }
-    //    public int? AgeTo { get; set; }
-
-    //    // Thông tin Công ty (từ Companies)
-    //    public int? CompanyID { get; set; }
-    //    public string CompanyName { get; set; }
-    //    public string Address { get; set; }
-    //    public string Website { get; set; }
-
-
-
-    //    // Thông tin Người đăng (từ Recruiters)
-    //    public int RecruiterID { get; set; }
-    //    public string FullName { get; set; }
-    //    public string PositionTitle { get; set; }
-    //    public string Phone { get; set; }
-    //}
-
+        // Thông tin Người đăng (từ Recruiters)
+        public int RecruiterID { get; set; }
+        public string FullName { get; set; }
+        public string PositionTitle { get; set; }
+        public string Phone { get; set; }
+        public int? RecruiterPhotoID { get; set; } // Nếu cần hiển thị ảnh đại diện
+    }
 
     // ---------------------------------------------------------------------
     // File: JobPostCreateVm.cs
@@ -142,7 +141,38 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
 
         public DateTime PostedAt { get; set; } = DateTime.Now;
         public DateTime? UpdateAt { get; set; }
+
+        [Required(ErrorMessage = "Ngành nghề là bắt buộc")]
+        public string Industry { get; set; }
+
+        public string Major { get; set; }
+
+        [Required(ErrorMessage = "Số năm kinh nghiệm là bắt buộc")]
+        [Range(0, 50, ErrorMessage = "Số năm kinh nghiệm không hợp lệ (0-50)")]
+        public int YearsExperience { get; set; } = 0; // Default 0
+
+        public string DegreeRequired { get; set; }
+
+        public string Skills { get; set; } // NVARCHAR(MAX)
+
+        [Required(ErrorMessage = "Số lượng tuyển là bắt buộc")]
+        [Range(1, 1000, ErrorMessage = "Số lượng tuyển tối thiểu là 1")]
+        public int Headcount { get; set; } = 1; // Default 1
+
+        public string GenderRequirement { get; set; } // Not required, Male, Female
+
+        [Range(18, 100, ErrorMessage = "Tuổi tối thiểu không hợp lệ (18-100)")]
+        public int? AgeFrom { get; set; }
+
+        [Range(18, 100, ErrorMessage = "Tuổi tối đa không hợp lệ (18-100)")]
+        public int? AgeTo { get; set; }
     }
+
+   
+
+        
+        
+    
 
 
 
@@ -178,10 +208,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string Requirements { get; set; }
 
         [Required(ErrorMessage = "Mức lương tối thiểu là bắt buộc")]
-        public decimal? SalaryFrom { get; set; }  // 🔥 THÊM ? nếu DB cho phép NULL
+        public decimal? SalaryFrom { get; set; } 
 
         [Required(ErrorMessage = "Mức lương tối đa là bắt buộc")]
-        public decimal? SalaryTo { get; set; }  // 🔥 THÊM ? nếu DB cho phép NULL
+        public decimal? SalaryTo { get; set; }  
 
         [Required(ErrorMessage = "Loại tiền là bắt buộc")]
         public string SalaryCurrency { get; set; }
@@ -193,12 +223,35 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public string EmploymentType { get; set; }
 
         [Required(ErrorMessage = "Hạn nộp hồ sơ là bắt buộc")]
-        public DateTime? ApplicationDeadline { get; set; }  // ✅ Hoặc DateTime? nếu DB nullable
+        public DateTime? ApplicationDeadline { get; set; }  
 
         [Required(ErrorMessage = "Trạng thái là bắt buộc")]
         public string Status { get; set; }
 
         public DateTime? PostedAt { get; set; }  // ✅ Hoặc DateTime? nếu DB nullable
+        public string Industry { get; set; }
+
+        public string Major { get; set; }
+
+        [Required(ErrorMessage = "Số năm kinh nghiệm là bắt buộc")]
+        [Range(0, 50, ErrorMessage = "Số năm kinh nghiệm không hợp lệ (0-50)")]
+        public int YearsExperience { get; set; } = 0; // Default 0
+
+        public string DegreeRequired { get; set; }
+
+        public string Skills { get; set; } // NVARCHAR(MAX)
+
+        [Required(ErrorMessage = "Số lượng tuyển là bắt buộc")]
+        [Range(1, 1000, ErrorMessage = "Số lượng tuyển tối thiểu là 1")]
+        public int Headcount { get; set; } = 1; // Default 1
+
+        public string GenderRequirement { get; set; } // Not required, Male, Female
+
+        [Range(18, 100, ErrorMessage = "Tuổi tối thiểu không hợp lệ (18-100)")]
+        public int? AgeFrom { get; set; }
+
+        [Range(18, 100, ErrorMessage = "Tuổi tối đa không hợp lệ (18-100)")]
+        public int? AgeTo { get; set; }
     }
 }
 

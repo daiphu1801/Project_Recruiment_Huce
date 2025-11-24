@@ -45,6 +45,25 @@
           reader.readAsDataURL(file);
         });
       }
+
+      // Ẩn validation summary nếu không có lỗi thực sự
+      var validationSummary = $('.validation-summary-errors, .validation-summary-valid');
+      if (validationSummary.length > 0) {
+        var errorList = validationSummary.find('ul li');
+        var hasErrors = false;
+        
+        errorList.each(function() {
+          if ($(this).text().trim() !== '' && $(this).css('display') !== 'none') {
+            hasErrors = true;
+          }
+        });
+        
+        if (!hasErrors) {
+          validationSummary.hide();
+        } else {
+          validationSummary.show();
+        }
+      }
     })();
   </script>
 }
@@ -86,7 +105,7 @@
         @using (Html.BeginForm("CandidatesManage", "Candidates", FormMethod.Post, new { @class = "p-4 p-md-5 border rounded", id = "candidate-form", enctype = "multipart/form-data" }))
         {
           @Html.AntiForgeryToken()
-          @Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+          @Html.ValidationSummary(false, "", new { @class = "alert alert-danger", style = "display: none;" })
           <h3 class="text-black mb-5 border-bottom pb-2">Thông tin cá nhân</h3>
 
           <div class="form-row align-items-center mb-4">
@@ -168,4 +187,15 @@
   </div>
 </section>
 
+<style>
+  /* Ẩn validation summary khi không có lỗi */
+  .validation-summary-valid {
+    display: none !important;
+  }
+
+  /* Chỉ hiển thị khi có lỗi */
+  .validation-summary-errors {
+    display: block !important;
+  }
+</style>
 
