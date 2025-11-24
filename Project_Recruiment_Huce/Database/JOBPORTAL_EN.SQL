@@ -315,6 +315,42 @@ BEGIN
 END
 GO
 
+-- Tạo bảng PasswordResetTokens (nếu chưa tồn tại)
+IF OBJECT_ID('dbo.PasswordResetTokens','U') IS NULL
+BEGIN
+CREATE TABLE dbo.PasswordResetTokens
+(
+    TokenID INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_PasswordResetTokens PRIMARY KEY,
+    AccountID INT NOT NULL,
+    ResetCode NVARCHAR(6) NOT NULL,
+    Email NVARCHAR(150) NOT NULL,
+    CreatedAt DATETIME2(7) NOT NULL DEFAULT SYSUTCDATETIME(),
+    ExpiresAt DATETIME2(7) NOT NULL,
+    UsedFlag TINYINT NOT NULL CONSTRAINT DF_PasswordResetTokens_UsedFlag DEFAULT (0),
+    AttemptCount INT NOT NULL CONSTRAINT DF_PasswordResetTokens_AttemptCount DEFAULT (0),
+    CONSTRAINT CK_PasswordResetTokens_ExpiresAfterCreated CHECK (ExpiresAt > CreatedAt),
+    CONSTRAINT FK_PasswordResetTokens_Accounts FOREIGN KEY (AccountID) REFERENCES dbo.Accounts(AccountID)
+);
+END
+GO
+
+-- Index theo AccountID để lookup nhanh
+CREATE NONCLUSTERED INDEX IX_PasswordResetTokens_AccountID
+    ON dbo.PasswordResetTokens (AccountID);
+GO
+
+-- Index theo ExpiresAt để hỗ trợ việc dọn rác token hết hạn (lọc token chưa dùng)
+-- Lưu ý: filtered index yêu cầu SQL Server phiên bản hỗ trợ; nếu không, bỏ phần WHERE.
+CREATE NONCLUSTERED INDEX IX_PasswordResetTokens_ExpiresAt
+    ON dbo.PasswordResetTokens (ExpiresAt)
+    WHERE UsedFlag = 0;
+GO
+
+-- Index theo ResetCode (tùy trường hợp: nếu tìm theo reset code nhiều)
+CREATE NONCLUSTERED INDEX IX_PasswordResetTokens_ResetCode
+    ON dbo.PasswordResetTokens (ResetCode);
+GO
+
 /* =====================================================
    2) FOREIGN KEYS
    ===================================================== */

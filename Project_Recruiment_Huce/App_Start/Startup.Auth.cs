@@ -18,7 +18,8 @@ namespace Project_Recruiment_Huce
                 CookieName = "UserAuth",
                 SlidingExpiration = true,
                 ExpireTimeSpan = TimeSpan.FromHours(24),
-                AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Active
+                AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Active,
+                CookieSecure = CookieSecureOption.SameAsRequest
             });
 
             // Configure Admin Authentication Cookie (for admin panel) - PASSIVE since UserCookie is active

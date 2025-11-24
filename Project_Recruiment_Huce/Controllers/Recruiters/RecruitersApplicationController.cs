@@ -15,7 +15,7 @@ namespace Project_Recruiment_Huce.Controllers
     /// <summary>
     /// Controller quản lý đơn ứng tuyển cho Recruiter
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = "Recruiter")]
     public class RecruitersApplicationController : BaseController
     {
         private readonly IRecruiterApplicationService _applicationService;
