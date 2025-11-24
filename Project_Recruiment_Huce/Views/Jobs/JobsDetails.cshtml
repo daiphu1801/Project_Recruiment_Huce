@@ -10,8 +10,8 @@
 
     bool isAuthenticated = User?.Identity != null && User.Identity.IsAuthenticated;
     var identity = isAuthenticated ? (ClaimsIdentity)User.Identity : null;
-    bool isCandidate = identity?.FindFirst("VaiTro")?.Value == "Candidate";
-    bool isRecruiter = identity?.FindFirst("VaiTro")?.Value == "Recruiter";
+    bool isCandidate = identity?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "Candidate";
+    bool isRecruiter = identity?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "Recruiter";
 
     bool isJobSaved = ViewBag.IsJobSaved is bool saved && saved;
     bool hasApplied = ViewBag.HasApplied is bool applied && applied;

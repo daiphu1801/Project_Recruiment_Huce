@@ -167,7 +167,7 @@
             <ul class="site-menu js-clone-nav d-none d-xl-block ml-0 pl-0">
               <li><a href="@Url.Action("Index","Home")" class="nav-link">Trang chủ</a></li>
               <li><a href="@Url.Action("About","Home")">Giới thiệu</a></li>
-              @{ var roleClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro") : null; }
+              @{ var roleClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.Role) : null; }
               @if (Request.IsAuthenticated && roleClaim != null && roleClaim.Value == "Recruiter")
               {
                 <li class="has-children">
@@ -220,7 +220,7 @@
                 }
               }
               <li><a href="@Url.Action("Contact","Home")">Liên hệ</a></li>
-              @{ var roleClaim2 = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro") : null; }
+              @{ var roleClaim2 = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.Role) : null; }
               @if (Request.IsAuthenticated && roleClaim2 != null && roleClaim2.Value == "Recruiter")
               {
                 <li class="d-lg-none"><a href="@Url.Action("JobsCreate","Jobs")"><span class="mr-2">+</span> Đăng tin tuyển dụng</a></li>
@@ -247,7 +247,7 @@
                   }
                   <a href="#"><img src="@(mAvatarUrl ?? Url.Content("~/Content/images/person_1.jpg"))" alt="avatar" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:8px;" /> @User.Identity.Name</a>
                   <ul class="dropdown">
-                    @{ var mobileRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro"); }
+                    @{ var mobileRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.Role); }
                     @if (mobileRoleClaim != null && mobileRoleClaim.Value == "Candidate")
                     {
                       <li><a href="@Url.Action("Index", "MyAccount")" style="display: flex; align-items: center; padding: 12px 20px;">
@@ -317,7 +317,7 @@
           
           <div class="right-cta-menu text-right d-flex aligin-items-center col-6">
             <div class="ml-auto">
-              @{ var roleClaim3 = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro") : null; }
+              @{ var roleClaim3 = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.Role) : null; }
               @if (Request.IsAuthenticated && roleClaim3 != null && roleClaim3.Value == "Recruiter")
               {
                 <a href="@Url.Action("JobsCreate","Jobs")" class="btn btn-outline-white border-width-2 d-none d-lg-inline-block"><span class="mr-2 icon-add"></span>Đăng tin tuyển dụng</a>
@@ -346,7 +346,7 @@
                     <img src="@(avatarUrl ?? Url.Content("~/Content/images/person_1.jpg"))" alt="avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-right:8px;" /> @User.Identity.Name
                   </a>
                   <div class="dropdown-menu dropdown-menu-right" style="min-width: 220px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 8px 0; margin-top: 8px;">
-                    @{ var navRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro"); }
+                    @{ var navRoleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.Role); }
                     @if (navRoleClaim != null && navRoleClaim.Value == "Candidate")
                     {
                       <a class="dropdown-item" href="@Url.Action("Index", "MyAccount")" style="padding: 10px 20px; display: flex; align-items: center; transition: all 0.2s;">

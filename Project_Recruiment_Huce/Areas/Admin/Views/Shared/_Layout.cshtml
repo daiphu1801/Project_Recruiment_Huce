@@ -69,7 +69,7 @@
         var identity = User.Identity as System.Security.Claims.ClaimsIdentity;
         if (identity != null)
         {
-            var roleClaim = identity.FindFirst("VaiTro");
+            var roleClaim = identity.FindFirst(System.Security.Claims.ClaimTypes.Role);
             if (roleClaim == null || roleClaim.Value != "Admin")
             {
                 Response.Redirect(Url.Action("Login", "Auth", new { area = "Admin" }));
@@ -266,7 +266,7 @@
                                      alt="User Image" />
                                 <p>
                                     @showName
-                                    <small>@(((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro")?.Value)</small>
+                                    <small>@(((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value)</small>
                                 </p>
                             </li>
                             <!--end::User Image-->
