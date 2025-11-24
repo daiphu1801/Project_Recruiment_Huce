@@ -95,7 +95,7 @@ namespace Project_Recruiment_Huce.Controllers.Recruiters
             var identity = (ClaimsIdentity)User.Identity;
             
             // Check role
-            var roleClaim = identity.FindFirst("VaiTro");
+            var roleClaim = identity.FindFirst(ClaimTypes.Role);
             if (roleClaim == null || roleClaim.Value != "Recruiter")
                 return null;
 
