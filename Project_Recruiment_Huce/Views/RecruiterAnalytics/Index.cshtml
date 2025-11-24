@@ -1,0 +1,535 @@
+@model Project_Recruiment_Huce.Models.Recruiters.RecruiterAnalyticsDashboardViewModel
+@{
+    ViewBag.Title = "Phân tích & Thống kê";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+<style>
+    .analytics-card {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%;
+    }
+    .analytics-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .metric-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin-bottom: 15px;
+    }
+    .metric-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    .metric-label {
+        font-size: 14px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .job-table {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .job-table th {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+        padding: 15px;
+        border: none;
+    }
+    .job-table td {
+        padding: 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .job-table tr:last-child td {
+        border-bottom: none;
+    }
+    .job-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .badge-published { background: #d4edda; color: #155724; }
+    .badge-closed { background: #f8d7da; color: #721c24; }
+    .badge-expired { background: #fff3cd; color: #856404; }
+    .filter-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+    }
+</style>
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Phân tích & Thống kê</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("MyJobs","Jobs")">Tin tuyển dụng</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Phân tích</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Prepare data from server
+        var jobData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.JobBreakdown ?? new List<Project_Recruiment_Huce.Models.Recruiters.JobAnalyticsItemViewModel>()));
+        
+        if (jobData && jobData.length > 0) {
+            // Chart 1: Job Performance (Views & Applications) - Bar Chart
+            var jobLabels = jobData.map(function(job) { 
+                return job.JobTitle.length > 30 ? job.JobTitle.substring(0, 30) + '...' : job.JobTitle;
+            });
+            var viewsData = jobData.map(function(job) { return job.Views; });
+            var applicationsData = jobData.map(function(job) { return job.Applications; });
+
+            var ctx1 = document.getElementById('jobPerformanceChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: jobLabels,
+                    datasets: [
+                        {
+                            label: 'Lượt xem',
+                            data: viewsData,
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Hồ sơ ứng tuyển',
+                            data: applicationsData,
+                            backgroundColor: 'rgba(245, 87, 108, 0.8)',
+                            borderColor: 'rgba(245, 87, 108, 1)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 12, weight: '600' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            cornerRadius: 6
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: { size: 11 }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: { size: 11 },
+                                maxRotation: 45,
+                                minRotation: 0
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Status Distribution - Pie Chart
+            var statusCounts = {
+                'Published': 0,
+                'Closed': 0,
+                'Expired': 0
+            };
+            
+            jobData.forEach(function(job) {
+                if (statusCounts.hasOwnProperty(job.JobStatus)) {
+                    statusCounts[job.JobStatus]++;
+                }
+            });
+
+            var statusLabels = [];
+            var statusData = [];
+            var statusColors = [];
+            var statusBorderColors = [];
+
+            if (statusCounts['Published'] > 0) {
+                statusLabels.push('Đang mở (' + statusCounts['Published'] + ')');
+                statusData.push(statusCounts['Published']);
+                statusColors.push('rgba(75, 192, 192, 0.8)');
+                statusBorderColors.push('rgba(75, 192, 192, 1)');
+            }
+            if (statusCounts['Closed'] > 0) {
+                statusLabels.push('Đã đóng (' + statusCounts['Closed'] + ')');
+                statusData.push(statusCounts['Closed']);
+                statusColors.push('rgba(255, 99, 132, 0.8)');
+                statusBorderColors.push('rgba(255, 99, 132, 1)');
+            }
+            if (statusCounts['Expired'] > 0) {
+                statusLabels.push('Hết hạn (' + statusCounts['Expired'] + ')');
+                statusData.push(statusCounts['Expired']);
+                statusColors.push('rgba(255, 206, 86, 0.8)');
+                statusBorderColors.push('rgba(255, 206, 86, 1)');
+            }
+
+            var ctx2 = document.getElementById('statusPieChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusData,
+                        backgroundColor: statusColors,
+                        borderColor: statusBorderColors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 12, weight: '600' },
+                                generateLabels: function(chart) {
+                                    var data = chart.data;
+                                    if (data.labels.length && data.datasets.length) {
+                                        return data.labels.map(function(label, i) {
+                                            var value = data.datasets[0].data[i];
+                                            var total = data.datasets[0].data.reduce(function(a, b) { return a + b; }, 0);
+                                            var percentage = ((value / total) * 100).toFixed(1);
+                                            return {
+                                                text: label + ' - ' + percentage + '%',
+                                                fillStyle: data.datasets[0].backgroundColor[i],
+                                                hidden: false,
+                                                index: i
+                                            };
+                                        });
+                                    }
+                                    return [];
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.label || '';
+                                    var value = context.parsed;
+                                    var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                    var percentage = ((value / total) * 100).toFixed(1);
+                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+}
+
+<section class="site-section">
+    <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        <!-- Filter Card -->
+        <div class="filter-card">
+            <form method="get" action="@Url.Action("Index")" class="form-inline">
+                <label class="mr-2 font-weight-bold">Lọc theo thời gian:</label>
+                <input type="date" name="fromDate" class="form-control mr-2" value="@ViewBag.FromDate?.ToString("yyyy-MM-dd")" placeholder="Từ ngày" />
+                <input type="date" name="toDate" class="form-control mr-2" value="@ViewBag.ToDate?.ToString("yyyy-MM-dd")" placeholder="Đến ngày" />
+                <button type="submit" class="btn btn-primary mr-2">
+                    <span class="icon-search mr-1"></span> Lọc
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                    <span class="icon-refresh mr-1"></span> Xóa bộ lọc
+                </a>
+            </form>
+        </div>
+
+        <!-- Summary Metrics -->
+        <div class="row mb-5">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="analytics-card">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <span class="icon-eye text-white"></span>
+                    </div>
+                    <div class="metric-value">@Model.Summary.TotalViews.ToString("N0")</div>
+                    <div class="metric-label">Tổng lượt xem</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="analytics-card">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <span class="icon-file-text text-white"></span>
+                    </div>
+                    <div class="metric-value">@Model.Summary.TotalApplications.ToString("N0")</div>
+                    <div class="metric-label">Tổng hồ sơ ứng tuyển</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="analytics-card">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <span class="icon-line-documents text-white"></span>
+                    </div>
+                    <div class="metric-value">@Model.Summary.TotalJobs</div>
+                    <div class="metric-label">Tin đăng tuyển</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="analytics-card">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);">
+                        <span class="icon-percent text-white"></span>
+                    </div>
+                    <div class="metric-value">@Model.Summary.ConversionRatePercent.ToString("0.00")%</div>
+                    <div class="metric-label">Tỷ lệ chuyển đổi</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row mb-5">
+            <div class="col-lg-8 mb-4">
+                <div class="analytics-card">
+                    <h5 class="mb-4"><span class="icon-bar-chart mr-2"></span> Lượt xem & Ứng tuyển theo công việc</h5>
+                    <canvas id="jobPerformanceChart" style="max-height: 350px;"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="analytics-card">
+                    <h5 class="mb-4"><span class="icon-pie-chart mr-2"></span> Phân bố trạng thái</h5>
+                    <canvas id="statusPieChart" style="max-height: 350px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Breakdown Table -->
+        <div class="row">
+            <div class="col-12">
+                <h3 class="mb-4">Chi tiết theo từng tin tuyển dụng</h3>
+                @if (Model.JobBreakdown != null && Model.JobBreakdown.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table job-table">
+                            <thead>
+                                <tr>
+                                    <th>Tiêu đề công việc</th>
+                                    <th class="text-center">Trạng thái</th>
+                                    <th class="text-center">Ngày đăng</th>
+                                    <th class="text-center">Lượt xem</th>
+                                    <th class="text-center">Hồ sơ</th>
+                                    <th class="text-center">Tỷ lệ (%)</th>
+                                    <th class="text-center">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var job in Model.JobBreakdown)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@job.JobTitle</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            @{
+                                                var statusClass = "badge-published";
+                                                if (job.JobStatus == "Closed")
+                                                {
+                                                    statusClass = "badge-closed";
+                                                }
+                                                else if (job.JobStatus == "Expired")
+                                                {
+                                                    statusClass = "badge-expired";
+                                                }
+                                            }
+                                            <span class="badge-status @statusClass">@job.JobStatus</span>
+                                        </td>
+                                        <td class="text-center">@job.PostedAt.ToString("dd/MM/yyyy")</td>
+                                        <td class="text-center">
+                                            <span class="badge badge-secondary">@job.Views.ToString("N0")</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge badge-info">@job.Applications.ToString("N0")</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <strong style="color: var(--primary-color);">@job.ConversionRatePercent.ToString("0.00")%</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="@Url.Action("JobDetails", "Jobs", new { id = job.JobPostID })" class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                                <span class="icon-eye"></span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @* Pagination *@
+                    if (Model.TotalPages > 1)
+                    {
+                        <div class="pagination-wrapper mt-4">
+                            <nav aria-label="Phân trang">
+                                <ul class="pagination justify-content-center">
+                                    @* Previous button *@
+                                    <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                                        <a class="page-link" 
+                                           href="@(Model.HasPreviousPage ? Url.Action("Index", new { page = Model.CurrentPage - 1, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate }) : "#")"
+                                           aria-label="Trang trước">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+
+                                    @* Page numbers *@
+                                    @{
+                                        var startPage = Math.Max(1, Model.CurrentPage - 2);
+                                        var endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+
+                                        if (startPage > 1)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Index", new { page = 1, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate })">1</a>
+                                            </li>
+                                            if (startPage > 2)
+                                            {
+                                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                            }
+                                        }
+
+                                        for (int i = startPage; i <= endPage; i++)
+                                        {
+                                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                                <a class="page-link" href="@Url.Action("Index", new { page = i, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate })">@i</a>
+                                            </li>
+                                        }
+
+                                        if (endPage < Model.TotalPages)
+                                        {
+                                            if (endPage < Model.TotalPages - 1)
+                                            {
+                                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                            }
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Index", new { page = Model.TotalPages, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate })">@Model.TotalPages</a>
+                                            </li>
+                                        }
+                                    }
+
+                                    @* Next button *@
+                                    <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                                        <a class="page-link" 
+                                           href="@(Model.HasNextPage ? Url.Action("Index", new { page = Model.CurrentPage + 1, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate }) : "#")"
+                                           aria-label="Trang sau">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                            <div class="text-center mt-2">
+                                <small class="text-muted">
+                                    Trang @Model.CurrentPage / @Model.TotalPages 
+                                    (Tổng @Model.TotalItems tin tuyển dụng)
+                                </small>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <span class="icon-info-circle mr-2"></span>
+                        Chưa có dữ liệu phân tích. Hãy đăng tin tuyển dụng và chờ ứng viên xem tin của bạn!
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="analytics-card" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                    <h5 class="mb-3"><span class="icon-lightbulb-o mr-2"></span> Mẹo cải thiện tỷ lệ chuyển đổi</h5>
+                    <ul class="mb-0">
+                        <li>Viết tiêu đề công việc rõ ràng, hấp dẫn</li>
+                        <li>Mô tả chi tiết yêu cầu và quyền lợi ứng viên</li>
+                        <li>Cập nhật thông tin công ty và logo chuyên nghiệp</li>
+                        <li>Trả lời hồ sơ ứng tuyển nhanh chóng để tạo ấn tượng tốt</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

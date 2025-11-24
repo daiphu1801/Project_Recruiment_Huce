@@ -4,14 +4,16 @@ namespace Project_Recruiment_Huce.Helpers
 {
     /// <summary>
     /// Helper class để format và hiển thị mức lương
+    /// Cung cấp các phương thức để hiển thị lương theo nhiều định dạng khác nhau
     /// </summary>
     public static class SalaryHelper
     {
         /// <summary>
-        /// Format salary range cho hiển thị
+        /// Format khoảng lương cho hiển thị dạng đầy đủ (ví dụ: "10,000,000 - 15,000,000 VNĐ")
+        /// Nếu không có thông tin lương sẽ hiển thị "Thỏa thuận"
         /// </summary>
-        /// <param name="salaryFrom">Lương từ</param>
-        /// <param name="salaryTo">Lương đến</param>
+        /// <param name="salaryFrom">Mức lương tối thiểu</param>
+        /// <param name="salaryTo">Mức lương tối đa</param>
         /// <param name="currency">Loại tiền tệ (VND, USD, etc.)</param>
         /// <returns>Chuỗi hiển thị mức lương</returns>
         public static string FormatSalaryRange(decimal? salaryFrom, decimal? salaryTo, string currency)
@@ -38,8 +40,13 @@ namespace Project_Recruiment_Huce.Helpers
         }
 
         /// <summary>
-        /// Format salary range với format ngắn gọn
+        /// Format khoảng lương với định dạng ngắn gọn (ví dụ: "10,000,000-15,000,000 VNĐ")
+        /// Sử dụng cho các giao diện có giới hạn không gian hiển thị
         /// </summary>
+        /// <param name="salaryFrom">Mức lương tối thiểu</param>
+        /// <param name="salaryTo">Mức lương tối đa</param>
+        /// <param name="currency">Loại tiền tệ (VND, USD, etc.)</param>
+        /// <returns>Chuỗi hiển thị mức lương dạng ngắn</returns>
         public static string FormatSalaryRangeShort(decimal? salaryFrom, decimal? salaryTo, string currency)
         {
             if (!salaryFrom.HasValue && !salaryTo.HasValue)

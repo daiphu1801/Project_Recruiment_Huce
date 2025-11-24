@@ -32,11 +32,7 @@
           @Html.DropDownList("companyId", (System.Web.Mvc.SelectList)ViewBag.CompanyOptions, "-- Công ty --", new { @class = "form-select" })
         </div>
       }
-      @if (ViewBag.RecruiterOptions != null) {
-        <div class="flex-grow-1" style="min-width:180px;max-width:260px;">
-          @Html.DropDownList("recruiterId", (System.Web.Mvc.SelectList)ViewBag.RecruiterOptions, "-- Nhà tuyển dụng --", new { @class = "form-select" })
-        </div>
-      }
+     
       @if (ViewBag.ShowEmployment == true) {
         var employment = (Request["employment"] ?? "").ToString();
         <div class="flex-grow-1" style="min-width:180px;max-width:260px;">

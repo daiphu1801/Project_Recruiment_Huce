@@ -5,6 +5,10 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/myresumes.css")" />
+}
+
 <section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
     <div class="container">
         <div class="row">
@@ -43,35 +47,56 @@
                     </div>
                 }
 
-                <div class="mb-4">
-                    <h2 class="mb-3">Danh sách CV của tôi</h2>
-                    
+                <div class="mb-5">
                     <!-- Upload Form -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Upload CV mới</h5>
+                    <div class="upload-card shadow-sm">
+                        <div class="upload-card-header">
+                            <div class="d-flex align-items-center">
+                                <span class="icon-cloud-upload upload-icon mr-3"></span>
+                                <div>
+                                    <h4 class="mb-1">Upload CV mới</h4>
+                                    <p class="text-muted mb-0 small">Tải lên hồ sơ của bạn để ứng tuyển các vị trí phù hợp</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            @using (Html.BeginForm("UploadResume", "ResumeFiles", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-inline" }))
+                        <div class="upload-card-body">
+                            @using (Html.BeginForm("UploadResume", "ResumeFiles", FormMethod.Post, new { enctype = "multipart/form-data", id = "uploadForm" }))
                             {
                                 @Html.AntiForgeryToken()
-                                <div class="form-group mr-3 mb-2">
-                                    <label for="title" class="mr-2">Tiêu đề CV:</label>
-                                    <input type="text" name="title" id="title" class="form-control" placeholder="Ví dụ: CV Frontend Developer" />
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="title" class="form-label font-weight-bold">Tiêu đề CV <span class="text-danger">*</span></label>
+                                        <input type="text" name="title" id="title" class="form-control form-control-modern" placeholder="Ví dụ: CV Frontend Developer" required />
+                                    </div>
+                                    <div class="col-md-5 mb-3">
+                                        <label for="resumeFile" class="form-label font-weight-bold">Chọn file <span class="text-danger">*</span></label>
+                                        <div class="custom-file-upload">
+                                            <input type="file" name="resumeFile" id="resumeFile" class="file-input" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif" required />
+                                            <label for="resumeFile" class="file-label">
+                                                <span class="icon-paperclip mr-2"></span>
+                                                <span class="file-text">Chọn file từ máy tính</span>
+                                            </label>
+                                        </div>
+                                        <small class="form-text text-muted mt-1">
+                                            <span class="icon-info-circle mr-1"></span>PDF, DOC, DOCX, PNG, JPG, JPEG, GIF (Max: 10MB)
+                                        </small>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label font-weight-bold d-block">&nbsp;</label>
+                                        <button type="submit" class="btn btn-primary btn-upload w-100">
+                                            <span class="icon-upload mr-2"></span>Upload
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="form-group mr-3 mb-2">
-                                    <label for="resumeFile" class="mr-2">Chọn file:</label>
-                                    <input type="file" name="resumeFile" id="resumeFile" class="form-control-file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif" required />
-                                </div>
-                                <button type="submit" class="btn btn-primary mb-2">
-                                    <span class="icon-upload mr-1"></span>Upload CV
-                                </button>
                             }
-                            <small class="form-text text-muted mt-2">
-                                Hỗ trợ định dạng: PDF, DOC, DOCX, PNG, JPG, JPEG, GIF. Kích thước tối đa: 10MB
-                            </small>
                         </div>
                     </div>
+                </div>
+
+                <!-- Section Header -->
+                <div class="section-header mb-4">
+                    <h3 class="section-title">Danh sách CV của tôi</h3>
+                    <p class="section-subtitle text-muted">Quản lý và theo dõi các hồ sơ ứng tuyển của bạn</p>
                 </div>
 
                 <!-- CV List -->
@@ -80,16 +105,18 @@
                     <div class="row">
                         @foreach (var resume in Model)
                         {
-                            <div class="col-md-4 col-lg-3 mb-4">
-                                <div class="card h-100 resume-card">
-                                    <div class="card-body text-center">
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="resume-card-modern h-100">
+                                    <div class="resume-preview-wrapper">
                                         <!-- File Icon/Preview -->
-                                        <div class="mb-3" style="height: 200px; width: 100%; overflow: hidden; border-radius: 8px; border: 1px solid #e0e0e0; background-color: #fff; position: relative;">
+                                        <div class="resume-preview">
                                             @if (resume.FileExtension == ".pdf")
                                             {
-                                                var pdfUrl = Url.Content("~" + resume.FilePath) + "#toolbar=0&navpanes=0&scrollbar=0";
+                            
+                                                var pdfUrl = Url.Content("~" + resume.FilePath) + "#toolbar=0&navpanes=0&scrollbar=0"; 
+                                                
                                                 <iframe src="@pdfUrl" 
-                                                        style="width: 100%; height: 100%; border: none; overflow: hidden !important; pointer-events: none;"
+                                                        style="width: 100%; height: 100%; border: none; overflow: hidden !important;" // Đảm bảo CSS ẩn cuộn
                                                         scrolling="no"
                                                         frameborder="0"
                                                         allow="fullscreen">
@@ -97,8 +124,9 @@
                                             }
                                             else if (resume.FileExtension == ".doc" || resume.FileExtension == ".docx")
                                             {
-                                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);">
-                                                    <i class="icon-file-word" style="font-size: 64px; color: #007bff;"></i>
+                                                <div class="file-icon-wrapper">
+                                                    <i class="icon-file-word file-icon" style="color: #2b579a;"></i>
+                                                    <span class="file-type-badge">DOCX</span>
                                                 </div>
                                             }
                                             else if (resume.FileExtension == ".png" || resume.FileExtension == ".jpg" || resume.FileExtension == ".jpeg" || resume.FileExtension == ".gif")
@@ -111,74 +139,66 @@
                                             }
                                             else
                                             {
-                                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);">
-                                                    <i class="icon-file" style="font-size: 64px; color: #6c757d;"></i>
+                                                <div class="file-icon-wrapper">
+                                                    <i class="icon-file file-icon"></i>
+                                                    <span class="file-type-badge">FILE</span>
                                                 </div>
-                                            }
-                                        </div>
-
-                                        <!-- Title -->
-                                        <h6 class="card-title mb-2" style="min-height: 40px; display: flex; align-items: center; justify-content: center;">
-                                            @resume.DisplayName
-                                        </h6>
-
-                                        <!-- Upload Date -->
-                                        <p class="text-muted small mb-3">
-                                            <span class="icon-calendar mr-1"></span>
-                                            @(resume.UploadedAt?.ToString("dd/MM/yyyy") ?? "N/A")
-                                        </p>
-
-                                        <!-- Actions -->
-                                        <div class="btn-group-vertical w-100" role="group">
-                                            <a href="@Url.Content("~" + resume.FilePath)" target="_blank" class="btn btn-sm btn-outline-primary mb-2">
-                                                <span class="icon-eye mr-1"></span>Xem
-                                            </a>
-                                            <a href="@Url.Content("~" + resume.FilePath)" download class="btn btn-sm btn-outline-success mb-2">
-                                                <span class="icon-download mr-1"></span>Tải xuống
-                                            </a>
-                                            
-                                            <!-- Edit Modal Trigger -->
-                                            <button type="button" class="btn btn-sm btn-outline-secondary mb-2" data-toggle="modal" data-target="#editModal_@resume.ResumeFileID">
-                                                <span class="icon-edit mr-1"></span>Đổi tên
-                                            </button>
-
-                                            <!-- Delete Form -->
-                                            @using (Html.BeginForm("DeleteResume", "ResumeFiles", FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bạn có chắc chắn muốn xóa CV này?');" }))
-                                            {
-                                                @Html.AntiForgeryToken()
-                                                @Html.Hidden("id", resume.ResumeFileID)
-                                                <button type="submit" class="btn btn-sm btn-outline-danger w-100">
-                                                    <span class="icon-trash mr-1"></span>Xóa
-                                                </button>
                                             }
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Edit Modal -->
-                                <div class="modal fade" id="editModal_@resume.ResumeFileID" tabindex="-1" role="dialog">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Đổi tên CV</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            @using (Html.BeginForm("EditResume", "ResumeFiles", FormMethod.Post))
+                                    <div class="resume-card-content">
+                                        <!-- Title - Editable -->
+                                        <div class="resume-title-wrapper">
+                                            <h5 class="resume-title-text" id="title_display_@resume.ResumeFileID">
+                                                @resume.DisplayName
+                                            </h5>
+                                            @using (Html.BeginForm("EditResume", "ResumeFiles", FormMethod.Post, new { id = "editForm_" + resume.ResumeFileID, @class = "edit-form-inline" }))
                                             {
                                                 @Html.AntiForgeryToken()
                                                 @Html.Hidden("id", resume.ResumeFileID)
-                                                <div class="modal-body">
-                                                    <div class="form-group">
-                                                        <label for="title_@resume.ResumeFileID">Tên CV:</label>
-                                                        <input type="text" name="title" id="title_@resume.ResumeFileID" class="form-control" value="@resume.DisplayName" required />
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" name="title" id="title_input_@resume.ResumeFileID" class="form-control" value="@resume.DisplayName" required />
+                                                    <div class="input-group-append">
+                                                        <button type="submit" class="btn btn-success btn-sm" title="Lưu">
+                                                            <span class="icon-check"></span>
+                                                        </button>
+                                                        <button type="button" class="btn btn-secondary btn-sm cancel-edit" data-resume-id="@resume.ResumeFileID" title="Hủy">
+                                                            <span class="icon-close"></span>
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                                                    <button type="submit" class="btn btn-primary">Lưu</button>
-                                                </div>
+                                            }
+                                        </div>
+
+                                        <!-- Upload Date -->
+                                        <div class="resume-date">
+                                            <span class="icon-calendar mr-1"></span>
+                                            <span>@(resume.UploadedAt?.ToString("dd/MM/yyyy") ?? "N/A")</span>
+                                        </div>
+
+                                        <!-- Actions -->
+                                        <div class="resume-actions">
+                                            <a href="@Url.Content("~" + resume.FilePath)" target="_blank" class="btn-action btn-action-view">
+                                                <span class="icon-eye"></span>
+                                                <span>Xem</span>
+                                            </a>
+                                            <a href="@Url.Content("~" + resume.FilePath)" download class="btn-action btn-action-download">
+                                                <span class="icon-download"></span>
+                                                <span>Tải xuống</span>
+                                            </a>
+                                            <button type="button" class="btn-action btn-action-edit btn-edit-title" data-resume-id="@resume.ResumeFileID">
+                                                <span class="icon-edit"></span>
+                                                <span>Đổi tên</span>
+                                            </button>
+                                            @using (Html.BeginForm("DeleteResume", "ResumeFiles", FormMethod.Post, new { @class = "d-inline w-100", onsubmit = "return confirm('Bạn có chắc chắn muốn xóa CV này?');" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                @Html.Hidden("id", resume.ResumeFileID)
+                                                <button type="submit" class="btn-action btn-action-delete">
+                                                    <span class="icon-trash"></span>
+                                                    <span>Xóa</span>
+                                                </button>
                                             }
                                         </div>
                                     </div>
@@ -189,8 +209,12 @@
                 }
                 else
                 {
-                    <div class="alert alert-info">
-                        <p class="mb-0">Bạn chưa có CV nào. Hãy upload CV đầu tiên của bạn!</p>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <span class="icon-folder-open"></span>
+                        </div>
+                        <h4 class="empty-state-title">Chưa có CV nào</h4>
+                        <p class="empty-state-text">Bạn chưa có CV nào. Hãy upload CV đầu tiên của bạn để bắt đầu ứng tuyển!</p>
                     </div>
                 }
             </div>
@@ -198,46 +222,47 @@
     </div>
 </section>
 
-<style>
-    .resume-card {
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .resume-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    .resume-card .card-title {
-        word-break: break-word;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-    }
-
-    /* Ẩn scrollbar và tắt scroll cho iframe */
-    .resume-card iframe {
-        overflow: hidden !important;
-        scrollbar-width: none !important; /* Firefox */
-        -ms-overflow-style: none !important; /* IE and Edge */
-    }
-
-    .resume-card iframe::-webkit-scrollbar {
-        display: none !important; /* Chrome, Safari, Opera */
-    }
-
-    /* Đảm bảo container không scroll */
-    .resume-card .mb-3 {
-        overflow: hidden !important;
-    }
-</style>
-
 @section Scripts {
     <script>
         // Đảm bảo iframe không scroll và ẩn scrollbar
         document.addEventListener('DOMContentLoaded', function() {
+            
+            // Xử lý hiển thị tên file khi chọn
+            $('#resumeFile').on('change', function(e) {
+                var fileName = '';
+                if (e.target.files && e.target.files.length > 0) {
+                    fileName = e.target.files[0].name;
+                    $(this).siblings('.file-label').find('.file-text').text(fileName);
+                    $(this).siblings('.file-label').css('color', '#495057');
+                } else {
+                    $(this).siblings('.file-label').find('.file-text').text('Chọn file từ máy tính');
+                    $(this).siblings('.file-label').css('color', '#6c757d');
+                }
+            });
+
+            // Xử lý nút "Đổi tên" - hiện form inline
+            $('.btn-edit-title').on('click', function() {
+                var resumeId = $(this).data('resume-id');
+                $('#title_display_' + resumeId).hide();
+                $('#editForm_' + resumeId).show();
+                $('#title_input_' + resumeId).focus().select();
+            });
+
+            // Xử lý nút hủy
+            $('.cancel-edit').on('click', function() {
+                var resumeId = $(this).data('resume-id');
+                $('#editForm_' + resumeId).hide();
+                $('#title_display_' + resumeId).show();
+            });
+
+            // Xử lý ESC key để hủy chỉnh sửa
+            $('input[name="title"]').on('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    var resumeId = $(this).attr('id').replace('title_input_', '');
+                    $('#editForm_' + resumeId).hide();
+                    $('#title_display_' + resumeId).show();
+                }
+            });
             var iframes = document.querySelectorAll('.resume-card iframe');
             iframes.forEach(function(iframe) {
                 // Tắt scroll cho iframe

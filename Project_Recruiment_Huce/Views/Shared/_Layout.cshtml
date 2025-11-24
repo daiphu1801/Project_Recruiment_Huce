@@ -95,7 +95,44 @@
         outline: none;
         color: #007bff;
       }
+      /* Toast sizing + header/body layout tweaks */
+      .toast {
+        min-width: 320px;
+        max-width: 520px;
+        font-size: 1.02rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        overflow: visible;
+        padding: 0;
+      }
+      .toast .toast-header {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.6rem;
+        padding: 0.45rem 0.8rem;
+        font-size: 1rem;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        margin: 0.45rem 0.6rem 0; /* inset so header looks like a pill */
+        z-index: 2;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      }
+      .toast .toast-header .mr-auto { margin-right: auto; }
+      .toast .toast-header .close { color: #fff; opacity: 1; }
+      .toast .toast-body {
+        padding: 0.9rem 0.9rem;
+        font-size: 1rem;
+        background: rgba(255,255,255,0.98);
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        margin: 0.6rem 0.4rem 0.6rem;
+        position: relative;
+        z-index: 1;
+      }
+      /* Toast styles moved to external file: ~/Content/css/toasts.css */
     </style>
+    <link rel="stylesheet" href="~/Content/css/toasts.css">
   </head>
   @RenderSection("Styles", required: false)
   <body id="top">
@@ -173,6 +210,10 @@
                       <li><a href="@Url.Action("MyApplications","RecruitersApplication")" style="display: flex; align-items: center;">
                         <span class="icon-list mr-3" style="width: 20px; text-align: center; color: #17a2b8;"></span>
                         <span>Đơn ứng tuyển</span>
+                      </a></li>
+                      <li><a href="@Url.Action("Index","RecruiterAnalytics")" style="display: flex; align-items: center;">
+                        <span class="icon-bar-chart mr-3" style="width: 20px; text-align: center; color: #28a745;"></span>
+                        <span>Phân tích & Thống kê</span>
                       </a></li>
                     </ul>
                   </li>
@@ -386,7 +427,56 @@
     </header>
 
    
+    <!-- Toast container (fixed, does not affect layout) -->
+    <div aria-live="polite" aria-atomic="true" style="position: fixed; top: 1rem; right: 1rem; z-index: 11000; pointer-events: none;">
+      <div id="globalToasts">
+        @if (TempData["SuccessMessage"] != null)
+        {
+          <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
+            <div class="toast-header bg-success text-white">
+              <strong class="mr-auto">Thành công</strong>
+              <small class="text-muted ml-2">Bây giờ</small>
+              <button type="button" class="ml-2 mb-1 close text-white" data-dismiss="toast" aria-label="Đóng"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="toast-body">
+              @Html.Raw(TempData["SuccessMessage"])
+            </div>
+          </div>
+        }
+
+        @if (TempData["InfoMessage"] != null)
+        {
+          <div class="toast" role="alert" aria-live="polite" aria-atomic="true" data-delay="5000">
+            <div class="toast-header bg-info text-white">
+              <strong class="mr-auto">Thông tin</strong>
+              <small class="text-muted ml-2">Bây giờ</small>
+              <button type="button" class="ml-2 mb-1 close text-white" data-dismiss="toast" aria-label="Đóng"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="toast-body">
+              @Html.Raw(TempData["InfoMessage"])
+            </div>
+          </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+          <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="7000">
+            <div class="toast-header bg-danger text-white">
+              <strong class="mr-auto">Lỗi</strong>
+              <small class="text-muted ml-2">Bây giờ</small>
+              <button type="button" class="ml-2 mb-1 close text-white" data-dismiss="toast" aria-label="Đóng"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="toast-body">
+              @Html.Raw(TempData["ErrorMessage"])
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
     @RenderBody()
+
+    <!-- Toast/init scripts moved to bottom after jQuery to avoid race with script loading -->
 
     <!-- FOOTER -->
     <footer class="site-footer">
@@ -472,6 +562,45 @@
     <script src="~/Scripts/js/bootstrap-select.min.js"></script>
     
     <script src="~/Scripts/js/custom.js?v=@DateTime.Now.Ticks"></script>
+
+    <script>
+      (function(){
+        // Initialize toasts after jQuery + Bootstrap are loaded
+        try {
+          $(function(){
+            // Show server-rendered toasts
+            var $toasts = $('#globalToasts .toast');
+            if ($toasts.length) {
+              $toasts.each(function(){
+                var $t = $(this);
+                $t.toast('show');
+              });
+            }
+
+            // If user is authenticated, intercept clicks to Login/Register
+            var isAuth = @((Request.IsAuthenticated) ? "true" : "false");
+            if (isAuth) {
+              $(document).on('click', 'a', function(e){
+                try {
+                  var href = $(this).attr('href') || '';
+                  if (!href) return;
+                  href = href.toLowerCase();
+                  if (href.indexOf('/account/login') !== -1 || href.indexOf('/account/register') !== -1) {
+                    e.preventDefault();
+                    var $tmp = $('<div class="toast" role="alert" aria-live="polite" aria-atomic="true" data-delay="4000">'
+                      + '<div class="toast-header bg-info text-white"><strong class="mr-auto">Thông tin</strong>'
+                      + '<button type="button" class="ml-2 mb-1 close text-white" data-dismiss="toast" aria-label="Đóng"><span aria-hidden="true">&times;</span></button></div>'
+                      + '<div class="toast-body">Bạn đã đăng nhập rồi.</div></div>');
+                    $('#globalToasts').append($tmp);
+                    $tmp.toast('show');
+                  }
+                } catch(inner) { /* ignore */ }
+              });
+            }
+          });
+        } catch(e) { console && console.warn && console.warn('Toast/Auth init failed', e); }
+      })();
+    </script>
 
     @RenderSection("Scripts", required: false)
      

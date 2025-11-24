@@ -3,6 +3,8 @@
     ViewBag.Title = "Sửa công ty";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
 }
+
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
 
 <div class="card">
@@ -22,10 +24,12 @@
             </div>
         }
 
-        @using (Html.BeginForm("Edit", "Companies", new { area = "Admin" }, FormMethod.Post, new { enctype = "multipart/form-data" }))
+        @using (Html.BeginForm("Edit", "Companies", new { area = "Admin" }, FormMethod.Post, new { enctype = "multipart/form-data", id = "editCompanyForm" }))
         {
             @Html.AntiForgeryToken()
             @Html.HiddenFor(m => m.CompanyId)
+            @Html.HiddenFor(m => m.CurrentPhotoId)
+            @Html.HiddenFor(m => m.CurrentPhotoUrl)
 
             <div class="row">
                 <div class="col-md-8">
@@ -43,7 +47,7 @@
 
                     <div class="mb-3">
                         @Html.LabelFor(m => m.Industry, new { @class = "form-label" })
-                        @Html.TextBoxFor(m => m.Industry, new { @class = "form-control", placeholder = "Nhập ngành nghề" })
+                        @Html.TextBoxFor(m => m.Industry, new { @class = "form-control", placeholder = "Nhập lĩnh vực" })
                         @Html.ValidationMessageFor(m => m.Industry, "", new { @class = "text-danger" })
                     </div>
 
@@ -60,6 +64,12 @@
                     </div>
 
                     <div class="mb-3">
+                        @Html.LabelFor(m => m.Fax, new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.Fax, new { @class = "form-control", placeholder = "Nhập số Fax" })
+                        @Html.ValidationMessageFor(m => m.Fax, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="mb-3">
                         @Html.LabelFor(m => m.CompanyEmail, new { @class = "form-label" })
                         @Html.TextBoxFor(m => m.CompanyEmail, new { @class = "form-control", type = "email", placeholder = "Nhập email" })
                         @Html.ValidationMessageFor(m => m.CompanyEmail, "", new { @class = "text-danger" })
@@ -73,15 +83,16 @@
 
                     <div class="mb-3">
                         @Html.LabelFor(m => m.Description, new { @class = "form-label" })
-                        @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 3, placeholder = "Nhập mô tả" })
+                        @Html.HiddenFor(m => m.Description, new { id = "hiddenDescription" })
+                        <div id="editor-container" style="height: 300px; background-color: white;"></div>
                         @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-check">
+                        <div class="form-check">
                             @Html.CheckBoxFor(m => m.Active, new { @class = "form-check-input" })
                             @Html.LabelFor(m => m.Active, new { @class = "form-check-label" })
-                        </label>
+                        </div>
                     </div>
                 </div>
 
@@ -94,7 +105,7 @@
                             <div id="photoPreview" class="mb-3">
                                 @if (!string.IsNullOrEmpty(Model.CurrentPhotoUrl))
                                 {
-                                    <img src="@Model.CurrentPhotoUrl" alt="Current Logo" class="rounded-circle mx-auto d-block" style="width: 200px; height: 200px; object-fit: cover;" id="currentPhoto" />
+                                    <img src="@Url.Content(Model.CurrentPhotoUrl)" alt="Current Logo" class="rounded-circle mx-auto d-block" style="width: 200px; height: 200px; object-fit: cover;" />
                                 }
                                 else
                                 {
@@ -125,26 +136,65 @@
     </div>
 </div>
 
-@section Scripts {
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+@section Scripts {    
     <script>
-    document.getElementById('PhotoFile').addEventListener('change', function(e) {
-      var file = e.target.files[0];
-      if (file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          var img = document.createElement('img');
-          img.src = e.target.result;
-          img.className = 'rounded-circle mx-auto d-block';
-          img.style.width = '200px';
-          img.style.height = '200px';
-          img.style.objectFit = 'cover';
+        document.addEventListener("DOMContentLoaded", function() {
 
-          var preview = document.getElementById('photoPreview');
-          preview.innerHTML = '';
-          preview.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+            var photoInput = document.getElementById('PhotoFile');
+            if (photoInput) {
+                photoInput.addEventListener('change', function (e) {
+                    var file = e.target.files[0];
+                    if (file) {
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            var img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'rounded-circle mx-auto d-block';
+                            img.style.width = '200px';
+                            img.style.height = '200px';
+                            img.style.objectFit = 'cover';
+                            var preview = document.getElementById('photoPreview');
+                            preview.innerHTML = '';
+                            preview.appendChild(img);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            var quill = new Quill('#editor-container', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        ['blockquote', 'code-block'],
+                        ['link'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            @if (Model != null && !string.IsNullOrEmpty(Model.Description))
+            {
+                <text>
+                    try {
+                        var content = @Html.Raw(Json.Encode(Model.Description));
+                        quill.clipboard.dangerouslyPasteHTML(content);
+                    } catch(e) {
+                         console.error("Lỗi load nội dung cũ:", e);
+                    }
+                </text>
+            }
+
+            var form = document.getElementById('editCompanyForm');
+            if(form) {
+                form.addEventListener('submit', function () {
+                    document.getElementById('hiddenDescription').value = quill.root.innerHTML;
+                });
+            }
+        });
     </script>
 }
