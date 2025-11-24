@@ -5,8 +5,8 @@ using Project_Recruiment_Huce.Models;
 namespace Project_Recruiment_Huce.Infrastructure
 {
     /// <summary>
-    /// Factory class for creating database context instances
-    /// Centralizes connection string management and reduces code duplication
+    /// Factory class để tạo database context instances
+    /// Tập trung quản lý connection string và giảm code trùng lặp
     /// </summary>
     public static class DbContextFactory
     {
@@ -18,41 +18,42 @@ namespace Project_Recruiment_Huce.Infrastructure
             
             if (string.IsNullOrEmpty(ConnectionString))
             {
-                throw new InvalidOperationException("JOBPORTAL_ENConnectionString not found in configuration");
+                throw new InvalidOperationException("Không tìm thấy JOBPORTAL_ENConnectionString trong configuration");
             }
         }
 
         /// <summary>
-        /// Create a new database context instance
+        /// Tạo database context instance mới cho các thao tác ghi (Insert/Update/Delete)
+        /// Object tracking được bật để LINQ to SQL theo dõi thay đổi
         /// </summary>
-        /// <returns>New JOBPORTAL_ENDataContext instance</returns>
+        /// <returns>Instance mới của JOBPORTAL_ENDataContext với tracking enabled</returns>
         public static JOBPORTAL_ENDataContext Create()
         {
              var db = new JOBPORTAL_ENDataContext(ConnectionString);
 
-            // ÉP BẬT TRACKING cho mọi context dùng để ghi
+            // Bật tracking cho các thao tác ghi dữ liệu
             db.ObjectTrackingEnabled = true;
-            db.DeferredLoadingEnabled = true; // tùy chọn, để lazy load
+            db.DeferredLoadingEnabled = true; // Bật lazy loading cho navigation properties
 
             return db;
         }
 
         /// <summary>
-        /// Create a new database context instance with object tracking disabled
-        /// Use this for read-only operations for better performance
+        /// Tạo database context instance mới cho các thao tác chỉ đọc
+        /// Object tracking được tắt để tăng hiệu suất cho các query không cần thay đổi dữ liệu
         /// </summary>
-        /// <returns>New JOBPORTAL_ENDataContext instance with tracking disabled</returns>
+        /// <returns>Instance mới của JOBPORTAL_ENDataContext với tracking disabled</returns>
         public static JOBPORTAL_ENDataContext CreateReadOnly()
         {
             var db = new JOBPORTAL_ENDataContext(ConnectionString);
-            db.ObjectTrackingEnabled = false;
+            db.ObjectTrackingEnabled = false; // Tắt tracking để tối ưu hiệu suất
             return db;
         }
 
         /// <summary>
-        /// Get the connection string
+        /// Lấy connection string từ configuration
         /// </summary>
-        /// <returns>Connection string</returns>
+        /// <returns>Connection string đến database</returns>
         public static string GetConnectionString()
         {
             return ConnectionString;

@@ -93,5 +93,13 @@ namespace Project_Recruiment_Huce.Models.Jobs
         public DateTime? PostedAt { get; set; }
         public string LogoUrl { get; set; }
     }
+
+    public class RecruiterJobItemDto
+    {
+        public int JobPostID { get; set; }
+        public string Title { get; set; }
+        public string JobCode { get; set; }
+        public DateTime PostedAt { get; set; }
+    }
 }
 

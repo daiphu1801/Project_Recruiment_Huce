@@ -2362,6 +2362,8 @@ namespace Project_Recruiment_Huce.Models
 		
 		private string _Phone;
 		
+		private string _Fax;
+		
 		private string _CompanyEmail;
 		
 		private string _Website;
@@ -2396,6 +2398,8 @@ namespace Project_Recruiment_Huce.Models
     partial void OnAddressChanged();
     partial void OnPhoneChanging(string value);
     partial void OnPhoneChanged();
+    partial void OnFaxChanging(string value);
+    partial void OnFaxChanged();
     partial void OnCompanyEmailChanging(string value);
     partial void OnCompanyEmailChanged();
     partial void OnWebsiteChanging(string value);
@@ -2534,6 +2538,26 @@ namespace Project_Recruiment_Huce.Models
 					this._Phone = value;
 					this.SendPropertyChanged("Phone");
 					this.OnPhoneChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Fax", DbType="NVarChar(20)")]
+		public string Fax
+		{
+			get
+			{
+				return this._Fax;
+			}
+			set
+			{
+				if ((this._Fax != value))
+				{
+					this.OnFaxChanging(value);
+					this.SendPropertyChanging();
+					this._Fax = value;
+					this.SendPropertyChanged("Fax");
+					this.OnFaxChanged();
 				}
 			}
 		}

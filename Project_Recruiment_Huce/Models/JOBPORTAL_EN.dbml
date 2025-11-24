@@ -102,6 +102,7 @@
       <Column Name="Industry" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
       <Column Name="Address" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="Phone" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="Fax" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
       <Column Name="CompanyEmail" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
       <Column Name="Website" Type="System.String" DbType="NVarChar(200)" CanBeNull="true" />
       <Column Name="Description" Type="System.String" DbType="NVarChar(1000)" CanBeNull="true" />

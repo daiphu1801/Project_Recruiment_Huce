@@ -12,11 +12,17 @@ using Project_Recruiment_Huce.Infrastructure;
 
 namespace Project_Recruiment_Huce.Controllers
 {
+    /// <summary>
+    /// Controller quản lý thông tin công ty - logo, address, industry, website, description
+    /// Liên kết với Recruiter qua CompanyID
+    /// </summary>
     [Authorize]
     public class CompaniesController : BaseController
     {
-
-        // Helper: Save uploaded logo
+        /// <summary>
+        /// Helper: Lưu logo đã upload vào ProfilePhotos table
+        /// Validate: file type, file size (max 5MB)
+        /// </summary>
         private int? SaveLogo(HttpPostedFileBase file)
         {
             if (file == null || file.ContentLength == 0) return null;
@@ -76,7 +82,9 @@ namespace Project_Recruiment_Huce.Controllers
             }
         }
 
-        // Helper: Delete photo from ProfilePhotos
+        /// <summary>
+        /// Helper: Xóa photo khỏi ProfilePhotos table và file vật lý
+        /// </summary>
         private void DeletePhoto(int photoId)
         {
             try
@@ -86,14 +94,14 @@ namespace Project_Recruiment_Huce.Controllers
                     var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId);
                     if (photo == null) return;
 
-                    // Delete physical file
+                    // Xóa file vật lý
                     var filePath = Server.MapPath("~" + photo.FilePath);
                     if (System.IO.File.Exists(filePath))
                     {
                         System.IO.File.Delete(filePath);
                     }
 
-                    // Delete database record
+                    // Xóa record trong database
                     db.ProfilePhotos.DeleteOnSubmit(photo);
                     db.SubmitChanges();
                 }
@@ -104,6 +112,11 @@ namespace Project_Recruiment_Huce.Controllers
             }
         }
 
+        /// <summary>
+        /// Hiển thị trang quản lý thông tin công ty
+        /// GET: Companies/CompaniesManage
+        /// Yêu cầu phải có Recruiter profile
+        /// </summary>
         [HttpGet]
         public ActionResult CompaniesManage()
         {
@@ -112,8 +125,10 @@ namespace Project_Recruiment_Huce.Controllers
 
             using (var db = DbContextFactory.CreateReadOnly())
             {
-                // Get recruiter and their company
-                var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
+                var repo = new Repositories.CompanyRepository(db);
+
+                // Lấy recruiter và company của họ qua repository
+                var recruiter = repo.GetRecruiterByAccountId(accountId.Value);
                 if (recruiter == null)
                 {
                     TempData["ErrorMessage"] = "Vui lòng tạo hồ sơ nhà tuyển dụng trước.";
@@ -123,7 +138,7 @@ namespace Project_Recruiment_Huce.Controllers
                 Company company = null;
                 if (recruiter.CompanyID.HasValue)
                 {
-                    company = db.Companies.FirstOrDefault(c => c.CompanyID == recruiter.CompanyID.Value);
+                    company = repo.GetCompanyById(recruiter.CompanyID.Value);
                 }
 
                 // Map to ViewModel
@@ -135,17 +150,17 @@ namespace Project_Recruiment_Huce.Controllers
                     Industry = company?.Industry,
                     Address = company?.Address,
                     Phone = company?.Phone,
-                    Fax = null, // Fax field not in database yet, will be null for now
+                    Fax = company?.Fax,
                     CompanyEmail = company?.CompanyEmail,
                     Website = company?.Website,
                     Description = company?.Description,
                     PhotoID = company?.PhotoID
                 };
 
-                // Get logo URL if exists
+                // Get logo URL nếu có
                 if (company?.PhotoID.HasValue == true)
                 {
-                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == company.PhotoID.Value);
+                    var photo = repo.GetProfilePhotoById(company.PhotoID.Value);
                     if (photo != null)
                     {
                         viewModel.LogoUrl = photo.FilePath;
@@ -233,8 +248,10 @@ namespace Project_Recruiment_Huce.Controllers
 
             using (var db = DbContextFactory.Create())
             {
-                // Get recruiter
-                var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
+                var repo = new Repositories.CompanyRepository(db);
+
+                // Get recruiter via repository
+                var recruiter = repo.GetRecruiterByAccountId(accountId.Value);
                 if (recruiter == null)
                 {
                     TempData["ErrorMessage"] = "Vui lòng tạo hồ sơ nhà tuyển dụng trước.";
@@ -244,13 +261,13 @@ namespace Project_Recruiment_Huce.Controllers
                 Company company = null;
                 if (recruiter.CompanyID.HasValue)
                 {
-                    company = db.Companies.FirstOrDefault(c => c.CompanyID == recruiter.CompanyID.Value);
+                    company = repo.GetCompanyById(recruiter.CompanyID.Value);
                 }
 
                 // Handle logo upload
                 if (viewModel.Logo != null && viewModel.Logo.ContentLength > 0)
                 {
-                    // Save new logo first
+                    // Save file to disk and insert ProfilePhoto via repo
                     var newPhotoId = SaveLogo(viewModel.Logo);
                     if (newPhotoId.HasValue)
                     {
@@ -260,41 +277,39 @@ namespace Project_Recruiment_Huce.Controllers
                             company = new Company
                             {
                                 CompanyName = viewModel.CompanyName,
-                                TaxCode = viewModel.TaxCode,
-                                Industry = viewModel.Industry,
-                                Address = viewModel.Address,
-                                Phone = phone, // Use normalized phone
-                                CompanyEmail = companyEmail, // Use trimmed email
-                                Website = viewModel.Website,
-                                Description = !string.IsNullOrWhiteSpace(viewModel.Description) 
-                                    ? HtmlSanitizerHelper.Sanitize(viewModel.Description) 
-                                    : null,
+                                    TaxCode = viewModel.TaxCode,
+                                    Industry = viewModel.Industry,
+                                    Address = viewModel.Address,
+                                    Phone = phone, // Use normalized phone
+                                    Fax = fax,
+                                    CompanyEmail = companyEmail, // Use trimmed email
+                                    Website = viewModel.Website,
+                                    Description = !string.IsNullOrWhiteSpace(viewModel.Description)
+                                        ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
+                                        : null,
                                 CreatedAt = DateTime.Now,
                                 ActiveFlag = 1,
                                 PhotoID = newPhotoId.Value
                             };
-                            db.Companies.InsertOnSubmit(company);
-                            db.SubmitChanges();
+                            repo.InsertCompany(company);
+                            repo.SaveChanges();
 
-                            // Link company to recruiter
+                            // Link company to recruiter and save
                             recruiter.CompanyID = company.CompanyID;
-                            db.SubmitChanges();
+                            repo.SaveChanges();
                         }
                         else
                         {
-                            // Store old photo ID before updating
                             var oldPhotoId = company.PhotoID;
-                            
-                            // Reload company entity to avoid concurrency issues
-                            db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, company);
-                            
-                            // Update existing company
+
+                            // Refresh entity from DB is not needed because same context tracks it
                             company.CompanyName = viewModel.CompanyName;
                             company.TaxCode = viewModel.TaxCode;
                             company.Industry = viewModel.Industry;
                             company.Address = viewModel.Address;
-                            company.Phone = phone; // Use normalized phone
-                            company.CompanyEmail = companyEmail; // Use trimmed email
+                            company.Phone = phone;
+                            company.Fax = fax;
+                            company.CompanyEmail = companyEmail;
                             company.Website = viewModel.Website;
                             company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
                                 ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
@@ -303,9 +318,8 @@ namespace Project_Recruiment_Huce.Controllers
 
                             try
                             {
-                                db.SubmitChanges();
-                                
-                                // Delete old logo after successful update
+                                repo.SaveChanges();
+
                                 if (oldPhotoId.HasValue)
                                 {
                                     DeletePhoto(oldPhotoId.Value);
@@ -313,25 +327,24 @@ namespace Project_Recruiment_Huce.Controllers
                             }
                             catch (System.Data.Linq.ChangeConflictException)
                             {
-                                // Handle concurrency conflict - refresh and retry
+                                // Concurrency conflict: refresh and retry
                                 db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, company);
-                                
-                                // Retry update with fresh entity
+
                                 company.CompanyName = viewModel.CompanyName;
                                 company.TaxCode = viewModel.TaxCode;
                                 company.Industry = viewModel.Industry;
                                 company.Address = viewModel.Address;
                                 company.Phone = viewModel.Phone;
+                                company.Fax = fax;
                                 company.CompanyEmail = viewModel.CompanyEmail;
                                 company.Website = viewModel.Website;
                                 company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
                                     ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
                                     : null;
                                 company.PhotoID = newPhotoId.Value;
-                                
-                                db.SubmitChanges();
-                                
-                                // Delete old logo after successful update
+
+                                repo.SaveChanges();
+
                                 if (oldPhotoId.HasValue)
                                 {
                                     DeletePhoto(oldPhotoId.Value);
@@ -349,24 +362,25 @@ namespace Project_Recruiment_Huce.Controllers
                         company = new Company
                         {
                             CompanyName = viewModel.CompanyName,
-                            TaxCode = viewModel.TaxCode,
-                            Industry = viewModel.Industry,
-                            Address = viewModel.Address,
-                            Phone = viewModel.Phone,
-                            CompanyEmail = viewModel.CompanyEmail,
-                            Website = viewModel.Website,
-                            Description = !string.IsNullOrWhiteSpace(viewModel.Description) 
-                                ? HtmlSanitizerHelper.Sanitize(viewModel.Description) 
-                                : null,
+                                TaxCode = viewModel.TaxCode,
+                                Industry = viewModel.Industry,
+                                Address = viewModel.Address,
+                                Phone = viewModel.Phone,
+                                Fax = viewModel.Fax,
+                                CompanyEmail = viewModel.CompanyEmail,
+                                Website = viewModel.Website,
+                                Description = !string.IsNullOrWhiteSpace(viewModel.Description)
+                                    ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
+                                    : null,
                             CreatedAt = DateTime.Now,
                             ActiveFlag = 1
                         };
-                        db.Companies.InsertOnSubmit(company);
-                        db.SubmitChanges();
+                        repo.InsertCompany(company);
+                        repo.SaveChanges();
 
                         // Link company to recruiter
                         recruiter.CompanyID = company.CompanyID;
-                        db.SubmitChanges();
+                        repo.SaveChanges();
                     }
                     else
                     {
@@ -376,13 +390,14 @@ namespace Project_Recruiment_Huce.Controllers
                         company.Industry = viewModel.Industry;
                         company.Address = viewModel.Address;
                         company.Phone = viewModel.Phone;
+                        company.Fax = viewModel.Fax;
                         company.CompanyEmail = viewModel.CompanyEmail;
                         company.Website = viewModel.Website;
                         company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
                             ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
                             : null;
 
-                        db.SubmitChanges();
+                        repo.SaveChanges();
                     }
                 }
 
