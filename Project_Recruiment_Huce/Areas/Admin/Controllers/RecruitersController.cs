@@ -216,7 +216,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Phone = model.Phone,
                     Role = "Recruiter",
                     PasswordHash = passwordHash,
-                    Salt = null, // Không cần salt riêng nữa
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,
                     CreatedAt = DateTime.Now
                 };
@@ -403,7 +402,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 {
                     // Hash password sử dụng PBKDF2 (không cần salt riêng)
                     accountRecord.PasswordHash = PasswordHelper.HashPassword(model.Password);
-                    accountRecord.Salt = null; // Không cần salt riêng nữa
                 }
 
                 recruiter.CompanyID = model.CompanyId;

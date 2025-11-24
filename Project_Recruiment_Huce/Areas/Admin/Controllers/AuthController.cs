@@ -196,7 +196,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         Phone = phone, // Use normalized phone
                         Role = "Admin", // HARDCODE: Luôn là Admin cho admin area
                         PasswordHash = passwordHash,
-                        Salt = null, // Không cần salt riêng nữa
                         CreatedAt = DateTime.Now,
                         ActiveFlag = 1
                     };

@@ -63,7 +63,6 @@ namespace Project_Recruiment_Huce.Repositories
                 Phone = phone,
                 Role = role,
                 PasswordHash = passwordHash,
-                Salt = salt,
                 CreatedAt = DateTime.Now,
                 ActiveFlag = 1
             };
@@ -82,7 +81,7 @@ namespace Project_Recruiment_Huce.Repositories
                 throw new InvalidOperationException("Không thể cập nhật mật khẩu: ObjectTrackingEnabled đang tắt. Vui lòng sử dụng DbContextFactory.Create() để lấy context có thể ghi (không sử dụng CreateReadOnly()).");
 
             account.PasswordHash = passwordHash;
-            account.Salt = salt;
+            // Salt column đã bị xóa khỏi database
         }
 
         public void SaveChanges()

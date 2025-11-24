@@ -218,12 +218,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     // Dropdowns đã được nạp ở đầu action
                     return View(model);
                 }
-
-                // ----------------------------------------------------
-                // 🚀 BẮT ĐẦU LOGIC LƯU DB (Chỉ chạy khi ModelState hợp lệ)
-                // ----------------------------------------------------
-
-                // PBKDF2 (ASP.NET Identity) used by PasswordHelper includes its own salt.
+                // Tạo hash mật khẩu sử dụng PBKDF2
                 string passwordHash = PasswordHelper.HashPassword(model.Password);
 
                 var account = new Account
@@ -233,7 +228,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Phone = model.Phone,
                     Role = "Candidate",
                     PasswordHash = passwordHash,
-                    Salt = null,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,
                     CreatedAt = DateTime.Now
                 };

@@ -41,7 +41,7 @@ namespace Project_Recruiment_Huce.Repositories
                 throw new InvalidOperationException($"Không tìm thấy tài khoản với ID {accountId}");
 
             account.PasswordHash = passwordHash;
-            account.Salt = salt;
+            // Salt column đã bị xóa khỏi database
         }
 
         public void SaveChanges()
