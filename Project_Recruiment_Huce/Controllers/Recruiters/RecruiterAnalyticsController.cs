@@ -15,7 +15,7 @@ namespace Project_Recruiment_Huce.Controllers.Recruiters
     /// Handles viewing analytics and metrics for job posts
     /// Uses layered architecture with Repository and Service patterns
     /// </summary>
-    [Authorize]
+    [Authorize(Roles="Recruiter")]
     public class RecruiterAnalyticsController : Controller
     {
         private readonly IRecruiterAnalyticsService _analyticsService;

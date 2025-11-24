@@ -160,7 +160,7 @@ namespace Project_Recruiment_Huce.Controllers
         /// <summary>
         /// GET: Jobs/MyJobs - Xem danh sách tin tuyển dụng đã đăng
         /// </summary>
-        [Authorize]
+        [Authorize(Roles = "Recruiter")]
         [HttpGet]
         public ActionResult MyJobs(int? page = null)
         {
@@ -196,7 +196,7 @@ namespace Project_Recruiment_Huce.Controllers
         /// <summary>
         /// GET: Jobs/JobsCreate
         /// </summary>
-        [Authorize]
+        [Authorize(Roles = "Recruiter")]
         [HttpGet]
         public ActionResult JobsCreate()
         {
@@ -236,7 +236,7 @@ namespace Project_Recruiment_Huce.Controllers
         /// <summary>
         /// POST: Jobs/JobsCreate
         /// </summary>
-        [Authorize]
+        [Authorize(Roles = "Recruiter")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult JobsCreate(JobCreateViewModel viewModel)
@@ -290,7 +290,7 @@ namespace Project_Recruiment_Huce.Controllers
         /// GET: Jobs/Edit
         /// Hiển thị form chỉnh sửa tin tuyển dụng
         /// </summary>
-        [Authorize]
+        [Authorize(Roles = "Recruiter")]
         [HttpGet]
         public ActionResult Edit(int? id)
         {
@@ -332,7 +332,7 @@ namespace Project_Recruiment_Huce.Controllers
         /// POST: Jobs/Edit
         /// Cập nhật tin tuyển dụng
         /// </summary>
-        [Authorize]
+        [Authorize(Roles = "Recruiter")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int? id, JobCreateViewModel viewModel)
@@ -394,7 +394,7 @@ namespace Project_Recruiment_Huce.Controllers
         /// POST: Jobs/CloseJob
         /// Đóng hoặc hết hạn tin tuyển dụng
         /// </summary>
-        [Authorize]
+        [Authorize(Roles = "Recruiter")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult CloseJob(int? id, string status = "Closed")
@@ -436,7 +436,7 @@ namespace Project_Recruiment_Huce.Controllers
         /// POST: Jobs/ReopenJob
         /// Mở lại tin tuyển dụng đã đóng
         /// </summary>
-        [Authorize]
+        [Authorize(Roles = "Recruiter")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult ReopenJob(int? id)

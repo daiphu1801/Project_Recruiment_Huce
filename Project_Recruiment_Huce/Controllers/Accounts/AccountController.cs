@@ -53,79 +53,82 @@ namespace Project_Recruiment_Huce.Controllers
         /// <summary>
         /// Xử lý đăng nhập
         /// POST: /Account/Login
-        /// Hỗ trợ đăng nhập bằng username HOẶC email
         /// </summary>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public ActionResult Login(LoginViewModel model, string returnUrl)
         {
-            // Nếu đã đăng nhập, chặn login attempts và hiển thị thông báo
+            // Chặn login attempts khi đã authenticated
             if (User?.Identity?.IsAuthenticated == true)
             {
                 if (Request.IsAjaxRequest())
                 {
                     return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Already authenticated");
                 }
-                TempData["InfoMessage"] = "Bạn đã đăng nhập rồi.";
-                return RedirectToAction("Index", "Home");
+                return RedirectToLocal(returnUrl);
             }
 
             if (!ModelState.IsValid)
             {
+                ViewBag.ReturnUrl = returnUrl;
                 return View(model);
             }
 
             using (var db = DbContextFactory.Create())
             {
-                // Chuẩn hóa input (cho phép username HOẶC email)
+                // Normalize input (allow username OR email)
                 var input = (model.EmailOrUsername ?? string.Empty).Trim();
                 bool isEmail = input.Contains("@");
                 var lower = input.ToLower();
-                var user = db.Accounts.FirstOrDefault(a =>
+                
+                var account = db.Accounts.FirstOrDefault(a =>
                     (isEmail ? a.Email.ToLower() == lower : a.Username == input) && a.ActiveFlag == 1);
 
-                if (user != null && (string.IsNullOrEmpty(user.Salt) 
-                    ? PasswordHelper.VerifyPassword(model.Password, user.PasswordHash) 
-                    : PasswordHelper.VerifyPassword(model.Password, user.PasswordHash, user.Salt)))
+                if (account == null)
                 {
-                    // Từ chối Admin users đăng nhập từ main site
-                    if (user.Role == "Admin")
-                    {
-                        ModelState.AddModelError("", "Bạn đã đăng nhập sai tài khoản hoặc mật khẩu");
-                        return View(model);
-                    }
+                    ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
+                    ViewBag.ReturnUrl = returnUrl;
+                    return View(model);
+                }
 
-                    // Tạo claims identity cho OWIN authentication (User Cookie)
+                // Sử dụng VerifyPasswordV2 - hỗ trợ cả format cũ (SHA256) và mới (PBKDF2)
+                var verifyResult = PasswordHelper.VerifyPasswordV2(model.Password, account.PasswordHash, account.Salt);
+                
+                if (verifyResult == PasswordHelper.VerifyResult.Failed)
+                {
+                    ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
+                    ViewBag.ReturnUrl = returnUrl;
+                    return View(model);
+                }
+
+                // Tự động upgrade password sang format mới nếu đang dùng format cũ
+                if (verifyResult == PasswordHelper.VerifyResult.SuccessRehashNeeded)
+                {
+                    account.PasswordHash = PasswordHelper.HashPassword(model.Password);
+                    account.Salt = null; // Không cần salt riêng nữa
+                    db.SubmitChanges();
+                }
+
+                // Tạo claims và đăng nhập
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.AccountID.ToString()),
-                    new Claim(ClaimTypes.Name, user.Username),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim("VaiTro", user.Role),
+                    new Claim(ClaimTypes.NameIdentifier, account.AccountID.ToString()),
+                    new Claim(ClaimTypes.Name, account.Username),
+                    new Claim(ClaimTypes.Email, account.Email),
+                    new Claim("VaiTro", account.Role),
                     new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                 };
 
-                    var identity = new ClaimsIdentity(claims, "UserCookie");
-                    AuthenticationManager.SignIn(new AuthenticationProperties 
-                    { 
-                        IsPersistent = model.RememberMe 
-                    }, identity);
+                var identity = new ClaimsIdentity(claims, "UserCookie");
+                AuthenticationManager.SignIn(new AuthenticationProperties { IsPersistent = model.RememberMe }, identity);
 
-                    return RedirectToLocal(returnUrl);
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
-                }
+                return RedirectToLocal(returnUrl);
             }
-
-            return View(model);
         }
 
-
         /// <summary>
-        /// Hiển thị trang đăng ký tài khoản
+        /// Hiển thị trang đăng ký
         /// GET: /Account/Register
         /// </summary>
         [AllowAnonymous]

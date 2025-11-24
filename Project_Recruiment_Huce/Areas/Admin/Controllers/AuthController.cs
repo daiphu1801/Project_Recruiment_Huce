@@ -54,13 +54,21 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View("loginAd", model);
                 }
 
-                // Xác thực mật khẩu (hỗ trợ cả account có salt và không có salt)
-                if (!(string.IsNullOrEmpty(user.Salt) 
-                    ? PasswordHelper.VerifyPassword(model.Password, user.PasswordHash) 
-                    : PasswordHelper.VerifyPassword(model.Password, user.PasswordHash, user.Salt)))
+                // Xác thực mật khẩu sử dụng VerifyPasswordV2 (hỗ trợ cả format cũ và mới)
+                var verifyResult = PasswordHelper.VerifyPasswordV2(model.Password, user.PasswordHash, user.Salt);
+                
+                if (verifyResult == PasswordHelper.VerifyResult.Failed)
                 {
                     ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
                     return View("loginAd", model);
+                }
+
+                // Tự động upgrade password sang format mới nếu đang dùng format cũ
+                if (verifyResult == PasswordHelper.VerifyResult.SuccessRehashNeeded)
+                {
+                    user.PasswordHash = PasswordHelper.HashPassword(model.Password);
+                    user.Salt = null;
+                    db.SubmitChanges();
                 }
 
                 // Create claims identity for OWIN authentication (Admin Cookie)
@@ -186,9 +194,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         return View("registerAd", model);
                     }
 
-                    // Generate salt and hash password
-                    string salt = PasswordHelper.GenerateSalt();
-                    string passwordHash = PasswordHelper.HashPassword(model.Password, salt);
+                    // Hash password sử dụng PBKDF2 (không cần salt riêng)
+                    string passwordHash = PasswordHelper.HashPassword(model.Password);
 
                     // Create new Admin Account
                     // FORCE Role = "Admin" - không phụ thuộc vào model.VaiTro
@@ -199,7 +206,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         Phone = phone, // Use normalized phone
                         Role = "Admin", // HARDCODE: Luôn là Admin cho admin area
                         PasswordHash = passwordHash,
-                        Salt = salt,
+                        Salt = null, // Không cần salt riêng nữa
                         CreatedAt = DateTime.Now,
                         ActiveFlag = 1
                     };

@@ -13,7 +13,7 @@ using Project_Recruiment_Huce.Repositories.ResumeFileRepo;
 
 namespace Project_Recruiment_Huce.Controllers
 {
-    [Authorize]
+    [Authorize(Roles="Candidate")]
     public class ResumeFilesController : BaseController
     {
         private readonly IResumeFileService _resumeFileService;

@@ -3,7 +3,7 @@
 }
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="@Url.Action("Index","Home", new { area = "Admin" })">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="@Url.Action("Index","Dashboard", new { area = "Admin" })">Dashboard</a></li>
     @foreach (var c in crumbs)
     {
         if (!string.IsNullOrEmpty(c.Item2))

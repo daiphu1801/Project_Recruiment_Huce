@@ -18,7 +18,7 @@ namespace Project_Recruiment_Huce.Controllers
     /// Controller quản lý hồ sơ candidate, đơn ứng tuyển, tin đã lưu, upload resume
     /// Chỉ dành cho người dùng đã đăng nhập
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = "Candidate")]
     public class CandidatesController : BaseController
     {
         private readonly ICandidateService _candidateService;

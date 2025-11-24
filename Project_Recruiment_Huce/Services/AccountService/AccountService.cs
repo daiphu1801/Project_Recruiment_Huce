@@ -84,14 +84,14 @@ namespace Project_Recruiment_Huce.Services
             var result = ValidateRegister(model);
             if (!result.IsValid) return result;
 
-            var salt = PasswordHelper.GenerateSalt();
-            var passwordHash = PasswordHelper.HashPassword(model.Password, salt);
+            // Sử dụng HashPassword mới (PBKDF2) - không cần salt riêng
+            var passwordHash = PasswordHelper.HashPassword(model.Password);
 
             // map role
             string mappedRole = "Candidate";
             if (model.VaiTro == "NhaTuyenDung") mappedRole = "Recruiter";
 
-            var account = _repo.Create(model.TenDangNhap, (model.Email ?? string.Empty).Trim(), result.Data.ContainsKey("NormalizedPhone") ? result.Data["NormalizedPhone"] as string : null, mappedRole, passwordHash, salt);
+            var account = _repo.Create(model.TenDangNhap, (model.Email ?? string.Empty).Trim(), result.Data.ContainsKey("NormalizedPhone") ? result.Data["NormalizedPhone"] as string : null, mappedRole, passwordHash, null);
 
             // try create profile sync but do not fail registration on profile error
             try
@@ -116,11 +116,21 @@ namespace Project_Recruiment_Huce.Services
             var user = _repo.FindByUsernameOrEmail(userOrEmail);
             if (user == null) return null;
 
-            bool ok = string.IsNullOrEmpty(user.Salt)
-                ? PasswordHelper.VerifyPassword(password, user.PasswordHash)
-                : PasswordHelper.VerifyPassword(password, user.PasswordHash, user.Salt);
+            // Sử dụng VerifyPasswordV2 - hỗ trợ cả format cũ (SHA256) và mới (PBKDF2)
+            var verifyResult = PasswordHelper.VerifyPasswordV2(password, user.PasswordHash, user.Salt);
+            
+            if (verifyResult == PasswordHelper.VerifyResult.Failed)
+                return null;
 
-            return ok ? user : null;
+            // Nếu password đang dùng format cũ, tự động upgrade sang format mới
+            if (verifyResult == PasswordHelper.VerifyResult.SuccessRehashNeeded)
+            {
+                user.PasswordHash = PasswordHelper.HashPassword(password);
+                user.Salt = null; // Không cần salt riêng nữa
+                _repo.SaveChanges();
+            }
+
+            return user;
         }
 
         public ValidationResult ValidateResetPassword(ResetPasswordViewModel model)
@@ -180,11 +190,11 @@ namespace Project_Recruiment_Huce.Services
                 return result;
             }
 
-            var salt = PasswordHelper.GenerateSalt();
-            var passwordHash = PasswordHelper.HashPassword(password, salt);
+            // Sử dụng HashPassword mới (PBKDF2) - không cần salt riêng
+            var passwordHash = PasswordHelper.HashPassword(password);
 
             // update account password
-            _repo.UpdatePassword(account.AccountID, passwordHash, salt);
+            _repo.UpdatePassword(account.AccountID, passwordHash, null);
 
             // mark token used
             token.UsedFlag = 1;

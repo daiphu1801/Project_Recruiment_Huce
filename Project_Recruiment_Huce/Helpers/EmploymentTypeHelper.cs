@@ -13,9 +13,7 @@ namespace Project_Recruiment_Huce.Helpers
         private static readonly Dictionary<string, string> _employmentTypeMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "part-time", "Bán thời gian" },
-            { "part time", "Bán thời gian" },
             { "full-time", "Toàn thời gian" },
-            { "full time", "Toàn thời gian" },
             { "internship", "Thực tập" },
             { "contract", "Hợp đồng" },
             { "remote", "Làm việc từ xa" }
@@ -67,7 +65,6 @@ namespace Project_Recruiment_Huce.Helpers
                     return kvp.Key;
                 }
             }
-
             return displayText;
         }
     }
