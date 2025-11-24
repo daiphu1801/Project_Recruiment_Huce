@@ -130,85 +130,86 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         // Team members should follow AccountsController pattern to implement CRUD with database.
         // GET: Admin/JobPosts/Details/5
         // GET: Admin/JobPosts/Details/5
-public ActionResult Details(int id)
-{
-    ViewBag.Title = "Chi tiết tin tuyển dụng";
-    ViewBag.Breadcrumbs = new List<Tuple<string, string>>
+        public ActionResult Details(int? id)
+        {
+            if (!id.HasValue || id.Value <= 0)
+            {
+                TempData["ErrorMessage"] = "ID tin tuyển dụng không hợp lệ";
+                return RedirectToAction("Index");
+            }
+
+            ViewBag.Title = "Chi tiết tin tuyển dụng";
+            ViewBag.Breadcrumbs = new List<Tuple<string, string>>
     {
         new Tuple<string, string>("Tin tuyển dụng", Url.Action("Index")),
-        new Tuple<string, string>($"#{id}", null)
+        new Tuple<string, string>($"#{id.Value}", null)
     };
 
-    using (var db = new JOBPORTAL_ENDataContext(
-        ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
-    {
-        // 1. Lấy JobPost theo JobPostID
-        var jobPost = db.JobPosts.FirstOrDefault(j => j.JobPostID == id);
+            using (var db = new JOBPORTAL_ENDataContext(
+                ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            {
+                var jobPost = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value);
 
-        if (jobPost == null)
-            return HttpNotFound();
+                if (jobPost == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng";
+                    return RedirectToAction("Index");
+                }
 
-        // 2. ✅ SỬA LỖI: Lấy các thực thể liên quan qua FOREIGN KEY từ jobPost
-        var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == jobPost.RecruiterID);
-        var company = db.Companies.FirstOrDefault(c => c.CompanyID == jobPost.CompanyID);
-        var jobPostDetail = db.JobPostDetails.FirstOrDefault(jpd => jpd.JobPostID == jobPost.JobPostID);
+                var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == jobPost.RecruiterID);
+                var company = db.Companies.FirstOrDefault(c => c.CompanyID == jobPost.CompanyID);
+                var jobPostDetail = db.JobPostDetails.FirstOrDefault(jpd => jpd.JobPostID == jobPost.JobPostID);
 
-        // 3. Ánh xạ sang ViewModel
-        var vm = new JobPostDetailVm
-        {
-            // JobPost fields
-            JobPostID = jobPost.JobPostID,
-            JobCode = jobPost.JobCode,
-            Title = jobPost.Title,
-            Description = jobPost.Description,
-            Requirements = jobPost.Requirements,
-            Location = jobPost.Location,
-            EmploymentType = jobPost.EmploymentType,
-            SalaryFrom = jobPost.SalaryFrom,
-            SalaryTo = jobPost.SalaryTo,
-            SalaryCurrency = jobPost.SalaryCurrency,
-            ApplicationDeadline = jobPost.ApplicationDeadline,
-            Status = jobPost.Status,
-            PostedAt = jobPost.PostedAt ,
-            UpdatedAt = jobPost.UpdatedAt ,
+                var vm = new JobPostDetailVm
+                {
+                    JobPostID = jobPost.JobPostID,
+                    JobCode = jobPost.JobCode,
+                    Title = jobPost.Title,
+                    Description = jobPost.Description,
+                    Requirements = jobPost.Requirements,
+                    Location = jobPost.Location,
+                    EmploymentType = jobPost.EmploymentType,
+                    SalaryFrom = jobPost.SalaryFrom,
+                    SalaryTo = jobPost.SalaryTo,
+                    SalaryCurrency = jobPost.SalaryCurrency,
+                    ApplicationDeadline = jobPost.ApplicationDeadline,
+                    Status = jobPost.Status,
+                    PostedAt = jobPost.PostedAt ,
+                    UpdatedAt = jobPost.UpdatedAt, 
 
-            // Company fields (null-safe)
-            CompanyID = company?.CompanyID,
-            CompanyName = company?.CompanyName,
-            Address = company?.Address,
-            Website = company?.Website,
-            CompanyPhotoID = company?.PhotoID,
+                    CompanyID = company?.CompanyID,
+                    CompanyName = company?.CompanyName,
+                    Address = company?.Address,
+                    Website = company?.Website,
+                    CompanyPhotoID = company?.PhotoID,
 
-            // Recruiter fields (null-safe)
-            RecruiterID = recruiter?.RecruiterID ?? 0,
-            FullName = recruiter?.FullName ?? "N/A",
-            PositionTitle = recruiter?.PositionTitle,
-            Phone = recruiter?.Phone,
-            RecruiterPhotoID = recruiter?.PhotoID,
+                    RecruiterID = recruiter?.RecruiterID ?? 0,
+                    FullName = recruiter?.FullName ?? "N/A",
+                    PositionTitle = recruiter?.PositionTitle,
+                    Phone = recruiter?.Phone,
+                    RecruiterPhotoID = recruiter?.PhotoID,
 
-            // JobPostDetail fields (null-safe)
-            DetailID = jobPostDetail?.DetailID ?? 0,
-            Industry = jobPostDetail?.Industry,
-            Major = jobPostDetail?.Major,
-            YearsExperience = jobPostDetail?.YearsExperience ?? 0,
-            DegreeRequired = jobPostDetail?.DegreeRequired,
-            Skills = jobPostDetail?.Skills,
-            Headcount = jobPostDetail?.Headcount ?? 0,
-            GenderRequirement = jobPostDetail?.GenderRequirement ?? "Not required",
-            AgeFrom = jobPostDetail?.AgeFrom,
-            AgeTo = jobPostDetail?.AgeTo
-        };
+                    DetailID = jobPostDetail?.DetailID ?? 0,
+                    Industry = jobPostDetail?.Industry,
+                    Major = jobPostDetail?.Major,
+                    YearsExperience = jobPostDetail?.YearsExperience ?? 0,
+                    DegreeRequired = jobPostDetail?.DegreeRequired,
+                    Skills = jobPostDetail?.Skills,
+                    Headcount = jobPostDetail?.Headcount ?? 0,
+                    GenderRequirement = jobPostDetail?.GenderRequirement ?? "Not required",
+                    AgeFrom = jobPostDetail?.AgeFrom,
+                    AgeTo = jobPostDetail?.AgeTo
+                };
 
-        // 4. Cập nhật Breadcrumbs với tiêu đề thực tế
-        ViewBag.Breadcrumbs = new List<Tuple<string, string>>
+                ViewBag.Breadcrumbs = new List<Tuple<string, string>>
         {
             new Tuple<string, string>("Tin tuyển dụng", Url.Action("Index")),
             new Tuple<string, string>($"#{vm.JobPostID} - {vm.Title}", null)
         };
 
-        return View(vm);
-    }
-}
+                return View(vm);
+            }
+        }
 
 
 
