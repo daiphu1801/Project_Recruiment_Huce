@@ -78,6 +78,11 @@ namespace Project_Recruiment_Huce.Helpers
             string hashOfInput = HashPassword(password);
             return hashOfInput.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase);
         }
+
+        internal static string HashPassword(object password, string salt)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

@@ -109,7 +109,12 @@
                 <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
                   <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
                     <h2>@job.Title</h2>
-                    <strong>@job.CompanyName</strong>
+                    <strong>@(string.IsNullOrWhiteSpace(job.CompanyName) ? "Công ty" : job.CompanyName)</strong>
+                    @if (!string.IsNullOrWhiteSpace(job.Description))
+                    {
+                      var preview = Project_Recruiment_Huce.Helpers.HtmlSanitizerHelper.GetPreviewText(job.Description, 120);
+                      <p class="text-muted mb-0 mt-1" style="font-size: 0.9em; line-height: 1.4;">@preview</p>
+                    }
                   </div>
                   <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
                     @if (!string.IsNullOrEmpty(job.Location))

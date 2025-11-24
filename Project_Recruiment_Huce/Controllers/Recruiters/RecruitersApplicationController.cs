@@ -5,6 +5,8 @@ using System.Web.Mvc;
 using System.Configuration;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Recruiters;
+using Project_Recruiment_Huce.Repositories;
+using Project_Recruiment_Huce.Infrastructure;
 
 namespace Project_Recruiment_Huce.Controllers
 {
@@ -12,30 +14,12 @@ namespace Project_Recruiment_Huce.Controllers
     /// Controller quản lý đơn ứng tuyển cho Recruiter
     /// </summary>
     [Authorize]
-    public class RecruitersApplicationController : Controller
+    public class RecruitersApplicationController : BaseController
     {
-        private int? GetCurrentAccountId()
+        // Using Repository Pattern for data access
+        private ApplicationRepository GetApplicationRepository(JOBPORTAL_ENDataContext db)
         {
-            if (User?.Identity == null || !User.Identity.IsAuthenticated)
-                return null;
-
-            var idClaim = ((ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.NameIdentifier);
-            if (idClaim == null) return null;
-            int accountId;
-            return int.TryParse(idClaim.Value, out accountId) ? (int?)accountId : null;
-        }
-
-        private int? GetCurrentRecruiterId(int? accountId)
-        {
-            if (!accountId.HasValue)
-                return null;
-
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
-            {
-                var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId.Value);
-                return recruiter?.RecruiterID;
-            }
+            return new ApplicationRepository(db);
         }
 
         /// <summary>
@@ -51,48 +35,36 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var recruiterId = GetCurrentRecruiterId(accountId);
+            var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để xem đơn ứng tuyển.";
                 return RedirectToAction("RecruitersManage", "Recruiters");
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
-                db.ObjectTrackingEnabled = false;
+                var applicationRepository = GetApplicationRepository(db);
 
-                // Load related entities
-                var loadOptions = new System.Data.Linq.DataLoadOptions();
-                loadOptions.LoadWith<Application>(a => a.JobPost);
-                loadOptions.LoadWith<Application>(a => a.Candidate);
-                loadOptions.LoadWith<JobPost>(j => j.Company);
-                db.LoadOptions = loadOptions;
-
-                // Get applications for jobs posted by this recruiter
-                var query = from app in db.Applications
-                           join job in db.JobPosts on app.JobPostID equals job.JobPostID
-                           where job.RecruiterID == recruiterId.Value
-                           select app;
+                // Get applications for jobs posted by this recruiter using repository
+                var applications = applicationRepository.GetApplicationsByRecruiter(recruiterId.Value);
 
                 // Filter by job if specified
                 if (jobId.HasValue)
                 {
-                    query = query.Where(a => a.JobPostID == jobId.Value);
+                    applications = applications.Where(a => a.JobPostID == jobId.Value);
                 }
 
                 // Filter by status if specified
                 if (!string.IsNullOrEmpty(status))
                 {
-                    query = query.Where(a => a.Status == status);
+                    applications = applications.Where(a => a.Status == status);
                 }
 
-                // Order by applied date descending
-                var applicationsList = query.OrderByDescending(a => a.AppliedAt).ToList();
+                var applicationsList = applications.ToList();
 
                 // Map to ViewModels
-                var applications = applicationsList.Select(app => new RecruiterApplicationViewModel
+                var applicationsViewModels = applicationsList.Select(app => new RecruiterApplicationViewModel
                 {
                     ApplicationID = app.ApplicationID,
                     JobPostID = app.JobPostID,
@@ -117,10 +89,10 @@ namespace Project_Recruiment_Huce.Controllers
                 // Pagination
                 int pageSize = 10;
                 int pageNumber = page ?? 1;
-                int totalItems = applications.Count;
+                int totalItems = applicationsViewModels.Count();
                 int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
-                var pagedApplications = applications.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+                var pagedApplications = applicationsViewModels.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
                 // Get list of jobs for filter dropdown
                 var jobs = db.JobPosts
@@ -161,7 +133,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var recruiterId = GetCurrentRecruiterId(accountId);
+            var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để xem đơn ứng tuyển.";
@@ -174,10 +146,8 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyApplications", "RecruitersApplication");
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
-                db.ObjectTrackingEnabled = false;
 
                 // Load related entities
                 var loadOptions = new System.Data.Linq.DataLoadOptions();
@@ -241,7 +211,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var recruiterId = GetCurrentRecruiterId(accountId);
+            var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để cập nhật trạng thái.";
@@ -254,10 +224,8 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyApplications", "RecruitersApplication");
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
-                db.ObjectTrackingEnabled = false;
 
                 // Load related entities
                 var loadOptions = new System.Data.Linq.DataLoadOptions();
@@ -317,7 +285,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var recruiterId = GetCurrentRecruiterId(accountId);
+            var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để cập nhật trạng thái.";
@@ -336,8 +304,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return View(viewModel);
             }
 
-            var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
-            using (var db = new JOBPORTAL_ENDataContext(connectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 // Get application and verify it belongs to this recruiter's job
                 var application = db.Applications.FirstOrDefault(a => a.ApplicationID == viewModel.ApplicationID);

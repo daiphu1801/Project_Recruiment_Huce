@@ -7,19 +7,13 @@ using System.IO;
 using System.Configuration;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Candidates;
+using Project_Recruiment_Huce.Infrastructure;
 
 namespace Project_Recruiment_Huce.Controllers
 {
     [Authorize]
-    public class ResumeFilesController : Controller
+    public class ResumeFilesController : BaseController
     {
-        private int? GetCurrentAccountId()
-        {
-            var idClaim = ((ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.NameIdentifier);
-            if (idClaim == null) return null;
-            int accountId;
-            return int.TryParse(idClaim.Value, out accountId) ? (int?)accountId : null;
-        }
 
         /// <summary>
         /// GET: Candidates/ResumeFiles/MyResumes
@@ -34,7 +28,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.CreateReadOnly())
             {
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 if (candidate == null)
@@ -102,7 +96,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyResumes");
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 if (candidate == null)
@@ -169,7 +163,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyResumes");
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 if (candidate == null)
@@ -232,7 +226,7 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyResumes");
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = DbContextFactory.Create())
             {
                 var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
                 if (candidate == null)

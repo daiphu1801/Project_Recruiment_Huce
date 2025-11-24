@@ -146,7 +146,7 @@
                             }
                         </div>
                         <span class="text-muted" style="font-size: 0.875rem;">
-                            Đăng ngày: @job.PostedAt.ToString("dd/MM/yyyy")
+                            Đăng ngày: @(job.PostedAt?.ToString("dd/MM/yyyy") ?? "N/A")
                         </span>
                     </div>
 

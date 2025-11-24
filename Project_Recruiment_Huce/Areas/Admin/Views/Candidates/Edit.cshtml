@@ -1,4 +1,4 @@
-@model Project_Recruiment_Huce.Areas.Admin.Models.EditCandidateListVm
+@model Project_Recruiment_Huce.Areas.Admin.Models.EditCandidatesListVm
 @{
     ViewBag.Title = "Sửa ứng viên";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
@@ -64,11 +64,7 @@
                         @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
                         @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
                     </div>
-                    <div class="mb-3">
-                        @Html.LabelFor(m => m.Address, new { @class = "form-label" })
-                        @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Nhập địa chỉ" })
-                        @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
-                    </div>
+
 
                     <div class="mb-3">
                         @Html.LabelFor(m => m.ApplicationEmail, new { @class = "form-label" })

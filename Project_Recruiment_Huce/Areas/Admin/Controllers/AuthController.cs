@@ -149,6 +149,32 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         return View("registerAd", model);
                     }
 
+                    // Validate phone number format and uniqueness (if provided)
+                    var phone = (model.SoDienThoai ?? string.Empty).Trim();
+                    if (!string.IsNullOrWhiteSpace(phone))
+                    {
+                        // Validate phone format
+                        if (!ValidationHelper.IsValidVietnamesePhone(phone))
+                        {
+                            ModelState.AddModelError("SoDienThoai", ValidationHelper.GetPhoneErrorMessage());
+                            return View("registerAd", model);
+                        }
+
+                        // Normalize phone number
+                        phone = ValidationHelper.NormalizePhone(phone);
+
+                        // Check if phone already exists
+                        if (!ValidationHelper.IsAccountPhoneUnique(phone))
+                        {
+                            ModelState.AddModelError("SoDienThoai", "Số điện thoại này đã được sử dụng. Mỗi số điện thoại chỉ có thể đăng ký một tài khoản.");
+                            return View("registerAd", model);
+                        }
+                    }
+                    else
+                    {
+                        phone = null; // Set to null if empty
+                    }
+
                     // Extra server-side password complexity validation
                     var password = model.Password ?? string.Empty;
                     bool hasLower = password.Any(char.IsLower);
@@ -170,7 +196,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     {
                         Username = model.TenDangNhap,
                         Email = email,
-                        Phone = model.SoDienThoai,
+                        Phone = phone, // Use normalized phone
                         Role = "Admin", // HARDCODE: Luôn là Admin cho admin area
                         PasswordHash = passwordHash,
                         Salt = salt,

@@ -31,6 +31,10 @@ namespace Project_Recruiment_Huce.Models.Companies
         [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
         public string Phone { get; set; }
 
+        [StringLength(20, ErrorMessage = "Số fax không được vượt quá 20 ký tự")]
+        [Display(Name = "Số fax")]
+        public string Fax { get; set; }
+
         [StringLength(150, ErrorMessage = "Email không được vượt quá 150 ký tự")]
         [Display(Name = "Email công ty")]
         [EmailAddress(ErrorMessage = "Email không hợp lệ")]
