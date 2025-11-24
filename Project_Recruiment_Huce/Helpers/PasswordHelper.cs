@@ -4,9 +4,17 @@ using System.Text;
 
 namespace Project_Recruiment_Huce.Helpers
 {
+    /// <summary>
+    /// Helper class để xử lý mã hóa và xác thực mật khẩu
+    /// Sử dụng SHA256 với salt để bảo mật mật khẩu người dùng
+    /// </summary>
     public static class PasswordHelper
     {
-        // Generate a random salt
+        /// <summary>
+        /// Tạo salt ngẫu nhiên cho mật khẩu (32 bytes)
+        /// Salt được sử dụng để tăng cường bảo mật khi hash mật khẩu
+        /// </summary>
+        /// <returns>Chuỗi Base64 của salt</returns>
         public static string GenerateSalt()
         {
             byte[] saltBytes = new byte[32];
@@ -17,7 +25,13 @@ namespace Project_Recruiment_Huce.Helpers
             return Convert.ToBase64String(saltBytes);
         }
 
-        // Hash password with salt using SHA256
+        /// <summary>
+        /// Hash mật khẩu với salt sử dụng thuật toán SHA256
+        /// Kết hợp password + salt trước khi hash để tăng cường bảo mật
+        /// </summary>
+        /// <param name="password">Mật khẩu gốc cần hash</param>
+        /// <param name="salt">Salt để kết hợp với mật khẩu</param>
+        /// <returns>Chuỗi hash của mật khẩu (64 ký tự hex)</returns>
         public static string HashPassword(string password, string salt)
         {
             if (string.IsNullOrEmpty(password))
@@ -26,7 +40,7 @@ namespace Project_Recruiment_Huce.Helpers
             if (string.IsNullOrEmpty(salt))
                 salt = GenerateSalt();
 
-            // Combine password and salt
+            // Kết hợp password và salt
             string passwordWithSalt = password + salt;
             
             using (SHA256 sha256Hash = SHA256.Create())
@@ -41,7 +55,14 @@ namespace Project_Recruiment_Huce.Helpers
             }
         }
 
-        // Verify password with salt
+        /// <summary>
+        /// Xác thực mật khẩu với hash và salt
+        /// So sánh hash của input password với hash đã lưu
+        /// </summary>
+        /// <param name="password">Mật khẩu cần xác thực</param>
+        /// <param name="hashedPassword">Hash đã lưu trong database</param>
+        /// <param name="salt">Salt đã lưu trong database</param>
+        /// <returns>True nếu mật khẩu đúng, false nếu sai</returns>
         public static bool VerifyPassword(string password, string hashedPassword, string salt)
         {
             if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hashedPassword))
@@ -51,7 +72,12 @@ namespace Project_Recruiment_Huce.Helpers
             return hashOfInput.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase);
         }
 
-        // Legacy method for backward compatibility (without salt)
+        /// <summary>
+        /// [Phương thức cũ] Hash mật khẩu không sử dụng salt
+        /// Chỉ dùng để tương thích ngược với dữ liệu cũ
+        /// </summary>
+        /// <param name="password">Mật khẩu cần hash</param>
+        /// <returns>Chuỗi hash của mật khẩu</returns>
         public static string HashPassword(string password)
         {
             if (string.IsNullOrEmpty(password))
@@ -69,7 +95,13 @@ namespace Project_Recruiment_Huce.Helpers
             }
         }
 
-        // Legacy verify method (without salt)
+        /// <summary>
+        /// [Phương thức cũ] Xác thực mật khẩu không sử dụng salt
+        /// Chỉ dùng để tương thích ngược với dữ liệu cũ
+        /// </summary>
+        /// <param name="password">Mật khẩu cần xác thực</param>
+        /// <param name="hashedPassword">Hash đã lưu</param>
+        /// <returns>True nếu đúng, false nếu sai</returns>
         public static bool VerifyPassword(string password, string hashedPassword)
         {
             if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hashedPassword))

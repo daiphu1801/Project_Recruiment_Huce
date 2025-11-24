@@ -2365,6 +2365,8 @@ namespace Project_Recruiment_Huce.Models
 		
 		private string _Phone;
 		
+		private string _Fax;
+		
 		private string _CompanyEmail;
 		
 		private string _Website;
@@ -2399,6 +2401,8 @@ namespace Project_Recruiment_Huce.Models
     partial void OnAddressChanged();
     partial void OnPhoneChanging(string value);
     partial void OnPhoneChanged();
+    partial void OnFaxChanging(string value);
+    partial void OnFaxChanged();
     partial void OnCompanyEmailChanging(string value);
     partial void OnCompanyEmailChanged();
     partial void OnWebsiteChanging(string value);
@@ -2537,6 +2541,26 @@ namespace Project_Recruiment_Huce.Models
 					this._Phone = value;
 					this.SendPropertyChanged("Phone");
 					this.OnPhoneChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Fax", DbType="NVarChar(20)")]
+		public string Fax
+		{
+			get
+			{
+				return this._Fax;
+			}
+			set
+			{
+				if ((this._Fax != value))
+				{
+					this.OnFaxChanging(value);
+					this.SendPropertyChanging();
+					this._Fax = value;
+					this.SendPropertyChanged("Fax");
+					this.OnFaxChanged();
 				}
 			}
 		}
@@ -3175,6 +3199,8 @@ namespace Project_Recruiment_Huce.Models
 		
 		private System.DateTime _UpdatedAt;
 		
+		private int _ViewCount;
+		
 		private EntitySet<Application> _Applications;
 		
 		private EntitySet<JobPostDetail> _JobPostDetails;
@@ -3223,6 +3249,8 @@ namespace Project_Recruiment_Huce.Models
     partial void OnPostedAtChanged();
     partial void OnUpdatedAtChanging(System.DateTime value);
     partial void OnUpdatedAtChanged();
+    partial void OnViewCountChanging(int value);
+    partial void OnViewCountChanged();
     #endregion
 		
 		public JobPost()
@@ -3560,6 +3588,26 @@ namespace Project_Recruiment_Huce.Models
 					this._UpdatedAt = value;
 					this.SendPropertyChanged("UpdatedAt");
 					this.OnUpdatedAtChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ViewCount", DbType="Int NOT NULL")]
+		public int ViewCount
+		{
+			get
+			{
+				return this._ViewCount;
+			}
+			set
+			{
+				if ((this._ViewCount != value))
+				{
+					this.OnViewCountChanging(value);
+					this.SendPropertyChanging();
+					this._ViewCount = value;
+					this.SendPropertyChanged("ViewCount");
+					this.OnViewCountChanged();
 				}
 			}
 		}

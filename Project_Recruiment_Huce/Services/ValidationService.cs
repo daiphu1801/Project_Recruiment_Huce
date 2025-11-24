@@ -7,13 +7,13 @@ using Project_Recruiment_Huce.Helpers;
 namespace Project_Recruiment_Huce.Services
 {
     /// <summary>
-    /// Service class for validation logic
-    /// Centralizes validation rules across the application
+    /// Service class cho các logic validation
+    /// Tập trung các quy tắc validation của ứng dụng
     /// </summary>
     public class ValidationService
     {
         /// <summary>
-        /// Validation result class
+        /// Class chứa kết quả validation
         /// </summary>
         public class ValidationResult
         {
@@ -26,6 +26,9 @@ namespace Project_Recruiment_Huce.Services
                 Errors = new Dictionary<string, string>();
             }
 
+            /// <summary>
+            /// Thêm lỗi validation
+            /// </summary>
             public void AddError(string field, string message)
             {
                 IsValid = false;
@@ -37,8 +40,11 @@ namespace Project_Recruiment_Huce.Services
         }
 
         /// <summary>
-        /// Validate job create/edit model
+        /// Validate model tạo/chỉnh sửa tin tuyển dụng
+        /// Kiểm tra các trường bắt buộc, salary range, age range, deadline
         /// </summary>
+        /// <param name="model">Model chứa thông tin tin tuyển dụng</param>
+        /// <returns>Kết quả validation</returns>
         public ValidationResult ValidateJobCreate(JobCreateViewModel model)
         {
             var result = new ValidationResult();
@@ -154,8 +160,11 @@ namespace Project_Recruiment_Huce.Services
         }
 
         /// <summary>
-        /// Validate fax number
+        /// Validate số fax
         /// </summary>
+        /// <param name="fax">Số fax cần kiểm tra</param>
+        /// <param name="required">Fax có bắt buộc không</param>
+        /// <returns>Kết quả validation</returns>
         public ValidationResult ValidateFax(string fax, bool required = false)
         {
             var result = new ValidationResult();
@@ -178,8 +187,12 @@ namespace Project_Recruiment_Huce.Services
         }
 
         /// <summary>
-        /// Validate password strength
+        /// Validate độ mạnh của mật khẩu
+        /// Yêu cầu: tối thiểu 6 ký tự, có chữ hoa, chữ thường và số
         /// </summary>
+        /// <param name="password">Mật khẩu cần kiểm tra</param>
+        /// <param name="confirmPassword">Mật khẩu xác nhận (để kiểm tra khớp)</param>
+        /// <returns>Kết quả validation</returns>
         public ValidationResult ValidatePassword(string password, string confirmPassword = null)
         {
             var result = new ValidationResult();
