@@ -92,22 +92,12 @@ namespace Project_Recruiment_Huce.Controllers
                     return View(model);
                 }
 
-                // Sử dụng VerifyPasswordV2 - hỗ trợ cả format cũ (SHA256) và mới (PBKDF2)
-                var verifyResult = PasswordHelper.VerifyPasswordV2(model.Password, account.PasswordHash, account.Salt);
-                
-                if (verifyResult == PasswordHelper.VerifyResult.Failed)
+                // Xác thực mật khẩu sử dụng PBKDF2
+                if (!PasswordHelper.VerifyPassword(model.Password, account.PasswordHash))
                 {
                     ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
                     ViewBag.ReturnUrl = returnUrl;
                     return View(model);
-                }
-
-                // Tự động upgrade password sang format mới nếu đang dùng format cũ
-                if (verifyResult == PasswordHelper.VerifyResult.SuccessRehashNeeded)
-                {
-                    account.PasswordHash = PasswordHelper.HashPassword(model.Password);
-                    account.Salt = null; // Không cần salt riêng nữa
-                    db.SubmitChanges();
                 }
 
                 // Tạo claims và đăng nhập

@@ -54,21 +54,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View("loginAd", model);
                 }
 
-                // Xác thực mật khẩu sử dụng VerifyPasswordV2 (hỗ trợ cả format cũ và mới)
-                var verifyResult = PasswordHelper.VerifyPasswordV2(model.Password, user.PasswordHash, user.Salt);
-                
-                if (verifyResult == PasswordHelper.VerifyResult.Failed)
+                // Xác thực mật khẩu sử dụng PBKDF2
+                if (!PasswordHelper.VerifyPassword(model.Password, user.PasswordHash))
                 {
                     ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
                     return View("loginAd", model);
-                }
-
-                // Tự động upgrade password sang format mới nếu đang dùng format cũ
-                if (verifyResult == PasswordHelper.VerifyResult.SuccessRehashNeeded)
-                {
-                    user.PasswordHash = PasswordHelper.HashPassword(model.Password);
-                    user.Salt = null;
-                    db.SubmitChanges();
                 }
 
                 // Create claims identity for OWIN authentication (Admin Cookie)
