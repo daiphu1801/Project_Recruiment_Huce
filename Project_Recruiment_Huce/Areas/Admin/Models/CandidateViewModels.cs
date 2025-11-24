@@ -88,8 +88,12 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Required(ErrorMessage = "Vui lòng nhập email ứng tuyển")]
         public string ApplicationEmail { get; set; }
         public string CurrentPhotoUrl { get; set; }
-        public string Username { get;  set; }
-        public string Password { get; internal set; }
+        public string Username { get; set; }
+        
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự")]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
     }
     public class EditCandidatesListVm
     {

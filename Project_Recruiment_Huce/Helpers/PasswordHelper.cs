@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNet.Identity;
 
 namespace Project_Recruiment_Huce.Helpers
@@ -17,6 +18,9 @@ namespace Project_Recruiment_Huce.Helpers
         /// <returns>Chuỗi hash (đã bao gồm salt)</returns>
         public static string HashPassword(string password)
         {
+            if (string.IsNullOrWhiteSpace(password))
+                throw new ArgumentException("Mật khẩu không được để trống", nameof(password));
+            
             return _hasher.HashPassword(password);
         }
 
