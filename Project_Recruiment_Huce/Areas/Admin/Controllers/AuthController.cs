@@ -54,10 +54,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View("loginAd", model);
                 }
 
-                // Xác thực mật khẩu (hỗ trợ cả account có salt và không có salt)
-                if (!(string.IsNullOrEmpty(user.Salt) 
-                    ? PasswordHelper.VerifyPassword(model.Password, user.PasswordHash) 
-                    : PasswordHelper.VerifyPassword(model.Password, user.PasswordHash, user.Salt)))
+                // Xác thực mật khẩu sử dụng PBKDF2
+                if (!PasswordHelper.VerifyPassword(model.Password, user.PasswordHash))
                 {
                     ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
                     return View("loginAd", model);
@@ -69,7 +67,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     new Claim(ClaimTypes.NameIdentifier, user.AccountID.ToString()),
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                    new Claim("VaiTro", user.Role),
+                    new Claim(ClaimTypes.Role, user.Role),
                     new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                 };
 
@@ -186,9 +184,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         return View("registerAd", model);
                     }
 
-                    // Generate salt and hash password
-                    string salt = PasswordHelper.GenerateSalt();
-                    string passwordHash = PasswordHelper.HashPassword(model.Password, salt);
+                    // Hash password sử dụng PBKDF2 (không cần salt riêng)
+                    string passwordHash = PasswordHelper.HashPassword(model.Password);
 
                     // Create new Admin Account
                     // FORCE Role = "Admin" - không phụ thuộc vào model.VaiTro
@@ -199,7 +196,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         Phone = phone, // Use normalized phone
                         Role = "Admin", // HARDCODE: Luôn là Admin cho admin area
                         PasswordHash = passwordHash,
-                        Salt = salt,
                         CreatedAt = DateTime.Now,
                         ActiveFlag = 1
                     };
@@ -238,7 +234,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         new Claim(ClaimTypes.NameIdentifier, newAccount.AccountID.ToString()),
                         new Claim(ClaimTypes.Name, newAccount.Username),
                         new Claim(ClaimTypes.Email, newAccount.Email ?? string.Empty),
-                        new Claim("VaiTro", newAccount.Role),
+                        new Claim(ClaimTypes.Role, newAccount.Role),
                         new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                     };
                     var identity = new ClaimsIdentity(claims, "AdminCookie");

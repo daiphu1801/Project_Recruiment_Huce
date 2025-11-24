@@ -8,15 +8,26 @@ using Project_Recruiment_Huce.Repositories;
 
 namespace Project_Recruiment_Huce.Controllers.MyAccount
 {
+    /// <summary>
+    /// Controller quản lý tài khoản cá nhân - xem thông tin, đổi mật khẩu
+    /// Sử dụng MyAccountService cho business logic
+    /// </summary>
     [Authorize]
     public class MyAccountController : BaseController
     {
+        /// <summary>
+        /// Tạo MyAccountService instance với database context
+        /// </summary>
         private MyAccountService GetMyAccountService(JOBPORTAL_ENDataContext db)
         {
-            var accountRepository = new AccountRepository(db);
-            return new MyAccountService(accountRepository, db);
+            var repo = new MyAccountRepository(db);
+            return new MyAccountService(repo);
         }
 
+        /// <summary>
+        /// Hiển thị trang thông tin tài khoản
+        /// GET: MyAccount/Index
+        /// </summary>
         public ActionResult Index()
         {
             var accountId = GetCurrentAccountId();
@@ -32,6 +43,11 @@ namespace Project_Recruiment_Huce.Controllers.MyAccount
             }
         }
 
+        /// <summary>
+        /// Xử lý đổi mật khẩu
+        /// POST: MyAccount/ChangePassword
+        /// Validate: current password, new password strength, confirmation match
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult ChangePassword(ChangePasswordViewModel model)
@@ -52,7 +68,7 @@ namespace Project_Recruiment_Huce.Controllers.MyAccount
                 }
             };
 
-            // Use Service layer for validation
+            // Sử dụng Service layer cho validation
             using (var db = DbContextFactory.Create())
             {
                 var myAccountService = GetMyAccountService(db);
@@ -67,7 +83,7 @@ namespace Project_Recruiment_Huce.Controllers.MyAccount
                     return returnViewWithErrors();
                 }
 
-                // All validations passed, update password
+                // Tất cả validation passed, cập nhật mật khẩu
                 myAccountService.ChangePassword(currentAccountId.Value, model.NewPassword);
 
                 TempData["SuccessMessage"] = "Đổi mật khẩu thành công!";

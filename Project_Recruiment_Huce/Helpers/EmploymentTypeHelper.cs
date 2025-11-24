@@ -4,27 +4,26 @@ using System.Collections.Generic;
 namespace Project_Recruiment_Huce.Helpers
 {
     /// <summary>
-    /// Helper class for employment type display and mapping
-    /// Centralized logic to avoid duplication across controllers
+    /// Helper class để hiển thị và chuyển đổi loại hình công việc
+    /// Tập trung logic để tránh trùng lặp giữa các controllers
     /// </summary>
     public static class EmploymentTypeHelper
     {
+        // Bảng ánh xạ giữa giá trị database (tiếng Anh) và text hiển thị (tiếng Việt)
         private static readonly Dictionary<string, string> _employmentTypeMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "part-time", "Bán thời gian" },
-            { "part time", "Bán thời gian" },
             { "full-time", "Toàn thời gian" },
-            { "full time", "Toàn thời gian" },
             { "internship", "Thực tập" },
             { "contract", "Hợp đồng" },
             { "remote", "Làm việc từ xa" }
         };
 
         /// <summary>
-        /// Get Vietnamese display text for employment type
+        /// Lấy text hiển thị tiếng Việt cho loại hình công việc
         /// </summary>
-        /// <param name="employmentType">Employment type from database</param>
-        /// <returns>Vietnamese display text</returns>
+        /// <param name="employmentType">Loại hình công việc từ database</param>
+        /// <returns>Text hiển thị tiếng Việt</returns>
         public static string GetDisplay(string employmentType)
         {
             if (string.IsNullOrWhiteSpace(employmentType))
@@ -40,19 +39,20 @@ namespace Project_Recruiment_Huce.Helpers
         }
 
         /// <summary>
-        /// Get all employment type mappings
+        /// Lấy tất cả các ánh xạ loại hình công việc
         /// </summary>
-        /// <returns>Dictionary of employment type mappings</returns>
+        /// <returns>Dictionary chứa các ánh xạ loại hình công việc</returns>
         public static Dictionary<string, string> GetMappings()
         {
             return new Dictionary<string, string>(_employmentTypeMapping);
         }
 
         /// <summary>
-        /// Reverse lookup: Get database value from Vietnamese display text
+        /// Tìm ngược: Lấy giá trị database từ text hiển thị tiếng Việt
+        /// Sử dụng khi cần chuyển từ tiếng Việt về giá trị database
         /// </summary>
-        /// <param name="displayText">Vietnamese display text</param>
-        /// <returns>Database employment type value</returns>
+        /// <param name="displayText">Text hiển thị tiếng Việt</param>
+        /// <returns>Giá trị loại hình công việc trong database</returns>
         public static string GetDatabaseValue(string displayText)
         {
             if (string.IsNullOrWhiteSpace(displayText))
@@ -65,7 +65,6 @@ namespace Project_Recruiment_Huce.Helpers
                     return kvp.Key;
                 }
             }
-
             return displayText;
         }
     }

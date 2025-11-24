@@ -103,49 +103,52 @@
                 <div class="account-card-header">
                     <h3><span class="icon-lock"></span> Đổi mật khẩu</h3>
                 </div>
-                <div class="account-card-body password-form-wrapper">
-                    <div class="password-form-container">
-                        @using (Html.BeginForm("ChangePassword", "MyAccount", FormMethod.Post, new { id = "changePasswordForm" }))
+                <div class="account-card-body">
+                    @using (Html.BeginForm("ChangePassword", "MyAccount", FormMethod.Post, new { id = "changePasswordForm", @class = "compact-form" }))
                     {
                         @Html.AntiForgeryToken()
                         
                         @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors", style = "display: none;" })
 
-                        <div class="form-group-modern">
-                            @Html.Label("CurrentPassword", "Mật khẩu hiện tại", new { @class = "info-label" })
+                        <div class="form-group-compact">
+                            @Html.Label("CurrentPassword", "Mật khẩu hiện tại", new { @class = "form-label-compact" })
                             <div class="password-toggle-wrapper">
-                                @Html.Password("CurrentPassword", changePasswordModel?.CurrentPassword, new { @class = "form-control form-control-modern", required = "required", autocomplete = "current-password", id = "CurrentPassword" })
+                                @Html.Password("CurrentPassword", changePasswordModel?.CurrentPassword, new { @class = "form-control-compact", required = "required", autocomplete = "current-password", id = "CurrentPassword", placeholder = "Nhập mật khẩu hiện tại" })
                                 <span class="password-toggle-icon icon-eye" onclick="togglePassword('CurrentPassword', this)"></span>
                             </div>
-                            @Html.ValidationMessage("CurrentPassword", "", new { @class = "text-danger" })
+                            @Html.ValidationMessage("CurrentPassword", "", new { @class = "text-danger validation-msg-compact" })
                         </div>
 
-                        <div class="form-group-modern">
-                            @Html.Label("NewPassword", "Mật khẩu mới", new { @class = "info-label" })
+                        <div class="form-group-compact">
+                            @Html.Label("NewPassword", "Mật khẩu mới", new { @class = "form-label-compact" })
                             <div class="password-toggle-wrapper">
-                                @Html.Password("NewPassword", changePasswordModel?.NewPassword, new { @class = "form-control form-control-modern", required = "required", minlength = "6", autocomplete = "new-password", id = "NewPassword" })
+                                @Html.Password("NewPassword", changePasswordModel?.NewPassword, new { @class = "form-control-compact", required = "required", minlength = "6", autocomplete = "new-password", id = "NewPassword", placeholder = "Nhập mật khẩu mới" })
                                 <span class="password-toggle-icon icon-eye" onclick="togglePassword('NewPassword', this)"></span>
                             </div>
-                            @Html.ValidationMessage("NewPassword", "", new { @class = "text-danger" })
-                            <small class="info-hint">Mật khẩu phải tối thiểu 6 ký tự, gồm chữ hoa, chữ thường và số.</small>
+                            @Html.ValidationMessage("NewPassword", "", new { @class = "text-danger validation-msg-compact" })
                         </div>
 
-                        <div class="form-group-modern">
-                            @Html.Label("ConfirmPassword", "Xác nhận mật khẩu", new { @class = "info-label" })
+                        <div class="form-group-compact">
+                            @Html.Label("ConfirmPassword", "Xác nhận mật khẩu", new { @class = "form-label-compact" })
                             <div class="password-toggle-wrapper">
-                                @Html.Password("ConfirmPassword", changePasswordModel?.ConfirmPassword, new { @class = "form-control form-control-modern", required = "required", autocomplete = "new-password", id = "ConfirmPassword" })
+                                @Html.Password("ConfirmPassword", changePasswordModel?.ConfirmPassword, new { @class = "form-control-compact", required = "required", autocomplete = "new-password", id = "ConfirmPassword", placeholder = "Nhập lại mật khẩu mới" })
                                 <span class="password-toggle-icon icon-eye" onclick="togglePassword('ConfirmPassword', this)"></span>
                             </div>
-                            @Html.ValidationMessage("ConfirmPassword", "", new { @class = "text-danger" })
+                            @Html.ValidationMessage("ConfirmPassword", "", new { @class = "text-danger validation-msg-compact" })
                         </div>
 
-                        <div class="form-group-modern">
-                            <button type="submit" class="btn-modern">
-                                <span class="icon-key"></span> Đổi mật khẩu
+                        <div class="password-hint-box">
+                            <span class="icon-info-circle"></span>
+                            <small>Mật khẩu phải tối thiểu 6 ký tự, gồm chữ hoa, chữ thường và số</small>
+                        </div>
+
+                        <div class="form-group-compact mt-3">
+                            <button type="submit" class="btn-change-password">
+                                <span class="icon-key"></span>
+                                <span>Đổi mật khẩu</span>
                             </button>
                         </div>
                     }
-                    </div>
                 </div>
             </div>
         </div>

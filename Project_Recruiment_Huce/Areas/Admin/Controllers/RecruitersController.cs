@@ -206,8 +206,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View(model);
                 }
 
-                string salt = PasswordHelper.GenerateSalt();
-                string passwordHash = PasswordHelper.HashPassword(model.Password, salt);
+                // Validate password not null
+                if (string.IsNullOrWhiteSpace(model.Password))
+                {
+                    ModelState.AddModelError("Password", "Mật khẩu không được để trống");
+                    return View(model);
+                }
+
+                // Hash password sử dụng PBKDF2 (không cần salt riêng)
+                string passwordHash = PasswordHelper.HashPassword(model.Password);
 
                 var account = new Account
                 {
@@ -216,7 +223,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Phone = model.Phone,
                     Role = "Recruiter",
                     PasswordHash = passwordHash,
-                    Salt = salt,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,
                     CreatedAt = DateTime.Now
                 };
@@ -401,9 +407,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 if (!string.IsNullOrWhiteSpace(model.Password))
                 {
-                    string salt = PasswordHelper.GenerateSalt();
-                    accountRecord.PasswordHash = PasswordHelper.HashPassword(model.Password, salt);
-                    accountRecord.Salt = salt;
+                    // Hash password sử dụng PBKDF2 (không cần salt riêng)
+                    accountRecord.PasswordHash = PasswordHelper.HashPassword(model.Password);
                 }
 
                 recruiter.CompanyID = model.CompanyId;
