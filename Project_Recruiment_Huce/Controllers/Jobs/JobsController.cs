@@ -93,7 +93,7 @@ namespace Project_Recruiment_Huce.Controllers
                 if (isAuthenticated)
                 {
                     var identity = (ClaimsIdentity)User.Identity;
-                    var roleClaim = identity.FindFirst("VaiTro");
+                    var roleClaim = identity.FindFirst(ClaimTypes.Role);
                     if (roleClaim != null && roleClaim.Value == "Candidate")
                     {
                         isCandidate = true;

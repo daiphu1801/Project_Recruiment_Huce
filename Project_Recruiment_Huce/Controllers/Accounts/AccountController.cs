@@ -38,7 +38,7 @@ namespace Project_Recruiment_Huce.Controllers
             {
                 TempData["InfoMessage"] = "Bạn đã đăng nhập rồi.";
                 // Redirect tới dashboard recruiter nếu là recruiter, ngược lại về home
-                var roleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro");
+                var roleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.Role);
                 if (roleClaim != null && roleClaim.Value == "Recruiter")
                 {
                     return RedirectToAction("Index", "Home");
@@ -106,8 +106,7 @@ namespace Project_Recruiment_Huce.Controllers
                     new Claim(ClaimTypes.NameIdentifier, account.AccountID.ToString()),
                     new Claim(ClaimTypes.Name, account.Username),
                     new Claim(ClaimTypes.Email, account.Email),
-                    new Claim(ClaimTypes.Role, account.Role), // Dùng ClaimTypes.Role để [Authorize(Roles=...)] hoạt động
-                    new Claim("VaiTro", account.Role), // Giữ lại để tương thích với code cũ
+                    new Claim(ClaimTypes.Role, account.Role),
                     new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                 };
 
@@ -128,7 +127,7 @@ namespace Project_Recruiment_Huce.Controllers
             if (User?.Identity?.IsAuthenticated == true)
             {
                 TempData["InfoMessage"] = "Bạn đã đăng nhập rồi. Nếu muốn tạo tài khoản khác, vui lòng đăng xuất trước.";
-                var roleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro");
+                var roleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.Role);
                 if (roleClaim != null && roleClaim.Value == "Recruiter")
                 {
                     return RedirectToAction("Index", "Home");
@@ -190,8 +189,7 @@ namespace Project_Recruiment_Huce.Controllers
                         new Claim(ClaimTypes.NameIdentifier, account.AccountID.ToString()),
                         new Claim(ClaimTypes.Name, account.Username),
                         new Claim(ClaimTypes.Email, account.Email),
-                        new Claim(ClaimTypes.Role, account.Role), // Dùng ClaimTypes.Role để [Authorize(Roles=...)] hoạt động
-                        new Claim("VaiTro", account.Role), // Giữ lại để tương thích với code cũ
+                        new Claim(ClaimTypes.Role, account.Role),
                         new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
                     };
 
