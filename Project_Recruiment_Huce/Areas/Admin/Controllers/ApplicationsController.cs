@@ -44,13 +44,18 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (!string.IsNullOrWhiteSpace(q))
                 {
                     q = q.ToLower();
-                    query = query.Where(x => (x.CandidateName ?? "").ToLower().Contains(q)
-                                          || (x.JobTitle ?? "").ToLower().Contains(q));
+                    query = query.Where(x =>
+                        (x.CandidateName ?? "").ToLower().Contains(q) ||
+                        (x.JobTitle ?? "").ToLower().Contains(q)
+                    );
                 }
 
                 if (!string.IsNullOrWhiteSpace(status))
                 {
-                    query = query.Where(x => string.Equals(x.AppStatus, status, StringComparison.OrdinalIgnoreCase));
+                    var statusLower = status.ToLower();
+                    query = query.Where(x =>
+                        (x.AppStatus ?? "").ToLower() == statusLower
+                    );
                 }
 
                 int pageSize = 10;

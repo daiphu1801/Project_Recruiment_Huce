@@ -96,8 +96,7 @@ namespace Project_Recruiment_Huce.Helpers
             }
             return Convert.ToBase64String(saltBytes);
         }
-
-        #endregion
     }
 }
 
+#endregion
