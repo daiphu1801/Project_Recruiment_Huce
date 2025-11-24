@@ -8,12 +8,21 @@ using System.Configuration;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Candidates;
 using Project_Recruiment_Huce.Infrastructure;
+using Project_Recruiment_Huce.Services.ResumeFileService;
+using Project_Recruiment_Huce.Repositories.ResumeFileRepo;
 
 namespace Project_Recruiment_Huce.Controllers
 {
-    [Authorize]
+    [Authorize(Roles="Candidate")]
     public class ResumeFilesController : BaseController
     {
+        private readonly IResumeFileService _resumeFileService;
+
+        public ResumeFilesController()
+        {
+            var repository = new ResumeFileRepository();
+            _resumeFileService = new ResumeFileService(repository);
+        }
 
         /// <summary>
         /// GET: Candidates/ResumeFiles/MyResumes
@@ -28,35 +37,15 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            var result = _resumeFileService.GetResumeFiles(accountId.Value);
+
+            if (!result.Success)
             {
-                var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
-                if (candidate == null)
-                {
-                    TempData["ErrorMessage"] = "Vui lòng hoàn thiện hồ sơ trước khi quản lý CV.";
-                    return RedirectToAction("CandidatesManage", "Candidates");
-                }
-
-                // Get all resume files for this candidate
-                var resumeFiles = db.ResumeFiles
-                    .Where(rf => rf.CandidateID == candidate.CandidateID)
-                    .OrderByDescending(rf => rf.UploadedAt)
-                    .ToList();
-
-                // Map to ViewModel
-                var viewModels = resumeFiles.Select(rf => new ResumeFileViewModel
-                {
-                    ResumeFileID = rf.ResumeFileID,
-                    CandidateID = rf.CandidateID,
-                    FileName = rf.FileName,
-                    FilePath = rf.FilePath,
-                    UploadedAt = rf.UploadedAt,
-                    FileExtension = Path.GetExtension(rf.FileName ?? "")?.ToLower() ?? "",
-                    DisplayName = string.IsNullOrEmpty(rf.FileName) ? "CV không tên" : Path.GetFileNameWithoutExtension(rf.FileName)
-                }).ToList();
-
-                return View(viewModels);
+                TempData["ErrorMessage"] = result.ErrorMessage;
+                return RedirectToAction("CandidatesManage", "Candidates");
             }
+
+            return View(result.ResumeFiles);
         }
 
         /// <summary>
@@ -73,71 +62,23 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            if (resumeFile == null || resumeFile.ContentLength == 0)
-            {
-                TempData["ErrorMessage"] = "Vui lòng chọn file CV để upload.";
-                return RedirectToAction("MyResumes");
-            }
+            var result = _resumeFileService.UploadResume(accountId.Value, resumeFile, title, Server);
 
-            // Validate file type
-            var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg", ".gif" };
-            var fileExtension = Path.GetExtension(resumeFile.FileName)?.ToLower();
-            if (string.IsNullOrEmpty(fileExtension) || !allowedExtensions.Contains(fileExtension))
+            if (!result.IsValid)
             {
-                TempData["ErrorMessage"] = "Chỉ cho phép upload file PDF, DOC, DOCX, PNG, JPG, JPEG, GIF.";
-                return RedirectToAction("MyResumes");
-            }
+                var errorMessage = result.Errors.ContainsKey("General") ? result.Errors["General"] :
+                                  result.Errors.ContainsKey("ResumeFile") ? result.Errors["ResumeFile"] :
+                                  "Có lỗi xảy ra khi upload CV.";
+                TempData["ErrorMessage"] = errorMessage;
 
-            // Validate file size (max 10MB)
-            const int maxSize = 10 * 1024 * 1024; // 10MB
-            if (resumeFile.ContentLength > maxSize)
-            {
-                TempData["ErrorMessage"] = "File không được vượt quá 10MB.";
-                return RedirectToAction("MyResumes");
-            }
-
-            using (var db = DbContextFactory.Create())
-            {
-                var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
-                if (candidate == null)
+                if (result.Errors.ContainsKey("General") && errorMessage.Contains("hoàn thiện hồ sơ"))
                 {
-                    TempData["ErrorMessage"] = "Vui lòng hoàn thiện hồ sơ trước khi upload CV.";
                     return RedirectToAction("CandidatesManage", "Candidates");
                 }
-
-                try
-                {
-                    // Create upload directory
-                    var uploadsRoot = Server.MapPath("~/Content/uploads/resumes/");
-                    if (!Directory.Exists(uploadsRoot))
-                    {
-                        Directory.CreateDirectory(uploadsRoot);
-                    }
-
-                    // Generate unique filename
-                    var safeFileName = $"CV_{candidate.CandidateID}_{DateTime.UtcNow:yyyyMMddHHmmssfff}{fileExtension}";
-                    var physicalPath = Path.Combine(uploadsRoot, safeFileName);
-                    resumeFile.SaveAs(physicalPath);
-
-                    // Save to database
-                    var relativePath = $"/Content/uploads/resumes/{safeFileName}";
-                    var resumeFileEntity = new ResumeFile
-                    {
-                        CandidateID = candidate.CandidateID,
-                        FileName = string.IsNullOrWhiteSpace(title) ? resumeFile.FileName : title + fileExtension,
-                        FilePath = relativePath,
-                        UploadedAt = DateTime.Now
-                    };
-
-                    db.ResumeFiles.InsertOnSubmit(resumeFileEntity);
-                    db.SubmitChanges();
-
-                    TempData["SuccessMessage"] = "Upload CV thành công!";
-                }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = "Lỗi khi upload CV: " + ex.Message;
-                }
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Upload CV thành công!";
             }
 
             return RedirectToAction("MyResumes");
@@ -163,44 +104,21 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyResumes");
             }
 
-            using (var db = DbContextFactory.Create())
+            var result = _resumeFileService.DeleteResume(accountId.Value, id.Value, Server);
+
+            if (!result.IsValid)
             {
-                var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
-                if (candidate == null)
+                var errorMessage = result.Errors.ContainsKey("General") ? result.Errors["General"] : "Có lỗi xảy ra khi xóa CV.";
+                TempData["ErrorMessage"] = errorMessage;
+
+                if (errorMessage.Contains("hoàn thiện hồ sơ"))
                 {
-                    TempData["ErrorMessage"] = "Vui lòng hoàn thiện hồ sơ trước.";
                     return RedirectToAction("CandidatesManage", "Candidates");
                 }
-
-                var resumeFile = db.ResumeFiles.FirstOrDefault(rf => rf.ResumeFileID == id.Value && rf.CandidateID == candidate.CandidateID);
-                if (resumeFile == null)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy CV hoặc bạn không có quyền xóa CV này.";
-                    return RedirectToAction("MyResumes");
-                }
-
-                try
-                {
-                    // Delete physical file
-                    if (!string.IsNullOrEmpty(resumeFile.FilePath))
-                    {
-                        var filePath = Server.MapPath("~" + resumeFile.FilePath);
-                        if (System.IO.File.Exists(filePath))
-                        {
-                            System.IO.File.Delete(filePath);
-                        }
-                    }
-
-                    // Delete from database
-                    db.ResumeFiles.DeleteOnSubmit(resumeFile);
-                    db.SubmitChanges();
-
-                    TempData["SuccessMessage"] = "Xóa CV thành công!";
-                }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = "Lỗi khi xóa CV: " + ex.Message;
-                }
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Xóa CV thành công!";
             }
 
             return RedirectToAction("MyResumes");
@@ -226,37 +144,23 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("MyResumes");
             }
 
-            using (var db = DbContextFactory.Create())
+            var result = _resumeFileService.EditResume(accountId.Value, id.Value, title);
+
+            if (!result.IsValid)
             {
-                var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == accountId.Value);
-                if (candidate == null)
+                var errorMessage = result.Errors.ContainsKey("General") ? result.Errors["General"] :
+                                  result.Errors.ContainsKey("Title") ? result.Errors["Title"] :
+                                  "Có lỗi xảy ra khi cập nhật CV.";
+                TempData["ErrorMessage"] = errorMessage;
+
+                if (result.Errors.ContainsKey("General") && errorMessage.Contains("hoàn thiện hồ sơ"))
                 {
-                    TempData["ErrorMessage"] = "Vui lòng hoàn thiện hồ sơ trước.";
                     return RedirectToAction("CandidatesManage", "Candidates");
                 }
-
-                var resumeFile = db.ResumeFiles.FirstOrDefault(rf => rf.ResumeFileID == id.Value && rf.CandidateID == candidate.CandidateID);
-                if (resumeFile == null)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy CV hoặc bạn không có quyền chỉnh sửa CV này.";
-                    return RedirectToAction("MyResumes");
-                }
-
-                try
-                {
-                    if (!string.IsNullOrWhiteSpace(title))
-                    {
-                        // Preserve file extension
-                        var fileExtension = Path.GetExtension(resumeFile.FileName) ?? "";
-                        resumeFile.FileName = title + fileExtension;
-                        db.SubmitChanges();
-                        TempData["SuccessMessage"] = "Cập nhật tên CV thành công!";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = "Lỗi khi cập nhật CV: " + ex.Message;
-                }
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Cập nhật tên CV thành công!";
             }
 
             return RedirectToAction("MyResumes");

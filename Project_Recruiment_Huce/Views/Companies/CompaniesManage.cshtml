@@ -126,45 +126,45 @@
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary btn-md">Lưu thông tin công ty</button>
                     </div>
-                }
-            </div>
+                                }
+                        </div>
+                </div>
         </div>
-    </div>
 </section>
 
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
 @section Scripts {
-    <script>
-        $(document).ready(function() {
-            var quill = new Quill('#editor-container', {
-                theme: 'snow',
-                placeholder: 'Mô tả về công ty, văn hóa, môi trường làm việc...',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        ['blockquote', 'code-block'],
-                        ['link'],
-                        ['clean']
-                    ]
-                }
-            });
+        <script>
+                $(document).ready(function() {
+                        var quill = new Quill('#editor-container', {
+                                theme: 'snow',
+                                placeholder: 'Mô tả về công ty, văn hóa, môi trường làm việc...',
+                                modules: {
+                                        toolbar: [
+                                                [{ 'header': [1, 2, 3, false] }],
+                                                ['bold', 'italic', 'underline', 'strike'],
+                                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                                ['blockquote', 'code-block'],
+                                                ['link'],
+                                                ['clean']
+                                        ]
+                                }
+                        });
 
-            var initialContent = @Html.Raw(Json.Encode(Model.Description));
-            if (initialContent) {
-                quill.clipboard.dangerouslyPasteHTML(initialContent);
-            }
+                        var initialContent = @Html.Raw(Json.Encode(Model.Description));
+                        if (initialContent) {
+                                quill.clipboard.dangerouslyPasteHTML(initialContent);
+                        }
 
-            $('#company-form').on('submit', function(e) {
-                var htmlContent = quill.root.innerHTML;
+                        $('#company-form').on('submit', function(e) {
+                                var htmlContent = quill.root.innerHTML;
 
-                $('#hiddenDescription').val(htmlContent);
+                                $('#hiddenDescription').val(htmlContent);
 
-                console.log("Dữ liệu gửi đi:", htmlContent);
-            });
-        });
-    </script>
+                                console.log("Dữ liệu gửi đi:", htmlContent);
+                        });
+                });
+        </script>
 }

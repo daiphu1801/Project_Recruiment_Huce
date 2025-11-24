@@ -1,83 +1,42 @@
 using System;
-using System.Security.Cryptography;
-using System.Text;
+using Microsoft.AspNet.Identity;
 
 namespace Project_Recruiment_Huce.Helpers
 {
+    /// <summary>
+    /// Helper class để xử lý mã hóa và xác thực mật khẩu sử dụng PBKDF2 (ASP.NET Identity Standard)
+    /// </summary>
     public static class PasswordHelper
     {
-        // Generate a random salt
-        public static string GenerateSalt()
-        {
-            byte[] saltBytes = new byte[32];
-            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
-            {
-                rng.GetBytes(saltBytes);
-            }
-            return Convert.ToBase64String(saltBytes);
-        }
+        // Sử dụng PasswordHasher của ASP.NET Identity (PBKDF2)
+        private static readonly PasswordHasher _hasher = new PasswordHasher();
 
-        // Hash password with salt using SHA256
-        public static string HashPassword(string password, string salt)
-        {
-            if (string.IsNullOrEmpty(password))
-                return null;
-
-            if (string.IsNullOrEmpty(salt))
-                salt = GenerateSalt();
-
-            // Combine password and salt
-            string passwordWithSalt = password + salt;
-            
-            using (SHA256 sha256Hash = SHA256.Create())
-            {
-                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(passwordWithSalt));
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    builder.Append(bytes[i].ToString("x2"));
-                }
-                return builder.ToString();
-            }
-        }
-
-        // Verify password with salt
-        public static bool VerifyPassword(string password, string hashedPassword, string salt)
-        {
-            if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hashedPassword))
-                return false;
-
-            string hashOfInput = HashPassword(password, salt);
-            return hashOfInput.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase);
-        }
-
-        // Legacy method for backward compatibility (without salt)
+        /// <summary>
+        /// Tạo hash mật khẩu theo chuẩn PBKDF2 (đã bao gồm salt tự động)
+        /// </summary>
+        /// <param name="password">Mật khẩu cần hash</param>
+        /// <returns>Chuỗi hash (đã bao gồm salt)</returns>
         public static string HashPassword(string password)
         {
-            if (string.IsNullOrEmpty(password))
-                return null;
-
-            using (SHA256 sha256Hash = SHA256.Create())
-            {
-                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    builder.Append(bytes[i].ToString("x2"));
-                }
-                return builder.ToString();
-            }
+            if (string.IsNullOrWhiteSpace(password))
+                throw new ArgumentException("Mật khẩu không được để trống", nameof(password));
+            
+            return _hasher.HashPassword(password);
         }
 
-        // Legacy verify method (without salt)
+        /// <summary>
+        /// Xác thực mật khẩu với hash đã lưu trong database
+        /// </summary>
+        /// <param name="password">Mật khẩu người dùng nhập</param>
+        /// <param name="hashedPassword">Hash lưu trong DB</param>
+        /// <returns>true nếu mật khẩu đúng, false nếu sai</returns>
         public static bool VerifyPassword(string password, string hashedPassword)
         {
             if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hashedPassword))
                 return false;
 
-            string hashOfInput = HashPassword(password);
-            return hashOfInput.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase);
+            var result = _hasher.VerifyHashedPassword(hashedPassword, password);
+            return result == PasswordVerificationResult.Success;
         }
     }
 }
-

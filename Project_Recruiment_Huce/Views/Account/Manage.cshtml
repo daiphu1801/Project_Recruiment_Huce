@@ -22,7 +22,7 @@
       <div class="col-lg-8">
         <h2 class="mb-4">Xin chào, @User.Identity.Name</h2>
         <div class="p-4 border rounded">
-          @{ var roleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("VaiTro");
+          @{ var roleClaim = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.Role);
              var role = roleClaim != null ? roleClaim.Value : string.Empty; }
 
           @if (role == "Candidate")

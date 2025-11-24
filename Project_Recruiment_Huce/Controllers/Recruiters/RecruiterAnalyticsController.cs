@@ -4,24 +4,33 @@ using System.Web.Mvc;
 using System.Security.Claims;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Recruiters;
-using Project_Recruiment_Huce.Services;
-using Project_Recruiment_Huce.Infrastructure;
+using Project_Recruiment_Huce.Repositories.RecruiterAnalyticsRepo;
+using IRecruiterAnalyticsService = Project_Recruiment_Huce.Services.RecruiterAnalyticsService.IRecruiterAnalyticsService;
+using NewRecruiterAnalyticsService = Project_Recruiment_Huce.Services.RecruiterAnalyticsService.RecruiterAnalyticsService;
 
 namespace Project_Recruiment_Huce.Controllers.Recruiters
 {
     /// <summary>
     /// Controller for recruiter analytics dashboard
     /// Handles viewing analytics and metrics for job posts
-    /// Keeps thin by delegating business logic to RecruiterAnalyticsService
+    /// Uses layered architecture with Repository and Service patterns
     /// </summary>
-    [Authorize]
+    [Authorize(Roles="Recruiter")]
     public class RecruiterAnalyticsController : Controller
     {
+        private readonly IRecruiterAnalyticsService _analyticsService;
+        private readonly IRecruiterAnalyticsRepository _repository;
+
+        public RecruiterAnalyticsController()
+        {
+            _repository = new RecruiterAnalyticsRepository(readOnly: true);
+            _analyticsService = new NewRecruiterAnalyticsService(_repository);
+        }
         /// <summary>
         /// Analytics dashboard - summary and job breakdown
         /// GET: /RecruiterAnalytics/Index
         /// </summary>
-        public ActionResult Index(DateTime? fromDate = null, DateTime? toDate = null)
+        public ActionResult Index(DateTime? fromDate = null, DateTime? toDate = null, int page = 1)
         {
             var recruiterId = GetCurrentRecruiterId();
             if (!recruiterId.HasValue)
@@ -30,17 +39,18 @@ namespace Project_Recruiment_Huce.Controllers.Recruiters
                 return RedirectToAction("Index", "Home");
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
-            {
-                var service = new RecruiterAnalyticsService(db);
-                var dashboardData = service.GetDashboardData(recruiterId.Value, fromDate, toDate);
+            const int pageSize = 10;
+            
+            // Call service to get dashboard data
+            var dashboardData = _analyticsService.GetDashboardData(recruiterId.Value, fromDate, toDate, page, pageSize);
 
-                // Pass filter values to view
-                ViewBag.FromDate = fromDate;
-                ViewBag.ToDate = toDate;
+            // Pass filter values and pagination to view
+            ViewBag.FromDate = fromDate;
+            ViewBag.ToDate = toDate;
+            ViewBag.CurrentPage = page;
+            ViewBag.PageSize = pageSize;
 
-                return View(dashboardData);
-            }
+            return View(dashboardData);
         }
 
         /// <summary>
@@ -62,19 +72,16 @@ namespace Project_Recruiment_Huce.Controllers.Recruiters
                 return RedirectToAction("Index", "Home");
             }
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            // Call service to get job analytics
+            var result = _analyticsService.GetJobAnalytics(id.Value, recruiterId.Value);
+
+            if (!result.Success)
             {
-                var service = new RecruiterAnalyticsService(db);
-                var jobAnalytics = service.GetJobAnalytics(id.Value, recruiterId.Value);
-
-                if (jobAnalytics == null)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng hoặc bạn không có quyền xem.";
-                    return RedirectToAction("Index");
-                }
-
-                return View(jobAnalytics);
+                TempData["ErrorMessage"] = result.ErrorMessage;
+                return RedirectToAction("Index");
             }
+
+            return View(result.Analytics);
         }
 
         /// <summary>
@@ -88,7 +95,7 @@ namespace Project_Recruiment_Huce.Controllers.Recruiters
             var identity = (ClaimsIdentity)User.Identity;
             
             // Check role
-            var roleClaim = identity.FindFirst("VaiTro");
+            var roleClaim = identity.FindFirst(ClaimTypes.Role);
             if (roleClaim == null || roleClaim.Value != "Recruiter")
                 return null;
 
@@ -97,12 +104,8 @@ namespace Project_Recruiment_Huce.Controllers.Recruiters
             if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int accountId))
                 return null;
 
-            // Get RecruiterID from Account
-            using (var db = DbContextFactory.CreateReadOnly())
-            {
-                var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == accountId);
-                return recruiter?.RecruiterID;
-            }
+            // Get RecruiterID from repository
+            return _repository.GetRecruiterIdByAccountId(accountId);
         }
     }
 }

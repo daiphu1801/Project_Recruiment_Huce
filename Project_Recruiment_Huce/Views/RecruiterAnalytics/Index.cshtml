@@ -310,8 +310,8 @@
         <div class="filter-card">
             <form method="get" action="@Url.Action("Index")" class="form-inline">
                 <label class="mr-2 font-weight-bold">Lọc theo thời gian:</label>
-                <input type="date" name="fromDate" class="form-control mr-2" value="@ViewBag.FromDate?.ToString("yyyy-MM-dd")" placeholder="Từ ngày" />
-                <input type="date" name="toDate" class="form-control mr-2" value="@ViewBag.ToDate?.ToString("yyyy-MM-dd")" placeholder="Đến ngày" />
+                <input type="date" name="fromDate" class="form-control mr-2" value="@(ViewBag.FromDate != null ? ((DateTime)ViewBag.FromDate).ToString("yyyy-MM-dd") : "")" placeholder="Từ ngày" />
+                <input type="date" name="toDate" class="form-control mr-2" value="@(ViewBag.ToDate != null ? ((DateTime)ViewBag.ToDate).ToString("yyyy-MM-dd") : "")" placeholder="Đến ngày" />
                 <button type="submit" class="btn btn-primary mr-2">
                     <span class="icon-search mr-1"></span> Lọc
                 </button>
@@ -437,6 +437,75 @@
                             </tbody>
                         </table>
                     </div>
+
+                    @* Pagination *@
+                    if (Model.TotalPages > 1)
+                    {
+                        <div class="pagination-wrapper mt-4">
+                            <nav aria-label="Phân trang">
+                                <ul class="pagination justify-content-center">
+                                    @* Previous button *@
+                                    <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                                        <a class="page-link" 
+                                           href="@(Model.HasPreviousPage ? Url.Action("Index", new { page = Model.CurrentPage - 1, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate }) : "#")"
+                                           aria-label="Trang trước">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+
+                                    @* Page numbers *@
+                                    @{
+                                        var startPage = Math.Max(1, Model.CurrentPage - 2);
+                                        var endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+
+                                        if (startPage > 1)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Index", new { page = 1, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate })">1</a>
+                                            </li>
+                                            if (startPage > 2)
+                                            {
+                                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                            }
+                                        }
+
+                                        for (int i = startPage; i <= endPage; i++)
+                                        {
+                                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                                <a class="page-link" href="@Url.Action("Index", new { page = i, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate })">@i</a>
+                                            </li>
+                                        }
+
+                                        if (endPage < Model.TotalPages)
+                                        {
+                                            if (endPage < Model.TotalPages - 1)
+                                            {
+                                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                            }
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Index", new { page = Model.TotalPages, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate })">@Model.TotalPages</a>
+                                            </li>
+                                        }
+                                    }
+
+                                    @* Next button *@
+                                    <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                                        <a class="page-link" 
+                                           href="@(Model.HasNextPage ? Url.Action("Index", new { page = Model.CurrentPage + 1, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate }) : "#")"
+                                           aria-label="Trang sau">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                            <div class="text-center mt-2">
+                                <small class="text-muted">
+                                    Trang @Model.CurrentPage / @Model.TotalPages 
+                                    (Tổng @Model.TotalItems tin tuyển dụng)
+                                </small>
+                            </div>
+                        </div>
+                    }
                 }
                 else
                 {

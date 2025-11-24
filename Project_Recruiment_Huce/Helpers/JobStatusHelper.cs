@@ -4,16 +4,22 @@ using Project_Recruiment_Huce.Models;
 
 namespace Project_Recruiment_Huce.Helpers
 {
+    /// <summary>
+    /// Helper class để quản lý và chuẩn hóa trạng thái của tin tuyển dụng
+    /// </summary>
     public static class JobStatusHelper
     {
-        public const string Published = "Published";
-        public const string Closed = "Closed";
-        public const string Hidden = "Hidden";
-        public const string Draft = "Draft";
+        // Các trạng thái chuẩn của tin tuyển dụng
+        public const string Published = "Published"; // Đã đăng - Hiển thị công khai
+        public const string Closed = "Closed";       // Đã đóng - Không nhận ứng tuyển nữa
+        public const string Hidden = "Hidden";       // Ẩn - Không hiển thị
+        public const string Draft = "Draft";         // Bản nháp - Chưa đăng
 
         /// <summary>
-        /// Convert legacy status values (e.g. Visible) to current equivalents.
+        /// Chuẩn hóa các trạng thái cũ (ví dụ: Visible) thành trạng thái hiện tại (Published)
+        /// Thực hiện cập nhật trực tiếp trong database để đảm bảo tính nhất quán
         /// </summary>
+        /// <param name="db">Database context</param>
         public static void NormalizeStatuses(JOBPORTAL_ENDataContext db)
         {
             if (db == null) return;
@@ -26,8 +32,11 @@ namespace Project_Recruiment_Huce.Helpers
         }
 
         /// <summary>
-        /// Returns the normalized status string without persisting it.
+        /// Trả về trạng thái đã chuẩn hóa mà không lưu vào database
+        /// Sử dụng cho việc hiển thị hoặc so sánh trạng thái
         /// </summary>
+        /// <param name="status">Trạng thái cần chuẩn hóa</param>
+        /// <returns>Trạng thái đã chuẩn hóa</returns>
         public static string NormalizeStatus(string status)
         {
             if (string.Equals(status, "Visible", StringComparison.OrdinalIgnoreCase))
@@ -37,6 +46,11 @@ namespace Project_Recruiment_Huce.Helpers
             return status;
         }
 
+        /// <summary>
+        /// Kiểm tra xem tin tuyển dụng có đang ở trạng thái đã đăng hay không
+        /// </summary>
+        /// <param name="status">Trạng thái cần kiểm tra</param>
+        /// <returns>True nếu đang Published, false nếu không</returns>
         public static bool IsPublished(string status)
         {
             return string.Equals(status, Published, StringComparison.OrdinalIgnoreCase);

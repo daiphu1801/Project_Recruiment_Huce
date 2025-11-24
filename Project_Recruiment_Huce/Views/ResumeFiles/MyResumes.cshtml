@@ -112,9 +112,11 @@
                                         <div class="resume-preview">
                                             @if (resume.FileExtension == ".pdf")
                                             {
-                                                var pdfUrl = Url.Content("~" + resume.FilePath) + "#toolbar=0&navpanes=0&scrollbar=0";
+                            
+                                                var pdfUrl = Url.Content("~" + resume.FilePath) + "#toolbar=0&navpanes=0&scrollbar=0"; 
+                                                
                                                 <iframe src="@pdfUrl" 
-                                                        style="width: 100%; height: 100%; border: none; overflow: hidden !important; pointer-events: none;"
+                                                        style="width: 100%; height: 100%; border: none; overflow: hidden !important;" // Đảm bảo CSS ẩn cuộn
                                                         scrolling="no"
                                                         frameborder="0"
                                                         allow="fullscreen">

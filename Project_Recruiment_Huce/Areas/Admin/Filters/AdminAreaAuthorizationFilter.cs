@@ -46,7 +46,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Filters
                 var identity = authenticationResult.Identity as ClaimsIdentity;
                 if (identity != null)
                 {
-                    var roleClaim = identity.FindFirst("VaiTro");
+                    var roleClaim = identity.FindFirst(ClaimTypes.Role);
                     if (roleClaim == null || roleClaim.Value != "Admin")
                     {
                         // Đã đăng nhập nhưng không có quyền Admin

@@ -7,9 +7,17 @@ using Project_Recruiment_Huce.Models;
 
 namespace Project_Recruiment_Huce.Helpers
 {
+    /// <summary>
+    /// Helper class để xử lý chức năng quên mật khẩu
+    /// Tạo mã xác thực, gửi email và validate mã reset
+    /// </summary>
     public static class PasswordResetHelper
     {
-        // Tạo mã 6 ký tự ngẫu nhiên (chữ và số)
+        /// <summary>
+        /// Tạo mã xác thực ngẫu nhiên 6 ký tự (chữ in hoa và số)
+        /// Sử dụng RNGCryptoServiceProvider để đảm bảo tính bảo mật
+        /// </summary>
+        /// <returns>Mã xác thực 6 ký tự</returns>
         public static string GenerateResetCode()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -27,7 +35,14 @@ namespace Project_Recruiment_Huce.Helpers
             }
         }
 
-        // Gửi email chứa mã reset
+        /// <summary>
+        /// Gửi email chứa mã xác thực đặt lại mật khẩu
+        /// Sử dụng SMTP cấu hình trong Web.config
+        /// </summary>
+        /// <param name="email">Email người nhận</param>
+        /// <param name="resetCode">Mã xác thực</param>
+        /// <param name="username">Tên người dùng</param>
+        /// <returns>True nếu gửi thành công, false nếu thất bại</returns>
         public static bool SendResetCodeEmail(string email, string resetCode, string username)
         {
             try
@@ -38,7 +53,7 @@ namespace Project_Recruiment_Huce.Helpers
                 var smtpPassword = ConfigurationManager.AppSettings["SmtpPassword"];
                 var fromEmail = ConfigurationManager.AppSettings["FromEmail"] ?? smtpUser;
 
-                // Nếu không có cấu hình SMTP, return false
+                // Nếu không có cấu hình SMTP trong Web.config, return false
                 if (string.IsNullOrEmpty(smtpUser) || string.IsNullOrEmpty(smtpPassword))
                 {
                     return false;
@@ -103,16 +118,23 @@ namespace Project_Recruiment_Huce.Helpers
             }
         }
 
-        // Tạo và lưu mã reset vào database
+        /// <summary>
+        /// Tạo và lưu mã xác thực vào database
+        /// Tự động xóa các token cũ chưa sử dụng của account
+        /// </summary>
+        /// <param name="db">Database context</param>
+        /// <param name="accountId">ID của Account</param>
+        /// <param name="email">Email nhận mã reset</param>
+        /// <returns>Token vừa tạo</returns>
         public static PasswordResetToken CreateResetToken(JOBPORTAL_ENDataContext db, int accountId, string email)
         {
-            // Xóa các token cũ chưa dùng của account này
+            // Xóa các token cũ chưa sử dụng của account này
             var oldTokens = db.PasswordResetTokens
                 .Where(t => t.AccountID == accountId && t.UsedFlag == 0 && t.ExpiresAt > DateTime.Now)
                 .ToList();
             db.PasswordResetTokens.DeleteAllOnSubmit(oldTokens);
 
-            // Tạo token mới
+            // Tạo token mới với thời gian hết hạn 15 phút
             var resetCode = GenerateResetCode();
             var token = new PasswordResetToken
             {
@@ -120,7 +142,7 @@ namespace Project_Recruiment_Huce.Helpers
                 ResetCode = resetCode,
                 Email = email,
                 CreatedAt = DateTime.Now,
-                ExpiresAt = DateTime.Now.AddMinutes(15), // Hết hạn sau 15 phút
+                ExpiresAt = DateTime.Now.AddMinutes(15),
                 UsedFlag = 0,
                 AttemptCount = 0
             };
@@ -131,7 +153,14 @@ namespace Project_Recruiment_Huce.Helpers
             return token;
         }
 
-        // Xác thực mã reset
+        /// <summary>
+        /// Xác thực mã reset password
+        /// Kiểm tra mã, email, thời gian hết hạn và trạng thái sử dụng
+        /// </summary>
+        /// <param name="db">Database context</param>
+        /// <param name="email">Email của người dùng</param>
+        /// <param name="code">Mã xác thực</param>
+        /// <returns>Token nếu hợp lệ, null nếu không</returns>
         public static PasswordResetToken ValidateResetCode(JOBPORTAL_ENDataContext db, string email, string code)
         {
             var token = db.PasswordResetTokens
@@ -144,7 +173,7 @@ namespace Project_Recruiment_Huce.Helpers
 
             if (token != null)
             {
-                // Tăng số lần thử
+                // Tăng số lần thử để theo dõi
                 token.AttemptCount++;
                 db.SubmitChanges();
             }
@@ -152,7 +181,11 @@ namespace Project_Recruiment_Huce.Helpers
             return token;
         }
 
-        // Đánh dấu token đã sử dụng
+        /// <summary>
+        /// Đánh dấu token đã sử dụng sau khi đổi mật khẩu thành công
+        /// </summary>
+        /// <param name="db">Database context</param>
+        /// <param name="tokenId">ID của token</param>
         public static void MarkTokenAsUsed(JOBPORTAL_ENDataContext db, int tokenId)
         {
             var token = db.PasswordResetTokens.FirstOrDefault(t => t.TokenID == tokenId);
