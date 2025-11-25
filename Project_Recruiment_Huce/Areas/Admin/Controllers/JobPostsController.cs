@@ -12,10 +12,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
     public class JobPostsController : AdminBaseController
     {
-        // GET: Admin/JobPosts
-        // NOTE: This controller uses MockData as a template/base.
-        // Team members should follow AccountsController pattern to implement CRUD with database.
-        public ActionResult Index(string q, string status = null, int? companyId = null, int? recruiterId = null, int page = 1)
+        
+        public ActionResult Index(string q, string status = null, int? companyId = null, string EmploymentType=null, int? recruiterId = null, int page = 1)
         {
             ViewBag.Title = "Tin tuyển dụng";
             ViewBag.Breadcrumbs = new List<Tuple<string, string>> {
@@ -48,12 +46,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                                 job.JobPostID,
                                 job.CompanyID
                             };
-                if (!string.IsNullOrWhiteSpace(status))
-                {
-                    // Chuyển cả hai vế sang chữ thường. Phương thức .ToLower() được LINQ to SQL dịch thành SQL.
-                    string lowerStatus = status.ToLower();
-                    query = query.Where(x => x.Status.ToLower() == lowerStatus);
-                }
+                
 
 
 
@@ -65,7 +58,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         (r.Title != null && r.Title.ToLower().Contains(lowerQ)) ||
                         (r.JobCode != null && r.JobCode.ToLower().Contains(lowerQ)) ||
                         (r.FullName != null && r.FullName.ToLower().Contains(lowerQ)) ||
-                        (r.CompanyName != null && r.CompanyName.ToLower().Contains(lowerQ)));
+                        (r.CompanyName != null && r.CompanyName.ToLower().Contains(lowerQ)) ||
+                        (r.EmploymentType != null && r.EmploymentType.ToLower().Contains(lowerQ)));
                 }
 
 
@@ -91,6 +85,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
                 }
 
+               
+
                 // Lọc trực tiếp theo ID nhà tuyển dụng
                 if (recruiterId.HasValue)
                 {
@@ -107,6 +103,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     db.Recruiters.Select(r => new { Id = r.RecruiterID, Name = r.FullName }).ToList(),
                     "Id", "Name"
                 );
+
+              
 
                 // Map sang ViewModel
                 var JobPosts = query.OrderByDescending(j => j.PostedAt)
