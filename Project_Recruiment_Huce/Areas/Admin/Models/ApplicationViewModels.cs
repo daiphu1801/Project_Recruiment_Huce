@@ -1,55 +1,95 @@
 using System;
+using System.ComponentModel.DataAnnotations; // Quan trọng: Để dùng [Display], [Required]
 
 namespace Project_Recruiment_Huce.Areas.Admin.Models
 {
-    /// <summary>
-    /// ViewModel cho danh sách đơn ứng tuyển
-    /// </summary>
+    
     public class ApplicationListVm
     {
+        
+        [Display(Name = "Mã hồ sơ")]
         public int ApplicationId { get; set; }
+
         public int CandidateId { get; set; }
-        public int JobId { get; set; }
+        public int JobPostId { get; set; }
+
+        
+        public int CompanyId { get; set; }
+
+        
+        [Display(Name = "Tên ứng viên")]
+        public string CandidateName { get; set; }
+
+        [Display(Name = "Vị trí ứng tuyển")]
+        public string JobTitle { get; set; }
+
+        [Display(Name = "Công ty")]
+        public string CompanyName { get; set; }
+
+        
+        [Display(Name = "Ngày nộp")]
         public DateTime? AppliedAt { get; set; }
-        public string AppStatus { get; set; }
-        public string CvPath { get; set; }
-        public string CertificatePath { get; set; }
-        public string Note { get; set; }
+
+        [Display(Name = "Ngày cập nhật")]
         public DateTime? UpdatedAt { get; set; }
 
-        // Helper properties for display (from related tables)
-        public string CandidateName { get; set; }
-        public string JobTitle { get; set; }
-        public int JobPostId { get; set; }
+        [Display(Name = "Trạng thái")]
+        public string AppStatus { get; set; }
+
+        [Display(Name = "File CV")]
         public string ResumeFilePath { get; set; }
+
+        [Display(Name = "Chứng chỉ")]
         public string CertificateFilePath { get; set; }
-        public string CompanyName { get; internal set; }
-        public object JobPost { get; internal set; }
-        public object Candidate { get; internal set; }
-        public string Status { get; internal set; }
+
+        [Display(Name = "Ghi chú")]
+        public string Note { get; set; }
     }
+
+    
     public class CreateApplicationListVm
     {
-        public string ResumeFilePath { get; set; }
+        [Display(Name = "Ứng viên")]
+        [Required(ErrorMessage = "Vui lòng chọn ứng viên.")]
         public int CandidateId { get; set; }
+
+        [Display(Name = "Vị trí tuyển dụng")]
+        [Required(ErrorMessage = "Vui lòng chọn công việc.")]
         public int JobPostId { get; set; }
-        public string CertificateFilePath { get; set; }
+
+        [Display(Name = "Trạng thái hồ sơ")]
+        public string AppStatus { get; set; } 
+
+        [Display(Name = "Ghi chú")]
         public string Note { get; set; }
-        public string AppStatus { get; set; }
-        public string CompanyName { get; internal set; }
+
+       
+        public string ResumeFilePath { get; set; }
+        public string CertificateFilePath { get; set; }
     }
+
+    
     public class EditApplicationListVm
     {
+        [Required]
+        public int ApplicationId { get; set; }
+
+        [Display(Name = "Ứng viên")]
+        [Required(ErrorMessage = "Vui lòng chọn ứng viên.")]
         public int CandidateId { get; set; }
+
+        [Display(Name = "Vị trí tuyển dụng")]
+        [Required(ErrorMessage = "Vui lòng chọn công việc.")]
         public int JobPostId { get; set; }
+
+        [Display(Name = "Trạng thái hồ sơ")]
+        [Required(ErrorMessage = "Vui lòng chọn trạng thái.")]
         public string AppStatus { get; set; }
+
+        [Display(Name = "Ghi chú")]
+        public string Note { get; set; }
+
         public string ResumeFilePath { get; set; }
         public string CertificateFilePath { get; set; }
-        public string Note { get; set; }
-        public int ApplicationId { get; set; }
-        public string CompanyName { get; internal set; }
-
-        public string JobTitle { get; set; }
     }
 }
-

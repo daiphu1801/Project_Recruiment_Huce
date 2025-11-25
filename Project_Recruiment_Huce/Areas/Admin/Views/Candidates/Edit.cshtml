@@ -21,17 +21,12 @@
                 </ul>
             </div>
         }
-        @{
-    if (ViewBag.AccountOptions == null)
-    {
-        ViewBag.AccountOptions = new SelectList(new List<object>());
-    }
-}
 
         @using (Html.BeginForm("Edit", "Candidates", FormMethod.Post, new { enctype = "multipart/form-data" }))
         {
             @Html.AntiForgeryToken()
             @Html.HiddenFor(m => m.CandidateId)
+            @Html.HiddenFor(m => m.AccountId)
 
             <div class="row">
                 <div class="col-md-8">

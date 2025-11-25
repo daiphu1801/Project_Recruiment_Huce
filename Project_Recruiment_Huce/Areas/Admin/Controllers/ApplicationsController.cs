@@ -1,30 +1,26 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Web.Mvc;
-using System.Configuration;
-using Project_Recruiment_Huce.Areas.Admin.Models;
-using Project_Recruiment_Huce.Models;
-using Project_Recruiment_Huce.Helpers;
+using Project_Recruiment_Huce.Areas.Admin.Models; 
+using Project_Recruiment_Huce.Models; 
+using Project_Recruiment_Huce.Helpers; 
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
     public class ApplicationsController : AdminBaseController
     {
-        private JOBPORTAL_ENDataContext GetDataContext()
+        
+        public ActionResult Index(string q, string status = null, int? companyId = null, int? jobId = null, int page = 1)
         {
-            return new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString);
-        }
+            ViewBag.Title = "Quản lý hồ sơ ứng tuyển";
+            ViewBag.Breadcrumbs = new List<Tuple<string, string>> { new Tuple<string, string>("Hồ sơ ứng tuyển", null) };
 
-        // Phương thức Index không thay đổi nhiều
-        public ActionResult Index(string q, string status = null, int page = 1)
-        {
-            ViewBag.Title = "Hồ sơ ứng tuyển";
-            ViewBag.Breadcrumbs = new List<Tuple<string, string>> { new Tuple<string, string>("Applications", null) };
-
-            using (var db = GetDataContext())
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                // **Lưu ý:** Bạn nên bỏ comment và sử dụng join JobPosts để lấy JobTitle thực tế
+
+                
                 var query = from app in db.Applications
                             join candidate in db.Candidates on app.CandidateID equals candidate.CandidateID
                             join job in db.JobPosts on app.JobPostID equals job.JobPostID
@@ -33,301 +29,267 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                             {
                                 ApplicationId = app.ApplicationID,
                                 CandidateId = app.CandidateID,
-                                JobPostId = app.JobPostID,
                                 CandidateName = candidate.FullName,
+                                JobPostId = app.JobPostID,
                                 JobTitle = job.Title,
+                                CompanyId = company.CompanyID,      
+                                CompanyName = company.CompanyName,  
                                 AppliedAt = app.AppliedAt,
                                 AppStatus = app.Status,
-                                CompanyName = company.CompanyName,
+                                ResumeFilePath = app.ResumeFilePath
                             };
 
+                
+
+                // 1. Tìm kiếm từ khóa
                 if (!string.IsNullOrWhiteSpace(q))
                 {
-                    q = q.ToLower();
-                    query = query.Where(x =>
-                        (x.CandidateName ?? "").ToLower().Contains(q) ||
-                        (x.JobTitle ?? "").ToLower().Contains(q)
-                    );
+                    q = q.ToLower().Trim();
+                    query = query.Where(x => x.CandidateName.ToLower().Contains(q) || x.JobTitle.ToLower().Contains(q));
                 }
 
+                // 2. Lọc theo Trạng thái
                 if (!string.IsNullOrWhiteSpace(status))
                 {
-                    var statusLower = status.ToLower();
-                    query = query.Where(x =>
-                        (x.AppStatus ?? "").ToLower() == statusLower
-                    );
+                    query = query.Where(x => x.AppStatus == status);
                 }
 
+                // 3. Lọc theo Công ty
+                if (companyId.HasValue)
+                {
+                    query = query.Where(x => x.CompanyId == companyId.Value);
+                }
+
+                // 4. Lọc theo Công việc
+                if (jobId.HasValue)
+                {
+                    query = query.Where(x => x.JobPostId == jobId.Value);
+                }
+
+                // C. PHÂN TRANG & SẮP XẾP
                 int pageSize = 10;
-                int skip = (page - 1) * pageSize;
+                int totalRecords = query.Count();
+                int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
 
-                ViewBag.TotalRecords = query.Count();
-                ViewBag.PageSize = pageSize;
-                ViewBag.CurrentPage = page;
-
-                var data = query.OrderByDescending(x => x.AppliedAt)
-                                .Skip(skip)
+                var data = query.OrderByDescending(x => x.AppliedAt) // Mới nhất lên đầu
+                                .Skip((page - 1) * pageSize)
                                 .Take(pageSize)
                                 .ToList();
 
+                
+
+                // Dropdown Công ty (Lấy tất cả)
+                var companies = db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList();
+                ViewBag.CompanyId = new SelectList(companies, "CompanyID", "CompanyName", companyId);
+
+                // Dropdown Công việc 
+                
+                var jobQuery = db.JobPosts.AsQueryable();
+                if (companyId.HasValue)
+                {
+                    jobQuery = jobQuery.Where(j => j.CompanyID == companyId.Value);
+                }
+                var jobs = jobQuery.Select(j => new { j.JobPostID, j.Title }).ToList();
+                ViewBag.JobId = new SelectList(jobs, "JobPostID", "Title", jobId);
+
+                // Dropdown Trạng thái
                 ViewBag.StatusOptions = ApplicationStatusHelper.GetStatusSelectList(status);
+
+                
+                ViewBag.TotalRecords = totalRecords;
+                ViewBag.PageSize = pageSize;
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+
+                ViewBag.CurrentQ = q;
+                ViewBag.CurrentStatus = status;
+                ViewBag.CurrentCompanyId = companyId;
+                ViewBag.CurrentJobId = jobId;
+
                 return View(data);
             }
         }
 
-        // Action Details: OK
+        
         public ActionResult Details(int id)
         {
-            using (var db = GetDataContext())
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var query = from app in db.Applications
-                            join candidate in db.Candidates on app.CandidateID equals candidate.CandidateID
-                            join job in db.JobPosts on app.JobPostID equals job.JobPostID
-                            join company in db.Companies on job.CompanyID equals company.CompanyID
-                            where app.ApplicationID == id
-                            select new ApplicationListVm
-                            {
-                                ApplicationId = app.ApplicationID,
-                                CandidateId = app.CandidateID,
-                                JobPostId = app.JobPostID,
-                                CandidateName = candidate.FullName,
-                                JobTitle = job.Title,
-                                AppliedAt = app.AppliedAt,
-                                AppStatus = app.Status,
-                                ResumeFilePath = app.ResumeFilePath,
-                                CertificateFilePath = app.CertificateFilePath,
-                                Note = app.Note,
-                                CompanyName = company.CompanyName,
-                            };
+                var appVm = (from app in db.Applications
+                             join candidate in db.Candidates on app.CandidateID equals candidate.CandidateID
+                             join job in db.JobPosts on app.JobPostID equals job.JobPostID
+                             join company in db.Companies on job.CompanyID equals company.CompanyID
+                             where app.ApplicationID == id
+                             select new ApplicationListVm
+                             {
+                                 ApplicationId = app.ApplicationID,
+                                 CandidateId = app.CandidateID,
+                                 CandidateName = candidate.FullName,
+                                 JobPostId = app.JobPostID,
+                                 JobTitle = job.Title,
+                                 CompanyName = company.CompanyName,
+                                 AppliedAt = app.AppliedAt,
+                                 AppStatus = app.Status,
+                                 ResumeFilePath = app.ResumeFilePath,
+                                 CertificateFilePath = app.CertificateFilePath,
+                                 Note = app.Note
+                             }).FirstOrDefault();
 
-                var item = query.FirstOrDefault();
-                if (item == null) return HttpNotFound();
-                var companyList = db.Companies.Select(c => new { Id = c.CompanyID, Name = c.CompanyName })
-               .ToList();
-                ViewBag.CompanyName = new SelectList(companyList, "Id", "Name");
+                if (appVm == null) return HttpNotFound();
 
                 ViewBag.Title = "Chi tiết hồ sơ";
                 ViewBag.Breadcrumbs = new List<Tuple<string, string>> {
-                    new Tuple<string, string>("Applications", Url.Action("Index")),
-                    new Tuple<string, string>($"#{item.ApplicationId}", null)
+                    new Tuple<string, string>("Hồ sơ ứng tuyển", Url.Action("Index")),
+                    new Tuple<string, string>($"#{appVm.ApplicationId}", null)
                 };
-                return View(item);
+
+                return View(appVm);
             }
         }
 
-        // GET: Admin/Applications/Create - FIX: Thêm .ToList() và JobOptions
+        
         public ActionResult Create()
         {
-            using (var db = GetDataContext())
-            {
-                ViewBag.Title = "Thêm hồ sơ ứng tuyển mới";
-                ViewBag.Breadcrumbs = new List<Tuple<string, string>>
-        {
-            new Tuple<string, string>("Applications", Url.Action("Index")),
-            new Tuple<string, string>("Thêm mới", null)
-        };
+            ViewBag.Title = "Thêm hồ sơ mới";
+            ViewBag.Breadcrumbs = new List<Tuple<string, string>> {
+                new Tuple<string, string>("Hồ sơ ứng tuyển", Url.Action("Index")),
+                new Tuple<string, string>("Thêm mới", null)
+            };
 
-                // Lấy danh sách Ứng viên (Candidates)
-                var candidateList = db.Candidates
-                                      .Select(c => new { Id = c.CandidateID, Name = c.FullName })
-                                      .ToList();
-                ViewBag.CandidateOptions = new SelectList(candidateList, "Id", "Name");
-
-                // Lấy danh sách Công việc (JobPosts) và Tên Công ty (CompanyName)
-                // FIX: Thêm JOIN Company và chỉ hiển thị CompanyName
-                var jobList = (from j in db.JobPosts
-                               join company in db.Companies on j.CompanyID equals company.CompanyID
-                               select new
-                               {
-                                   Id = j.JobPostID,
-                                   // Chỉ hiển thị Tên Công ty
-                                   Title = company.CompanyName
-                               }).ToList();
-
-                ViewBag.JobOptions = new SelectList(jobList, "Id", "Title");
-                var companyList = db.Companies
-            .Select(c => new { Id = c.CompanyID, Name = c.CompanyName })
-            .ToList();
-                ViewBag.CompanyName = new SelectList(companyList, "Id", "Name");
-
-                ViewBag.StatusOptions = ApplicationStatusHelper.GetStatusSelectList();
-                return View(new CreateApplicationListVm());
-            }
+            LoadCreateEditDropdowns(); 
+            return View(new CreateApplicationListVm());
         }
 
-        // POST: Admin/Applications/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(CreateApplicationListVm model)
         {
-            using (var db = GetDataContext())
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 if (ModelState.IsValid)
                 {
-                    var newApp = new Application
+                    try
                     {
-                        CandidateID = model.CandidateId,
-                        JobPostID = model.JobPostId,
-                        AppliedAt = DateTime.Now,
-                        Status = model.AppStatus ?? ApplicationStatusHelper.UnderReview,
-                        ResumeFilePath = model.ResumeFilePath,
-                        CertificateFilePath = model.CertificateFilePath,
-                        Note = model.Note,
-                        UpdatedAt = DateTime.Now
-                    };
+                        var newApp = new Application
+                        {
+                            CandidateID = model.CandidateId,
+                            JobPostID = model.JobPostId,
+                            AppliedAt = DateTime.Now,
+                            Status = model.AppStatus ?? ApplicationStatusHelper.UnderReview,
+                            Note = model.Note,
+                            UpdatedAt = DateTime.Now
+                        };
 
-                    db.Applications.InsertOnSubmit(newApp);
-                    db.SubmitChanges();
+                        db.Applications.InsertOnSubmit(newApp);
+                        db.SubmitChanges();
 
-                    TempData["SuccessMessage"] = "Tạo hồ sơ ứng tuyển thành công!";
-                    return RedirectToAction("Index");
+                        TempData["SuccessMessage"] = "Tạo hồ sơ thành công!";
+                        return RedirectToAction("Index");
+                    }
+                    catch (Exception ex)
+                    {
+                        ModelState.AddModelError("", "Lỗi hệ thống: " + ex.Message);
+                    }
                 }
 
-                // --- Logic load lại View khi ModelState không hợp lệ ---
-
-                // Lấy danh sách Ứng viên (Candidates)
-                var candidateList = db.Candidates
-                                      .Select(c => new { Id = c.CandidateID, Name = c.FullName })
-                                      .ToList();
-                ViewBag.CandidateOptions = new SelectList(candidateList, "Id", "Name", model.CandidateId);
-
-                // Lấy danh sách Công việc (JobPosts) và Tên Công ty (CompanyName)
-                // FIX: Thêm JOIN Company và chỉ hiển thị CompanyName
-                var jobList = (from j in db.JobPosts
-                               join company in db.Companies on j.CompanyID equals company.CompanyID
-                               select new
-                               {
-                                   Id = j.JobPostID,
-                                   // Chỉ hiển thị Tên Công ty
-                                   Title = company.CompanyName
-                               }).ToList();
-
-                ViewBag.JobOptions = new SelectList(jobList, "Id", "Title", model.JobPostId);
-                var companyList = db.Companies
-                            .Select(c => new { Id = c.CompanyID, Name = c.CompanyName })
-                            .ToList();
-                ViewBag.CompanyName = new SelectList(companyList, "Id", "Name");
-                ViewBag.StatusOptions = ApplicationStatusHelper.GetStatusSelectList(model.AppStatus);
+                LoadCreateEditDropdowns(model.CandidateId, model.JobPostId, model.AppStatus);
                 return View(model);
             }
         }
+
+        
         public ActionResult Edit(int id)
         {
-            using (var db = GetDataContext())
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 var app = db.Applications.FirstOrDefault(x => x.ApplicationID == id);
                 if (app == null) return HttpNotFound();
 
-                var item = new EditApplicationListVm
+                var vm = new EditApplicationListVm
                 {
                     ApplicationId = app.ApplicationID,
                     CandidateId = app.CandidateID,
                     JobPostId = app.JobPostID,
                     AppStatus = app.Status,
                     ResumeFilePath = app.ResumeFilePath,
-                    CertificateFilePath = app.CertificateFilePath,
-                    Note = app.Note,
+                    Note = app.Note
                 };
 
-                ViewBag.Title = "Sửa hồ sơ ứng tuyển";
+                ViewBag.Title = "Cập nhật hồ sơ";
+                ViewBag.Breadcrumbs = new List<Tuple<string, string>> {
+                    new Tuple<string, string>("Hồ sơ ứng tuyển", Url.Action("Index")),
+                    new Tuple<string, string>($"#{id}", Url.Action("Details", new { id = id })),
+                    new Tuple<string, string>("Sửa", null)
+                };
 
-
-                var candidateList = db.Candidates
-                                      .Select(c => new { Id = c.CandidateID, Name = c.FullName })
-                                      .ToList();
-                ViewBag.CandidateOptions = new SelectList(candidateList, "Id", "Name", item.CandidateId);
-                var companyList = db.Companies
-                            .Select(c => new { Id = c.CompanyID, Name = c.CompanyName })
-                            .ToList();
-                ViewBag.CompanyName = new SelectList(companyList, "Id", "Name");
-                var jobList = db.JobPosts
-                                .Select(j => new { Id = j.JobPostID, Title = j.Title })
-                                .ToList();
-                ViewBag.JobOptions = new SelectList(jobList, "Id", "Title", item.JobPostId);
-
-                ViewBag.StatusOptions = ApplicationStatusHelper.GetStatusSelectList(item.AppStatus);
-                ViewBag.CompanyName = new SelectList(companyList, "Id", "Name");
-
-                return View(item);
+                LoadCreateEditDropdowns(vm.CandidateId, vm.JobPostId, vm.AppStatus);
+                return View(vm);
             }
         }
 
-        // POST: Admin/Applications/Edit/5 - FIX: Loại bỏ ép kiểu object nếu VM đã chuẩn hóa
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(EditApplicationListVm model)
         {
-            using (var db = GetDataContext())
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 if (ModelState.IsValid)
                 {
                     var appToUpdate = db.Applications.FirstOrDefault(x => x.ApplicationID == model.ApplicationId);
-
                     if (appToUpdate == null) return HttpNotFound();
 
-                    // FIX: Nếu VM (EditApplicationListVm) đã được sửa kiểu dữ liệu thành int/string, KHÔNG CẦN ép kiểu (int), (string)
-                    appToUpdate.CandidateID = model.CandidateId;
-                    appToUpdate.JobPostID = model.JobPostId;
-                    appToUpdate.Status = model.AppStatus ?? ApplicationStatusHelper.UnderReview;
-                    appToUpdate.ResumeFilePath = model.ResumeFilePath;
-                    appToUpdate.CertificateFilePath = model.CertificateFilePath;
-                    appToUpdate.Note = model.Note;
-                    appToUpdate.UpdatedAt = DateTime.Now;
+                    try
+                    {
+                        appToUpdate.CandidateID = model.CandidateId;
+                        appToUpdate.JobPostID = model.JobPostId;
+                        appToUpdate.Status = model.AppStatus;
+                        appToUpdate.Note = model.Note;
+                        appToUpdate.UpdatedAt = DateTime.Now;
 
-                    db.SubmitChanges();
-
-                    TempData["SuccessMessage"] = "Cập nhật hồ sơ ứng tuyển thành công!";
-                    return RedirectToAction("Index");
+                        db.SubmitChanges();
+                        TempData["SuccessMessage"] = "Cập nhật thành công!";
+                        return RedirectToAction("Index");
+                    }
+                    catch (Exception ex)
+                    {
+                        ModelState.AddModelError("", "Lỗi cập nhật: " + ex.Message);
+                    }
                 }
 
-                // FIX: Buộc truy vấn thực thi bằng .ToList() khi ModelState không hợp lệ
-                var candidateList = db.Candidates
-                                      .Select(c => new { Id = c.CandidateID, Name = c.FullName })
-                                      .ToList();
-                ViewBag.CandidateOptions = new SelectList(candidateList, "Id", "Name", model.CandidateId);
-
-                var jobList = db.JobPosts
-                                .Select(j => new { Id = j.JobPostID, Title = j.Title })
-                                .ToList();
-                ViewBag.JobOptions = new SelectList(jobList, "Id", "Title", model.JobPostId);
-
-                ViewBag.StatusOptions = ApplicationStatusHelper.GetStatusSelectList(model.AppStatus);
-                var companyList = db.Companies
-                            .Select(c => new { Id = c.CompanyID, Name = c.CompanyName })
-                            .ToList();
-                ViewBag.CompanyName = new SelectList(companyList, "Id", "Name");
+                LoadCreateEditDropdowns(model.CandidateId, model.JobPostId, model.AppStatus);
                 return View(model);
             }
         }
 
-        // Các phương thức Delete không cần sửa nhiều
+        
         public ActionResult Delete(int id)
         {
-            using (var db = GetDataContext())
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var query = from app in db.Applications
-                            join candidate in db.Candidates on app.CandidateID equals candidate.CandidateID
-                            join job in db.JobPosts on app.JobPostID equals job.JobPostID
-                            where app.ApplicationID == id
-                            select new ApplicationListVm
-                            {
-                                ApplicationId = app.ApplicationID,
-                                CandidateName = candidate.FullName,
-                                JobTitle = job.Title,
-                                AppliedAt = app.AppliedAt,
-                                AppStatus = app.Status
-                            };
+                
+                var appVm = (from app in db.Applications
+                             join candidate in db.Candidates on app.CandidateID equals candidate.CandidateID
+                             join job in db.JobPosts on app.JobPostID equals job.JobPostID
+                             where app.ApplicationID == id
+                             select new ApplicationListVm
+                             {
+                                 ApplicationId = app.ApplicationID,
+                                 CandidateName = candidate.FullName,
+                                 JobTitle = job.Title,
+                                 AppStatus = app.Status,
+                                 AppliedAt = app.AppliedAt,
+                                 Note = app.Note
+                             }).FirstOrDefault();
 
-                var item = query.FirstOrDefault();
-                if (item == null) return HttpNotFound();
+                if (appVm == null) return HttpNotFound();
 
-                ViewBag.Title = "Xóa hồ sơ ứng tuyển";
-                ViewBag.Breadcrumbs = new List<Tuple<string, string>>
-                {
-                    new Tuple<string, string>("Applications", Url.Action("Index")),
-                    new Tuple<string, string>($"#{item.ApplicationId}", null)
+                ViewBag.Title = "Xóa hồ sơ";
+                ViewBag.Breadcrumbs = new List<Tuple<string, string>> {
+                    new Tuple<string, string>("Hồ sơ ứng tuyển", Url.Action("Index")),
+                    new Tuple<string, string>($"#{id}", null)
                 };
-                return View(item);
+
+                return View(appVm);
             }
         }
 
@@ -335,16 +297,50 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            using (var db = GetDataContext())
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var appToDelete = db.Applications.FirstOrDefault(x => x.ApplicationID == id);
-                if (appToDelete == null) return HttpNotFound();
-
-                db.Applications.DeleteOnSubmit(appToDelete);
-                db.SubmitChanges();
-
-                TempData["SuccessMessage"] = "Xóa hồ sơ ứng tuyển thành công!";
+                var app = db.Applications.FirstOrDefault(x => x.ApplicationID == id);
+                if (app != null)
+                {
+                    try
+                    {
+                        db.Applications.DeleteOnSubmit(app);
+                        db.SubmitChanges();
+                        TempData["SuccessMessage"] = "Đã xóa hồ sơ thành công!";
+                    }
+                    catch (Exception ex)
+                    {
+                        TempData["ErrorMessage"] = "Không thể xóa: " + ex.Message;
+                    }
+                }
                 return RedirectToAction("Index");
+            }
+        }
+
+        
+        private void LoadCreateEditDropdowns(int? selectedCandidate = null, int? selectedJob = null, string selectedStatus = null)
+        {
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            {
+                // 1. Dropdown Ứng viên
+                var candidates = db.Candidates
+                                   .Select(c => new { Id = c.CandidateID, Name = c.FullName + " (#" + c.CandidateID + ")" })
+                                   .ToList();
+                ViewBag.CandidateOptions = new SelectList(candidates, "Id", "Name", selectedCandidate);
+
+                // 2. Dropdown Công việc (Hiện kèm tên công ty cho dễ chọn)
+                var jobs = (from j in db.JobPosts
+                            join c in db.Companies on j.CompanyID equals c.CompanyID
+                            select new
+                            {
+                                Id = j.JobPostID,
+                                // Hiển thị: "Tuyển Java - FPT Software"
+                                Title = j.Title + " - " + c.CompanyName
+                            }).ToList();
+                ViewBag.JobOptions = new SelectList(jobs, "Id", "Title", selectedJob);
+
+                // 3. Dropdown Trạng thái
+                ViewBag.StatusOptions = ApplicationStatusHelper.GetStatusSelectList(selectedStatus);
             }
         }
     }

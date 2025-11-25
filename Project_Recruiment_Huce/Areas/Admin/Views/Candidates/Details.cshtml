@@ -7,7 +7,7 @@
             <div class="card-header"><h5 class="card-title">Thông tin ứng viên</h5></div>
             <div class="card-body">
                 <div class="row mb-2"><div class="col-4 text-secondary">ID</div><div class="col-8">@Model.CandidateId</div></div>
-                <div class="row mb-2"><div class="col-4 text-secondary">Account ID</div><div class="col-8">@Model.UserName</div></div>
+                <div class="row mb-2"><div class="col-4 text-secondary">Tên đăng nhập</div> <div class="col-8">@Model.UserName</div></div>
                 <div class="row mb-2"><div class="col-4 text-secondary">Họ tên</div><div class="col-8">@(Model.FullName ?? "-")</div></div>
                 <div class="row mb-2"><div class="col-4 text-secondary">Email</div><div class="col-8">@(Model.Email ?? "-")</div></div>
                 <div class="row mb-2"><div class="col-4 text-secondary">SĐT</div><div class="col-8">@(Model.Phone ?? "-")</div></div>
@@ -35,7 +35,7 @@
                 }
             </div>
         </div>
-        <div class="col-md-13">
+        <div class="col-12 mt-3">
             <div class="card">
                 <div class="card-header"><h6 class="mb-0">Liên quan</h6></div>
                 <div class="card-body">
