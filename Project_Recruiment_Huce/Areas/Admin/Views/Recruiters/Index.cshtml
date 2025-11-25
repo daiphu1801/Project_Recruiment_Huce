@@ -15,7 +15,6 @@
                     <th>Tên đăng nhập</th>
                     <th>Họ tên</th>
                     <th>Công ty</th>
-                    <th>Chức danh</th>
                     <th>Email</th>
                     <th>SĐT</th>
                     <th>Ngày tạo</th>
@@ -44,7 +43,6 @@
                             <td>@item.Username</td>
                             <td>@(item.FullName ?? "-")</td>
                             <td>@(item.CompanyName ?? "-")</td>
-                            <td>@(item.PositionTitle ?? "-")</td>
                             <td>@(item.CompanyEmail ?? "-")</td>
                             <td>@(item.Phone ?? "-")</td>
                             <td>@(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</td>

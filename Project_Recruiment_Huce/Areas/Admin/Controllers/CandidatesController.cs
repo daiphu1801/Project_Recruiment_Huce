@@ -94,7 +94,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         Address = c.Address,
                         PhotoUrl = photoUrl,
                         Summary = c.Summary,
-                        ApplicationEmail = c.Email,
+                        ApplicationEmail = c.ApplicationEmail,
                         UserName = account.Username
                     };
                 }).ToList();
@@ -142,7 +142,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Address = candidate.Address,
                     PhotoUrl = photo?.FilePath,
                     Summary = candidate.Summary,
-                    ApplicationEmail = candidate.Email 
+                    ApplicationEmail = candidate.ApplicationEmail,
+                    UserName = account?.Username
+
                 };
                 ViewBag.Title = "Chi tiết ứng viên";
                 ViewBag.Breadcrumbs = new List<Tuple<string, string>> {
@@ -244,7 +246,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Role = "Candidate",
                     PasswordHash = passwordHash,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now,
+                    UserName = model.Username,
+                    ApplicationEmail = model.ApplicationEmail
+
                 };
 
                 // XỬ LÝ UPLOAD ẢNH
@@ -277,7 +282,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     CreatedAt = DateTime.Now,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,
                     Gender = model.Gender,
-                    BirthDate = model.DateOfBirth
+                    BirthDate = model.DateOfBirth,
+                    
+                    
                 };
 
                 db.Candidates.InsertOnSubmit(Candidate);
@@ -330,7 +337,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     ApplicationEmail = candidate.Email, // ApplicationEmail không tồn tại, dùng Email
                     CurrentPhotoId = photoId,
                     CurrentPhotoUrl = photo?.FilePath,
-                    Active = candidate.ActiveFlag == 1 // Gán giá trị Active cho ViewModel
+                    Active = candidate.ActiveFlag == 1 ,// Gán giá trị Active cho ViewModel
+                    Username = db.Accounts.FirstOrDefault(a => a.AccountID == candidate.AccountID)?.Username
+                    
                 };
                 ViewBag.Title = "Sửa ứng viên";
                 ViewBag.Breadcrumbs = new List<Tuple<string, string>>
@@ -378,6 +387,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 candidate.Summary = model.Summary;
                 candidate.ActiveFlag = model.Active ? (byte)1 : (byte)0; // Active không tồn tại, dùng ActiveFlag
                 candidate.AccountID = model.AccountId;
+                candidate.Username = model.Username;
                 if (model.Gender != "Nam" && model.Gender != "Nữ")
                 {
                     
@@ -494,6 +504,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     PhotoUrl = photo?.FilePath, // PhotoFile không tồn tại, dùng photo từ ProfilePhoto
                     Summary = candidate.Summary,
                     ApplicationEmail = candidate.Email, // ApplicationEmail không tồn tại, dùng Email
+                    UserName = db.Accounts.FirstOrDefault(a => a.AccountID == candidate.AccountID)?.Username
                 };
 
                 ViewBag.Title = "Xóa người ứng tuyển";
