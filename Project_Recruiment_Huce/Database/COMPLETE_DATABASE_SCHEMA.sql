@@ -883,7 +883,22 @@ BEGIN
     IF @ToDate IS NULL
         SET @ToDate = GETDATE();
     
-    -- Truy vấn analytics
+    -- Result Set 1: Summary Metrics (tổng hợp)
+    SELECT 
+        ISNULL(SUM(jp.ViewCount), 0) AS TotalViews,
+        ISNULL(COUNT(DISTINCT a.ApplicationID), 0) AS TotalApplications,
+        COUNT(DISTINCT jp.JobPostID) AS TotalJobs,
+        CASE 
+            WHEN SUM(jp.ViewCount) > 0 
+            THEN CAST(COUNT(DISTINCT a.ApplicationID) AS FLOAT) / SUM(jp.ViewCount) * 100 
+            ELSE 0 
+        END AS ConversionRatePercent
+    FROM dbo.JobPosts jp
+    LEFT JOIN dbo.Applications a ON a.JobPostID = jp.JobPostID
+    WHERE jp.RecruiterID = @RecruiterID
+        AND jp.PostedAt BETWEEN @FromDate AND @ToDate;
+    
+    -- Result Set 2: Job Breakdown (chi tiết từng công việc)
     SELECT 
         jp.JobPostID,
         jp.Title AS JobTitle,

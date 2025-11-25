@@ -111,7 +111,7 @@ namespace Project_Recruiment_Huce.Repositories
         public PasswordResetToken GetPasswordResetToken(string emailLower, string resetCodeUpper)
         {
             if (string.IsNullOrWhiteSpace(emailLower) || string.IsNullOrWhiteSpace(resetCodeUpper)) return null;
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;  // Sử dụng local time để khớp với CreatedAt/ExpiresAt trong PasswordResetHelper
             return _db.PasswordResetTokens
                       .FirstOrDefault(t => t.Email.ToLower() == emailLower
                                            && t.ResetCode == resetCodeUpper
