@@ -64,6 +64,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     query = query.Where(r =>
                         (r.Title != null && r.Title.ToLower().Contains(lowerQ)) ||
                         (r.JobCode != null && r.JobCode.ToLower().Contains(lowerQ)) ||
+                        (r.FullName != null && r.FullName.ToLower().Contains(lowerQ)) ||
                         (r.CompanyName != null && r.CompanyName.ToLower().Contains(lowerQ)));
                 }
 
