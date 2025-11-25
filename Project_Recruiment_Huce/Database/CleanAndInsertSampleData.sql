@@ -445,7 +445,159 @@ IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'NV004')
         N'<ul><li>Am hiểu kiến trúc GPU, lập trình C++</li></ul>', 45000000, 70000000, 'VND', N'Hà Nội', 'Full-time', 
         DATEADD(DAY, 55, GETDATE()), 'Published', DATEADD(DAY, -6, GETDATE()), GETDATE(), 423);
 
-PRINT '=== Bước 11: Chèn Ứng tuyển (Applications) ===';
+PRINT '=== Bước 11: Chèn Chi tiết công việc (JobPostDetails) ===';
+
+-- Get all JobPostIDs
+DECLARE @JobFPT1 INT, @JobFPT2 INT, @JobFPT3 INT, @JobFPT4 INT;
+DECLARE @JobSSG1 INT, @JobSSG2 INT, @JobSSG3 INT, @JobSSG4 INT;
+DECLARE @JobNV1 INT, @JobNV2 INT, @JobNV3 INT, @JobNV4 INT;
+DECLARE @JobAPL1 INT, @JobAPL2 INT, @JobAPL3 INT, @JobAPL4 INT;
+DECLARE @JobAWS1 INT, @JobAWS2 INT, @JobAWS3 INT, @JobAWS4 INT, @JobAWS5 INT;
+DECLARE @JobCC1 INT, @JobCC2 INT, @JobCC3 INT, @JobCC4 INT, @JobCC5 INT;
+
+SELECT @JobFPT1 = JobPostID FROM JobPosts WHERE JobCode = 'FPT001';
+SELECT @JobFPT2 = JobPostID FROM JobPosts WHERE JobCode = 'FPT002';
+SELECT @JobFPT3 = JobPostID FROM JobPosts WHERE JobCode = 'FPT003';
+SELECT @JobFPT4 = JobPostID FROM JobPosts WHERE JobCode = 'FPT004';
+
+SELECT @JobSSG1 = JobPostID FROM JobPosts WHERE JobCode = 'SSG001';
+SELECT @JobSSG2 = JobPostID FROM JobPosts WHERE JobCode = 'SSG002';
+SELECT @JobSSG3 = JobPostID FROM JobPosts WHERE JobCode = 'SSG003';
+SELECT @JobSSG4 = JobPostID FROM JobPosts WHERE JobCode = 'SSG004';
+
+SELECT @JobNV1 = JobPostID FROM JobPosts WHERE JobCode = 'NV001';
+SELECT @JobNV2 = JobPostID FROM JobPosts WHERE JobCode = 'NV002';
+SELECT @JobNV3 = JobPostID FROM JobPosts WHERE JobCode = 'NV003';
+SELECT @JobNV4 = JobPostID FROM JobPosts WHERE JobCode = 'NV004';
+
+SELECT @JobAPL1 = JobPostID FROM JobPosts WHERE JobCode = 'APL001';
+SELECT @JobAPL2 = JobPostID FROM JobPosts WHERE JobCode = 'APL002';
+SELECT @JobAPL3 = JobPostID FROM JobPosts WHERE JobCode = 'APL003';
+SELECT @JobAPL4 = JobPostID FROM JobPosts WHERE JobCode = 'APL004';
+
+SELECT @JobAWS1 = JobPostID FROM JobPosts WHERE JobCode = 'AWS001';
+SELECT @JobAWS2 = JobPostID FROM JobPosts WHERE JobCode = 'AWS002';
+SELECT @JobAWS3 = JobPostID FROM JobPosts WHERE JobCode = 'AWS003';
+SELECT @JobAWS4 = JobPostID FROM JobPosts WHERE JobCode = 'AWS004';
+SELECT @JobAWS5 = JobPostID FROM JobPosts WHERE JobCode = 'AWS005';
+
+SELECT @JobCC1 = JobPostID FROM JobPosts WHERE JobCode = 'CC001';
+SELECT @JobCC2 = JobPostID FROM JobPosts WHERE JobCode = 'CC002';
+SELECT @JobCC3 = JobPostID FROM JobPosts WHERE JobCode = 'CC003';
+SELECT @JobCC4 = JobPostID FROM JobPosts WHERE JobCode = 'CC004';
+SELECT @JobCC5 = JobPostID FROM JobPosts WHERE JobCode = 'CC005';
+
+-- Insert JobPostDetails for FPT Jobs
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobFPT1)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobFPT1, N'Công nghệ thông tin', N'Khoa học máy tính', 3, N'Đại học', N'Java, Spring Boot, MySQL', 3, N'Nam/Nữ', 23, 35, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobFPT2)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobFPT2, N'Công nghệ thông tin', N'Công nghệ phần mềm', 2, N'Đại học', N'ReactJS, Redux, JavaScript, HTML/CSS', 5, N'Nam/Nữ', 22, 32, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobFPT3)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobFPT3, N'Công nghệ thông tin', N'Khoa học máy tính', 2, N'Đại học', N'Python, Django, Flask, PostgreSQL', 4, N'Nam/Nữ', 22, 32, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobFPT4)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobFPT4, N'Công nghệ thông tin', N'Công nghệ phần mềm', 2, N'Đại học', N'Angular, TypeScript, RxJS', 3, N'Nam/Nữ', 22, 30, N'Active');
+
+-- Insert JobPostDetails for Samsung Jobs
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobSSG1)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobSSG1, N'Điện tử viễn thông', N'Công nghệ phần mềm', 4, N'Đại học', N'Android, Kotlin, Java', 2, N'Nam/Nữ', 24, 35, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobSSG2)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobSSG2, N'Điện tử viễn thông', N'Kỹ thuật điện tử', 4, N'Đại học', N'C/C++, Embedded, RTOS', 2, N'Nam/Nữ', 24, 35, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobSSG3)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobSSG3, N'Điện tử viễn thông', N'Công nghệ phần mềm', 3, N'Đại học', N'Flutter, Dart, Mobile UI/UX', 3, N'Nam/Nữ', 23, 33, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobSSG4)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobSSG4, N'Điện tử viễn thông', N'Kỹ thuật điện tử', 4, N'Đại học', N'IoT, MQTT, Zigbee, Bluetooth LE', 2, N'Nam/Nữ', 24, 35, N'Active');
+
+-- Insert JobPostDetails for NVIDIA Jobs
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobNV1)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobNV1, N'Trí tuệ nhân tạo', N'Khoa học máy tính', 5, N'Thạc sĩ/Tiến sĩ', N'Deep Learning, PyTorch, TensorFlow, GPU', 1, N'Nam/Nữ', 26, 40, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobNV2)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobNV2, N'Trí tuệ nhân tạo', N'Khoa học máy tính', 3, N'Đại học', N'CUDA, C++, GPU Computing', 2, N'Nam/Nữ', 24, 35, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobNV3)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobNV3, N'Trí tuệ nhân tạo', N'Khoa học máy tính', 4, N'Đại học', N'Computer Vision, OpenCV, Deep Learning', 2, N'Nam/Nữ', 25, 38, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobNV4)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobNV4, N'Trí tuệ nhân tạo', N'Kỹ thuật máy tính', 5, N'Đại học', N'GPU Architecture, Parallel Computing, C++', 1, N'Nam/Nữ', 26, 40, N'Active');
+
+-- Insert JobPostDetails for Apple Jobs
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobAPL1)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobAPL1, N'Công nghệ điện tử', N'Công nghệ phần mềm', 3, N'Đại học', N'iOS, Swift, SwiftUI, Xcode', 3, N'Nam/Nữ', 23, 35, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobAPL2)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobAPL2, N'Công nghệ điện tử', N'Khoa học máy tính', 4, N'Đại học', N'macOS, Objective-C, Swift, Cocoa', 2, N'Nam/Nữ', 24, 38, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobAPL3)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobAPL3, N'Công nghệ điện tử', N'Khoa học máy tính', 5, N'Đại học', N'Swift, Objective-C, System Architecture', 2, N'Nam/Nữ', 26, 40, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobAPL4)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobAPL4, N'Thiết kế đồ họa', N'Thiết kế đa phương tiện', 3, N'Đại học', N'UI/UX, Figma, Sketch, Adobe XD', 2, N'Nam/Nữ', 23, 35, N'Active');
+
+-- Insert JobPostDetails for AWS Jobs
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobAWS1)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobAWS1, N'Điện toán đám mây', N'Khoa học máy tính', 5, N'Đại học', N'AWS, Solution Architecture, Cloud Design', 2, N'Nam/Nữ', 26, 40, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobAWS2)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobAWS2, N'Điện toán đám mây', N'Công nghệ thông tin', 3, N'Đại học', N'DevOps, Kubernetes, Terraform, CI/CD', 4, N'Nam/Nữ', 23, 35, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobAWS3)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobAWS3, N'Điện toán đám mây', N'Công nghệ phần mềm', 4, N'Đại học', N'Node.js, Python, Microservices, AWS Lambda', 3, N'Nam/Nữ', 24, 38, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobAWS4)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobAWS4, N'An ninh mạng', N'An toàn thông tin', 5, N'Đại học', N'AWS Security, IAM, Compliance, Penetration Testing', 2, N'Nam/Nữ', 26, 40, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobAWS5)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobAWS5, N'Khoa học dữ liệu', N'Khoa học máy tính', 4, N'Đại học', N'Machine Learning, Python, TensorFlow, SageMaker', 2, N'Nam/Nữ', 24, 38, N'Active');
+
+-- Insert JobPostDetails for Coca-Cola Jobs
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobCC1)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobCC1, N'Thực phẩm & Đồ uống', N'Quản trị kinh doanh', 3, N'Đại học', N'Business Analysis, Supply Chain, Process Mapping', 2, N'Nam/Nữ', 23, 35, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobCC2)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobCC2, N'Thực phẩm & Đồ uống', N'Công nghệ thông tin', 3, N'Đại học', N'SQL, ETL, Power BI, Data Warehouse', 3, N'Nam/Nữ', 23, 35, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobCC3)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobCC3, N'Thực phẩm & Đồ uống', N'Công nghệ phần mềm', 4, N'Đại học', N'.NET Core, React, SQL Server', 2, N'Nam/Nữ', 24, 38, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobCC4)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobCC4, N'Thực phẩm & Đồ uống', N'Công nghệ thông tin', 3, N'Đại học', N'Automation Testing, Selenium, Cypress', 3, N'Nam/Nữ', 23, 35, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobCC5)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobCC5, N'Thực phẩm & Đồ uống', N'Quản trị dự án', 3, N'Đại học', N'Scrum, Agile, Project Management', 1, N'Nam/Nữ', 25, 38, N'Active');
+
+PRINT '=== Bước 12: Chèn Ứng tuyển (Applications) ===';
 
 DECLARE @Job1 INT, @Job2 INT, @Job3 INT, @Job4 INT, @Job5 INT;
 
@@ -484,7 +636,7 @@ INSERT INTO Applications (CandidateID, JobPostID, AppliedAt, Status, ResumeFileP
 SELECT @Cand4, @Job3, DATEADD(DAY, -9, GETDATE()), 'Shortlisted', '/Content/uploads/resumes/cv4.webp', N'Portfolio ấn tượng', GETDATE()
 WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand4 AND JobPostID = @Job3);
 
-PRINT '=== Bước 12: Chèn Công việc đã lưu (SavedJobs) ===';
+PRINT '=== Bước 13: Chèn Công việc đã lưu (SavedJobs) ===';
 
 INSERT INTO SavedJobs (CandidateID, JobPostID, SavedAt, Note)
 SELECT @Cand1, @Job3, DATEADD(DAY, -5, GETDATE()), N'Vị trí AI hấp dẫn'
