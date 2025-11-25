@@ -322,7 +322,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var vm = new EditCandidatesListVm
                 {
                     CandidateId = candidate.CandidateID,
-                    AccountId = candidate.AccountID,
                     FullName = candidate.FullName,
                     DateOfBirth = candidate.BirthDate,
                     Gender = candidate.Gender,
@@ -369,6 +368,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             using (var db = new JOBPORTAL_ENDataContext(
                 ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == model.AccountId);
                 var candidate = db.Candidates.FirstOrDefault(c => c.CandidateID == model.CandidateId);
                 if (candidate == null)
                 {
@@ -386,7 +386,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 candidate.Address = model.Address;
                 candidate.Summary = model.Summary;
                 candidate.ActiveFlag = model.Active ? (byte)1 : (byte)0; // Active không tồn tại, dùng ActiveFlag
-                candidate.AccountID = model.AccountId;
                 candidate.Username = model.Username;
                 if (model.Gender != "Nam" && model.Gender != "Nữ")
                 {
@@ -401,11 +400,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     if (newPhotoId.HasValue)
                     {
                         // Nếu có ảnh mới, cập nhật Account
-                        var account = db.Accounts.FirstOrDefault(a => a.AccountID == candidate.AccountID);
+                        
 
                         if (account != null)
                         {
-                            // Nếu có ảnh cũ, xóa file cũ và record cũ
+                            
                             if (account.PhotoID.HasValue)
                             {
                                 DeletePhoto(account.PhotoID.Value);
@@ -517,7 +516,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 return View(vm);
             }
         }
-
+        
         // POST: Admin/Candidates/Delete/5
         // NOTE: This action uses MockData as a template/base.
         [HttpPost, ActionName("Delete")]
