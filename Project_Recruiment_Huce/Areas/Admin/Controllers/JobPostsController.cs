@@ -265,6 +265,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         // POST: Admin/JobPosts/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [ValidateInput(false)]
         public ActionResult Create(JobPostCreateVm model)
         {
             using (var db = new JOBPORTAL_ENDataContext(
@@ -503,6 +504,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         // POST: Admin/JobPosts/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [ValidateInput(false)]
         public ActionResult Edit(JobPostEditVm model) // Giả định VM này đã có đủ trường
         {
             using (var db = new JOBPORTAL_ENDataContext(

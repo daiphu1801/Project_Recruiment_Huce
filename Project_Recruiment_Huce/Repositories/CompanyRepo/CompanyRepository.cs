@@ -37,6 +37,12 @@ namespace Project_Recruiment_Huce.Repositories
             _db.Companies.InsertOnSubmit(company);
         }
 
+        public void DeleteProfilePhoto(ProfilePhoto photo)
+        {
+            if (photo == null) throw new ArgumentNullException(nameof(photo));
+            _db.ProfilePhotos.DeleteOnSubmit(photo);
+        }
+
         public void SaveChanges()
         {
             _db.SubmitChanges();
