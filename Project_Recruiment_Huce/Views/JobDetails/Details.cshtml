@@ -55,7 +55,7 @@
       <div class="col-lg-8 mb-4 mb-lg-0">
         <div class="d-flex align-items-center">
           <div class="border p-2 d-inline-block mr-3 rounded">
-            <img src="@(Model?.LogoUrl ?? Url.Content("~/Content/images/job_logo_1.jpg"))" alt="@(Model?.CompanyName ?? "N/A")">
+            <img src="@(Model?.LogoUrl ?? Url.Content("~/Content/images/job_logo_1.jpg"))" alt="@(Model?.CompanyName ?? "N/A")" style="width: 120px; height: 120px; object-fit: contain;">
           </div>
           <div>
             <h2>@(Model?.Title ?? "")</h2>
