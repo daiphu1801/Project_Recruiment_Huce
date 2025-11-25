@@ -33,18 +33,8 @@
         </div>
       }
      
-      @if (ViewBag.ShowEmployment == true) {
-        var employment = (Request["employment"] ?? "").ToString();
-        <div class="flex-grow-1" style="min-width:180px;max-width:260px;">
-          @Html.DropDownList("employment", new System.Web.Mvc.SelectList(new[]{
-            new {Text = "-- Hình thức --", Value = ""},
-            new {Text = "Full-time", Value = "Full-time"},
-            new {Text = "Part-time", Value = "Part-time"},
-            new {Text = "Internship", Value = "Internship"},
-            new {Text = "Contract", Value = "Contract"}
-          }, "Value", "Text", employment), null, new { @class = "form-select" })
-        </div>
-      }
+      
+
       <a class="btn btn-outline-secondary flex-shrink-0" href="@Request.RawUrl.Split('?')[0]" title="Làm mới"><i class="bi bi-arrow-clockwise"></i></a>
       <div class="ms-auto d-none d-md-block"></div>
       @if (ViewBag.AddUrl != null) {
