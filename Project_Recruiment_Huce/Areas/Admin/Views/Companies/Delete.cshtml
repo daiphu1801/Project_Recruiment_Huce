@@ -5,9 +5,20 @@
 }
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
 
-<div class="alert alert-warning">
-    <i class="bi bi-exclamation-triangle"></i> Bạn có chắc chắn muốn xóa công ty này?
-</div>
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-octagon me-1"></i>
+        <strong>Xóa thất bại!</strong> @ViewBag.ErrorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> Bạn có chắc chắn muốn xóa công ty này?
+    </div>
+}
 
 <div class="card">
     <div class="card-header">
