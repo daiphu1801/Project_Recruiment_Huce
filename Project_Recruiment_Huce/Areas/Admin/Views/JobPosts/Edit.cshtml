@@ -187,14 +187,14 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Tuổi (Từ)</label>
-                                @Html.TextBoxFor(m => m.AgeFrom, new { @class = "form-control", type = "number", min = "16", max = "100", placeholder = "VD: 22" })
+                                @Html.TextBoxFor(m => m.AgeFrom, new { @class = "form-control", type = "number", min = "15", max = "100", placeholder = "VD: 22" })
                                 @Html.ValidationMessageFor(m => m.AgeFrom, "", new { @class = "text-danger small mt-1 d-block" })
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Tuổi (Đến)</label>
-                                @Html.TextBoxFor(m => m.AgeTo, new { @class = "form-control", type = "number", min = "16", max = "100", placeholder = "VD: 30" })
+                                @Html.TextBoxFor(m => m.AgeTo, new { @class = "form-control", type = "number", min = "15", max = "100", placeholder = "VD: 30" })
                                 @Html.ValidationMessageFor(m => m.AgeTo, "", new { @class = "text-danger small mt-1 d-block" })
                             </div>
                         </div>
@@ -276,16 +276,7 @@
                         </ul>
                     </div>
 
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h6 class="card-subtitle mb-2 text-muted">
-                                <i class="bi bi-eye"></i> Preview mức lương
-                            </h6>
-                            <p class="card-text mb-0">
-                                <strong class="text-success" id="salaryPreview">Đang tải...</strong>
-                            </p>
-                        </div>
-                    </div>
+                  
                 </div>
             </div>
 
