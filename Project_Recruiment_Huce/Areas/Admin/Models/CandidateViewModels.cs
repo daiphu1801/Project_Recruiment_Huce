@@ -1,3 +1,4 @@
+using Google.Apis.Admin.Directory.directory_v1.Data;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Web;
@@ -22,7 +23,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         [Display(Name = "Số điện thoại")]
         public string Phone { get; set; }
         public int? PhotoId { get; set; }
-        [Display(Name = "Ngày tạo")]
+        
         public DateTime? CreatedAt { get; set; }
         [Display(Name = "Trạng thái")]
         public byte? ActiveFlag { get; set; } // 1 = active, 0 = inactive
@@ -34,7 +35,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         // Helper property for display
         [Display(Name = "Trạng thái hoạt động")]
         public bool Active => ActiveFlag == 1;
-
+        [Display(Name = "Tên tài khoản")]
+        public string UserName { get; set; }
         // Alias for compatibility
         public DateTime? BirthDate => DateOfBirth;
 
@@ -44,6 +46,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public HttpPostedFileBase PhotoFile { get; set; }
         public string ApplicationEmail { get;   set; }
         public string CurrentPhotoUrl { get; set; }
+
+
     }
     public class CreateCandidatesListVm
     {
@@ -126,6 +130,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
             get => ActiveFlag == 1;
             set => ActiveFlag = value ? (byte?)1 : (byte?)0;
         }
+        [Display(Name = "Tên tài khoản")]
+        public string Username { get; set; }
         public int? CurrentPhotoId { get; set; }
         public string CurrentPhotoUrl { get; set; }
         public HttpPostedFileBase PhotoFile { get; set; }

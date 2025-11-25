@@ -45,21 +45,37 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                                 job.UpdatedAt,
                                 job.EmploymentType,
                                 job.Description,
-                                job.JobPostID
+                                job.JobPostID,
+                                job.CompanyID
                             };
+                if (!string.IsNullOrWhiteSpace(status))
+                {
+                    // Chuyển cả hai vế sang chữ thường. Phương thức .ToLower() được LINQ to SQL dịch thành SQL.
+                    string lowerStatus = status.ToLower();
+                    query = query.Where(x => x.Status.ToLower() == lowerStatus);
+                }
+
+
 
                 // Tìm kiếm
                 if (!string.IsNullOrWhiteSpace(q))
                 {
+                    string lowerQ = q.Trim().ToLower();
                     query = query.Where(r =>
-                       (r.Title ?? "").Contains(q) ||
-                       (r.JobCode ?? "").Contains(q) ||
-                       (r.CompanyName ?? "").Contains(q));
+                        (r.Title != null && r.Title.ToLower().Contains(lowerQ)) ||
+                        (r.JobCode != null && r.JobCode.ToLower().Contains(lowerQ)) ||
+                        (r.FullName != null && r.FullName.ToLower().Contains(lowerQ)) ||
+                        (r.CompanyName != null && r.CompanyName.ToLower().Contains(lowerQ)));
                 }
+
+
 
                 // Lọc trạng thái
                 if (!string.IsNullOrWhiteSpace(status))
-                    query = query.Where(x => string.Equals(x.Status, status, StringComparison.OrdinalIgnoreCase));
+                {
+                    string lowerStatus = status.ToLower();
+                    query = query.Where(x => x.Status.ToLower() == lowerStatus); // FIX: Sử dụng ToLower() ==
+                }
 
                 // Lọc theo công ty
                 if (companyId.HasValue)
@@ -69,10 +85,18 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                                  .Select(c => c.CompanyName)
                                  .FirstOrDefault();
                     if (!string.IsNullOrEmpty(comp))
-                        query = query.Where(x => string.Equals(x.CompanyName, comp, StringComparison.OrdinalIgnoreCase));
+                    {
+                        string lowerComp = comp.ToLower();
+                        query = query.Where(x => x.CompanyName.ToLower() == lowerComp); // FIX: Sử dụng ToLower() ==
+                    }
                 }
 
-              
+                // Lọc trực tiếp theo ID nhà tuyển dụng
+                if (recruiterId.HasValue)
+                {
+                    query = query.Where(x => x.RecruiterID == recruiterId.Value);
+                }
+
                 // ViewBag dropdowns
                 ViewBag.StatusOptions = BuildStatusSelectList(status);
                 ViewBag.CompanyOptions = new SelectList(
@@ -111,83 +135,88 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         // NOTE: This action uses MockData as a template/base.
         // Team members should follow AccountsController pattern to implement CRUD with database.
         // GET: Admin/JobPosts/Details/5
-        public ActionResult Details(int id)
+        // GET: Admin/JobPosts/Details/5
+        public ActionResult Details(int? id)
         {
-            // Cài đặt tiêu đề và Breadcrumbs (tùy chọn)
+            if (!id.HasValue || id.Value <= 0)
+            {
+                TempData["ErrorMessage"] = "ID tin tuyển dụng không hợp lệ";
+                return RedirectToAction("Index");
+            }
+
             ViewBag.Title = "Chi tiết tin tuyển dụng";
             ViewBag.Breadcrumbs = new List<Tuple<string, string>>
     {
         new Tuple<string, string>("Tin tuyển dụng", Url.Action("Index")),
-        new Tuple<string, string>("Chi tiết", null)
+        new Tuple<string, string>($"#{id.Value}", null)
     };
 
             using (var db = new JOBPORTAL_ENDataContext(
                 ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                // 1. Lấy thông tin JobPost và các liên kết (Join)
-                var jobPostDetail = (from j in db.JobPosts
-                                     join r in db.Recruiters on j.RecruiterID equals r.RecruiterID
-                                     join c in db.Companies on j.CompanyID equals c.CompanyID into companyGroup // Left Join
-                                     from c in companyGroup.DefaultIfEmpty()
-                                     join jpd in db.JobPostDetails on j.JobPostID equals jpd.JobPostID into detailsGroup // Left Join
-                                     from jpd in detailsGroup.DefaultIfEmpty()
-                                     where j.JobPostID == id
-                                     select new JobPostDetailVm // Sử dụng ViewModel chi tiết
-                                     {
-                                         // Thông tin JobPost cơ bản
-                                         JobPostID = j.JobPostID,
-                                         JobCode = j.JobCode,
-                                         Title = j.Title,
-                                         Description = j.Description,
-                                         Requirements = j.Requirements,
-                                         Location = j.Location,
-                                         EmploymentType = j.EmploymentType,
-                                         SalaryFrom = j.SalaryFrom,
-                                         SalaryTo = j.SalaryTo,
-                                         SalaryCurrency = j.SalaryCurrency,
-                                         ApplicationDeadline = j.ApplicationDeadline,
-                                         Status = j.Status,
-                                         PostedAt = j.PostedAt,
-                                         UpdatedAt = j.UpdatedAt,
+                var jobPost = db.JobPosts.FirstOrDefault(j => j.JobPostID == id.Value);
 
-                                         // Thông tin Công ty
-                                         CompanyID = c.CompanyID,
-                                         CompanyName = c.CompanyName,
-                                         Address = c.Address,
-                                         Website = c.Website,
-
-                                         // Thông tin Nhà tuyển dụng
-                                         RecruiterID = r.RecruiterID,
-                                         FullName = r.FullName,
-                                         PositionTitle = r.PositionTitle,
-                                         Phone = r.Phone,
-
-                                         //  Thông tin JobPostDetails (Chi tiết)
-                                         DetailID = jpd.DetailID,
-                                         Industry = jpd.Industry,
-                                         Major = jpd.Major,
-                                         YearsExperience = jpd.YearsExperience,
-                                         DegreeRequired = jpd.DegreeRequired,
-                                         Skills = jpd.Skills,
-                                         Headcount = jpd.Headcount,
-                                         GenderRequirement = jpd.GenderRequirement,
-                                         AgeFrom = jpd.AgeFrom,
-                                         AgeTo = jpd.AgeTo
-                                     })
-                                     .FirstOrDefault();
-
-                // 2. Kiểm tra nếu không tìm thấy
-                if (jobPostDetail == null)
+                if (jobPost == null)
                 {
-                    TempData["ErrorMessage"] = "Tin tuyển dụng không tồn tại hoặc đã bị xóa.";
-                    return RedirectToAction("Index"); // Chuyển hướng về trang danh sách
+                    TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng";
+                    return RedirectToAction("Index");
                 }
 
-                // 3. Trả về View với ViewModel đã có đầy đủ dữ liệu
-                return View(jobPostDetail);
+                var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == jobPost.RecruiterID);
+                var company = db.Companies.FirstOrDefault(c => c.CompanyID == jobPost.CompanyID);
+                var jobPostDetail = db.JobPostDetails.FirstOrDefault(jpd => jpd.JobPostID == jobPost.JobPostID);
+
+                var vm = new JobPostDetailVm
+                {
+                    JobPostID = jobPost.JobPostID,
+                    JobCode = jobPost.JobCode,
+                    Title = jobPost.Title,
+                    Description = jobPost.Description,
+                    Requirements = jobPost.Requirements,
+                    Location = jobPost.Location,
+                    EmploymentType = jobPost.EmploymentType,
+                    SalaryFrom = jobPost.SalaryFrom,
+                    SalaryTo = jobPost.SalaryTo,
+                    SalaryCurrency = jobPost.SalaryCurrency,
+                    ApplicationDeadline = jobPost.ApplicationDeadline,
+                    Status = jobPost.Status,
+                    PostedAt = jobPost.PostedAt,
+                    UpdatedAt = jobPost.UpdatedAt,
+
+                    CompanyID = company?.CompanyID,
+                    CompanyName = company?.CompanyName,
+                    Address = company?.Address,
+                    Website = company?.Website,
+                    CompanyPhotoID = company?.PhotoID,
+
+                    RecruiterID = recruiter?.RecruiterID ?? 0,
+                    FullName = recruiter?.FullName ?? "N/A",
+                    PositionTitle = recruiter?.PositionTitle,
+                    Phone = recruiter?.Phone,
+                    RecruiterPhotoID = recruiter?.PhotoID,
+
+                    DetailID = jobPostDetail?.DetailID ?? 0,
+                    Industry = jobPostDetail?.Industry,
+                    Major = jobPostDetail?.Major,
+                    YearsExperience = jobPostDetail?.YearsExperience ?? 0,
+                    DegreeRequired = jobPostDetail?.DegreeRequired,
+                    Skills = jobPostDetail?.Skills,
+                    Headcount = jobPostDetail?.Headcount ?? 0,
+                    GenderRequirement = jobPostDetail?.GenderRequirement ?? "Not required",
+                    AgeFrom = jobPostDetail?.AgeFrom,
+                    AgeTo = jobPostDetail?.AgeTo
+                };
+
+                ViewBag.Breadcrumbs = new List<Tuple<string, string>>
+        {
+            new Tuple<string, string>("Tin tuyển dụng", Url.Action("Index")),
+            new Tuple<string, string>($"#{vm.JobPostID} - {vm.Title}", null)
+        };
+
+                return View(vm);
             }
         }
-        
+
 
 
         // GET: Admin/JobPosts/Create
@@ -242,10 +271,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 JobStatusHelper.NormalizeStatuses(db);
-                
+
                 // Xóa validation error cho CompanyID vì nó được tự động lấy từ RecruiterID
                 ModelState.Remove("CompanyID");
-                
+
                 // Tự động lấy CompanyID từ RecruiterID trước khi validate
                 if (model.RecruiterID > 0)
                 {
@@ -255,7 +284,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         model.CompanyID = recruiter.CompanyID.Value;
                     }
                 }
-                
+
                 //  Kiểm tra tiêu đề trùng
                 if (!string.IsNullOrWhiteSpace(model.Title) && db.JobPosts.Any(j => j.Title == model.Title))
                 {
@@ -344,22 +373,22 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 db.JobPosts.InsertOnSubmit(jobPost);
                 db.SubmitChanges();
                 //TẠO VÀ LƯU JOBPOSTDETAIL(Lần SubmitChanges 2)
-        var jobPostDetail = new JobPostDetail
-        {
-            JobPostID = jobPost.JobPostID, // Dùng ID vừa tạo
-            Industry = model.Industry,
-            Major = model.Major,
-            YearsExperience = model.YearsExperience,
-            DegreeRequired = model.DegreeRequired,
-            Skills = model.Skills,
-            Headcount = model.Headcount,
-            // Xử lý GenderRequirement: nếu null, dùng giá trị default của DB
-            GenderRequirement = string.IsNullOrWhiteSpace(model.GenderRequirement) ? "Not required" : model.GenderRequirement,
-            AgeFrom = model.AgeFrom,
-            AgeTo = model.AgeTo,
-            // Sử dụng Status của JobPost, JobPostDetails trong DB của bạn có default là 'Published'
-            Status = model.Status ?? "Published"
-        };
+                var jobPostDetail = new JobPostDetail
+                {
+                    JobPostID = jobPost.JobPostID, // Dùng ID vừa tạo
+                    Industry = model.Industry,
+                    Major = model.Major,
+                    YearsExperience = model.YearsExperience,
+                    DegreeRequired = model.DegreeRequired,
+                    Skills = model.Skills,
+                    Headcount = model.Headcount,
+                    // Xử lý GenderRequirement: nếu null, dùng giá trị default của DB
+                    GenderRequirement = string.IsNullOrWhiteSpace(model.GenderRequirement) ? "Not required" : model.GenderRequirement,
+                    AgeFrom = model.AgeFrom,
+                    AgeTo = model.AgeTo,
+                    // Sử dụng Status của JobPost, JobPostDetails trong DB của bạn có default là 'Published'
+                    Status = model.Status ?? "Published"
+                };
 
                 db.JobPostDetails.InsertOnSubmit(jobPostDetail);
                 db.SubmitChanges(); // LƯU LẦN 2: Lưu chi tiết bài đăng
@@ -402,7 +431,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // 1. Lấy danh sách recruiters VỚI TÊN CÔNG TY (chuẩn bị 1 lần)
                 // (Giả định có quan hệ Recruiter -> Company)
                 var recruiters = db.Recruiters
-                                   .Select(r => new {
+                                   .Select(r => new
+                                   {
                                        r.RecruiterID,
                                        r.FullName,
                                        CompanyName = r.Company.CompanyName
