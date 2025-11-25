@@ -15,13 +15,13 @@ namespace Project_Recruiment_Huce.Controllers.MyAccount
     [Authorize]
     public class MyAccountController : BaseController
     {
-        /// <summary>
-        /// Tạo MyAccountService instance với database context
-        /// </summary>
-        private MyAccountService GetMyAccountService(JOBPORTAL_ENDataContext db)
+        private readonly IMyAccountService _myAccountService;
+
+        public MyAccountController()
         {
+            var db = DbContextFactory.Create();
             var repo = new MyAccountRepository(db);
-            return new MyAccountService(repo);
+            _myAccountService = new MyAccountService(repo);
         }
 
         /// <summary>
@@ -34,13 +34,9 @@ namespace Project_Recruiment_Huce.Controllers.MyAccount
             if (accountId == null)
                 return RedirectToAction("Login", "Account");
 
-            using (var db = DbContextFactory.CreateReadOnly())
-            {
-                var myAccountService = GetMyAccountService(db);
-                var vm = myAccountService.GetAccountInfo(accountId.Value);
-                if (vm == null) return HttpNotFound();
-                return View(vm);
-            }
+            var vm = _myAccountService.GetAccountInfo(accountId.Value);
+            if (vm == null) return HttpNotFound();
+            return View(vm);
         }
 
         /// <summary>
@@ -58,37 +54,29 @@ namespace Project_Recruiment_Huce.Controllers.MyAccount
 
             Func<ActionResult> returnViewWithErrors = () =>
             {
-                using (var db = DbContextFactory.Create())
-                {
-                    var myAccountService = GetMyAccountService(db);
-                    var vm = myAccountService.GetAccountInfo(currentAccountId.Value);
-                    if (vm == null) return HttpNotFound();
-                    ViewBag.ChangePasswordModel = model;
-                    return View("Index", vm);
-                }
+                var vm = _myAccountService.GetAccountInfo(currentAccountId.Value);
+                if (vm == null) return HttpNotFound();
+                ViewBag.ChangePasswordModel = model;
+                return View("Index", vm);
             };
 
             // Sử dụng Service layer cho validation
-            using (var db = DbContextFactory.Create())
+            var validationResult = _myAccountService.ValidateChangePassword(model, currentAccountId.Value);
+
+            if (!validationResult.IsValid)
             {
-                var myAccountService = GetMyAccountService(db);
-                var validationResult = myAccountService.ValidateChangePassword(model, currentAccountId.Value);
-
-                if (!validationResult.IsValid)
+                foreach (var error in validationResult.Errors)
                 {
-                    foreach (var error in validationResult.Errors)
-                    {
-                        ModelState.AddModelError(error.Key, error.Value);
-                    }
-                    return returnViewWithErrors();
+                    ModelState.AddModelError(error.Key, error.Value);
                 }
-
-                // Tất cả validation passed, cập nhật mật khẩu
-                myAccountService.ChangePassword(currentAccountId.Value, model.NewPassword);
-
-                TempData["SuccessMessage"] = "Đổi mật khẩu thành công!";
-                return RedirectToAction("Index");
+                return returnViewWithErrors();
             }
+
+            // Tất cả validation passed, cập nhật mật khẩu
+            _myAccountService.ChangePassword(currentAccountId.Value, model.NewPassword);
+
+            TempData["SuccessMessage"] = "Đổi mật khẩu thành công!";
+            return RedirectToAction("Index");
         }
     }
 }

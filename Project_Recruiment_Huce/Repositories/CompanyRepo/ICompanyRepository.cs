@@ -13,6 +13,7 @@ namespace Project_Recruiment_Huce.Repositories
         Company GetCompanyById(int companyId);
         ProfilePhoto GetProfilePhotoById(int photoId);
         void InsertCompany(Company company);
+        void DeleteProfilePhoto(ProfilePhoto photo);
         void SaveChanges();
     }
 }
