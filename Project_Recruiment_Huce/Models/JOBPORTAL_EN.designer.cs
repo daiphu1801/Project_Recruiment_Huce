@@ -598,7 +598,8 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 
-        public object UserName { get; internal set; }
+        public string UserName { get; internal set; }
+        public string ApplicationEmail { get; internal set; }
 
         public event PropertyChangingEventHandler PropertyChanging;
 		
@@ -2267,6 +2268,7 @@ namespace Project_Recruiment_Huce.Models
 
         public string Username { get;  set; }
         public string ApplicationEmail { get; internal set; }
+        
 
         public event PropertyChangingEventHandler PropertyChanging;
 		
