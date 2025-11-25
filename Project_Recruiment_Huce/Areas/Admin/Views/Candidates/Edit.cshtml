@@ -37,7 +37,7 @@
                 <div class="col-md-8">
                     <div class="mb-3">
                         @Html.LabelFor(m => m.AccountId, new { @class = "form-label" })
-                        @Html.DropDownListFor(m => m.AccountId, ViewBag.AccountOptions as SelectList, "-- Chọn tài khoản --", new { @class = "form-select" })
+                        @Html.TextBoxFor(m => m.AccountId, new { @class = "form-control", placeholder = "Tài Khoản" })
                         @Html.ValidationMessageFor(m => m.AccountId, "", new { @class = "text-danger" })
                     </div>
 
@@ -55,7 +55,7 @@
 
                     <div class="mb-3">
                         @Html.LabelFor(m => m.Gender, new { @class = "form-label" })
-                        @Html.DropDownListFor(m => m.Gender, new SelectList(new[] { "Male", "Female", "Other" }), "-- Chọn giới tính --", new { @class = "form-select" })
+                        @Html.DropDownListFor(m => m.Gender, new SelectList(new[] { "Nam", "Nữ" }), "-- Chọn giới tính --", new { @class = "form-select" })
                         @Html.ValidationMessageFor(m => m.Gender, "", new { @class = "text-danger" })
                     </div>
 
