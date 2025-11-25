@@ -300,7 +300,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(EditCompanyVm model)
         {
-            // Tải lại thông tin ảnh nếu validation fail
             Action<Company> refreshPhotoInfo = (company) =>
             {
                 if (company != null)
@@ -389,7 +388,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                     fax = ValidationHelper.NormalizePhone(fax);
 
-                    // Check trùng, TRUYỀN VÀO CompanyID để loại trừ chính nó
                     if (!ValidationHelper.IsCompanyFaxUnique(fax, model.CompanyId))
                     {
                         ModelState.AddModelError("Fax", "Số Fax đã tồn tại.");
@@ -508,18 +506,66 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var company = db.Companies.FirstOrDefault(c => c.CompanyID == id);
                 if (company == null) return HttpNotFound();
 
-                // Delete photo if exists
-                if (company.PhotoID.HasValue)
+                bool hasRecruiters = db.Recruiters.Any(r => r.CompanyID == id);
+                bool hasJobs = db.JobPosts.Any(j => j.CompanyID == id);
+
+                if (hasRecruiters || hasJobs)
                 {
-                    DeletePhoto(db, company.PhotoID.Value);
+                    var vm = new CompanyListVm
+                    {
+                        CompanyId = company.CompanyID,
+                        CompanyName = company.CompanyName ?? string.Empty,
+                        TaxCode = company.TaxCode ?? string.Empty,
+                        Industry = company.Industry ?? string.Empty,
+                        Address = company.Address ?? string.Empty,
+                        Phone = company.Phone ?? string.Empty,
+                        Fax = company.Fax ?? string.Empty,
+                        CompanyEmail = company.CompanyEmail ?? string.Empty,
+                        Website = company.Website ?? string.Empty,
+                        Description = company.Description ?? string.Empty,
+                        ActiveFlag = company.ActiveFlag,
+                        CreatedAt = company.CreatedAt,
+                        PhotoId = company.PhotoID,
+                        PhotoUrl = company.ProfilePhoto != null ? company.ProfilePhoto.FilePath : null
+                    };
+
+                    if (hasRecruiters)
+                    {
+                        ViewBag.ErrorMessage = "Xóa thất bại: Công ty này đang có Nhà tuyển dụng liên kết. Vui lòng xóa nhà tuyển dụng trước.";
+                    }
+                    else if (hasJobs)
+                    {
+                        ViewBag.ErrorMessage = "Xóa thất bại: Công ty này đang có Bài đăng tuyển dụng. Vui lòng xóa bài đăng trước.";
+                    }
+
+                    return View(vm);
                 }
 
-                db.Companies.DeleteOnSubmit(company);
+                try
+                {
+                    // Delete photo if exists
+                    if (company.PhotoID.HasValue)
+                    {
+                        DeletePhoto(db, company.PhotoID.Value);
+                    }
 
-                db.SubmitChanges();
+                    db.Companies.DeleteOnSubmit(company);
+                    db.SubmitChanges();
 
-                TempData["SuccessMessage"] = "Xóa công ty thành công!";
-                return RedirectToAction("Index");
+                    TempData["SuccessMessage"] = "Xóa công ty thành công!";
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    var vm = new CompanyListVm
+                    {
+                        CompanyId = company.CompanyID,
+                        CompanyName = company.CompanyName,
+                        PhotoUrl = company.ProfilePhoto != null ? company.ProfilePhoto.FilePath : null
+                    };
+                    ViewBag.ErrorMessage = "Đã xảy ra lỗi hệ thống khi xóa: " + ex.Message;
+                    return View(vm);
+                }
             }
         }
 
