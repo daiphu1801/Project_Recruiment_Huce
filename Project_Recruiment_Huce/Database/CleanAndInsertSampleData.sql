@@ -40,6 +40,14 @@ IF NOT EXISTS (SELECT 1 FROM ProfilePhotos WHERE FileName = 'cocacola.jpg')
     INSERT INTO ProfilePhotos (FileName, FilePath, FileSizeKB, FileFormat, UploadedAt)
     VALUES ('cocacola.jpg', '/Content/uploads/recruiter/cocacola.jpg', 120, 'jpg', GETDATE());
 
+IF NOT EXISTS (SELECT 1 FROM ProfilePhotos WHERE FileName = 'nvidia.jpg')
+    INSERT INTO ProfilePhotos (FileName, FilePath, FileSizeKB, FileFormat, UploadedAt)
+    VALUES ('nvidia.jpg', '/Content/uploads/recruiter/nvidia.jpg', 140, 'jpg', GETDATE());
+
+IF NOT EXISTS (SELECT 1 FROM ProfilePhotos WHERE FileName = 'samsung.png')
+    INSERT INTO ProfilePhotos (FileName, FilePath, FileSizeKB, FileFormat, UploadedAt)
+    VALUES ('samsung.png', '/Content/uploads/recruiter/samsung.png', 135, 'png', GETDATE());
+
 -- Avatar nhà tuyển dụng
 IF NOT EXISTS (SELECT 1 FROM ProfilePhotos WHERE FileName = 'avatar_rec1.jpg')
     INSERT INTO ProfilePhotos (FileName, FilePath, FileSizeKB, FileFormat, UploadedAt)
@@ -68,23 +76,27 @@ IF NOT EXISTS (SELECT 1 FROM ProfilePhotos WHERE FileName = 'avatar_cand3.png')
 
 PRINT '=== Bước 3: Lấy PhotoID ===';
 
-DECLARE @AppleLogo INT, @AmazonLogo INT, @CocaColaLogo INT;
-DECLARE @RecPhoto1 INT, @RecPhoto2 INT, @RecPhoto4 INT;
+DECLARE @AppleLogo INT, @AmazonLogo INT, @CocaColaLogo INT, @NvidiaLogo INT, @SamsungLogo INT;
+DECLARE @RecPhoto1 INT, @RecPhoto2 INT, @RecPhoto4 INT, @RecPhoto5 INT, @RecPhoto6 INT;
 DECLARE @CandPhoto1 INT, @CandPhoto2 INT, @CandPhoto3 INT;
 
 SELECT @AppleLogo = PhotoID FROM ProfilePhotos WHERE FileName = 'apple.jpg';
 SELECT @AmazonLogo = PhotoID FROM ProfilePhotos WHERE FileName = 'amazon.jpg';
 SELECT @CocaColaLogo = PhotoID FROM ProfilePhotos WHERE FileName = 'cocacola.jpg';
+SELECT @NvidiaLogo = PhotoID FROM ProfilePhotos WHERE FileName = 'nvidia.jpg';
+SELECT @SamsungLogo = PhotoID FROM ProfilePhotos WHERE FileName = 'samsung.png';
 SELECT @RecPhoto1 = PhotoID FROM ProfilePhotos WHERE FileName = 'avatar_rec1.jpg';
 SELECT @RecPhoto2 = PhotoID FROM ProfilePhotos WHERE FileName = 'avatar_rec2.png';
 SELECT @RecPhoto4 = PhotoID FROM ProfilePhotos WHERE FileName = 'avatar_rec4.jpg';
+SELECT @RecPhoto5 = @RecPhoto1; -- Sử dụng lại avatar cho NVIDIA
+SELECT @RecPhoto6 = @RecPhoto2; -- Sử dụng lại avatar cho Samsung
 SELECT @CandPhoto1 = PhotoID FROM ProfilePhotos WHERE FileName = 'avatar_cand1.jpg';
 SELECT @CandPhoto2 = PhotoID FROM ProfilePhotos WHERE FileName = 'avatar_cand2.jpg';
 SELECT @CandPhoto3 = PhotoID FROM ProfilePhotos WHERE FileName = 'avatar_cand3.png';
 
 PRINT '=== Bước 4: Chèn Công ty (Companies) ===';
 
-DECLARE @AppleCo INT, @AmazonCo INT, @CocaCo INT;
+DECLARE @AppleCo INT, @AmazonCo INT, @CocaCo INT, @NvidiaCo INT, @SamsungCo INT;
 
 IF NOT EXISTS (SELECT 1 FROM Companies WHERE CompanyName = N'Công ty TNHH Apple Việt Nam')
 BEGIN
@@ -110,14 +122,32 @@ BEGIN
         N'<p>Coca-Cola là thương hiệu nước giải khát lớn nhất thế giới với lịch sử lâu đời.</p>', @CocaColaLogo, 1, DATEADD(DAY, -90, GETDATE()));
 END
 
+IF NOT EXISTS (SELECT 1 FROM Companies WHERE CompanyName = 'NVIDIA Vietnam')
+BEGIN
+    INSERT INTO Companies (CompanyName, TaxCode, Industry, Address, Phone, CompanyEmail, Website, Fax, Description, PhotoID, ActiveFlag, CreatedAt)
+    VALUES ('NVIDIA Vietnam', '0456789012', N'Trí tuệ nhân tạo & GPU', 
+        N'Viettel Complex, Phạm Văn Đồng, Bắc Từ Liêm, Hà Nội', '0244040xxxx', 'careers@nvidia.com', 'https://www.nvidia.com', NULL,
+        N'<p>NVIDIA là công ty hàng đầu thế giới về GPU và AI computing, tiên phong trong công nghệ đồ họa và trí tuệ nhân tạo.</p>', @NvidiaLogo, 1, DATEADD(DAY, -85, GETDATE()));
+END
+
+IF NOT EXISTS (SELECT 1 FROM Companies WHERE CompanyName = N'Samsung Electronics Việt Nam')
+BEGIN
+    INSERT INTO Companies (CompanyName, TaxCode, Industry, Address, Phone, CompanyEmail, Website, Fax, Description, PhotoID, ActiveFlag, CreatedAt)
+    VALUES (N'Samsung Electronics Việt Nam', '0567890123', N'Điện tử viễn thông', 
+        N'Công viên phần mềm Quang Trung, Quận 12, TP.HCM', '0287777xxxx', 'hr@samsung.vn', 'https://www.samsung.com/vn', NULL,
+        N'<p>Samsung là tập đoàn điện tử hàng đầu thế giới, nổi tiếng với điện thoại Galaxy, TV và các thiết bị thông minh.</p>', @SamsungLogo, 1, DATEADD(DAY, -80, GETDATE()));
+END
+
 SELECT @AppleCo = CompanyID FROM Companies WHERE CompanyName = N'Công ty TNHH Apple Việt Nam';
 SELECT @AmazonCo = CompanyID FROM Companies WHERE CompanyName = 'Amazon Web Services Vietnam';
 SELECT @CocaCo = CompanyID FROM Companies WHERE CompanyName = N'Coca-Cola Việt Nam';
+SELECT @NvidiaCo = CompanyID FROM Companies WHERE CompanyName = 'NVIDIA Vietnam';
+SELECT @SamsungCo = CompanyID FROM Companies WHERE CompanyName = N'Samsung Electronics Việt Nam';
 
 PRINT '=== Bước 5: Chèn Tài khoản Nhà tuyển dụng (Recruiter Accounts) ===';
 
 DECLARE @PwdHash NVARCHAR(255) = 'AQAAAAEAACcQAAAAEFvJqKzqM3h9L0YVZ5wMlvbXqP6vNXRqK9L3yT4wJ5A='; -- Password123!
-DECLARE @AppleAcc INT, @AwsAcc INT, @CocaAcc INT;
+DECLARE @AppleAcc INT, @AwsAcc INT, @CocaAcc INT, @NvidiaAcc INT, @SamsungAcc INT;
 
 IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'appleHR')
     INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, PhotoID, ActiveFlag, CreatedAt)
@@ -131,13 +161,23 @@ IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cocaHR')
     INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, PhotoID, ActiveFlag, CreatedAt)
     VALUES ('cocaHR', @PwdHash, 'hr@coca.vn', '0903333333', 'Recruiter', @RecPhoto4, 1, DATEADD(DAY, -85, GETDATE()));
 
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'nvidiaHR')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, PhotoID, ActiveFlag, CreatedAt)
+    VALUES ('nvidiaHR', @PwdHash, 'careers@nvidia.com', '0904444444', 'Recruiter', @RecPhoto5, 1, DATEADD(DAY, -80, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'samsungHR')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, PhotoID, ActiveFlag, CreatedAt)
+    VALUES ('samsungHR', @PwdHash, 'hr@samsung.vn', '0905555555', 'Recruiter', @RecPhoto6, 1, DATEADD(DAY, -75, GETDATE()));
+
 SELECT @AppleAcc = AccountID FROM Accounts WHERE Username = 'appleHR';
 SELECT @AwsAcc = AccountID FROM Accounts WHERE Username = 'awsHR';
 SELECT @CocaAcc = AccountID FROM Accounts WHERE Username = 'cocaHR';
+SELECT @NvidiaAcc = AccountID FROM Accounts WHERE Username = 'nvidiaHR';
+SELECT @SamsungAcc = AccountID FROM Accounts WHERE Username = 'samsungHR';
 
 PRINT '=== Bước 6: Chèn Thông tin Nhà tuyển dụng (Recruiters) ===';
 
-DECLARE @AppleRec INT, @AwsRec INT, @CocaRec INT;
+DECLARE @AppleRec INT, @AwsRec INT, @CocaRec INT, @NvidiaRec INT, @SamsungRec INT;
 
 IF NOT EXISTS (SELECT 1 FROM Recruiters WHERE AccountID = @AppleAcc)
     INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag, CreatedAt)
@@ -151,21 +191,19 @@ IF NOT EXISTS (SELECT 1 FROM Recruiters WHERE AccountID = @CocaAcc)
     INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag, CreatedAt)
     VALUES (@CocaAcc, @CocaCo, N'Lê Thị Cẩm Ly', N'Đối tác Nhân sự (HRBP)', 'ly@coca.vn', '0903333333', @RecPhoto4, 1, DATEADD(DAY, -85, GETDATE()));
 
+IF NOT EXISTS (SELECT 1 FROM Recruiters WHERE AccountID = @NvidiaAcc)
+    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag, CreatedAt)
+    VALUES (@NvidiaAcc, @NvidiaCo, N'Phạm Quang Huy', N'Talent Acquisition Manager', 'huy.pham@nvidia.com', '0904444444', @RecPhoto5, 1, DATEADD(DAY, -80, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Recruiters WHERE AccountID = @SamsungAcc)
+    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag, CreatedAt)
+    VALUES (@SamsungAcc, @SamsungCo, N'Kim Min Joo', N'Senior HR Manager', 'minjoo.kim@samsung.vn', '0905555555', @RecPhoto6, 1, DATEADD(DAY, -75, GETDATE()));
+
 SELECT @AppleRec = RecruiterID FROM Recruiters WHERE AccountID = @AppleAcc;
 SELECT @AwsRec = RecruiterID FROM Recruiters WHERE AccountID = @AwsAcc;
 SELECT @CocaRec = RecruiterID FROM Recruiters WHERE AccountID = @CocaAcc;
-
--- Lấy ID các nhà tuyển dụng cũ (FPT, Samsung, NVIDIA) nếu database đã có
-DECLARE @FPTRec INT, @SamsungRec INT, @NvidiaRec INT;
-DECLARE @FPTCompany INT, @SamsungCompany INT, @NvidiaCompany INT;
-
-SELECT @FPTCompany = CompanyID FROM Companies WHERE CompanyName LIKE N'%FPT%';
-SELECT @SamsungCompany = CompanyID FROM Companies WHERE CompanyName LIKE N'%Samsung%';
-SELECT @NvidiaCompany = CompanyID FROM Companies WHERE CompanyName LIKE N'%NVIDIA%';
-
-SELECT TOP 1 @FPTRec = RecruiterID FROM Recruiters WHERE CompanyID = @FPTCompany;
-SELECT TOP 1 @SamsungRec = RecruiterID FROM Recruiters WHERE CompanyID = @SamsungCompany;
-SELECT TOP 1 @NvidiaRec = RecruiterID FROM Recruiters WHERE CompanyID = @NvidiaCompany;
+SELECT @NvidiaRec = RecruiterID FROM Recruiters WHERE AccountID = @NvidiaAcc;
+SELECT @SamsungRec = RecruiterID FROM Recruiters WHERE AccountID = @SamsungAcc;
 
 PRINT '=== Bước 7: Chèn Tài khoản Ứng viên (Candidate Accounts) ===';
 
@@ -226,12 +264,13 @@ IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc5)
 
 PRINT '=== Bước 9: Chèn Hồ sơ năng lực (Resumes) ===';
 
-DECLARE @Cand1 INT, @Cand2 INT, @Cand3 INT, @Cand4 INT;
+DECLARE @Cand1 INT, @Cand2 INT, @Cand3 INT, @Cand4 INT, @Cand5 INT;
 
 SELECT @Cand1 = CandidateID FROM Candidates WHERE FullName = N'Nguyễn Văn An';
 SELECT @Cand2 = CandidateID FROM Candidates WHERE FullName = N'Trần Thị Bích';
 SELECT @Cand3 = CandidateID FROM Candidates WHERE FullName = N'Lê Văn Cường';
 SELECT @Cand4 = CandidateID FROM Candidates WHERE FullName = N'Phạm Thị Dung';
+SELECT @Cand5 = CandidateID FROM Candidates WHERE FullName = N'Hoàng Văn Đức';
 
 IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand1)
     INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
@@ -249,35 +288,24 @@ IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand4)
     INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
     VALUES (@Cand4, 'CV_PhamThiDung.pdf', '/Content/uploads/resumes/cv4.webp', DATEADD(DAY, -54, GETDATE()));
 
+IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand5)
+    INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
+    VALUES (@Cand5, 'CV_HoangVanDuc.pdf', '/Content/uploads/resumes/cv5.jpg', DATEADD(DAY, -52, GETDATE()));
+
 PRINT '=== Bước 10: Chèn Tin tuyển dụng (JobPosts) ===';
-
--- FPT Jobs
-IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'FPT001')
-    INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
-        SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('FPT001', @FPTRec, @FPTCompany, N'Lập trình viên Java (Senior)', N'<p>Tham gia phát triển dự án Spring Boot cho khách hàng Nhật Bản.</p>', 
-        N'<ul><li>Trên 3 năm kinh nghiệm Java</li><li>Tiếng Nhật N3 là lợi thế</li></ul>', 25000000, 35000000, 'VND', N'Hà Nội', 'Full-time', 
-        DATEADD(DAY, 30, GETDATE()), 'Published', DATEADD(DAY, -15, GETDATE()), GETDATE(), 327);
-
-IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'FPT002')
-    INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
-        SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('FPT002', @FPTRec, @FPTCompany, N'Lập trình viên ReactJS', N'<p>Xây dựng giao diện Frontend cho ứng dụng Web quy mô lớn.</p>', 
-        N'<ul><li>Tối thiểu 2 năm kinh nghiệm ReactJS</li><li>Thành thạo Redux, Hooks</li></ul>', 18000000, 25000000, 'VND', N'Hà Nội', 'Full-time', 
-        DATEADD(DAY, 25, GETDATE()), 'Published', DATEADD(DAY, -10, GETDATE()), GETDATE(), 245);
 
 -- Samsung Jobs
 IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'SSG001')
     INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
         SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('SSG001', @SamsungRec, @SamsungCompany, N'Chuyên viên phát triển Android', N'<p>Phát triển ứng dụng Android cho các dòng sản phẩm Flagship.</p>', 
+    VALUES ('SSG001', @SamsungRec, @SamsungCo, N'Chuyên viên phát triển Android', N'<p>Phát triển ứng dụng Android cho các dòng sản phẩm Flagship.</p>', 
         N'<ul><li>4+ năm kinh nghiệm Android Native</li><li>Kotlin/Java</li></ul>', 30000000, 45000000, 'VND', N'TP.HCM', 'Full-time', 
         DATEADD(DAY, 35, GETDATE()), 'Published', DATEADD(DAY, -20, GETDATE()), GETDATE(), 412);
 
 IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'SSG002')
     INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
         SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('SSG002', @SamsungRec, @SamsungCompany, N'Kỹ sư Lập trình Nhúng', N'<p>Phát triển Firmware cho các thiết bị IoT.</p>', 
+    VALUES ('SSG002', @SamsungRec, @SamsungCo, N'Kỹ sư Lập trình Nhúng', N'<p>Phát triển Firmware cho các thiết bị IoT.</p>', 
         N'<ul><li>Thành thạo C/C++</li><li>Hiểu biết về RTOS</li></ul>', 28000000, 40000000, 'VND', N'TP.HCM', 'Full-time', 
         DATEADD(DAY, 40, GETDATE()), 'Published', DATEADD(DAY, -18, GETDATE()), GETDATE(), 289);
 
@@ -285,14 +313,14 @@ IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'SSG002')
 IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'NV001')
     INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
         SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('NV001', @NvidiaRec, @NvidiaCompany, N'Kỹ sư Deep Learning', N'<p>Nghiên cứu và phát triển tại phòng Lab AI (GPU computing).</p>', 
+    VALUES ('NV001', @NvidiaRec, @NvidiaCo, N'Kỹ sư Deep Learning', N'<p>Nghiên cứu và phát triển tại phòng Lab AI (GPU computing).</p>', 
         N'<ul><li>Yêu cầu bằng Thạc sĩ/Tiến sĩ</li><li>Kinh nghiệm với PyTorch/TensorFlow</li></ul>', 35000000, 60000000, 'VND', N'Hà Nội', 'Full-time', 
         DATEADD(DAY, 45, GETDATE()), 'Published', DATEADD(DAY, -12, GETDATE()), GETDATE(), 534);
 
 IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'NV002')
     INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
         SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('NV002', @NvidiaRec, @NvidiaCompany, N'Kỹ sư CUDA', N'<p>Tối ưu hóa hiệu năng tính toán trên GPU.</p>', 
+    VALUES ('NV002', @NvidiaRec, @NvidiaCo, N'Kỹ sư CUDA', N'<p>Tối ưu hóa hiệu năng tính toán trên GPU.</p>', 
         N'<ul><li>3+ năm kinh nghiệm lập trình CUDA C++</li></ul>', 32000000, 50000000, 'VND', N'Hà Nội', 'Full-time', 
         DATEADD(DAY, 38, GETDATE()), 'Published', DATEADD(DAY, -8, GETDATE()), GETDATE(), 378);
 
@@ -400,33 +428,20 @@ IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'CC005')
         N'<ul><li>Có chứng chỉ Scrum Master</li><li>Kỹ năng giải quyết vấn đề</li></ul>', 28000000, 40000000, 'VND', N'TP.HCM', 'Full-time', 
         DATEADD(DAY, 25, GETDATE()), 'Published', DATEADD(DAY, -7, GETDATE()), GETDATE(), 312);
 
--- More FPT Jobs
-IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'FPT003')
-    INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
-        SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('FPT003', @FPTRec, @FPTCompany, N'Lập trình viên Python', N'<p>Phát triển Backend sử dụng Django/Flask.</p>', 
-        N'<ul><li>2+ năm kinh nghiệm Python</li></ul>', 20000000, 32000000, 'VND', N'Hà Nội', 'Full-time', 
-        DATEADD(DAY, 35, GETDATE()), 'Published', DATEADD(DAY, -12, GETDATE()), GETDATE(), 298);
 
-IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'FPT004')
-    INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
-        SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('FPT004', @FPTRec, @FPTCompany, N'Lập trình viên Angular', N'<p>Phát triển Frontend cho dự án ngân hàng.</p>', 
-        N'<ul><li>Thành thạo TypeScript, RxJS</li></ul>', 19000000, 28000000, 'VND', N'Đà Nẵng', 'Full-time', 
-        DATEADD(DAY, 28, GETDATE()), 'Published', DATEADD(DAY, -8, GETDATE()), GETDATE(), 234);
 
 -- More Samsung Jobs
 IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'SSG003')
     INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
         SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('SSG003', @SamsungRec, @SamsungCompany, N'Lập trình viên Flutter', N'<p>Phát triển Mobile App cho Samsung SmartThings.</p>', 
+    VALUES ('SSG003', @SamsungRec, @SamsungCo, N'Lập trình viên Flutter', N'<p>Phát triển Mobile App cho Samsung SmartThings.</p>', 
         N'<ul><li>Thành thạo Dart, Mobile UI/UX</li></ul>', 25000000, 38000000, 'VND', N'TP.HCM', 'Full-time', 
         DATEADD(DAY, 42, GETDATE()), 'Published', DATEADD(DAY, -16, GETDATE()), GETDATE(), 401);
 
 IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'SSG004')
     INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
         SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('SSG004', @SamsungRec, @SamsungCompany, N'Kỹ sư IoT', N'<p>Nghiên cứu phát triển thiết bị nhà thông minh (Smart Home).</p>', 
+    VALUES ('SSG004', @SamsungRec, @SamsungCo, N'Kỹ sư IoT', N'<p>Nghiên cứu phát triển thiết bị nhà thông minh (Smart Home).</p>', 
         N'<ul><li>Hiểu biết về MQTT, Zigbee, Bluetooth LE</li></ul>', 32000000, 48000000, 'VND', N'TP.HCM', 'Full-time', 
         DATEADD(DAY, 50, GETDATE()), 'Published', DATEADD(DAY, -14, GETDATE()), GETDATE(), 367);
 
@@ -434,31 +449,25 @@ IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'SSG004')
 IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'NV003')
     INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
         SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('NV003', @NvidiaRec, @NvidiaCompany, N'Kỹ sư Thị giác máy tính (Computer Vision)', N'<p>Phát triển thuật toán AI cho xe tự hành.</p>', 
+    VALUES ('NV003', @NvidiaRec, @NvidiaCo, N'Kỹ sư Thị giác máy tính (Computer Vision)', N'<p>Phát triển thuật toán AI cho xe tự hành.</p>', 
         N'<ul><li>Thành thạo OpenCV, Deep Learning</li></ul>', 40000000, 65000000, 'VND', N'Hà Nội', 'Full-time', 
         DATEADD(DAY, 48, GETDATE()), 'Published', DATEADD(DAY, -10, GETDATE()), GETDATE(), 489);
 
 IF NOT EXISTS (SELECT 1 FROM JobPosts WHERE JobCode = 'NV004')
     INSERT INTO JobPosts (JobCode, RecruiterID, CompanyID, Title, Description, Requirements, 
         SalaryFrom, SalaryTo, SalaryCurrency, Location, EmploymentType, ApplicationDeadline, Status, PostedAt, UpdatedAt, ViewCount)
-    VALUES ('NV004', @NvidiaRec, @NvidiaCompany, N'Kỹ sư Hiệu năng GPU', N'<p>Tối ưu hóa các ứng dụng tính toán song song.</p>', 
+    VALUES ('NV004', @NvidiaRec, @NvidiaCo, N'Kỹ sự Hiệu năng GPU', N'<p>Tối ưu hóa các ứng dụng tính toán song song.</p>', 
         N'<ul><li>Am hiểu kiến trúc GPU, lập trình C++</li></ul>', 45000000, 70000000, 'VND', N'Hà Nội', 'Full-time', 
         DATEADD(DAY, 55, GETDATE()), 'Published', DATEADD(DAY, -6, GETDATE()), GETDATE(), 423);
 
 PRINT '=== Bước 11: Chèn Chi tiết công việc (JobPostDetails) ===';
 
 -- Get all JobPostIDs
-DECLARE @JobFPT1 INT, @JobFPT2 INT, @JobFPT3 INT, @JobFPT4 INT;
 DECLARE @JobSSG1 INT, @JobSSG2 INT, @JobSSG3 INT, @JobSSG4 INT;
 DECLARE @JobNV1 INT, @JobNV2 INT, @JobNV3 INT, @JobNV4 INT;
 DECLARE @JobAPL1 INT, @JobAPL2 INT, @JobAPL3 INT, @JobAPL4 INT;
 DECLARE @JobAWS1 INT, @JobAWS2 INT, @JobAWS3 INT, @JobAWS4 INT, @JobAWS5 INT;
 DECLARE @JobCC1 INT, @JobCC2 INT, @JobCC3 INT, @JobCC4 INT, @JobCC5 INT;
-
-SELECT @JobFPT1 = JobPostID FROM JobPosts WHERE JobCode = 'FPT001';
-SELECT @JobFPT2 = JobPostID FROM JobPosts WHERE JobCode = 'FPT002';
-SELECT @JobFPT3 = JobPostID FROM JobPosts WHERE JobCode = 'FPT003';
-SELECT @JobFPT4 = JobPostID FROM JobPosts WHERE JobCode = 'FPT004';
 
 SELECT @JobSSG1 = JobPostID FROM JobPosts WHERE JobCode = 'SSG001';
 SELECT @JobSSG2 = JobPostID FROM JobPosts WHERE JobCode = 'SSG002';
@@ -487,24 +496,41 @@ SELECT @JobCC3 = JobPostID FROM JobPosts WHERE JobCode = 'CC003';
 SELECT @JobCC4 = JobPostID FROM JobPosts WHERE JobCode = 'CC004';
 SELECT @JobCC5 = JobPostID FROM JobPosts WHERE JobCode = 'CC005';
 
--- Insert JobPostDetails for FPT Jobs
-IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobFPT1)
-    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
-    VALUES (@JobFPT1, N'Công nghệ thông tin', N'Khoa học máy tính', 3, N'Đại học', N'Java, Spring Boot, MySQL', 3, N'Nam/Nữ', 23, 35, N'Active');
-
-IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobFPT2)
-    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
-    VALUES (@JobFPT2, N'Công nghệ thông tin', N'Công nghệ phần mềm', 2, N'Đại học', N'ReactJS, Redux, JavaScript, HTML/CSS', 5, N'Nam/Nữ', 22, 32, N'Active');
-
-IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobFPT3)
-    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
-    VALUES (@JobFPT3, N'Công nghệ thông tin', N'Khoa học máy tính', 2, N'Đại học', N'Python, Django, Flask, PostgreSQL', 4, N'Nam/Nữ', 22, 32, N'Active');
-
-IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobFPT4)
-    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
-    VALUES (@JobFPT4, N'Công nghệ thông tin', N'Công nghệ phần mềm', 2, N'Đại học', N'Angular, TypeScript, RxJS', 3, N'Nam/Nữ', 22, 30, N'Active');
-
 -- Insert JobPostDetails for Samsung Jobs
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobSSG1)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobSSG1, N'Điện tử viễn thông', N'Công nghệ phần mềm', 3, N'Đại học', N'Android, Kotlin, Java, Mobile Architecture', 4, N'Nam/Nữ', 23, 35, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobSSG2)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobSSG2, N'Điện tử viễn thông', N'Công nghệ phần mềm', 2, N'Đại học', N'iOS, Swift, Objective-C, UIKit', 3, N'Nam/Nữ', 22, 33, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobSSG3)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobSSG3, N'Điện tử viễn thông', N'Công nghệ phần mềm', 2, N'Đại học', N'Flutter, Dart, Mobile UI/UX, Firebase', 5, N'Nam/Nữ', 22, 32, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobSSG4)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobSSG4, N'Điện tử viễn thông', N'Điện tử viễn thông', 4, N'Đại học', N'IoT, MQTT, Zigbee, Bluetooth LE, Embedded Systems', 3, N'Nam/Nữ', 24, 38, N'Active');
+
+-- Insert JobPostDetails for NVIDIA Jobs
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobNV1)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobNV1, N'Trí tuệ nhân tạo & GPU', N'Khoa học máy tính', 5, N'Thạc sĩ', N'Deep Learning, PyTorch, TensorFlow, Python, GPU Programming', 2, N'Nam/Nữ', 25, 40, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobNV2)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobNV2, N'Trí tuệ nhân tạo & GPU', N'Khoa học máy tính', 3, N'Đại học', N'CUDA, C++, Parallel Computing, GPU Architecture', 3, N'Nam/Nữ', 23, 35, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobNV3)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobNV3, N'Trí tuệ nhân tạo & GPU', N'Khoa học máy tính', 4, N'Thạc sĩ', N'Computer Vision, OpenCV, Deep Learning, Python, C++', 2, N'Nam/Nữ', 25, 38, N'Active');
+
+IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobNV4)
+    INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
+    VALUES (@JobNV4, N'Trí tuệ nhân tạo & GPU', N'Kỹ thuật máy tính', 5, N'Thạc sĩ', N'GPU Performance Optimization, C++, CUDA, Profiling Tools', 2, N'Nam/Nữ', 26, 40, N'Active');
+
+-- Continue with Apple Jobs
 IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobSSG1)
     INSERT INTO JobPostDetails (JobPostID, Industry, Major, YearsExperience, DegreeRequired, Skills, Headcount, GenderRequirement, AgeFrom, AgeTo, Status)
     VALUES (@JobSSG1, N'Điện tử viễn thông', N'Công nghệ phần mềm', 4, N'Đại học', N'Android, Kotlin, Java', 2, N'Nam/Nữ', 24, 35, N'Active');
@@ -599,42 +625,55 @@ IF NOT EXISTS (SELECT 1 FROM JobPostDetails WHERE JobPostID = @JobCC5)
 
 PRINT '=== Bước 12: Chèn Ứng tuyển (Applications) ===';
 
-DECLARE @Job1 INT, @Job2 INT, @Job3 INT, @Job4 INT, @Job5 INT;
+DECLARE @Job1 INT, @Job2 INT, @Job3 INT, @Job4 INT, @Job5 INT, @Job6 INT, @Job7 INT, @Job8 INT;
 
-SELECT @Job1 = JobPostID FROM JobPosts WHERE JobCode = 'FPT001';
-SELECT @Job2 = JobPostID FROM JobPosts WHERE JobCode = 'SSG001';
+SELECT @Job1 = JobPostID FROM JobPosts WHERE JobCode = 'SSG001';
+SELECT @Job2 = JobPostID FROM JobPosts WHERE JobCode = 'SSG002';
 SELECT @Job3 = JobPostID FROM JobPosts WHERE JobCode = 'NV001';
-SELECT @Job4 = JobPostID FROM JobPosts WHERE JobCode = 'APL001';
-SELECT @Job5 = JobPostID FROM JobPosts WHERE JobCode = 'AWS001';
+SELECT @Job4 = JobPostID FROM JobPosts WHERE JobCode = 'NV002';
+SELECT @Job5 = JobPostID FROM JobPosts WHERE JobCode = 'APL001';
+SELECT @Job6 = JobPostID FROM JobPosts WHERE JobCode = 'AWS001';
+SELECT @Job7 = JobPostID FROM JobPosts WHERE JobCode = 'SSG003';
+SELECT @Job8 = JobPostID FROM JobPosts WHERE JobCode = 'NV003';
 
--- Insert Applications
+-- Insert Applications for Samsung Jobs
 INSERT INTO Applications (CandidateID, JobPostID, AppliedAt, Status, ResumeFilePath, Note, UpdatedAt)
 SELECT @Cand1, @Job1, DATEADD(DAY, -14, GETDATE()), 'Under review', '/Content/uploads/resumes/cv1.jpg', NULL, GETDATE()
 WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand1 AND JobPostID = @Job1);
 
 INSERT INTO Applications (CandidateID, JobPostID, AppliedAt, Status, ResumeFilePath, Note, UpdatedAt)
-SELECT @Cand1, @Job4, DATEADD(DAY, -10, GETDATE()), 'Shortlisted', '/Content/uploads/resumes/cv1.jpg', N'Đã phỏng vấn kỹ thuật', GETDATE()
-WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand1 AND JobPostID = @Job4);
-
-INSERT INTO Applications (CandidateID, JobPostID, AppliedAt, Status, ResumeFilePath, Note, UpdatedAt)
-SELECT @Cand2, @Job1, DATEADD(DAY, -13, GETDATE()), 'Rejected', '/Content/uploads/resumes/cv2.webp', NULL, GETDATE()
+SELECT @Cand2, @Job1, DATEADD(DAY, -13, GETDATE()), 'Shortlisted', '/Content/uploads/resumes/cv2.webp', N'Kinh nghiệm Android tốt', GETDATE()
 WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand2 AND JobPostID = @Job1);
 
 INSERT INTO Applications (CandidateID, JobPostID, AppliedAt, Status, ResumeFilePath, Note, UpdatedAt)
-SELECT @Cand2, @Job2, DATEADD(DAY, -15, GETDATE()), 'Under review', '/Content/uploads/resumes/cv2.webp', NULL, GETDATE()
-WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand2 AND JobPostID = @Job2);
+SELECT @Cand3, @Job2, DATEADD(DAY, -15, GETDATE()), 'Under review', '/Content/uploads/resumes/cv3.jpg', NULL, GETDATE()
+WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand3 AND JobPostID = @Job2);
 
 INSERT INTO Applications (CandidateID, JobPostID, AppliedAt, Status, ResumeFilePath, Note, UpdatedAt)
-SELECT @Cand3, @Job1, DATEADD(DAY, -12, GETDATE()), 'Interviewed', '/Content/uploads/resumes/cv3.jpg', N'Đang chờ kết quả', GETDATE()
-WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand3 AND JobPostID = @Job1);
+SELECT @Cand4, @Job7, DATEADD(DAY, -11, GETDATE()), 'Interviewed', '/Content/uploads/resumes/cv4.webp', N'Có portfolio Flutter ấn tượng', GETDATE()
+WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand4 AND JobPostID = @Job7);
 
+-- Insert Applications for NVIDIA Jobs
+INSERT INTO Applications (CandidateID, JobPostID, AppliedAt, Status, ResumeFilePath, Note, UpdatedAt)
+SELECT @Cand1, @Job3, DATEADD(DAY, -12, GETDATE()), 'Shortlisted', '/Content/uploads/resumes/cv1.jpg', N'Background AI mạnh', GETDATE()
+WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand1 AND JobPostID = @Job3);
+
+INSERT INTO Applications (CandidateID, JobPostID, AppliedAt, Status, ResumeFilePath, Note, UpdatedAt)
+SELECT @Cand2, @Job4, DATEADD(DAY, -10, GETDATE()), 'Under review', '/Content/uploads/resumes/cv2.webp', NULL, GETDATE()
+WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand2 AND JobPostID = @Job4);
+
+INSERT INTO Applications (CandidateID, JobPostID, AppliedAt, Status, ResumeFilePath, Note, UpdatedAt)
+SELECT @Cand5, @Job8, DATEADD(DAY, -9, GETDATE()), 'Shortlisted', '/Content/uploads/resumes/cv5.jpg', N'Chuyên gia Computer Vision', GETDATE()
+WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand5 AND JobPostID = @Job8);
+
+-- Insert Applications for Apple & AWS Jobs
 INSERT INTO Applications (CandidateID, JobPostID, AppliedAt, Status, ResumeFilePath, Note, UpdatedAt)
 SELECT @Cand3, @Job5, DATEADD(DAY, -8, GETDATE()), 'Under review', '/Content/uploads/resumes/cv3.jpg', NULL, GETDATE()
 WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand3 AND JobPostID = @Job5);
 
 INSERT INTO Applications (CandidateID, JobPostID, AppliedAt, Status, ResumeFilePath, Note, UpdatedAt)
-SELECT @Cand4, @Job3, DATEADD(DAY, -9, GETDATE()), 'Shortlisted', '/Content/uploads/resumes/cv4.webp', N'Portfolio ấn tượng', GETDATE()
-WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand4 AND JobPostID = @Job3);
+SELECT @Cand4, @Job6, DATEADD(DAY, -7, GETDATE()), 'Interviewed', '/Content/uploads/resumes/cv4.webp', N'Phỏng vấn tốt', GETDATE()
+WHERE NOT EXISTS (SELECT 1 FROM Applications WHERE CandidateID = @Cand4 AND JobPostID = @Job6);
 
 PRINT '=== Bước 13: Chèn Công việc đã lưu (SavedJobs) ===';
 
@@ -653,6 +692,18 @@ WHERE NOT EXISTS (SELECT 1 FROM SavedJobs WHERE CandidateID = @Cand2 AND JobPost
 INSERT INTO SavedJobs (CandidateID, JobPostID, SavedAt, Note)
 SELECT @Cand3, @Job2, DATEADD(DAY, -7, GETDATE()), N'Môi trường Samsung'
 WHERE NOT EXISTS (SELECT 1 FROM SavedJobs WHERE CandidateID = @Cand3 AND JobPostID = @Job2);
+
+INSERT INTO SavedJobs (CandidateID, JobPostID, SavedAt, Note)
+SELECT @Cand2, @Job7, DATEADD(DAY, -5, GETDATE()), N'Flutter - công nghệ thích hợp'
+WHERE NOT EXISTS (SELECT 1 FROM SavedJobs WHERE CandidateID = @Cand2 AND JobPostID = @Job7);
+
+INSERT INTO SavedJobs (CandidateID, JobPostID, SavedAt, Note)
+SELECT @Cand4, @Job3, DATEADD(DAY, -4, GETDATE()), N'NVIDIA - công ty hàng đầu AI'
+WHERE NOT EXISTS (SELECT 1 FROM SavedJobs WHERE CandidateID = @Cand4 AND JobPostID = @Job3);
+
+INSERT INTO SavedJobs (CandidateID, JobPostID, SavedAt, Note)
+SELECT @Cand5, @Job4, DATEADD(DAY, -3, GETDATE()), N'CUDA programming - hấp dẫn'
+WHERE NOT EXISTS (SELECT 1 FROM SavedJobs WHERE CandidateID = @Cand5 AND JobPostID = @Job4);
 
 PRINT '=== HOÀN TẤT! ===';
 
