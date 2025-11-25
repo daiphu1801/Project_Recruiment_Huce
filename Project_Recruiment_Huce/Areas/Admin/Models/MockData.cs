@@ -56,17 +56,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         });
 
 
-        private static readonly Lazy<List<ApplicationListVm>> _applications = new Lazy<List<ApplicationListVm>>(() => new List<ApplicationListVm>
-        {
-            new ApplicationListVm{ ApplicationId=1, CandidateId=1, JobId=1, CandidateName="Pham Quang C", JobTitle=".NET Developer", AppliedAt=DateTime.Today.AddDays(-2), AppStatus="Under review", CvPath="/uploads/cv/cv1.pdf", CertificatePath=null, Note=null, UpdatedAt=DateTime.Today.AddDays(-2)},
-            new ApplicationListVm{ ApplicationId=2, CandidateId=2, JobId=2, CandidateName="Le Thi D", JobTitle="QA Engineer", AppliedAt=DateTime.Today.AddDays(-1), AppStatus="Interview", CvPath="/uploads/cv/cv2.pdf", CertificatePath="/uploads/cert/cert2.pdf", Note="Good candidate", UpdatedAt=DateTime.Today.AddDays(-1)},
-            new ApplicationListVm{ ApplicationId=3, CandidateId=1, JobId=3, CandidateName="Pham Quang C", JobTitle="Designer", AppliedAt=DateTime.Today.AddDays(-5), AppStatus="Rejected", CvPath="/uploads/cv/cv1.pdf", CertificatePath=null, Note="Not suitable", UpdatedAt=DateTime.Today.AddDays(-5)},
-            new ApplicationListVm{ ApplicationId=4, CandidateId=3, JobId=4, CandidateName="Tran Minh F", JobTitle="Frontend Developer", AppliedAt=DateTime.Today.AddDays(-3), AppStatus="Under review", CvPath="/uploads/cv/cv3.pdf", CertificatePath=null, Note=null, UpdatedAt=DateTime.Today.AddDays(-3)},
-            new ApplicationListVm{ ApplicationId=5, CandidateId=4, JobId=5, CandidateName="Nguyen Thi G", JobTitle="Backend Developer", AppliedAt=DateTime.Today.AddDays(-1), AppStatus="Offered", CvPath="/uploads/cv/cv4.pdf", CertificatePath="/uploads/cert/cert4.pdf", Note="Excellent candidate", UpdatedAt=DateTime.Today.AddDays(-1)},
-            new ApplicationListVm{ ApplicationId=6, CandidateId=1, JobId=6, CandidateName="Pham Quang C", JobTitle="DevOps Engineer", AppliedAt=DateTime.Today.AddDays(-6), AppStatus="Hired", CvPath="/uploads/cv/cv1.pdf", CertificatePath="/uploads/cert/cert1.pdf", Note="Hired", UpdatedAt=DateTime.Today.AddDays(-6)},
-            new ApplicationListVm{ ApplicationId=7, CandidateId=2, JobId=7, CandidateName="Le Thi D", JobTitle="Mobile Developer", AppliedAt=DateTime.Today.AddDays(-2), AppStatus="Interview", CvPath="/uploads/cv/cv2.pdf", CertificatePath=null, Note="Scheduled interview", UpdatedAt=DateTime.Today.AddDays(-2)},
-        });
-
+       
         private static readonly Lazy<List<TransactionListVm>> _transactions = new Lazy<List<TransactionListVm>>(() => new List<TransactionListVm>
         {
             new TransactionListVm{ TransactionId=1, AccountId=2, TransactionNo="TRX0001", AccountEmail="alpha@company.vn", Amount=5000000, PaymentMethod="Bank", Status="Completed", TransactedAt=DateTime.Today.AddDays(-2), Description="Payment for premium package"},
@@ -122,7 +112,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public static List<RecruiterListVm> Recruiters => _recruiters.Value;
         public static List<CandidatesListVm> Candidates => _candidates.Value;
         public static List<WorkExperienceVm> WorkExperiences => _workExperiences.Value;
-        public static List<ApplicationListVm> Applications => _applications.Value;
+
         public static List<TransactionListVm> Transactions => _transactions.Value;
         public static List<BankCardListVm> BankCards => _bankCards.Value;
         public static List<PendingPaymentVm> PendingPayments => _pendingPayments.Value;

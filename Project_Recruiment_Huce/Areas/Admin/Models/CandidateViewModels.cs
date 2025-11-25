@@ -5,9 +5,6 @@ using System.Web;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Models
 {
-    /// <summary>
-    /// ViewModel cho danh sách ứng viên
-    /// </summary>
     public class CandidatesListVm
     {
         [Display(Name = "ID ứng viên")]
@@ -26,18 +23,18 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         
         public DateTime? CreatedAt { get; set; }
         [Display(Name = "Trạng thái")]
-        public byte? ActiveFlag { get; set; } // 1 = active, 0 = inactive
+        public byte? ActiveFlag { get; set; } 
 
-        // Helper properties for display (from related Account table)
+       
         [Display(Name = "Email")]
         public string Email { get; set; }
 
-        // Helper property for display
+        
         [Display(Name = "Trạng thái hoạt động")]
         public bool Active => ActiveFlag == 1;
         [Display(Name = "Tên tài khoản")]
         public string UserName { get; set; }
-        // Alias for compatibility
+        
         public DateTime? BirthDate => DateOfBirth;
 
         public string PhotoUrl { get;   set; }
@@ -52,7 +49,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
     public class CreateCandidatesListVm
     {
         [Display(Name = "ID tài khoản")]
-        [Required(ErrorMessage = "Vui lòng nhập ID tài khoản")]
+        
         public int AccountId { get; set; }
         [Display(Name = "Họ và tên")]
         [Required(ErrorMessage = "Vui lòng nhập họ và tên")]
@@ -75,7 +72,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         public bool Active
         {
             get => ActiveFlag == 1;
-            set => ActiveFlag = value ? (byte?)1 : (byte?)0; // Thêm setter
+            set => ActiveFlag = value ? (byte?)1 : (byte?)0; 
         }
         public DateTime? BirthDate => DateOfBirth;
         public HttpPostedFileBase PhotoFile { get; set; }

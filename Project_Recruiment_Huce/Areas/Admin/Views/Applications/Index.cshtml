@@ -1,41 +1,89 @@
 @model List<Project_Recruiment_Huce.Areas.Admin.Models.ApplicationListVm>
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
 @{
-  ViewBag.AddUrl = Url.Action("Create");
-  ViewBag.AddLabel = "Thêm hồ sơ ứng tuyển";
+    ViewBag.Title = "Hồ sơ ứng tuyển";
+    ViewBag.AddUrl = Url.Action("Create");
+    ViewBag.AddLabel = "Thêm hồ sơ";
 }
-@Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
 
 <div class="card mb-4">
-  <div class="card-body table-responsive p-0">
-    <table class="table table-hover">
-      <thead><tr>
-        <th>Ứng viên</th><th>Công việc</th><th>Nộp lúc</th><th>Trạng thái</th><th></th>
-      </tr></thead>
-      <tbody>
-      @if (Model != null && Model.Any()) {
-      foreach (var item in Model) {
-        <tr>
-          <td>@item.CandidateName</td>
-          <td>@item.JobTitle</td>
-          <td>@(item.AppliedAt?.ToString("dd/MM/yyyy") ?? "")</td>
-          <td>@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(item.AppStatus, "Applications"))</td>
-          <td class="text-end" style="white-space:nowrap;">
-            @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string,string>{
-              {"Details", Url.Action("Details", new { id = item.ApplicationId })},
-              {"Edit", Url.Action("Edit", new { id = item.ApplicationId })},
-              {"Delete", Url.Action("Delete", new { id = item.ApplicationId })}
-            })
-          </td>
-        </tr>
-      }
-      } else {
-        <tr><td colspan="5" class="text-center text-muted">Không có dữ liệu</td></tr>
-      }
-      </tbody>
-    </table>
-  </div>
+    <div class="card-header">
+        @using (Html.BeginForm("Index", "Applications", FormMethod.Get, new { id = "filterForm", @class = "row g-2 align-items-center" }))
+        {
+            <div class="col-md-3">
+                <input type="text" name="q" value="@ViewBag.CurrentQ" class="form-control" placeholder="Tìm kiếm...">
+            </div>
+            <div class="col-md-3">
+                @Html.DropDownList("companyId", ViewBag.CompanyId as SelectList, "-- Tất cả công ty --", new { @class = "form-select", onchange = "this.form.submit()" })
+            </div>
+            <div class="col-md-3">
+                @Html.DropDownList("jobId", ViewBag.JobId as SelectList, "-- Tất cả công việc --", new { @class = "form-select", onchange = "this.form.submit()" })
+            </div>
+            <div class="col-md-2">
+                @Html.DropDownList("status", ViewBag.StatusOptions as SelectList, "-- Trạng thái --", new { @class = "form-select", onchange = "this.form.submit()" })
+            </div>
+            <div class="col-md-1 text-end">
+                <a href="@Url.Action("Create")" class="btn btn-primary text-nowrap">
+                    <i class="bi bi-plus-lg"></i> Thêm
+                </a>
+            </div>
+        }
+    </div>
+
+    <div class="card-body table-responsive p-0">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Ứng viên</th>
+                    <th>Công việc</th>
+                    <th>Công ty</th>
+                    <th>Nộp lúc</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.CandidateName</td>
+                            <td>@item.JobTitle</td>
+                            <td>@item.CompanyName</td>
+                            <td>@(item.AppliedAt?.ToString("dd/MM/yyyy") ?? "-")</td>
+                            <td>
+                                @Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(item.AppStatus, "Applications"))
+                            </td>
+                            <td class="text-end" style="white-space:nowrap;">
+                                @Html.Partial("~/Areas/Admin/Views/Shared/_RowActions.cshtml", new System.Collections.Generic.Dictionary<string, string>{
+                                    {"Details", Url.Action("Details", new { id = item.ApplicationId })},
+                                    {"Edit", Url.Action("Edit", new { id = item.ApplicationId })},
+                                    {"Delete", Url.Action("Delete", new { id = item.ApplicationId })}
+                                })
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6" class="text-center text-muted">Không có dữ liệu</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
-@Html.Partial("~/Areas/Admin/Views/Shared/_Pagination.cshtml", new { PageIndex = 1, TotalPages = 1, BaseUrl = Url.Action("Index", new { q = Request["q"], status = Request["status"] }) })
 
-
+@Html.Partial("~/Areas/Admin/Views/Shared/_Pagination.cshtml", new
+{
+    PageIndex = ViewBag.CurrentPage,
+    TotalPages = ViewBag.TotalPages,
+    BaseUrl = Url.Action("Index", new
+    {
+        q = ViewBag.CurrentQ,
+        status = ViewBag.CurrentStatus,
+        companyId = ViewBag.CurrentCompanyId,
+        jobId = ViewBag.CurrentJobId
+    })
+})

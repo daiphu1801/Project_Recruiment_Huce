@@ -1,83 +1,48 @@
-using Project_Recruiment_Huce.Areas.Admin.Models;
-using Project_Recruiment_Huce.Models;
-using Project_Recruiment_Huce.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Security.Principal;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Routing;
-using static Project_Recruiment_Huce.Areas.Admin.Models.CreateCandidatesListVm;
-
+using Project_Recruiment_Huce.Areas.Admin.Models;
+using Project_Recruiment_Huce.Helpers; // Sử dụng các Helper như ValidationHelper, PasswordHelper
+using Project_Recruiment_Huce.Models;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
-    // NOTE: This controller uses MockData as a template/base.
-    // Team members should follow AccountsController pattern to implement CRUD with database.
     public class CandidatesController : AdminBaseController
     {
-        // Removed unused field: private string photo;
-
-        public string PhotoUrl { get; private set; }
-
-
         // GET: Admin/Candidates
         public ActionResult Index(string q)
         {
             ViewBag.Title = "Quản lý ứng viên";
             ViewBag.Breadcrumbs = new List<Tuple<string, string>>
             {
-                new Tuple<string, string>("người ứng tuyển", null)
+                new Tuple<string, string>("Người ứng tuyển", null)
             };
 
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 var query = db.Candidates.AsQueryable();
 
-                // Search
+                // Search logic
                 if (!string.IsNullOrWhiteSpace(q))
                 {
-                    
                     var searchKeyword = q.ToLower();
-
                     query = query.Where(c =>
-                        (c.FullName ?? "").ToLower().Contains(searchKeyword) ||
-                        (c.Email ?? "").ToLower().Contains(searchKeyword) ||
-                        (c.Phone ?? "").ToLower().Contains(searchKeyword)
+                        (c.FullName != null && c.FullName.ToLower().Contains(searchKeyword)) ||
+                        (c.Email != null && c.Email.ToLower().Contains(searchKeyword)) ||
+                        (c.Phone != null && c.Phone.Contains(searchKeyword))
                     );
                 }
+                var candidatesList = query.OrderByDescending(c => c.CreatedAt).ToList();
 
-                var CandidatesList = query
-                                .OrderByDescending(c => c.CreatedAt)
-                                .ToList();
-               
-                var candidatePhotoIds = CandidatesList.Select(c => GetCandidatePhotoID(c, db))
-                                                    .Where(id => id.HasValue)
-                                                    .Select(id => id.Value)
-                                                    .Distinct()
-                                                    .ToList();
-                var profilePhotos = db.ProfilePhotos
-                                            .Where(p => candidatePhotoIds.Contains(p.PhotoID))
-                                            .ToDictionary(p => p.PhotoID, p => p.FilePath);
-
-
-                var candidates = CandidatesList.Select(c =>
+                var vmList = candidatesList.Select(c =>
                 {
-                    
+                    // Lấy Account tương ứng để lấy thông tin đăng nhập và ảnh
                     var account = db.Accounts.FirstOrDefault(a => a.AccountID == c.AccountID);
-                    int? photoId = account?.PhotoID;
-                    var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
-
-                    string photoUrl = null;
-                    if (photoId.HasValue && profilePhotos.ContainsKey(photoId.Value))
-                    {
-                        photoUrl = profilePhotos[photoId.Value];
-                    }
+                    var photoUrl = account?.ProfilePhoto?.FilePath;
 
                     return new CandidatesListVm
                     {
@@ -87,45 +52,31 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         DateOfBirth = c.BirthDate,
                         Gender = c.Gender,
                         Phone = c.Phone,
-                        PhotoId = photoId,
+                        PhotoId = account?.PhotoID,
                         CreatedAt = c.CreatedAt,
                         ActiveFlag = c.ActiveFlag,
-                        Email = c.Email,
+                        Email = c.Email, 
                         Address = c.Address,
                         PhotoUrl = photoUrl,
                         Summary = c.Summary,
                         ApplicationEmail = c.ApplicationEmail,
-                        UserName = account.Username
+                        UserName = account?.Username
                     };
                 }).ToList();
 
-                return View(candidates);
+                return View(vmList);
             }
         }
 
-        private int? GetCandidatePhotoID(Candidate c, JOBPORTAL_ENDataContext db)
-        {
-            var accountId = c.AccountID;
-            // AccountID giờ là non-nullable int, không cần check null
-            var photoId = db.Accounts
-                .Where(a => a.AccountID == accountId)
-                .Select(a => a.PhotoID)
-                .FirstOrDefault();
-            return photoId;
-        }
-
-
         // GET: Admin/Candidates/Details/5
-        // NOTE: This action uses MockData as a template/base.
         public ActionResult Details(int id)
         {
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
                 var candidate = db.Candidates.FirstOrDefault(x => x.CandidateID == id);
                 if (candidate == null) return HttpNotFound();
+
                 var account = db.Accounts.FirstOrDefault(a => a.AccountID == candidate.AccountID);
-                int? photoId = account?.PhotoID;
-                var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
 
                 var vm = new CandidatesListVm
                 {
@@ -135,79 +86,85 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     DateOfBirth = candidate.BirthDate,
                     Gender = candidate.Gender,
                     Phone = candidate.Phone,
-                    PhotoId = photoId,
+                    PhotoId = account?.PhotoID,
                     CreatedAt = candidate.CreatedAt,
                     ActiveFlag = candidate.ActiveFlag,
                     Email = candidate.Email,
                     Address = candidate.Address,
-                    PhotoUrl = photo?.FilePath,
+                    PhotoUrl = account?.ProfilePhoto?.FilePath,
                     Summary = candidate.Summary,
                     ApplicationEmail = candidate.ApplicationEmail,
                     UserName = account?.Username
-
                 };
+
                 ViewBag.Title = "Chi tiết ứng viên";
                 ViewBag.Breadcrumbs = new List<Tuple<string, string>> {
-                new Tuple<string, string>("Ứng viên", Url.Action("Index")),
-                new Tuple<string, string>($"#{candidate.CandidateID}", null)
-            };
+                    new Tuple<string, string>("Ứng viên", Url.Action("Index")),
+                    new Tuple<string, string>($"#{candidate.CandidateID}", null)
+                };
                 return View(vm);
             }
         }
 
         // GET: Admin/Candidates/Create
-        // NOTE: This action uses MockData as a template/base.
         public ActionResult Create()
         {
             ViewBag.Title = "Thêm người ứng tuyển mới";
-
             ViewBag.Breadcrumbs = new List<Tuple<string, string>>
             {
-                new Tuple<string, string>("người ứng tuyển", Url.Action("Index")),
+                new Tuple<string, string>("Người ứng tuyển", Url.Action("Index")),
                 new Tuple<string, string>("Thêm mới", null)
             };
 
-            // 🔥 GỌI HÀM HELPER để nạp Dropdowns
-            LoadCreateDropdowns();
-
+            LoadCreateDropdowns(); // Load Gender
             return View(new CreateCandidatesListVm { Active = true });
         }
 
-        // Fix for CS0161: Ensure all code paths in Create(CreateCandidateListVm model) return an ActionResult
+        // POST: Admin/Candidates/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(CreateCandidatesListVm model)
         {
-            // 🔥 GỌI HÀM HELPER để nạp Dropdowns, sẵn sàng nếu ModelState không hợp lệ
             LoadCreateDropdowns();
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
 
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var inputEmail = (model.Email ?? string.Empty).Trim().ToLower();
+                
+
+                // Check Username trùng
                 if (db.Accounts.Any(a => a.Username == model.Username))
                 {
                     ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
-                }
-                if (db.Accounts.Any(a => a.Email.ToLower() == model.Email.ToLower()))
-                {
-                    ModelState.AddModelError("Email", "Email (login) đã được sử dụng");
+                    return View(model);
                 }
 
+                // Check Email login trùng
+                if (db.Accounts.Any(a => a.Email.ToLower() == model.Email.ToLower()))
+                {
+                    ModelState.AddModelError("Email", "Email (đăng nhập) đã được sử dụng");
+                    return View(model);
+                }
+
+                // Check & Chuẩn hóa Phone
                 var phone = (model.Phone ?? string.Empty).Trim();
                 if (!string.IsNullOrWhiteSpace(phone))
                 {
                     if (!ValidationHelper.IsValidVietnamesePhone(phone))
                     {
                         ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                        return View(model);
                     }
-                    else
-                    {
-                        phone = ValidationHelper.NormalizePhone(phone);
+                    phone = ValidationHelper.NormalizePhone(phone);
 
-                        if (!ValidationHelper.IsAccountPhoneUnique(phone))
-                        {
-                            ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng.");
-                        }
+                    if (!ValidationHelper.IsAccountPhoneUnique(phone))
+                    {
+                        ModelState.AddModelError("Phone", "Số điện thoại này đã được sử dụng.");
+                        return View(model);
                     }
                 }
                 else
@@ -215,99 +172,76 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     phone = null;
                 }
 
-                // Kiểm tra lại Username sau khi Phone được xử lý
-                if (db.Accounts.Any(a => a.Username == model.Username))
-                {
-                    ModelState.AddModelError("Username", "Tên đăng nhập này đã tồn tại");
-                }
-
-
-                if (!ModelState.IsValid)
-                {
-                    // Dropdowns đã được nạp ở đầu action
-                    return View(model);
-                }
-
-                // Validate password not null
-                if (string.IsNullOrWhiteSpace(model.Password))
-                {
-                    ModelState.AddModelError("Password", "Mật khẩu không được để trống");
-                    return View(model);
-                }
-
-                // Tạo hash mật khẩu sử dụng PBKDF2
                 string passwordHash = PasswordHelper.HashPassword(model.Password);
-
                 var account = new Account
                 {
                     Username = model.Username,
                     Email = model.Email,
-                    Phone = model.Phone,
-                    Role = "Candidate",
+                    Phone = phone,
+                    Role = "Candidate", 
                     PasswordHash = passwordHash,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,
                     CreatedAt = DateTime.Now,
-                    UserName = model.Username,
-                    ApplicationEmail = model.ApplicationEmail
-
+                    
                 };
 
-                // XỬ LÝ UPLOAD ẢNH
+                // Xử lý Upload ảnh cho Account
                 if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {
-                    int? photoId = SavePhoto(model.PhotoFile);
-
-                    if (photoId.HasValue)
+                    ProfilePhoto photo = SavePhoto(db, model.PhotoFile);
+                    if (photo != null)
                     {
-                        account.PhotoID = photoId.Value;
+                        account.ProfilePhoto = photo;
                     }
                     else
                     {
-                        // SavePhoto thất bại (validation), trả về view (ViewBag đã nạp)
+                        
                         return View(model);
                     }
                 }
 
                 db.Accounts.InsertOnSubmit(account);
 
-                var Candidate = new Candidate
+
+                var candidate = new Candidate
                 {
-                    Account = account,
+                    Account = account, 
                     FullName = model.FullName,
-                    Username = model.Username,
-                    Email = model.Email,
-                    AccountID = account.AccountID,
+                    Email = model.Email, 
                     ApplicationEmail = model.ApplicationEmail,
-                    Phone = model.Phone,
+                    Phone = phone,
                     CreatedAt = DateTime.Now,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,
                     Gender = model.Gender,
                     BirthDate = model.DateOfBirth,
-                    
-                    
+                    Address = model.Address,
+                    Summary = model.Summary
                 };
 
-                db.Candidates.InsertOnSubmit(Candidate);
+                db.Candidates.InsertOnSubmit(candidate);
 
                 try
                 {
                     db.SubmitChanges();
-                    TempData["SuccessMessage"] = "Tạo người ứng tuyển và tài khoản thành công!";
+                    TempData["SuccessMessage"] = "Tạo ứng viên và tài khoản thành công!";
                     return RedirectToAction("Index");
                 }
                 catch (Exception ex)
                 {
-                    // Bắt lỗi DB nếu có
-                    ModelState.AddModelError("", "Lỗi khi lưu dữ liệu vào cơ sở dữ liệu: " + ex.Message);
-                    // Dropdowns đã được nạp ở đầu action
+                    ModelState.AddModelError("", "Lỗi hệ thống khi lưu dữ liệu: " + ex.Message);
+
+                    
+                    if (account.ProfilePhoto != null)
+                    {
+                        var filePath = Server.MapPath("~" + account.ProfilePhoto.FilePath);
+                        if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+                    }
                     return View(model);
                 }
             }
         }
 
-
         // GET: Admin/Candidates/Edit/5
-        // NOTE: This action uses MockData as a template/base.
         public ActionResult Edit(int id)
         {
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
@@ -315,34 +249,30 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var candidate = db.Candidates.FirstOrDefault(x => x.CandidateID == id);
                 if (candidate == null) return HttpNotFound();
 
-                LoadDropdown(candidate.AccountID); // Load dropdown list
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == candidate.AccountID);
 
-                int? photoId = GetCandidatePhotoID(candidate, db);
-                var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
                 var vm = new EditCandidatesListVm
                 {
                     CandidateId = candidate.CandidateID,
+                    AccountId = candidate.AccountID, 
                     FullName = candidate.FullName,
                     DateOfBirth = candidate.BirthDate,
                     Gender = candidate.Gender,
                     Phone = candidate.Phone,
-                    PhotoId = photoId,
                     CreatedAt = candidate.CreatedAt,
-                    ActiveFlag = candidate.ActiveFlag,
+                    Active = candidate.ActiveFlag == 1,
                     Email = candidate.Email,
                     Address = candidate.Address,
-                    PhotoUrl = photo?.FilePath, // PhotoFile không tồn tại, dùng photo từ ProfilePhoto
                     Summary = candidate.Summary,
-                    ApplicationEmail = candidate.Email, // ApplicationEmail không tồn tại, dùng Email
-                    CurrentPhotoId = photoId,
-                    CurrentPhotoUrl = photo?.FilePath,
-                    Active = candidate.ActiveFlag == 1 ,// Gán giá trị Active cho ViewModel
-                    Username = db.Accounts.FirstOrDefault(a => a.AccountID == candidate.AccountID)?.Username
-                    
+                    ApplicationEmail = candidate.ApplicationEmail,
+                    Username = account?.Username,
+                    CurrentPhotoId = account?.PhotoID,
+                    CurrentPhotoUrl = account?.ProfilePhoto?.FilePath
                 };
+
                 ViewBag.Title = "Sửa ứng viên";
                 ViewBag.Breadcrumbs = new List<Tuple<string, string>>
-                    {
+                {
                     new Tuple<string, string>("Ứng viên", Url.Action("Index")),
                     new Tuple<string, string>($"#{candidate.CandidateID}", Url.Action("Details", new { id = candidate.CandidateID })),
                     new Tuple<string, string>("Sửa", null)
@@ -350,132 +280,105 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 return View(vm);
             }
-
-
         }
 
+        // POST: Admin/Candidates/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(EditCandidatesListVm model)
         {
-
             if (!ModelState.IsValid)
             {
-                LoadDropdown(model.AccountId);
                 return View(model);
             }
 
-            using (var db = new JOBPORTAL_ENDataContext(
-                ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var account = db.Accounts.FirstOrDefault(a => a.AccountID == model.AccountId);
                 var candidate = db.Candidates.FirstOrDefault(c => c.CandidateID == model.CandidateId);
-                if (candidate == null)
+                if (candidate == null) return HttpNotFound();
+
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == candidate.AccountID);
+                if (account == null) return HttpNotFound("Tài khoản liên kết không tồn tại.");
+
+                model.CurrentPhotoUrl = account.ProfilePhoto?.FilePath; 
+
+               
+                if (db.Accounts.Any(a => a.Username == model.Username && a.AccountID != model.AccountId))
                 {
-                    ModelState.AddModelError("", "Ứng viên không tồn tại.");
-                    LoadDropdown(model.AccountId);
+                    ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
                     return View(model);
                 }
 
-                // Cập nhật thông tin cơ bản
-                candidate.FullName = model.FullName;
-                candidate.BirthDate = model.DateOfBirth; // DateOfBirth không tồn tại, dùng BirthDate
-                candidate.Gender = model.Gender;
-                candidate.Phone = model.Phone;
-                candidate.Email = model.ApplicationEmail ?? candidate.Email; // ApplicationEmail không tồn tại, dùng Email
-                candidate.Address = model.Address;
-                candidate.Summary = model.Summary;
-                candidate.ActiveFlag = model.Active ? (byte)1 : (byte)0; // Active không tồn tại, dùng ActiveFlag
-                candidate.Username = model.Username;
-                if (model.Gender != "Nam" && model.Gender != "Nữ")
+                // Validate Phone
+                var phone = (model.Phone ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(phone))
                 {
-                    
-                    ModelState.AddModelError("Gender", "Giới tính phải là 'Nam' hoặc 'Nữ'.");
-                    return View(model);
-                }
-                    if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
-                {
-                    int? newPhotoId = SavePhoto(model.PhotoFile);
-
-                    if (newPhotoId.HasValue)
+                    if (!ValidationHelper.IsValidVietnamesePhone(phone))
                     {
-                        // Nếu có ảnh mới, cập nhật Account
-                        
-
-                        if (account != null)
-                        {
-                            
-                            if (account.PhotoID.HasValue)
-                            {
-                                DeletePhoto(account.PhotoID.Value);
-                            }
-
-                            // Gán PhotoID mới cho Account
-                            account.PhotoID = newPhotoId.Value;
-                        }
+                        ModelState.AddModelError("Phone", ValidationHelper.GetPhoneErrorMessage());
+                        return View(model);
                     }
-                    else
+                    phone = ValidationHelper.NormalizePhone(phone);
+
+                    if (!ValidationHelper.IsAccountPhoneUnique(phone, model.AccountId))
                     {
-                        // Việc SavePhoto thất bại, đã set TempData["ErrorMessage"] trong helper
-                        LoadDropdown(model.AccountId);
+                        ModelState.AddModelError("Phone", "Số điện thoại này đã được dùng bởi tài khoản khác.");
                         return View(model);
                     }
                 }
-
-                // Lưu tất cả thay đổi
-                db.SubmitChanges();
-            }
-
-            TempData["Success"] = "Cập nhật ứng viên thành công!";
-            return RedirectToAction("Index");
-        }
-
-        // 🔥 Helper để nạp Dropdowns cho Action Create
-        private void LoadCreateDropdowns()
-        {
-            using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
-            {
-                // 1. Dropdown Giới tính
-                var genderList = new List<SelectListItem>
+                else
                 {
-                    new SelectListItem { Value = "Nam", Text = "Nam" },
-                    new SelectListItem { Value = "Nữ", Text = "Nữ" }
-                };
-                ViewBag.GenderOptions = new SelectList(genderList, "Value", "Text");
+                    phone = null;
+                }
 
-                // 2. Dropdown Company (Giữ lại logic cũ)
-                ViewBag.CompanyOptions = new SelectList(db.Companies.Select(c => new { c.CompanyID, c.CompanyName }).ToList(), "CompanyID", "CompanyName");
+                //  xử lý ảnh
+                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
+                {
+                    if (account.PhotoID.HasValue)
+                    {
+                        DeletePhoto(db, account.PhotoID.Value); 
+                    }
+
+                    ProfilePhoto newPhoto = SavePhoto(db, model.PhotoFile); 
+                    if (newPhoto != null)
+                    {
+                        account.ProfilePhoto = newPhoto;
+                    }
+                    else
+                    {
+                        return View(model); 
+                    }
+                }
+
+                
+                account.Username = model.Username;
+                account.Phone = phone;
+                account.ActiveFlag = model.Active ? (byte)1 : (byte)0;
+                candidate.FullName = model.FullName;
+                candidate.BirthDate = model.DateOfBirth;
+                candidate.Gender = model.Gender;
+                candidate.Phone = phone; 
+                candidate.Email = model.Email; 
+                candidate.ApplicationEmail = model.ApplicationEmail;
+                candidate.Address = model.Address;
+                candidate.Summary = model.Summary;
+                candidate.ActiveFlag = model.Active ? (byte)1 : (byte)0;
+
+                try
+                {
+                    db.SubmitChanges();
+                    TempData["SuccessMessage"] = "Cập nhật ứng viên thành công!";
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Lỗi khi cập nhật: " + ex.Message);
+                    return View(model);
+                }
             }
         }
-
-        // Helper này có vẻ không dùng trong Create/Edit, nhưng giữ lại cho Edit/Index/Details
-        private void LoadDropdown(int? selectedAccountId = null)
-        {
-            using (var db = new JOBPORTAL_ENDataContext(
-                ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
-            {
-                var accountData = db.Accounts
-                                .Where(a => a.ActiveFlag == 1 && (a.Role == "Candidate" || a.AccountID == selectedAccountId))
-                                .Select(a => new
-                                {
-                                    a.AccountID,
-                                    a.Username
-                                })
-                                .ToList(); // QUAN TRỌNG: Thực thi query ngay
-
-                // Tạo SelectList từ dữ liệu đã load
-                ViewBag.AccountOptions = new SelectList(
-                    accountData,
-                    "AccountID",
-                    "Username",
-                    selectedAccountId
-                );
-            }
-        }
-
 
         // GET: Admin/Candidates/Delete/5
-        // NOTE: This action uses MockData as a template/base.
         public ActionResult Delete(int id)
         {
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
@@ -483,27 +386,17 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var candidate = db.Candidates.FirstOrDefault(c => c.CandidateID == id);
                 if (candidate == null) return HttpNotFound();
 
-
-                int? photoId = GetCandidatePhotoID(candidate, db);
-                var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
+                var account = db.Accounts.FirstOrDefault(a => a.AccountID == candidate.AccountID);
 
                 var vm = new CandidatesListVm
                 {
                     CandidateId = candidate.CandidateID,
                     AccountId = candidate.AccountID,
                     FullName = candidate.FullName,
-                    DateOfBirth = candidate.BirthDate,
-                    Gender = candidate.Gender,
                     Phone = candidate.Phone,
-                    PhotoId = photoId,
-                    CreatedAt = candidate.CreatedAt,
-                    ActiveFlag = candidate.ActiveFlag,
                     Email = candidate.Email,
-                    Address = candidate.Address,
-                    PhotoUrl = photo?.FilePath, // PhotoFile không tồn tại, dùng photo từ ProfilePhoto
-                    Summary = candidate.Summary,
-                    ApplicationEmail = candidate.Email, // ApplicationEmail không tồn tại, dùng Email
-                    UserName = db.Accounts.FirstOrDefault(a => a.AccountID == candidate.AccountID)?.Username
+                    UserName = account?.Username,
+                    ActiveFlag = candidate.ActiveFlag
                 };
 
                 ViewBag.Title = "Xóa người ứng tuyển";
@@ -516,12 +409,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 return View(vm);
             }
         }
-        
+
         // POST: Admin/Candidates/Delete/5
-        // NOTE: This action uses MockData as a template/base.
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-
         public ActionResult DeleteConfirmed(int id)
         {
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
@@ -529,41 +420,57 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var candidate = db.Candidates.FirstOrDefault(c => c.CandidateID == id);
                 if (candidate == null) return HttpNotFound();
 
+                // Lấy Account liên quan
                 var account = db.Accounts.FirstOrDefault(a => a.AccountID == candidate.AccountID);
 
-                // Delete photo if exists
-                if (account != null && account.PhotoID.HasValue)
+                try
                 {
-                    DeletePhoto(account.PhotoID.Value);
-                    // Sau khi xóa ProfilePhoto, cần SubmitChanges để đảm bảo xóa thành công
+                    // 1. Xóa ảnh trước (nếu có)
+                    if (account != null && account.PhotoID.HasValue)
+                    {
+                        DeletePhoto(db, account.PhotoID.Value);
+                    }
+
+                    // 2. Xóa Candidate
+                    db.Candidates.DeleteOnSubmit(candidate);
+
+                    // 3. Xóa Account 
+
+                    if (account != null)
+                    {
+                        db.Accounts.DeleteOnSubmit(account);
+                    }
+
                     db.SubmitChanges();
+                    TempData["SuccessMessage"] = "Xóa ứng viên và tài khoản thành công!";
                 }
-
-                // Xóa Candidate
-                db.Candidates.DeleteOnSubmit(candidate);
-
-                // Xóa Account (nếu cần - tùy thuộc vào ràng buộc trong DB)
-                // Nếu Account này chỉ dùng cho Candidate này, ta nên xóa nó.
-                if (account != null)
+                catch (Exception ex)
                 {
-                    db.Accounts.DeleteOnSubmit(account);
+                    TempData["ErrorMessage"] = "Không thể xóa: " + ex.Message;
                 }
 
-                db.SubmitChanges();
-
-                TempData["SuccessMessage"] = "Xóa ứng viên thành công!";
                 return RedirectToAction("Index");
             }
         }
 
-        // Helper: Save uploaded photo
-        private int? SavePhoto(HttpPostedFileBase file)
+        
+
+        private void LoadCreateDropdowns()
+        {
+            var genderList = new List<SelectListItem>
+            {
+                new SelectListItem { Value = "Nam", Text = "Nam" },
+                new SelectListItem { Value = "Nữ", Text = "Nữ" }
+            };
+            ViewBag.GenderOptions = new SelectList(genderList, "Value", "Text");
+        }
+
+        private ProfilePhoto SavePhoto(JOBPORTAL_ENDataContext db, HttpPostedFileBase file)
         {
             if (file == null || file.ContentLength == 0) return null;
 
             try
             {
-                // Validate file type
                 var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
                 var fileExt = Path.GetExtension(file.FileName).ToLower();
                 if (!allowedExtensions.Contains(fileExt))
@@ -572,18 +479,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return null;
                 }
 
-                // Validate file size (max 5MB)
                 if (file.ContentLength > 5 * 1024 * 1024)
                 {
                     TempData["ErrorMessage"] = "File ảnh không được vượt quá 5MB";
                     return null;
                 }
 
-                // Generate unique filename
                 var fileName = Guid.NewGuid().ToString() + fileExt;
                 var uploadPath = Server.MapPath("~/Content/Uploads/Photos/");
 
-                // Create directory if not exists
                 if (!Directory.Exists(uploadPath))
                 {
                     Directory.CreateDirectory(uploadPath);
@@ -592,22 +496,17 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var fullPath = Path.Combine(uploadPath, fileName);
                 file.SaveAs(fullPath);
 
-                // Save to database - ProfilePhotos table
-                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                var photo = new ProfilePhoto
                 {
-                    var photo = new ProfilePhoto
-                    {
-                        FileName = file.FileName,
-                        FilePath = "/Content/Uploads/Photos/" + fileName,
-                        FileSizeKB = file.ContentLength / 1024,
-                        FileFormat = fileExt.Replace(".", ""),
-                        UploadedAt = DateTime.Now
-                    };
+                    FileName = file.FileName,
+                    FilePath = "/Content/Uploads/Photos/" + fileName,
+                    FileSizeKB = file.ContentLength / 1024,
+                    FileFormat = fileExt.Replace(".", ""),
+                    UploadedAt = DateTime.Now
+                };
 
-                    db.ProfilePhotos.InsertOnSubmit(photo);
-                    db.SubmitChanges();
-                    return photo.PhotoID;
-                }
+                db.ProfilePhotos.InsertOnSubmit(photo);
+                return photo;
             }
             catch (Exception ex)
             {
@@ -616,53 +515,27 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
-        // Helper: Delete photo from ProfilePhotos
-        private void DeletePhoto(int photoId)
+        private void DeletePhoto(JOBPORTAL_ENDataContext db, int photoId)
         {
             try
             {
-                using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId);
+                if (photo == null) return;
+
+                var filePath = Server.MapPath("~" + photo.FilePath);
+                if (System.IO.File.Exists(filePath))
                 {
-                    var photo = db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId);
-                    if (photo == null) return;
-
-                    // Delete physical file
-                    var filePath = Server.MapPath("~" + photo.FilePath);
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-
-                    // Delete database record
-                    db.ProfilePhotos.DeleteOnSubmit(photo);
-                    db.SubmitChanges();
+                    System.IO.File.Delete(filePath);
                 }
+
+                db.ProfilePhotos.DeleteOnSubmit(photo);
+                
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Ghi log lỗi nếu cần
+                
+                Console.WriteLine("Lỗi xóa ảnh: " + ex.Message);
             }
         }
-
-        // Helper: Check if PhotoID property exists on candidate class
-        private bool HasPhotoIDProperty()
-        {
-            return typeof(Candidate).GetProperty("PhotoID") != null;
-        }
-
-        // Helper: Get PhotoID from candidate (works with or without property)
-        private int? GetcandidatePhotoID(Candidate candidate, JOBPORTAL_ENDataContext db)
-        {
-            // Thay đổi logic để luôn ưu tiên lấy từ Account (vì logic trong Index và Details đã dùng cách này)
-            return GetCandidatePhotoID(candidate, db);
-        }
-
-        // Helper: Set PhotoID on candidate (works with or without property)
-        // Hàm này không cần thiết vì PhotoID được gán cho Account
-        private void SetcandidatePhotoID(Candidate candidate, int? photoId, JOBPORTAL_ENDataContext db)
-        {
-            throw new NotImplementedException();
-        }
-
     }
 }
