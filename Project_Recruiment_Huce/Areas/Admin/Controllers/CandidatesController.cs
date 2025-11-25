@@ -51,9 +51,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         (c.Phone ?? "").ToLower().Contains(searchKeyword)
                     );
                 }
+
                 var CandidatesList = query
                                 .OrderByDescending(c => c.CreatedAt)
                                 .ToList();
+               
                 var candidatePhotoIds = CandidatesList.Select(c => GetCandidatePhotoID(c, db))
                                                     .Where(id => id.HasValue)
                                                     .Select(id => id.Value)
@@ -66,13 +68,17 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 var candidates = CandidatesList.Select(c =>
                 {
-                    int? photoId = GetCandidatePhotoID(c, db);
+                    
+                    var account = db.Accounts.FirstOrDefault(a => a.AccountID == c.AccountID);
+                    int? photoId = account?.PhotoID;
+                    var photo = photoId.HasValue ? db.ProfilePhotos.FirstOrDefault(p => p.PhotoID == photoId.Value) : null;
 
                     string photoUrl = null;
                     if (photoId.HasValue && profilePhotos.ContainsKey(photoId.Value))
                     {
                         photoUrl = profilePhotos[photoId.Value];
                     }
+
                     return new CandidatesListVm
                     {
                         CandidateId = c.CandidateID,
@@ -88,12 +94,13 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         Address = c.Address,
                         PhotoUrl = photoUrl,
                         Summary = c.Summary,
-                        ApplicationEmail = c.Email, // ApplicationEmail không tồn tại, dùng Email
+                        ApplicationEmail = c.Email,
+                        UserName = account.Username
                     };
                 }).ToList();
+
                 return View(candidates);
             }
-
         }
 
         private int? GetCandidatePhotoID(Candidate c, JOBPORTAL_ENDataContext db)
@@ -135,7 +142,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Address = candidate.Address,
                     PhotoUrl = photo?.FilePath,
                     Summary = candidate.Summary,
-                    ApplicationEmail = candidate.Email // ApplicationEmail không tồn tại, dùng Email
+                    ApplicationEmail = candidate.Email 
                 };
                 ViewBag.Title = "Chi tiết ứng viên";
                 ViewBag.Breadcrumbs = new List<Tuple<string, string>> {
@@ -269,7 +276,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Phone = model.Phone,
                     CreatedAt = DateTime.Now,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,
-                    // 🔥 Khắc phục lỗi NULL GENDER và DATEOFBIRTH
                     Gender = model.Gender,
                     BirthDate = model.DateOfBirth
                 };
@@ -372,11 +378,13 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 candidate.Summary = model.Summary;
                 candidate.ActiveFlag = model.Active ? (byte)1 : (byte)0; // Active không tồn tại, dùng ActiveFlag
                 candidate.AccountID = model.AccountId;
-
-                // =====================
-                // XỬ LÝ UPLOAD ẢNH MỚI
-                // =====================
-                if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
+                if (model.Gender != "Nam" && model.Gender != "Nữ")
+                {
+                    
+                    ModelState.AddModelError("Gender", "Giới tính phải là 'Nam' hoặc 'Nữ'.");
+                    return View(model);
+                }
+                    if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {
                     int? newPhotoId = SavePhoto(model.PhotoFile);
 

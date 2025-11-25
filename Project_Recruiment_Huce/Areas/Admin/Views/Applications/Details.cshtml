@@ -17,10 +17,13 @@
   </div>
   <div class="col-md-4">
     <div class="card"><div class="card-header"><h6 class="mb-0">Liên quan</h6></div>
-      <div class="card-body">
-        <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Details","Candidates", new { area="Admin", id = 1 })">Ứng viên</a>
-        <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Details","JobPosts", new { area="Admin", id = 1 })">Công việc</a>
-      </div>
+                      <div class="card-body">
+                          <a class="btn btn-outline-primary btn-sm"
+                             href="@Url.Action("Details","Candidates", new { area="Admin", id = Model.CandidateId })">Ứng viên</a>
+
+                          <a class="btn btn-outline-primary btn-sm"
+                             href="@Url.Action("Details","JobPosts", new { area="Admin", id = Model.JobPostId })">Công việc</a>
+                      </div>
     </div>
   </div>
 </div>
