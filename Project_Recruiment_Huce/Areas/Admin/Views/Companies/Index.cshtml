@@ -13,9 +13,8 @@
                 <tr>
                     <th>Logo</th>
                     <th>Tên công ty</th>
-                    <th>Mã số thuế</th>
-                    <th>Website</th>
-                    <th>Địa chỉ</th>
+                    <th>Email</th>
+                    <th>Điện thoại</th>
                     <th>Hoạt động</th>
                     <th>Ngày tạo</th>
                     <th></th>
@@ -40,14 +39,8 @@
                                 }
                             </td>
                             <td>@item.CompanyName</td>
-                            <td>@(item.TaxCode ?? "-")</td>
-                            <td>
-                                @if (!string.IsNullOrEmpty(item.Website))
-                                {<a href="@item.Website" target="_blank">@item.Website</a> }
-                            else
-                            { <text>-</text>}
-                            </td>
-                            <td>@(item.Address ?? "-")</td>
+                            <td>@(item.CompanyEmail ?? "-")</td>
+                            <td>@(item.Phone ?? "-")</td>
                             <td>@(item.ActiveFlag == 1 ? "Yes" : "No")</td>
                             <td>@(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</td>
                             <td class="text-end" style="white-space:nowrap;">
