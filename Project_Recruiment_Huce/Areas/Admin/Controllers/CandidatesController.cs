@@ -27,7 +27,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
 
         // GET: Admin/Candidates
-        public ActionResult Index(string q, string role = null, int page = 1)
+        public ActionResult Index(string q)
         {
             ViewBag.Title = "Quản lý ứng viên";
             ViewBag.Breadcrumbs = new List<Tuple<string, string>>
@@ -64,7 +64,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                                             .ToDictionary(p => p.PhotoID, p => p.FilePath);
 
 
-                var candidates = CandidatesList.Select((Candidate c) =>
+                var candidates = CandidatesList.Select(c =>
                 {
                     int? photoId = GetCandidatePhotoID(c, db);
 
@@ -133,7 +133,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     ActiveFlag = candidate.ActiveFlag,
                     Email = candidate.Email,
                     Address = candidate.Address,
-                    PhotoUrl = photo != null ? photo.FilePath : null,
+                    PhotoUrl = photo?.FilePath,
                     Summary = candidate.Summary,
                     ApplicationEmail = candidate.Email // ApplicationEmail không tồn tại, dùng Email
                 };
@@ -620,7 +620,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     db.SubmitChanges();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Ghi log lỗi nếu cần
             }

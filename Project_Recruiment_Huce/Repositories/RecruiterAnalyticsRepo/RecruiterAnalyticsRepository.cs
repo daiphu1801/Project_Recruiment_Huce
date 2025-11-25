@@ -43,7 +43,7 @@ namespace Project_Recruiment_Huce.Repositories.RecruiterAnalyticsRepo
         {
             try
             {
-                var connectionString = _db.Connection.ConnectionString;
+                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
                 using (var conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
@@ -59,15 +59,17 @@ namespace Project_Recruiment_Huce.Repositories.RecruiterAnalyticsRepo
                             // Result set đầu tiên: summary
                             if (reader.Read())
                             {
-                                return new RecruiterAnalyticsSummaryViewModel
+                                var summary = new RecruiterAnalyticsSummaryViewModel
                                 {
                                     TotalViews = reader.GetInt32(reader.GetOrdinal("TotalViews")),
                                     TotalApplications = reader.GetInt32(reader.GetOrdinal("TotalApplications")),
                                     TotalJobs = reader.GetInt32(reader.GetOrdinal("TotalJobs")),
-                                    ConversionRatePercent = reader.GetDecimal(reader.GetOrdinal("ConversionRatePercent")),
+                                    ConversionRatePercent = Convert.ToDecimal(reader.GetDouble(reader.GetOrdinal("ConversionRatePercent"))),
                                     FromDate = fromDate,
                                     ToDate = toDate
                                 };
+                                
+                                return summary;
                             }
                         }
                     }
@@ -96,7 +98,7 @@ namespace Project_Recruiment_Huce.Repositories.RecruiterAnalyticsRepo
 
             try
             {
-                var connectionString = _db.Connection.ConnectionString;
+                var connectionString = ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString;
                 using (var conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
@@ -123,7 +125,7 @@ namespace Project_Recruiment_Huce.Repositories.RecruiterAnalyticsRepo
                                     PostedAt = reader.GetDateTime(reader.GetOrdinal("PostedAt")),
                                     Views = reader.GetInt32(reader.GetOrdinal("Views")),
                                     Applications = reader.GetInt32(reader.GetOrdinal("Applications")),
-                                    ConversionRatePercent = reader.GetDecimal(reader.GetOrdinal("ConversionRatePercent"))
+                                    ConversionRatePercent = Convert.ToDecimal(reader.GetDouble(reader.GetOrdinal("ConversionRatePercent")))
                                 });
                             }
                         }
