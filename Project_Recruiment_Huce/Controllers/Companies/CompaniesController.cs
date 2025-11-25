@@ -10,6 +10,8 @@ using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Companies;
 using Project_Recruiment_Huce.Helpers;
 using Project_Recruiment_Huce.Infrastructure;
+using Project_Recruiment_Huce.Services;
+using Project_Recruiment_Huce.Repositories;
 
 namespace Project_Recruiment_Huce.Controllers
 {
@@ -20,6 +22,15 @@ namespace Project_Recruiment_Huce.Controllers
     [Authorize(Roles="Recruiter")]
     public class CompaniesController : BaseController
     {
+        private readonly ICompanyService _companyService;
+
+        public CompaniesController()
+        {
+            // Initialize service with repository
+            var db = DbContextFactory.Create();
+            var repo = new CompanyRepository(db);
+            _companyService = new CompanyService(repo);
+        }
         /// <summary>
         /// Helper: Lưu logo đã upload vào ProfilePhotos table
         /// Validate: file type, file size (max 5MB)
@@ -124,52 +135,15 @@ namespace Project_Recruiment_Huce.Controllers
             var accountId = GetCurrentAccountId();
             if (accountId == null) return RedirectToAction("Login", "Account");
 
-            using (var db = DbContextFactory.CreateReadOnly())
+            var viewModel = _companyService.GetCompanyManageViewModel(accountId.Value);
+            
+            if (viewModel == null)
             {
-                var repo = new Repositories.CompanyRepository(db);
-
-                // Lấy recruiter và company của họ qua repository
-                var recruiter = repo.GetRecruiterByAccountId(accountId.Value);
-                if (recruiter == null)
-                {
-                    TempData["ErrorMessage"] = "Vui lòng tạo hồ sơ nhà tuyển dụng trước.";
-                    return RedirectToAction("RecruitersManage", "Recruiters");
-                }
-
-                Company company = null;
-                if (recruiter.CompanyID.HasValue)
-                {
-                    company = repo.GetCompanyById(recruiter.CompanyID.Value);
-                }
-
-                // Map to ViewModel
-                var viewModel = new CompanyManageViewModel
-                {
-                    CompanyID = company?.CompanyID,
-                    CompanyName = company?.CompanyName,
-                    TaxCode = company?.TaxCode,
-                    Industry = company?.Industry,
-                    Address = company?.Address,
-                    Phone = company?.Phone,
-                    Fax = company?.Fax,
-                    CompanyEmail = company?.CompanyEmail,
-                    Website = company?.Website,
-                    Description = company?.Description,
-                    PhotoID = company?.PhotoID
-                };
-
-                // Get logo URL nếu có
-                if (company?.PhotoID.HasValue == true)
-                {
-                    var photo = repo.GetProfilePhotoById(company.PhotoID.Value);
-                    if (photo != null)
-                    {
-                        viewModel.LogoUrl = photo.FilePath;
-                    }
-                }
-
-                return View(viewModel);
+                TempData["ErrorMessage"] = "Vui lòng tạo hồ sơ nhà tuyển dụng trước.";
+                return RedirectToAction("RecruitersManage", "Recruiters");
             }
+
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -195,6 +169,7 @@ namespace Project_Recruiment_Huce.Controllers
                 {
                     // Normalize phone number
                     phone = ValidationHelper.NormalizePhone(phone);
+                    viewModel.Phone = phone;
 
                     // Check if phone already exists in Companies (exclude current company)
                     if (!ValidationHelper.IsCompanyPhoneUnique(phone, viewModel.CompanyID))
@@ -205,7 +180,7 @@ namespace Project_Recruiment_Huce.Controllers
             }
             else
             {
-                phone = null;
+                viewModel.Phone = null;
             }
 
             // Validate company email format and uniqueness (if provided)
@@ -239,6 +214,7 @@ namespace Project_Recruiment_Huce.Controllers
                 {
                     // Normalize fax number
                     fax = ValidationHelper.NormalizeFax(fax);
+                    viewModel.Fax = fax;
                     if (!ValidationHelper.IsCompanyFaxUnique(fax, viewModel.CompanyID))
                     {
                         ModelState.AddModelError("Fax", "Số Fax này đã được sử dụng.");
@@ -247,127 +223,46 @@ namespace Project_Recruiment_Huce.Controllers
             }
             else
             {
-                fax = null;
+                viewModel.Fax = null;
             }
 
-            using (var db = DbContextFactory.Create())
+            if (!ModelState.IsValid)
             {
-                var repo = new Repositories.CompanyRepository(db);
-
-                // Get recruiter via repository
-                var recruiter = repo.GetRecruiterByAccountId(accountId.Value);
-                if (recruiter == null)
-                {
-                    TempData["ErrorMessage"] = "Vui lòng tạo hồ sơ nhà tuyển dụng trước.";
-                    return RedirectToAction("RecruitersManage", "Recruiters");
-                }
-
-                Company company = null;
-                if (recruiter.CompanyID.HasValue)
-                {
-                    company = repo.GetCompanyById(recruiter.CompanyID.Value);
-                }
-
-                // Save uploaded logo (if any) in advance so we have newPhotoId
-                int? newPhotoId = null;
-                if (viewModel.Logo != null && viewModel.Logo.ContentLength > 0)
-                {
-                    newPhotoId = SaveLogo(viewModel.Logo);
-                }
-
-                // Create or update company
-                if (company == null)
-                {
-                    // Create new company (attach newPhotoId if any)
-                    company = new Company
-                    {
-                        CompanyName = viewModel.CompanyName,
-                        TaxCode = viewModel.TaxCode,
-                        Industry = viewModel.Industry,
-                        Address = viewModel.Address,
-                        Phone = phone,
-                        Fax = fax,
-                        CompanyEmail = companyEmail,
-                        Website = viewModel.Website,
-                        Description = !string.IsNullOrWhiteSpace(viewModel.Description)
-                            ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
-                            : null,
-                        CreatedAt = DateTime.Now,
-                        ActiveFlag = 1,
-                        PhotoID = newPhotoId
-                    };
-
-                    repo.InsertCompany(company);
-                    repo.SaveChanges();
-
-                    // Link company to recruiter
-                    recruiter.CompanyID = company.CompanyID;
-                    repo.SaveChanges();
-                }
-                else
-                {
-                    // Update existing company
-                    var oldPhotoId = company.PhotoID;
-
-                    company.CompanyName = viewModel.CompanyName;
-                    company.TaxCode = viewModel.TaxCode;
-                    company.Industry = viewModel.Industry;
-                    company.Address = viewModel.Address;
-                    company.Phone = phone;
-                    company.Fax = fax;
-                    company.CompanyEmail = companyEmail;
-                    company.Website = viewModel.Website;
-                    company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
-                        ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
-                        : null;
-
-                    // If new photo uploaded, set PhotoID
-                    if (newPhotoId.HasValue)
-                        company.PhotoID = newPhotoId;
-
-                    try
-                    {
-                        repo.SaveChanges();
-
-                        // Remove old photo file if we replaced it
-                        if (newPhotoId.HasValue && oldPhotoId.HasValue)
-                        {
-                            DeletePhoto(oldPhotoId.Value);
-                        }
-                    }
-                    catch (ChangeConflictException)
-                    {
-                        // Concurrency conflict: refresh and retry
-                        db.Refresh(RefreshMode.OverwriteCurrentValues, company);
-
-                        // Reapply values and save again
-                        company.CompanyName = viewModel.CompanyName;
-                        company.TaxCode = viewModel.TaxCode;
-                        company.Industry = viewModel.Industry;
-                        company.Address = viewModel.Address;
-                        company.Phone = phone;
-                        company.Fax = fax;
-                        company.CompanyEmail = companyEmail;
-                        company.Website = viewModel.Website;
-                        company.Description = !string.IsNullOrWhiteSpace(viewModel.Description)
-                            ? HtmlSanitizerHelper.Sanitize(viewModel.Description)
-                            : null;
-
-                        if (newPhotoId.HasValue)
-                            company.PhotoID = newPhotoId;
-
-                        repo.SaveChanges();
-
-                        if (newPhotoId.HasValue && oldPhotoId.HasValue)
-                        {
-                            DeletePhoto(oldPhotoId.Value);
-                        }
-                    }
-                }
-
-                TempData["SuccessMessage"] = "Cập nhật thông tin công ty thành công!";
-                return RedirectToAction("CompaniesManage");
+                return View(viewModel);
             }
+
+            // Save uploaded logo (if any)
+            int? newPhotoId = null;
+            if (viewModel.Logo != null && viewModel.Logo.ContentLength > 0)
+            {
+                newPhotoId = SaveLogo(viewModel.Logo);
+                if (newPhotoId == null && TempData["ErrorMessage"] != null)
+                {
+                    return View(viewModel);
+                }
+            }
+
+            // Use service to save/update company
+            var result = _companyService.SaveOrUpdateCompany(viewModel, accountId.Value, newPhotoId);
+
+            if (!result.IsValid)
+            {
+                // Add errors to ModelState
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(error.Key, error.Value);
+                }
+                return View(viewModel);
+            }
+
+            // If old photo was replaced, delete the physical file
+            if (result.Data.ContainsKey("OldPhotoId"))
+            {
+                DeletePhoto((int)result.Data["OldPhotoId"]);
+            }
+
+            TempData["SuccessMessage"] = "Cập nhật thông tin công ty thành công!";
+            return RedirectToAction("CompaniesManage");
         }
     }
 }
