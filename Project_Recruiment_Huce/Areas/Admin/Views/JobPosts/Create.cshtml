@@ -153,14 +153,14 @@
                         <div class="col-md-3">
                             <div class="mb-3">
                                 <label for="AgeFrom" class="form-label fw-semibold">Tuổi từ</label>
-                                @Html.TextBoxFor(m => m.AgeFrom, new { @class = "form-control", type = "number", min = "18", max = "100" })
+                                @Html.TextBoxFor(m => m.AgeFrom, new { @class = "form-control", type = "number", min = "15", max = "100" })
                                 @Html.ValidationMessageFor(m => m.AgeFrom, "", new { @class = "text-danger small mt-1 d-block" })
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="mb-3">
                                 <label for="AgeTo" class="form-label fw-semibold">Tuổi đến</label>
-                                @Html.TextBoxFor(m => m.AgeTo, new { @class = "form-control", type = "number", min = "18", max = "100" })
+                                @Html.TextBoxFor(m => m.AgeTo, new { @class = "form-control", type = "number", min = "15", max = "100" })
                                 @Html.ValidationMessageFor(m => m.AgeTo, "", new { @class = "text-danger small mt-1 d-block" })
                             </div>
                         </div>
@@ -218,16 +218,7 @@
                         </small>
                     </div>
 
-                    <div class="card bg-light border-0 mt-3">
-                        <div class="card-body">
-                            <h6 class="card-subtitle mb-2 text-muted">
-                                <i class="bi bi-eye"></i> Preview mức lương
-                            </h6>
-                            <p class="card-text mb-0">
-                                <strong class="text-success" id="salaryPreview">Chưa có thông tin</strong>
-                            </p>
-                        </div>
-                    </div>
+                
 
                     <div class="alert alert-info border-0 mt-4">
                         <h6 class="alert-heading"><i class="bi bi-lightbulb"></i> Lưu ý quan trọng</h6>

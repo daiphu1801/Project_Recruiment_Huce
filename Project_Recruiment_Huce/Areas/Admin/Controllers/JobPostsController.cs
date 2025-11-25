@@ -285,11 +285,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
                 }
 
-                //  Kiểm tra tiêu đề trùng
-                if (!string.IsNullOrWhiteSpace(model.Title) && db.JobPosts.Any(j => j.Title == model.Title))
-                {
-                    ModelState.AddModelError("Title", "Tiêu đề công việc đã tồn tại");
-                }
+               
 
                 //  Kiểm tra SalaryFrom & SalaryTo
                 if (model.SalaryFrom < 0 || model.SalaryFrom > 999999999.99m)
@@ -529,12 +525,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
                 }
 
-                // Kiểm tra tiêu đề trùng (trừ chính nó)
-                if (!string.IsNullOrWhiteSpace(model.Title) &&
-                    db.JobPosts.Any(j => j.Title == model.Title && j.JobPostID != model.JobPostID))
-                {
-                    ModelState.AddModelError("Title", "Tiêu đề công việc đã tồn tại");
-                }
+               
 
                 // Kiểm tra JobCode trùng (trừ chính nó)
                 if (!string.IsNullOrWhiteSpace(model.JobCode) &&
