@@ -350,7 +350,12 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
                 }
 
-                
+                if (!string.IsNullOrEmpty(model.Password))
+                {
+                    // Nếu người dùng nhập mật khẩu, tiến hành mã hóa và cập nhật
+                    // Sử dụng PasswordHelper.HashPassword giống như hàm Create
+                    account.PasswordHash = PasswordHelper.HashPassword(model.Password);
+                }
                 account.Username = model.Username;
                 account.Phone = phone;
                 account.ActiveFlag = model.Active ? (byte)1 : (byte)0;
