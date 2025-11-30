@@ -23,7 +23,7 @@ namespace Project_Recruiment_Huce.Controllers
 
         public RecruitersApplicationController()
         {
-            var db = DbContextFactory.CreateReadOnly();
+            var db = DbContextFactory.Create();
             _repository = new RecruiterApplicationRepository(db);
             _applicationService = new RecruiterApplicationService(_repository);
         }
