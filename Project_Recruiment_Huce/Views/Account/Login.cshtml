@@ -1,97 +1,113 @@
 ﻿@using Project_Recruiment_Huce.Models.Accounts
-@model LoginViewModel
-@{
-    ViewBag.Title = "Đăng nhập";
-}
 
-<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-7">
-        <h1 class="text-white font-weight-bold">Đăng nhập</h1>
-        <div class="custom-breadcrumbs">
-          <a href="@Url.Action("Index", "Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
-          <span class="text-white"><strong>Đăng nhập</strong></span>
+    @model LoginViewModel
+    @{
+        ViewBag.Title = "Đăng nhập";
+    }
+
+    <section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-7">
+                    <h1 class="text-white font-weight-bold">Đăng nhập</h1>
+                    <div class="custom-breadcrumbs">
+                        <a href="@Url.Action("Index", "Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                        <span class="text-white"><strong>Đăng nhập</strong></span>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
-  </section>
+    </section>
 
-<section class="site-section">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-6">
-        <h2 class="mb-4">Đăng nhập vào JobBoard</h2>
-        @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form", @class = "p-4 border rounded" }))
-        {
-            @Html.AntiForgeryToken()
-            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <section class="site-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <h2 class="mb-4">Đăng nhập vào JobBoard</h2>
 
-            <div class="row form-group">
-              <div class="col-md-12 mb-3 mb-md-0">
-                @Html.LabelFor(m => m.EmailOrUsername, new { @class = "text-black" })
-                @Html.TextBoxFor(m => m.EmailOrUsername, new { @class = "form-control", placeholder = "Nhập tên đăng nhập hoặc email" })
-                @Html.ValidationMessageFor(m => m.EmailOrUsername, "", new { @class = "text-danger" })
-              </div>
-            </div>
+                    <div class="p-4 border rounded">
+                        @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-            <div class="row form-group mb-4">
-              <div class="col-md-12 mb-3 mb-md-0">
-                @Html.LabelFor(m => m.Password, new { @class = "text-black" })
-                <div style="position: relative;">
-                  @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Nhập mật khẩu", id = "Password", style = "padding-right: 40px;" })
-                  <span class="password-toggle-icon icon-eye" onclick="togglePassword('Password', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+                            <div class="row form-group">
+                                <div class="col-md-12 mb-3 mb-md-0">
+                                    @Html.LabelFor(m => m.EmailOrUsername, new { @class = "text-black" })
+                                    @Html.TextBoxFor(m => m.EmailOrUsername, new { @class = "form-control", placeholder = "Nhập tên đăng nhập hoặc email" })
+                                    @Html.ValidationMessageFor(m => m.EmailOrUsername, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="row form-group mb-4">
+                                <div class="col-md-12 mb-3 mb-md-0">
+                                    @Html.LabelFor(m => m.Password, new { @class = "text-black" })
+                                    <div style="position: relative;">
+                                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Nhập mật khẩu", id = "Password", style = "padding-right: 40px;" })
+                                        <span class="password-toggle-icon icon-eye" onclick="togglePassword('Password', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="row form-group">
+                                <div class="col-md-12">
+                                    <div class="checkbox">
+                                        <label>
+                                            @Html.CheckBoxFor(m => m.RememberMe)
+                                            Giữ đăng nhập
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row form-group">
+                                <div class="col-md-12">
+                                    <input type="submit" value="Đăng nhập" class="btn px-4 btn-primary text-white btn-block" />
+                                </div>
+                            </div>
+                        } <hr class="my-4" />
+
+                        <div class="text-center">
+                            @using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" name="provider" value="Google" class="btn btn-danger btn-block d-flex align-items-center justify-content-center" title="Đăng nhập bằng Google">
+                                    <i class="icon-google mr-2"></i> Đăng nhập bằng Google
+                                </button>
+                            }
+                        </div>
+
+                        <div class="row form-group mt-4">
+                            <div class="col-md-12 text-center">
+                                <p class="mb-2">
+                                    @Html.ActionLink("Quên mật khẩu?", "ForgotPassword", null, new { @class = "text-primary" })
+                                </p>
+                                <p>
+                                    Chưa có tài khoản? @Html.ActionLink("Đăng ký ngay", "Register", null, new { @class = "text-primary font-weight-bold" })
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
-              </div>
             </div>
+        </div>
+    </section>
 
-            <div class="row form-group">
-              <div class="col-md-12">
-                <div class="checkbox">
-                  @Html.CheckBoxFor(m => m.RememberMe)
-                  @Html.LabelFor(m => m.RememberMe)
-                </div>
-              </div>
-            </div>
-
-            <div class="row form-group">
-              <div class="col-md-12">
-                <input type="submit" value="Đăng nhập" class="btn px-4 btn-primary text-white" />
-              </div>
-            </div>
-
-            <div class="row form-group">
-              <div class="col-md-12">
-                <p class="mb-2">
-                  @Html.ActionLink("Quên mật khẩu?", "ForgotPassword", null, new { @class = "text-primary" })
-                </p>
-                <p>
-                  @Html.ActionLink("Đăng ký tài khoản mới", "Register")
-                </p>
-              </div>
-            </div>
-        }
-      </div>
-    </div>
-  </div>
-</section>
-
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
-    <script>
-        function togglePassword(inputId, iconElement) {
-            var input = document.getElementById(inputId);
-            if (input.type === "password") {
-                input.type = "text";
-                iconElement.classList.remove("icon-eye");
-                iconElement.classList.add("icon-eye-slash");
-            } else {
-                input.type = "password";
-                iconElement.classList.remove("icon-eye-slash");
-                iconElement.classList.add("icon-eye");
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+        <script>
+            function togglePassword(inputId, iconElement) {
+                var input = document.getElementById(inputId);
+                if (input.type === "password") {
+                    input.type = "text";
+                    iconElement.classList.remove("icon-eye");
+                    iconElement.classList.add("icon-eye-slash");
+                } else {
+                    input.type = "password";
+                    iconElement.classList.remove("icon-eye-slash");
+                    iconElement.classList.add("icon-eye");
+                }
             }
-        }
-    </script>
-}
+        </script>
+    }

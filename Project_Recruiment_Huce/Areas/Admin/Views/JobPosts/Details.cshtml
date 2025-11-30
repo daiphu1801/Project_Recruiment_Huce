@@ -1,11 +1,11 @@
-@model Project_Recruiment_Huce.Areas.Admin.Models.JobPostDetailVm
-@using Project_Recruiment_Huce.Areas.Admin.Models
+model Project_Recruiment_Huce.Areas.Admin.Models.JobPostDetailVm
+using Project_Recruiment_Huce.Areas.Admin.Models
 
-@{
+{
     ViewBag.Title = "Chi tiết Tin tuyển dụng: " + (Model.Title ?? "N/A");
 }
 
-@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
 
 <div class="row g-4">
     <!-- Cột bên trái: Thông tin chính -->
@@ -53,7 +53,7 @@
                                 <i class="bi bi-calendar-x me-1"></i>Hạn nộp:
                             </div>
                             <div class="text-black fw-semibold">
-                                @(Model.ApplicationDeadline.HasValue ? Model.ApplicationDeadline.Value.ToString("dd/MM/yyyy") : "Vô thời hạn")
+                                (Model.ApplicationDeadline.HasValue ? Model.ApplicationDeadline.Value.ToString("dd/MM/yyyy") : "Vô thời hạn")
                             </div>
                         </div>
                         <div class="d-flex mb-3">
@@ -61,7 +61,7 @@
                                 <i class="bi bi-flag me-1"></i>Trạng thái:
                             </div>
                             <div>
-                                @Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(Model.Status, "JobPosts"))
+                               Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(Model.Status, "JobPosts"))
                             </div>
                         </div>
                     </div>
@@ -75,7 +75,7 @@
                         <div class="fs-5 fw-bold">
                             @if (Model.SalaryFrom.HasValue && Model.SalaryTo.HasValue)
                             {
-                                @:@AdminUiHelpers.FormatMoney(Model.SalaryFrom.Value) - @AdminUiHelpers.FormatMoney(Model.SalaryTo.Value) @Model.SalaryCurrency
+                                @:AdminUiHelpers.FormatMoney(Model.SalaryFrom.Value) - AdminUiHelpers.FormatMoney(Model.SalaryTo.Value) @Model.SalaryCurrency
                             }
                             else
                             {
@@ -121,10 +121,10 @@
 
                 <!-- Nút hành động -->
                 <div class="d-flex gap-2 mt-4">
-                    <a href="@Url.Action("Edit", "JobPosts", new { id = Model.JobPostID })" class="btn btn-warning">
+                    <a href="Url.Action("Edit", "JobPosts", new { id = Model.JobPostID })" class="btn btn-warning">
                         <i class="bi bi-pencil-square me-1"></i>Chỉnh sửa
                     </a>
-                    <a href="@Url.Action("Delete", "JobPosts", new { id = Model.JobPostID })" class="btn btn-danger">
+                    <a href="Url.Action("Delete", "JobPosts", new { id = Model.JobPostID })" class="btn btn-danger">
                         <i class="bi bi-trash me-1"></i>Xóa
                     </a>
                 </div>
@@ -269,7 +269,7 @@
 
 <!-- Nút quay lại -->
 <div class="mt-4">
-    <a href="@Url.Action("Index", "JobPosts")" class="btn btn-outline-secondary">
+    <a href="Url.Action("Index", "JobPosts")" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
     </a>
 </div>

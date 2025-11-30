@@ -195,5 +195,55 @@ namespace Project_Recruiment_Huce.Services
             result.Data["Account"] = account;
             return result;
         }
+       
+        public void CreateGoogleProfile(string email, string fullName, string avatarUrl, int userType, int userId)
+        {
+            // 1. Xử lý Avatar mặc định nếu trống
+            if (string.IsNullOrEmpty(avatarUrl))
+            {
+                avatarUrl = "/Content/images/default-avatar.png";
+            }
+
+            // 2. Xử lý tách tên (Vì Repository yêu cầu firstName/lastName)
+            string firstName = "";
+            string lastName = "";
+
+            if (!string.IsNullOrEmpty(fullName))
+            {
+                var names = fullName.Trim().Split(' ');
+                if (names.Length > 0)
+                {
+                    lastName = names[names.Length - 1]; // Tên thật
+                    if (names.Length > 1)
+                    {
+                        firstName = fullName.Substring(0, fullName.Length - lastName.Length).Trim(); // Họ đệm
+                    }
+                    else
+                    {
+                        firstName = ""; // Trường hợp chỉ có 1 chữ
+                    }
+                }
+            }
+            else
+            {
+                // Nếu không có tên, lấy email làm tên tạm
+                lastName = email;
+            }
+
+            // 3. Xử lý ngày sinh mặc định (Repository yêu cầu tham số này)
+            DateTime defaultBirthDate = DateTime.Now.AddYears(-20);
+
+            // 4. Gọi Repository (Đảm bảo gọi đúng thứ tự tham số của Repository bạn đã viết)
+            _repo.CreateGoogleProfile(
+                email: email,
+                firstName: firstName,
+                lastName: lastName,
+                userId: userId,         // int
+                FullName: fullName,
+                userType: userType,
+                Avatar: avatarUrl,
+                Birthdate: defaultBirthDate
+            );
+        }
     }
 }

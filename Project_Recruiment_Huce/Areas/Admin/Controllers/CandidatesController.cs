@@ -59,7 +59,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         Address = c.Address,
                         PhotoUrl = photoUrl,
                         Summary = c.Summary,
-                        ApplicationEmail = c.ApplicationEmail,
+                        //ApplicationEmail = c.ApplicationEmail,
                         UserName = account?.Username
                     };
                 }).ToList();
@@ -93,7 +93,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Address = candidate.Address,
                     PhotoUrl = account?.ProfilePhoto?.FilePath,
                     Summary = candidate.Summary,
-                    ApplicationEmail = candidate.ApplicationEmail,
+                    //ApplicationEmail = candidate.ApplicationEmail,
                     UserName = account?.Username
                 };
 
@@ -208,7 +208,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Account = account, 
                     FullName = model.FullName,
                     Email = model.Email, 
-                    ApplicationEmail = model.ApplicationEmail,
+                    //ApplicationEmail = model.ApplicationEmail,
                     Phone = phone,
                     CreatedAt = DateTime.Now,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,
@@ -264,7 +264,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Email = candidate.Email,
                     Address = candidate.Address,
                     Summary = candidate.Summary,
-                    ApplicationEmail = candidate.ApplicationEmail,
+                    //ApplicationEmail = candidate.ApplicationEmail,
                     Username = account?.Username,
                     CurrentPhotoId = account?.PhotoID,
                     CurrentPhotoUrl = account?.ProfilePhoto?.FilePath
@@ -364,7 +364,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 candidate.Gender = model.Gender;
                 candidate.Phone = phone; 
                 candidate.Email = model.Email; 
-                candidate.ApplicationEmail = model.ApplicationEmail;
+                //candidate.ApplicationEmail = model.ApplicationEmail;
                 candidate.Address = model.Address;
                 candidate.Summary = model.Summary;
                 candidate.ActiveFlag = model.Active ? (byte)1 : (byte)0;

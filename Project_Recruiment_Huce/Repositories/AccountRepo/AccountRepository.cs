@@ -1,6 +1,11 @@
+using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Models.Accounts;
+using Project_Recruiment_Huce.Services;
 using System;
 using System.Linq;
-using Project_Recruiment_Huce.Models;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.Mvc;
 
 namespace Project_Recruiment_Huce.Repositories
 {
@@ -15,6 +20,7 @@ namespace Project_Recruiment_Huce.Repositories
         public AccountRepository(JOBPORTAL_ENDataContext db)
         {
             _db = db ?? throw new ArgumentNullException(nameof(db));
+
         }
 
         /// <summary>
@@ -118,5 +124,60 @@ namespace Project_Recruiment_Huce.Repositories
                                            && t.UsedFlag == 0
                                            && t.ExpiresAt > now);
         }
+        public void CreateGoogleProfile(string email, string firstName, string lastName, int userId, string FullName, int userType, string Avatar, DateTime BirthDate)
+        {
+            if (userId <= 0 || string.IsNullOrWhiteSpace(FullName))
+            {
+                throw new ArgumentException("UserId và FullName không hợp lệ.");
+            }
+
+
+            // UserType: 1 = Candidate (Ứng viên), 2 = Recruiter (Nhà tuyển dụng)
+            if (userType == 1)
+            {
+                var candidate = new Candidate
+                {
+                    // FIX LỖI Account_ID: Dùng AccountID (hoặc AccountId)
+                    AccountID = userId,
+
+                    // FIX LỖI FullName: Dùng Full_Name (hoặc FullName, tùy theo designer.cs của bạn)
+                    FullName = FullName,
+
+                    Avatar = Avatar,
+
+                    BirthDate = DateTime.Now.AddYears(-20),
+                    Phone = null,
+                    Address = null
+                };
+                _db.Candidates.InsertOnSubmit(candidate);
+            }
+            else if (userType == 2)
+            {
+                var recruiter = new Recruiter
+                {
+                    // FIX LỖI Account_ID: Dùng AccountID
+                    AccountID = userId,
+
+                    // FIX LỖI FullName: Dùng Full_Name
+                    FullName = FullName,
+
+                    Avatar = Avatar,
+                    PositionTitle = "HR/Recruiter",
+
+
+                };
+                _db.Recruiters.InsertOnSubmit(recruiter);
+            }
+            else
+            {
+                throw new ArgumentException($"Loại người dùng không hợp lệ: {userType}");
+            }
+
+            _db.SubmitChanges();
+
+
+
+        }
+        
     }
 }

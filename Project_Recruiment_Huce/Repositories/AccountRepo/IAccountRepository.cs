@@ -17,10 +17,12 @@ namespace Project_Recruiment_Huce.Repositories
         Account GetById(int accountId);
         Account FindByUsernameOrEmail(string emailOrUsername);
         Account Create(string username, string email, string phone, string role, string passwordHash, string salt);
+        void CreateGoogleProfile(string email, string firstName, string lastName, int userId, string FullName, int userType, string Avatar, DateTime Birthdate);
         void UpdatePassword(int accountId, string passwordHash, string salt);
         void UpdateAccount(Account account);
         void UpdatePasswordResetToken(PasswordResetToken token);
         void SaveChanges();
+
     }
 }
 

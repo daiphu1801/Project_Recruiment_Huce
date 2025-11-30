@@ -30,18 +30,21 @@ namespace Project_Recruiment_Huce.Models
 		
     #region Extensibility Method Definitions
     partial void OnCreated();
-    partial void InsertAccount(Account instance);
-    partial void UpdateAccount(Account instance);
-    partial void DeleteAccount(Account instance);
     partial void InsertTransaction(Transaction instance);
     partial void UpdateTransaction(Transaction instance);
     partial void DeleteTransaction(Transaction instance);
+    partial void InsertAccount(Account instance);
+    partial void UpdateAccount(Account instance);
+    partial void DeleteAccount(Account instance);
     partial void InsertAdmin(Admin instance);
     partial void UpdateAdmin(Admin instance);
     partial void DeleteAdmin(Admin instance);
     partial void InsertApplication(Application instance);
     partial void UpdateApplication(Application instance);
     partial void DeleteApplication(Application instance);
+    partial void InsertAspNetUserLogin(AspNetUserLogin instance);
+    partial void UpdateAspNetUserLogin(AspNetUserLogin instance);
+    partial void DeleteAspNetUserLogin(AspNetUserLogin instance);
     partial void InsertBankCard(BankCard instance);
     partial void UpdateBankCard(BankCard instance);
     partial void DeleteBankCard(BankCard instance);
@@ -72,15 +75,18 @@ namespace Project_Recruiment_Huce.Models
     partial void InsertProfilePhoto(ProfilePhoto instance);
     partial void UpdateProfilePhoto(ProfilePhoto instance);
     partial void DeleteProfilePhoto(ProfilePhoto instance);
-    partial void InsertRecruiter(Recruiter instance);
-    partial void UpdateRecruiter(Recruiter instance);
-    partial void DeleteRecruiter(Recruiter instance);
     partial void InsertResumeFile(ResumeFile instance);
     partial void UpdateResumeFile(ResumeFile instance);
     partial void DeleteResumeFile(ResumeFile instance);
     partial void InsertSavedJob(SavedJob instance);
     partial void UpdateSavedJob(SavedJob instance);
     partial void DeleteSavedJob(SavedJob instance);
+    partial void InsertSchemaMigration(SchemaMigration instance);
+    partial void UpdateSchemaMigration(SchemaMigration instance);
+    partial void DeleteSchemaMigration(SchemaMigration instance);
+    partial void InsertRecruiter(Recruiter instance);
+    partial void UpdateRecruiter(Recruiter instance);
+    partial void DeleteRecruiter(Recruiter instance);
     #endregion
 		
 		public JOBPORTAL_ENDataContext(string connection) : 
@@ -107,19 +113,19 @@ namespace Project_Recruiment_Huce.Models
 			OnCreated();
 		}
 		
-		public System.Data.Linq.Table<Account> Accounts
-		{
-			get
-			{
-				return this.GetTable<Account>();
-			}
-		}
-		
 		public System.Data.Linq.Table<Transaction> Transactions
 		{
 			get
 			{
 				return this.GetTable<Transaction>();
+			}
+		}
+		
+		public System.Data.Linq.Table<Account> Accounts
+		{
+			get
+			{
+				return this.GetTable<Account>();
 			}
 		}
 		
@@ -136,6 +142,14 @@ namespace Project_Recruiment_Huce.Models
 			get
 			{
 				return this.GetTable<Application>();
+			}
+		}
+		
+		public System.Data.Linq.Table<AspNetUserLogin> AspNetUserLogins
+		{
+			get
+			{
+				return this.GetTable<AspNetUserLogin>();
 			}
 		}
 		
@@ -219,14 +233,6 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		public System.Data.Linq.Table<Recruiter> Recruiters
-		{
-			get
-			{
-				return this.GetTable<Recruiter>();
-			}
-		}
-		
 		public System.Data.Linq.Table<ResumeFile> ResumeFiles
 		{
 			get
@@ -242,443 +248,21 @@ namespace Project_Recruiment_Huce.Models
 				return this.GetTable<SavedJob>();
 			}
 		}
-	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Accounts")]
-	public partial class Account : INotifyPropertyChanging, INotifyPropertyChanged
-	{
 		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private int _AccountID;
-		
-		private string _Username;
-		
-		private string _PasswordHash;
-		
-		private string _Email;
-		
-		private string _Phone;
-		
-		private string _Role;
-		
-		private System.DateTime _CreatedAt;
-		
-		private byte _ActiveFlag;
-		
-		private System.Nullable<int> _PhotoID;
-		
-		private EntitySet<Transaction> _Transactions;
-		
-		private EntitySet<Admin> _Admins;
-		
-		private EntitySet<Candidate> _Candidates;
-		
-		private EntitySet<PasswordResetToken> _PasswordResetTokens;
-		
-		private EntitySet<Recruiter> _Recruiters;
-		
-		private EntityRef<ProfilePhoto> _ProfilePhoto;
-		
-    #region Extensibility Method Definitions
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnAccountIDChanging(int value);
-    partial void OnAccountIDChanged();
-    partial void OnUsernameChanging(string value);
-    partial void OnUsernameChanged();
-    partial void OnPasswordHashChanging(string value);
-    partial void OnPasswordHashChanged();
-    partial void OnEmailChanging(string value);
-    partial void OnEmailChanged();
-    partial void OnPhoneChanging(string value);
-    partial void OnPhoneChanged();
-    partial void OnRoleChanging(string value);
-    partial void OnRoleChanged();
-    partial void OnCreatedAtChanging(System.DateTime value);
-    partial void OnCreatedAtChanged();
-    partial void OnActiveFlagChanging(byte value);
-    partial void OnActiveFlagChanged();
-    partial void OnPhotoIDChanging(System.Nullable<int> value);
-    partial void OnPhotoIDChanged();
-    #endregion
-		
-		public Account()
-		{
-			this._Transactions = new EntitySet<Transaction>(new Action<Transaction>(this.attach_Transactions), new Action<Transaction>(this.detach_Transactions));
-			this._Admins = new EntitySet<Admin>(new Action<Admin>(this.attach_Admins), new Action<Admin>(this.detach_Admins));
-			this._Candidates = new EntitySet<Candidate>(new Action<Candidate>(this.attach_Candidates), new Action<Candidate>(this.detach_Candidates));
-			this._PasswordResetTokens = new EntitySet<PasswordResetToken>(new Action<PasswordResetToken>(this.attach_PasswordResetTokens), new Action<PasswordResetToken>(this.detach_PasswordResetTokens));
-			this._Recruiters = new EntitySet<Recruiter>(new Action<Recruiter>(this.attach_Recruiters), new Action<Recruiter>(this.detach_Recruiters));
-			this._ProfilePhoto = default(EntityRef<ProfilePhoto>);
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AccountID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
-		public int AccountID
+		public System.Data.Linq.Table<SchemaMigration> SchemaMigrations
 		{
 			get
 			{
-				return this._AccountID;
-			}
-			set
-			{
-				if ((this._AccountID != value))
-				{
-					this.OnAccountIDChanging(value);
-					this.SendPropertyChanging();
-					this._AccountID = value;
-					this.SendPropertyChanged("AccountID");
-					this.OnAccountIDChanged();
-				}
+				return this.GetTable<SchemaMigration>();
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Username", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
-		public string Username
+		public System.Data.Linq.Table<Recruiter> Recruiters
 		{
 			get
 			{
-				return this._Username;
+				return this.GetTable<Recruiter>();
 			}
-			set
-			{
-				if ((this._Username != value))
-				{
-					this.OnUsernameChanging(value);
-					this.SendPropertyChanging();
-					this._Username = value;
-					this.SendPropertyChanged("Username");
-					this.OnUsernameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PasswordHash", DbType="NVarChar(255)")]
-		public string PasswordHash
-		{
-			get
-			{
-				return this._PasswordHash;
-			}
-			set
-			{
-				if ((this._PasswordHash != value))
-				{
-					this.OnPasswordHashChanging(value);
-					this.SendPropertyChanging();
-					this._PasswordHash = value;
-					this.SendPropertyChanged("PasswordHash");
-					this.OnPasswordHashChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Email", DbType="NVarChar(150) NOT NULL", CanBeNull=false)]
-		public string Email
-		{
-			get
-			{
-				return this._Email;
-			}
-			set
-			{
-				if ((this._Email != value))
-				{
-					this.OnEmailChanging(value);
-					this.SendPropertyChanging();
-					this._Email = value;
-					this.SendPropertyChanged("Email");
-					this.OnEmailChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Phone", DbType="NVarChar(20)")]
-		public string Phone
-		{
-			get
-			{
-				return this._Phone;
-			}
-			set
-			{
-				if ((this._Phone != value))
-				{
-					this.OnPhoneChanging(value);
-					this.SendPropertyChanging();
-					this._Phone = value;
-					this.SendPropertyChanged("Phone");
-					this.OnPhoneChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Role", DbType="NVarChar(30) NOT NULL", CanBeNull=false)]
-		public string Role
-		{
-			get
-			{
-				return this._Role;
-			}
-			set
-			{
-				if ((this._Role != value))
-				{
-					this.OnRoleChanging(value);
-					this.SendPropertyChanging();
-					this._Role = value;
-					this.SendPropertyChanged("Role");
-					this.OnRoleChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2 NOT NULL")]
-		public System.DateTime CreatedAt
-		{
-			get
-			{
-				return this._CreatedAt;
-			}
-			set
-			{
-				if ((this._CreatedAt != value))
-				{
-					this.OnCreatedAtChanging(value);
-					this.SendPropertyChanging();
-					this._CreatedAt = value;
-					this.SendPropertyChanged("CreatedAt");
-					this.OnCreatedAtChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActiveFlag", DbType="TinyInt NOT NULL")]
-		public byte ActiveFlag
-		{
-			get
-			{
-				return this._ActiveFlag;
-			}
-			set
-			{
-				if ((this._ActiveFlag != value))
-				{
-					this.OnActiveFlagChanging(value);
-					this.SendPropertyChanging();
-					this._ActiveFlag = value;
-					this.SendPropertyChanged("ActiveFlag");
-					this.OnActiveFlagChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PhotoID", DbType="Int")]
-		public System.Nullable<int> PhotoID
-		{
-			get
-			{
-				return this._PhotoID;
-			}
-			set
-			{
-				if ((this._PhotoID != value))
-				{
-					if (this._ProfilePhoto.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnPhotoIDChanging(value);
-					this.SendPropertyChanging();
-					this._PhotoID = value;
-					this.SendPropertyChanged("PhotoID");
-					this.OnPhotoIDChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Transaction", Storage="_Transactions", ThisKey="AccountID", OtherKey="AccountID")]
-		public EntitySet<Transaction> Transactions
-		{
-			get
-			{
-				return this._Transactions;
-			}
-			set
-			{
-				this._Transactions.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Admin", Storage="_Admins", ThisKey="AccountID", OtherKey="AccountID")]
-		public EntitySet<Admin> Admins
-		{
-			get
-			{
-				return this._Admins;
-			}
-			set
-			{
-				this._Admins.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Candidate", Storage="_Candidates", ThisKey="AccountID", OtherKey="AccountID")]
-		public EntitySet<Candidate> Candidates
-		{
-			get
-			{
-				return this._Candidates;
-			}
-			set
-			{
-				this._Candidates.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_PasswordResetToken", Storage="_PasswordResetTokens", ThisKey="AccountID", OtherKey="AccountID")]
-		public EntitySet<PasswordResetToken> PasswordResetTokens
-		{
-			get
-			{
-				return this._PasswordResetTokens;
-			}
-			set
-			{
-				this._PasswordResetTokens.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Recruiter", Storage="_Recruiters", ThisKey="AccountID", OtherKey="AccountID")]
-		public EntitySet<Recruiter> Recruiters
-		{
-			get
-			{
-				return this._Recruiters;
-			}
-			set
-			{
-				this._Recruiters.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="ProfilePhoto_Account", Storage="_ProfilePhoto", ThisKey="PhotoID", OtherKey="PhotoID", IsForeignKey=true, DeleteRule="SET NULL")]
-		public ProfilePhoto ProfilePhoto
-		{
-			get
-			{
-				return this._ProfilePhoto.Entity;
-			}
-			set
-			{
-				ProfilePhoto previousValue = this._ProfilePhoto.Entity;
-				if (((previousValue != value) 
-							|| (this._ProfilePhoto.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._ProfilePhoto.Entity = null;
-						previousValue.Accounts.Remove(this);
-					}
-					this._ProfilePhoto.Entity = value;
-					if ((value != null))
-					{
-						value.Accounts.Add(this);
-						this._PhotoID = value.PhotoID;
-					}
-					else
-					{
-						this._PhotoID = default(Nullable<int>);
-					}
-					this.SendPropertyChanged("ProfilePhoto");
-				}
-			}
-		}
-
-        public string UserName { get; internal set; }
-        public string ApplicationEmail { get; internal set; }
-
-        public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-		
-		private void attach_Transactions(Transaction entity)
-		{
-			this.SendPropertyChanging();
-			entity.Account = this;
-		}
-		
-		private void detach_Transactions(Transaction entity)
-		{
-			this.SendPropertyChanging();
-			entity.Account = null;
-		}
-		
-		private void attach_Admins(Admin entity)
-		{
-			this.SendPropertyChanging();
-			entity.Account = this;
-		}
-		
-		private void detach_Admins(Admin entity)
-		{
-			this.SendPropertyChanging();
-			entity.Account = null;
-		}
-		
-		private void attach_Candidates(Candidate entity)
-		{
-			this.SendPropertyChanging();
-			entity.Account = this;
-		}
-		
-		private void detach_Candidates(Candidate entity)
-		{
-			this.SendPropertyChanging();
-			entity.Account = null;
-		}
-		
-		private void attach_PasswordResetTokens(PasswordResetToken entity)
-		{
-			this.SendPropertyChanging();
-			entity.Account = this;
-		}
-		
-		private void detach_PasswordResetTokens(PasswordResetToken entity)
-		{
-			this.SendPropertyChanging();
-			entity.Account = null;
-		}
-		
-		private void attach_Recruiters(Recruiter entity)
-		{
-			this.SendPropertyChanging();
-			entity.Account = this;
-		}
-		
-		private void detach_Recruiters(Recruiter entity)
-		{
-			this.SendPropertyChanging();
-			entity.Account = null;
 		}
 	}
 	
@@ -998,6 +582,465 @@ namespace Project_Recruiment_Huce.Models
 			{
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Accounts")]
+	public partial class Account : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _AccountID;
+		
+		private string _Username;
+		
+		private string _PasswordHash;
+		
+		private string _Salt;
+		
+		private string _Email;
+		
+		private string _Phone;
+		
+		private string _Role;
+		
+		private System.DateTime _CreatedAt;
+		
+		private byte _ActiveFlag;
+		
+		private System.Nullable<int> _PhotoID;
+		
+		private EntitySet<Transaction> _Transactions;
+		
+		private EntitySet<Admin> _Admins;
+		
+		private EntitySet<Candidate> _Candidates;
+		
+		private EntitySet<PasswordResetToken> _PasswordResetTokens;
+		
+		private EntitySet<Recruiter> _Recruiters;
+		
+		private EntityRef<ProfilePhoto> _ProfilePhoto;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnAccountIDChanging(int value);
+    partial void OnAccountIDChanged();
+    partial void OnUsernameChanging(string value);
+    partial void OnUsernameChanged();
+    partial void OnPasswordHashChanging(string value);
+    partial void OnPasswordHashChanged();
+    partial void OnSaltChanging(string value);
+    partial void OnSaltChanged();
+    partial void OnEmailChanging(string value);
+    partial void OnEmailChanged();
+    partial void OnPhoneChanging(string value);
+    partial void OnPhoneChanged();
+    partial void OnRoleChanging(string value);
+    partial void OnRoleChanged();
+    partial void OnCreatedAtChanging(System.DateTime value);
+    partial void OnCreatedAtChanged();
+    partial void OnActiveFlagChanging(byte value);
+    partial void OnActiveFlagChanged();
+    partial void OnPhotoIDChanging(System.Nullable<int> value);
+    partial void OnPhotoIDChanged();
+    #endregion
+		
+		public Account()
+		{
+			this._Transactions = new EntitySet<Transaction>(new Action<Transaction>(this.attach_Transactions), new Action<Transaction>(this.detach_Transactions));
+			this._Admins = new EntitySet<Admin>(new Action<Admin>(this.attach_Admins), new Action<Admin>(this.detach_Admins));
+			this._Candidates = new EntitySet<Candidate>(new Action<Candidate>(this.attach_Candidates), new Action<Candidate>(this.detach_Candidates));
+			this._PasswordResetTokens = new EntitySet<PasswordResetToken>(new Action<PasswordResetToken>(this.attach_PasswordResetTokens), new Action<PasswordResetToken>(this.detach_PasswordResetTokens));
+			this._Recruiters = new EntitySet<Recruiter>(new Action<Recruiter>(this.attach_Recruiters), new Action<Recruiter>(this.detach_Recruiters));
+			this._ProfilePhoto = default(EntityRef<ProfilePhoto>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AccountID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int AccountID
+		{
+			get
+			{
+				return this._AccountID;
+			}
+			set
+			{
+				if ((this._AccountID != value))
+				{
+					this.OnAccountIDChanging(value);
+					this.SendPropertyChanging();
+					this._AccountID = value;
+					this.SendPropertyChanged("AccountID");
+					this.OnAccountIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Username", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string Username
+		{
+			get
+			{
+				return this._Username;
+			}
+			set
+			{
+				if ((this._Username != value))
+				{
+					this.OnUsernameChanging(value);
+					this.SendPropertyChanging();
+					this._Username = value;
+					this.SendPropertyChanged("Username");
+					this.OnUsernameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PasswordHash", DbType="NVarChar(255)")]
+		public string PasswordHash
+		{
+			get
+			{
+				return this._PasswordHash;
+			}
+			set
+			{
+				if ((this._PasswordHash != value))
+				{
+					this.OnPasswordHashChanging(value);
+					this.SendPropertyChanging();
+					this._PasswordHash = value;
+					this.SendPropertyChanged("PasswordHash");
+					this.OnPasswordHashChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Salt", DbType="NVarChar(255)")]
+		public string Salt
+		{
+			get
+			{
+				return this._Salt;
+			}
+			set
+			{
+				if ((this._Salt != value))
+				{
+					this.OnSaltChanging(value);
+					this.SendPropertyChanging();
+					this._Salt = value;
+					this.SendPropertyChanged("Salt");
+					this.OnSaltChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Email", DbType="NVarChar(150) NOT NULL", CanBeNull=false)]
+		public string Email
+		{
+			get
+			{
+				return this._Email;
+			}
+			set
+			{
+				if ((this._Email != value))
+				{
+					this.OnEmailChanging(value);
+					this.SendPropertyChanging();
+					this._Email = value;
+					this.SendPropertyChanged("Email");
+					this.OnEmailChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Phone", DbType="NVarChar(20)")]
+		public string Phone
+		{
+			get
+			{
+				return this._Phone;
+			}
+			set
+			{
+				if ((this._Phone != value))
+				{
+					this.OnPhoneChanging(value);
+					this.SendPropertyChanging();
+					this._Phone = value;
+					this.SendPropertyChanged("Phone");
+					this.OnPhoneChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Role", DbType="NVarChar(30) NOT NULL", CanBeNull=false)]
+		public string Role
+		{
+			get
+			{
+				return this._Role;
+			}
+			set
+			{
+				if ((this._Role != value))
+				{
+					this.OnRoleChanging(value);
+					this.SendPropertyChanging();
+					this._Role = value;
+					this.SendPropertyChanged("Role");
+					this.OnRoleChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2 NOT NULL")]
+		public System.DateTime CreatedAt
+		{
+			get
+			{
+				return this._CreatedAt;
+			}
+			set
+			{
+				if ((this._CreatedAt != value))
+				{
+					this.OnCreatedAtChanging(value);
+					this.SendPropertyChanging();
+					this._CreatedAt = value;
+					this.SendPropertyChanged("CreatedAt");
+					this.OnCreatedAtChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActiveFlag", DbType="TinyInt NOT NULL")]
+		public byte ActiveFlag
+		{
+			get
+			{
+				return this._ActiveFlag;
+			}
+			set
+			{
+				if ((this._ActiveFlag != value))
+				{
+					this.OnActiveFlagChanging(value);
+					this.SendPropertyChanging();
+					this._ActiveFlag = value;
+					this.SendPropertyChanged("ActiveFlag");
+					this.OnActiveFlagChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PhotoID", DbType="Int")]
+		public System.Nullable<int> PhotoID
+		{
+			get
+			{
+				return this._PhotoID;
+			}
+			set
+			{
+				if ((this._PhotoID != value))
+				{
+					if (this._ProfilePhoto.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnPhotoIDChanging(value);
+					this.SendPropertyChanging();
+					this._PhotoID = value;
+					this.SendPropertyChanged("PhotoID");
+					this.OnPhotoIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Transaction", Storage="_Transactions", ThisKey="AccountID", OtherKey="AccountID")]
+		public EntitySet<Transaction> Transactions
+		{
+			get
+			{
+				return this._Transactions;
+			}
+			set
+			{
+				this._Transactions.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Admin", Storage="_Admins", ThisKey="AccountID", OtherKey="AccountID")]
+		public EntitySet<Admin> Admins
+		{
+			get
+			{
+				return this._Admins;
+			}
+			set
+			{
+				this._Admins.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Candidate", Storage="_Candidates", ThisKey="AccountID", OtherKey="AccountID")]
+		public EntitySet<Candidate> Candidates
+		{
+			get
+			{
+				return this._Candidates;
+			}
+			set
+			{
+				this._Candidates.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_PasswordResetToken", Storage="_PasswordResetTokens", ThisKey="AccountID", OtherKey="AccountID")]
+		public EntitySet<PasswordResetToken> PasswordResetTokens
+		{
+			get
+			{
+				return this._PasswordResetTokens;
+			}
+			set
+			{
+				this._PasswordResetTokens.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Recruiter1", Storage="_Recruiters", ThisKey="AccountID", OtherKey="AccountID")]
+		public EntitySet<Recruiter> Recruiters
+		{
+			get
+			{
+				return this._Recruiters;
+			}
+			set
+			{
+				this._Recruiters.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="ProfilePhoto_Account", Storage="_ProfilePhoto", ThisKey="PhotoID", OtherKey="PhotoID", IsForeignKey=true, DeleteRule="SET NULL")]
+		public ProfilePhoto ProfilePhoto
+		{
+			get
+			{
+				return this._ProfilePhoto.Entity;
+			}
+			set
+			{
+				ProfilePhoto previousValue = this._ProfilePhoto.Entity;
+				if (((previousValue != value) 
+							|| (this._ProfilePhoto.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._ProfilePhoto.Entity = null;
+						previousValue.Accounts.Remove(this);
+					}
+					this._ProfilePhoto.Entity = value;
+					if ((value != null))
+					{
+						value.Accounts.Add(this);
+						this._PhotoID = value.PhotoID;
+					}
+					else
+					{
+						this._PhotoID = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("ProfilePhoto");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+		
+		private void attach_Transactions(Transaction entity)
+		{
+			this.SendPropertyChanging();
+			entity.Account = this;
+		}
+		
+		private void detach_Transactions(Transaction entity)
+		{
+			this.SendPropertyChanging();
+			entity.Account = null;
+		}
+		
+		private void attach_Admins(Admin entity)
+		{
+			this.SendPropertyChanging();
+			entity.Account = this;
+		}
+		
+		private void detach_Admins(Admin entity)
+		{
+			this.SendPropertyChanging();
+			entity.Account = null;
+		}
+		
+		private void attach_Candidates(Candidate entity)
+		{
+			this.SendPropertyChanging();
+			entity.Account = this;
+		}
+		
+		private void detach_Candidates(Candidate entity)
+		{
+			this.SendPropertyChanging();
+			entity.Account = null;
+		}
+		
+		private void attach_PasswordResetTokens(PasswordResetToken entity)
+		{
+			this.SendPropertyChanging();
+			entity.Account = this;
+		}
+		
+		private void detach_PasswordResetTokens(PasswordResetToken entity)
+		{
+			this.SendPropertyChanging();
+			entity.Account = null;
+		}
+		
+		private void attach_Recruiters(Recruiter entity)
+		{
+			this.SendPropertyChanging();
+			entity.Account = this;
+		}
+		
+		private void detach_Recruiters(Recruiter entity)
+		{
+			this.SendPropertyChanging();
+			entity.Account = null;
 		}
 	}
 	
@@ -1560,6 +1603,116 @@ namespace Project_Recruiment_Huce.Models
 		}
 	}
 	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.AspNetUserLogins")]
+	public partial class AspNetUserLogin : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private string _LoginProvider;
+		
+		private string _ProviderKey;
+		
+		private string _UserId;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnLoginProviderChanging(string value);
+    partial void OnLoginProviderChanged();
+    partial void OnProviderKeyChanging(string value);
+    partial void OnProviderKeyChanged();
+    partial void OnUserIdChanging(string value);
+    partial void OnUserIdChanged();
+    #endregion
+		
+		public AspNetUserLogin()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LoginProvider", DbType="NVarChar(128) NOT NULL", CanBeNull=false, IsPrimaryKey=true)]
+		public string LoginProvider
+		{
+			get
+			{
+				return this._LoginProvider;
+			}
+			set
+			{
+				if ((this._LoginProvider != value))
+				{
+					this.OnLoginProviderChanging(value);
+					this.SendPropertyChanging();
+					this._LoginProvider = value;
+					this.SendPropertyChanged("LoginProvider");
+					this.OnLoginProviderChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ProviderKey", DbType="NVarChar(128) NOT NULL", CanBeNull=false, IsPrimaryKey=true)]
+		public string ProviderKey
+		{
+			get
+			{
+				return this._ProviderKey;
+			}
+			set
+			{
+				if ((this._ProviderKey != value))
+				{
+					this.OnProviderKeyChanging(value);
+					this.SendPropertyChanging();
+					this._ProviderKey = value;
+					this.SendPropertyChanged("ProviderKey");
+					this.OnProviderKeyChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UserId", DbType="NVarChar(128) NOT NULL", CanBeNull=false, IsPrimaryKey=true)]
+		public string UserId
+		{
+			get
+			{
+				return this._UserId;
+			}
+			set
+			{
+				if ((this._UserId != value))
+				{
+					this.OnUserIdChanging(value);
+					this.SendPropertyChanging();
+					this._UserId = value;
+					this.SendPropertyChanged("UserId");
+					this.OnUserIdChanged();
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.BankCards")]
 	public partial class BankCard : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -1776,7 +1929,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter_BankCard", Storage="_Recruiter", ThisKey="RecruiterID", OtherKey="RecruiterID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter1_BankCard", Storage="_Recruiter", ThisKey="RecruiterID", OtherKey="RecruiterID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
 		public Recruiter Recruiter
 		{
 			get
@@ -1861,6 +2014,8 @@ namespace Project_Recruiment_Huce.Models
 		
 		private byte _ActiveFlag;
 		
+		private string _Avatar;
+		
 		private EntitySet<Application> _Applications;
 		
 		private EntitySet<ResumeFile> _ResumeFiles;
@@ -1899,6 +2054,8 @@ namespace Project_Recruiment_Huce.Models
     partial void OnCreatedAtChanged();
     partial void OnActiveFlagChanging(byte value);
     partial void OnActiveFlagChanged();
+    partial void OnAvatarChanging(string value);
+    partial void OnAvatarChanged();
     #endregion
 		
 		public Candidate()
@@ -2159,6 +2316,26 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Avatar", DbType="NVarChar(500)")]
+		public string Avatar
+		{
+			get
+			{
+				return this._Avatar;
+			}
+			set
+			{
+				if ((this._Avatar != value))
+				{
+					this.OnAvatarChanging(value);
+					this.SendPropertyChanging();
+					this._Avatar = value;
+					this.SendPropertyChanged("Avatar");
+					this.OnAvatarChanged();
+				}
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Candidate_Application", Storage="_Applications", ThisKey="CandidateID", OtherKey="CandidateID")]
 		public EntitySet<Application> Applications
 		{
@@ -2265,12 +2442,8 @@ namespace Project_Recruiment_Huce.Models
 				}
 			}
 		}
-
-        public string Username { get;  set; }
-        public string ApplicationEmail { get; internal set; }
-        
-
-        public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
 		
@@ -2345,8 +2518,6 @@ namespace Project_Recruiment_Huce.Models
 		
 		private string _Phone;
 		
-		private string _Fax;
-		
 		private string _CompanyEmail;
 		
 		private string _Website;
@@ -2358,6 +2529,8 @@ namespace Project_Recruiment_Huce.Models
 		private byte _ActiveFlag;
 		
 		private System.Nullable<int> _PhotoID;
+		
+		private string _Fax;
 		
 		private EntitySet<JobPost> _JobPosts;
 		
@@ -2381,8 +2554,6 @@ namespace Project_Recruiment_Huce.Models
     partial void OnAddressChanged();
     partial void OnPhoneChanging(string value);
     partial void OnPhoneChanged();
-    partial void OnFaxChanging(string value);
-    partial void OnFaxChanged();
     partial void OnCompanyEmailChanging(string value);
     partial void OnCompanyEmailChanged();
     partial void OnWebsiteChanging(string value);
@@ -2395,6 +2566,8 @@ namespace Project_Recruiment_Huce.Models
     partial void OnActiveFlagChanged();
     partial void OnPhotoIDChanging(System.Nullable<int> value);
     partial void OnPhotoIDChanged();
+    partial void OnFaxChanging(string value);
+    partial void OnFaxChanged();
     #endregion
 		
 		public Company()
@@ -2525,26 +2698,6 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Fax", DbType="NVarChar(20)")]
-		public string Fax
-		{
-			get
-			{
-				return this._Fax;
-			}
-			set
-			{
-				if ((this._Fax != value))
-				{
-					this.OnFaxChanging(value);
-					this.SendPropertyChanging();
-					this._Fax = value;
-					this.SendPropertyChanged("Fax");
-					this.OnFaxChanged();
-				}
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyEmail", DbType="NVarChar(150)")]
 		public string CompanyEmail
 		{
@@ -2669,6 +2822,26 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Fax", DbType="NVarChar(50)")]
+		public string Fax
+		{
+			get
+			{
+				return this._Fax;
+			}
+			set
+			{
+				if ((this._Fax != value))
+				{
+					this.OnFaxChanging(value);
+					this.SendPropertyChanging();
+					this._Fax = value;
+					this.SendPropertyChanged("Fax");
+					this.OnFaxChanged();
+				}
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Company_JobPost", Storage="_JobPosts", ThisKey="CompanyID", OtherKey="CompanyID")]
 		public EntitySet<JobPost> JobPosts
 		{
@@ -2682,7 +2855,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Company_Recruiter", Storage="_Recruiters", ThisKey="CompanyID", OtherKey="CompanyID")]
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Company_Recruiter1", Storage="_Recruiters", ThisKey="CompanyID", OtherKey="CompanyID")]
 		public EntitySet<Recruiter> Recruiters
 		{
 			get
@@ -3678,7 +3851,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter_JobPost", Storage="_Recruiter", ThisKey="RecruiterID", OtherKey="RecruiterID", IsForeignKey=true)]
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter1_JobPost", Storage="_Recruiter", ThisKey="RecruiterID", OtherKey="RecruiterID", IsForeignKey=true)]
 		public Recruiter Recruiter
 		{
 			get
@@ -3997,7 +4170,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_PasswordResetToken", Storage="_Account", ThisKey="AccountID", OtherKey="AccountID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_PasswordResetToken", Storage="_Account", ThisKey="AccountID", OtherKey="AccountID", IsForeignKey=true)]
 		public Account Account
 		{
 			get
@@ -4244,7 +4417,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter_PaymentHistory", Storage="_Recruiter", ThisKey="RecruiterID", OtherKey="RecruiterID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter1_PaymentHistory", Storage="_Recruiter", ThisKey="RecruiterID", OtherKey="RecruiterID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
 		public Recruiter Recruiter
 		{
 			get
@@ -4467,7 +4640,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter_PendingPayment", Storage="_Recruiter", ThisKey="RecruiterID", OtherKey="RecruiterID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter1_PendingPayment", Storage="_Recruiter", ThisKey="RecruiterID", OtherKey="RecruiterID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
 		public Recruiter Recruiter
 		{
 			get
@@ -4731,7 +4904,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter_PostingHistory", Storage="_Recruiter", ThisKey="RecruiterID", OtherKey="RecruiterID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter1_PostingHistory", Storage="_Recruiter", ThisKey="RecruiterID", OtherKey="RecruiterID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
 		public Recruiter Recruiter
 		{
 			get
@@ -4998,7 +5171,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="ProfilePhoto_Recruiter", Storage="_Recruiters", ThisKey="PhotoID", OtherKey="PhotoID")]
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="ProfilePhoto_Recruiter1", Storage="_Recruiters", ThisKey="PhotoID", OtherKey="PhotoID")]
 		public EntitySet<Recruiter> Recruiters
 		{
 			get
@@ -5077,571 +5250,6 @@ namespace Project_Recruiment_Huce.Models
 		{
 			this.SendPropertyChanging();
 			entity.ProfilePhoto = null;
-		}
-	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Recruiters")]
-	public partial class Recruiter : INotifyPropertyChanging, INotifyPropertyChanged
-	{
-		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private int _RecruiterID;
-		
-		private int _AccountID;
-		
-		private System.Nullable<int> _CompanyID;
-		
-		private string _FullName;
-		
-		private string _PositionTitle;
-		
-		private string _CompanyEmail;
-		
-		private string _Phone;
-		
-		private System.DateTime _CreatedAt;
-		
-		private byte _ActiveFlag;
-		
-		private System.Nullable<int> _PhotoID;
-		
-		private System.Data.Linq.Binary _RowVer;
-		
-		private EntitySet<BankCard> _BankCards;
-		
-		private EntitySet<JobPost> _JobPosts;
-		
-		private EntitySet<PaymentHistory> _PaymentHistories;
-		
-		private EntitySet<PendingPayment> _PendingPayments;
-		
-		private EntitySet<PostingHistory> _PostingHistories;
-		
-		private EntityRef<Account> _Account;
-		
-		private EntityRef<Company> _Company;
-		
-		private EntityRef<ProfilePhoto> _ProfilePhoto;
-		
-    #region Extensibility Method Definitions
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnRecruiterIDChanging(int value);
-    partial void OnRecruiterIDChanged();
-    partial void OnAccountIDChanging(int value);
-    partial void OnAccountIDChanged();
-    partial void OnCompanyIDChanging(System.Nullable<int> value);
-    partial void OnCompanyIDChanged();
-    partial void OnFullNameChanging(string value);
-    partial void OnFullNameChanged();
-    partial void OnPositionTitleChanging(string value);
-    partial void OnPositionTitleChanged();
-    partial void OnCompanyEmailChanging(string value);
-    partial void OnCompanyEmailChanged();
-    partial void OnPhoneChanging(string value);
-    partial void OnPhoneChanged();
-    partial void OnCreatedAtChanging(System.DateTime value);
-    partial void OnCreatedAtChanged();
-    partial void OnActiveFlagChanging(byte value);
-    partial void OnActiveFlagChanged();
-    partial void OnPhotoIDChanging(System.Nullable<int> value);
-    partial void OnPhotoIDChanged();
-    partial void OnRowVerChanging(System.Data.Linq.Binary value);
-    partial void OnRowVerChanged();
-    #endregion
-		
-		public Recruiter()
-		{
-			this._BankCards = new EntitySet<BankCard>(new Action<BankCard>(this.attach_BankCards), new Action<BankCard>(this.detach_BankCards));
-			this._JobPosts = new EntitySet<JobPost>(new Action<JobPost>(this.attach_JobPosts), new Action<JobPost>(this.detach_JobPosts));
-			this._PaymentHistories = new EntitySet<PaymentHistory>(new Action<PaymentHistory>(this.attach_PaymentHistories), new Action<PaymentHistory>(this.detach_PaymentHistories));
-			this._PendingPayments = new EntitySet<PendingPayment>(new Action<PendingPayment>(this.attach_PendingPayments), new Action<PendingPayment>(this.detach_PendingPayments));
-			this._PostingHistories = new EntitySet<PostingHistory>(new Action<PostingHistory>(this.attach_PostingHistories), new Action<PostingHistory>(this.detach_PostingHistories));
-			this._Account = default(EntityRef<Account>);
-			this._Company = default(EntityRef<Company>);
-			this._ProfilePhoto = default(EntityRef<ProfilePhoto>);
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RecruiterID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true, UpdateCheck=UpdateCheck.Never)]
-		public int RecruiterID
-		{
-			get
-			{
-				return this._RecruiterID;
-			}
-			set
-			{
-				if ((this._RecruiterID != value))
-				{
-					this.OnRecruiterIDChanging(value);
-					this.SendPropertyChanging();
-					this._RecruiterID = value;
-					this.SendPropertyChanged("RecruiterID");
-					this.OnRecruiterIDChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AccountID", DbType="Int NOT NULL", UpdateCheck=UpdateCheck.Never)]
-		public int AccountID
-		{
-			get
-			{
-				return this._AccountID;
-			}
-			set
-			{
-				if ((this._AccountID != value))
-				{
-					if (this._Account.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnAccountIDChanging(value);
-					this.SendPropertyChanging();
-					this._AccountID = value;
-					this.SendPropertyChanged("AccountID");
-					this.OnAccountIDChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyID", DbType="Int", UpdateCheck=UpdateCheck.Never)]
-		public System.Nullable<int> CompanyID
-		{
-			get
-			{
-				return this._CompanyID;
-			}
-			set
-			{
-				if ((this._CompanyID != value))
-				{
-					if (this._Company.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnCompanyIDChanging(value);
-					this.SendPropertyChanging();
-					this._CompanyID = value;
-					this.SendPropertyChanged("CompanyID");
-					this.OnCompanyIDChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FullName", DbType="NVarChar(100) NOT NULL", CanBeNull=false, UpdateCheck=UpdateCheck.Never)]
-		public string FullName
-		{
-			get
-			{
-				return this._FullName;
-			}
-			set
-			{
-				if ((this._FullName != value))
-				{
-					this.OnFullNameChanging(value);
-					this.SendPropertyChanging();
-					this._FullName = value;
-					this.SendPropertyChanged("FullName");
-					this.OnFullNameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PositionTitle", DbType="NVarChar(100)", UpdateCheck=UpdateCheck.Never)]
-		public string PositionTitle
-		{
-			get
-			{
-				return this._PositionTitle;
-			}
-			set
-			{
-				if ((this._PositionTitle != value))
-				{
-					this.OnPositionTitleChanging(value);
-					this.SendPropertyChanging();
-					this._PositionTitle = value;
-					this.SendPropertyChanged("PositionTitle");
-					this.OnPositionTitleChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyEmail", DbType="NVarChar(150)", UpdateCheck=UpdateCheck.Never)]
-		public string CompanyEmail
-		{
-			get
-			{
-				return this._CompanyEmail;
-			}
-			set
-			{
-				if ((this._CompanyEmail != value))
-				{
-					this.OnCompanyEmailChanging(value);
-					this.SendPropertyChanging();
-					this._CompanyEmail = value;
-					this.SendPropertyChanged("CompanyEmail");
-					this.OnCompanyEmailChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Phone", DbType="NVarChar(20)", UpdateCheck=UpdateCheck.Never)]
-		public string Phone
-		{
-			get
-			{
-				return this._Phone;
-			}
-			set
-			{
-				if ((this._Phone != value))
-				{
-					this.OnPhoneChanging(value);
-					this.SendPropertyChanging();
-					this._Phone = value;
-					this.SendPropertyChanged("Phone");
-					this.OnPhoneChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2 NOT NULL", UpdateCheck=UpdateCheck.Never)]
-		public System.DateTime CreatedAt
-		{
-			get
-			{
-				return this._CreatedAt;
-			}
-			set
-			{
-				if ((this._CreatedAt != value))
-				{
-					this.OnCreatedAtChanging(value);
-					this.SendPropertyChanging();
-					this._CreatedAt = value;
-					this.SendPropertyChanged("CreatedAt");
-					this.OnCreatedAtChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActiveFlag", DbType="TinyInt NOT NULL", UpdateCheck=UpdateCheck.Never)]
-		public byte ActiveFlag
-		{
-			get
-			{
-				return this._ActiveFlag;
-			}
-			set
-			{
-				if ((this._ActiveFlag != value))
-				{
-					this.OnActiveFlagChanging(value);
-					this.SendPropertyChanging();
-					this._ActiveFlag = value;
-					this.SendPropertyChanged("ActiveFlag");
-					this.OnActiveFlagChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PhotoID", DbType="Int", UpdateCheck=UpdateCheck.Never)]
-		public System.Nullable<int> PhotoID
-		{
-			get
-			{
-				return this._PhotoID;
-			}
-			set
-			{
-				if ((this._PhotoID != value))
-				{
-					if (this._ProfilePhoto.HasLoadedOrAssignedValue)
-					{
-						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
-					}
-					this.OnPhotoIDChanging(value);
-					this.SendPropertyChanging();
-					this._PhotoID = value;
-					this.SendPropertyChanged("PhotoID");
-					this.OnPhotoIDChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RowVer", AutoSync=AutoSync.Always, DbType="rowversion NOT NULL", CanBeNull=false, IsDbGenerated=true, IsVersion=true, UpdateCheck=UpdateCheck.Never)]
-		public System.Data.Linq.Binary RowVer
-		{
-			get
-			{
-				return this._RowVer;
-			}
-			set
-			{
-				if ((this._RowVer != value))
-				{
-					this.OnRowVerChanging(value);
-					this.SendPropertyChanging();
-					this._RowVer = value;
-					this.SendPropertyChanged("RowVer");
-					this.OnRowVerChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter_BankCard", Storage="_BankCards", ThisKey="RecruiterID", OtherKey="RecruiterID")]
-		public EntitySet<BankCard> BankCards
-		{
-			get
-			{
-				return this._BankCards;
-			}
-			set
-			{
-				this._BankCards.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter_JobPost", Storage="_JobPosts", ThisKey="RecruiterID", OtherKey="RecruiterID")]
-		public EntitySet<JobPost> JobPosts
-		{
-			get
-			{
-				return this._JobPosts;
-			}
-			set
-			{
-				this._JobPosts.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter_PaymentHistory", Storage="_PaymentHistories", ThisKey="RecruiterID", OtherKey="RecruiterID")]
-		public EntitySet<PaymentHistory> PaymentHistories
-		{
-			get
-			{
-				return this._PaymentHistories;
-			}
-			set
-			{
-				this._PaymentHistories.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter_PendingPayment", Storage="_PendingPayments", ThisKey="RecruiterID", OtherKey="RecruiterID")]
-		public EntitySet<PendingPayment> PendingPayments
-		{
-			get
-			{
-				return this._PendingPayments;
-			}
-			set
-			{
-				this._PendingPayments.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter_PostingHistory", Storage="_PostingHistories", ThisKey="RecruiterID", OtherKey="RecruiterID")]
-		public EntitySet<PostingHistory> PostingHistories
-		{
-			get
-			{
-				return this._PostingHistories;
-			}
-			set
-			{
-				this._PostingHistories.Assign(value);
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Recruiter", Storage="_Account", ThisKey="AccountID", OtherKey="AccountID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
-		public Account Account
-		{
-			get
-			{
-				return this._Account.Entity;
-			}
-			set
-			{
-				Account previousValue = this._Account.Entity;
-				if (((previousValue != value) 
-							|| (this._Account.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._Account.Entity = null;
-						previousValue.Recruiters.Remove(this);
-					}
-					this._Account.Entity = value;
-					if ((value != null))
-					{
-						value.Recruiters.Add(this);
-						this._AccountID = value.AccountID;
-					}
-					else
-					{
-						this._AccountID = default(int);
-					}
-					this.SendPropertyChanged("Account");
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Company_Recruiter", Storage="_Company", ThisKey="CompanyID", OtherKey="CompanyID", IsForeignKey=true)]
-		public Company Company
-		{
-			get
-			{
-				return this._Company.Entity;
-			}
-			set
-			{
-				Company previousValue = this._Company.Entity;
-				if (((previousValue != value) 
-							|| (this._Company.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._Company.Entity = null;
-						previousValue.Recruiters.Remove(this);
-					}
-					this._Company.Entity = value;
-					if ((value != null))
-					{
-						value.Recruiters.Add(this);
-						this._CompanyID = value.CompanyID;
-					}
-					else
-					{
-						this._CompanyID = default(Nullable<int>);
-					}
-					this.SendPropertyChanged("Company");
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="ProfilePhoto_Recruiter", Storage="_ProfilePhoto", ThisKey="PhotoID", OtherKey="PhotoID", IsForeignKey=true, DeleteRule="SET NULL")]
-		public ProfilePhoto ProfilePhoto
-		{
-			get
-			{
-				return this._ProfilePhoto.Entity;
-			}
-			set
-			{
-				ProfilePhoto previousValue = this._ProfilePhoto.Entity;
-				if (((previousValue != value) 
-							|| (this._ProfilePhoto.HasLoadedOrAssignedValue == false)))
-				{
-					this.SendPropertyChanging();
-					if ((previousValue != null))
-					{
-						this._ProfilePhoto.Entity = null;
-						previousValue.Recruiters.Remove(this);
-					}
-					this._ProfilePhoto.Entity = value;
-					if ((value != null))
-					{
-						value.Recruiters.Add(this);
-						this._PhotoID = value.PhotoID;
-					}
-					else
-					{
-						this._PhotoID = default(Nullable<int>);
-					}
-					this.SendPropertyChanged("ProfilePhoto");
-				}
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-		
-		private void attach_BankCards(BankCard entity)
-		{
-			this.SendPropertyChanging();
-			entity.Recruiter = this;
-		}
-		
-		private void detach_BankCards(BankCard entity)
-		{
-			this.SendPropertyChanging();
-			entity.Recruiter = null;
-		}
-		
-		private void attach_JobPosts(JobPost entity)
-		{
-			this.SendPropertyChanging();
-			entity.Recruiter = this;
-		}
-		
-		private void detach_JobPosts(JobPost entity)
-		{
-			this.SendPropertyChanging();
-			entity.Recruiter = null;
-		}
-		
-		private void attach_PaymentHistories(PaymentHistory entity)
-		{
-			this.SendPropertyChanging();
-			entity.Recruiter = this;
-		}
-		
-		private void detach_PaymentHistories(PaymentHistory entity)
-		{
-			this.SendPropertyChanging();
-			entity.Recruiter = null;
-		}
-		
-		private void attach_PendingPayments(PendingPayment entity)
-		{
-			this.SendPropertyChanging();
-			entity.Recruiter = this;
-		}
-		
-		private void detach_PendingPayments(PendingPayment entity)
-		{
-			this.SendPropertyChanging();
-			entity.Recruiter = null;
-		}
-		
-		private void attach_PostingHistories(PostingHistory entity)
-		{
-			this.SendPropertyChanging();
-			entity.Recruiter = this;
-		}
-		
-		private void detach_PostingHistories(PostingHistory entity)
-		{
-			this.SendPropertyChanging();
-			entity.Recruiter = null;
 		}
 	}
 	
@@ -6081,6 +5689,705 @@ namespace Project_Recruiment_Huce.Models
 			{
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.SchemaMigrations")]
+	public partial class SchemaMigration : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _MigrationId;
+		
+		private string _ScriptName;
+		
+		private System.DateTime _AppliedAt;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnMigrationIdChanging(int value);
+    partial void OnMigrationIdChanged();
+    partial void OnScriptNameChanging(string value);
+    partial void OnScriptNameChanged();
+    partial void OnAppliedAtChanging(System.DateTime value);
+    partial void OnAppliedAtChanged();
+    #endregion
+		
+		public SchemaMigration()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MigrationId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int MigrationId
+		{
+			get
+			{
+				return this._MigrationId;
+			}
+			set
+			{
+				if ((this._MigrationId != value))
+				{
+					this.OnMigrationIdChanging(value);
+					this.SendPropertyChanging();
+					this._MigrationId = value;
+					this.SendPropertyChanged("MigrationId");
+					this.OnMigrationIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ScriptName", DbType="NVarChar(200) NOT NULL", CanBeNull=false)]
+		public string ScriptName
+		{
+			get
+			{
+				return this._ScriptName;
+			}
+			set
+			{
+				if ((this._ScriptName != value))
+				{
+					this.OnScriptNameChanging(value);
+					this.SendPropertyChanging();
+					this._ScriptName = value;
+					this.SendPropertyChanged("ScriptName");
+					this.OnScriptNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AppliedAt", DbType="DateTime NOT NULL")]
+		public System.DateTime AppliedAt
+		{
+			get
+			{
+				return this._AppliedAt;
+			}
+			set
+			{
+				if ((this._AppliedAt != value))
+				{
+					this.OnAppliedAtChanging(value);
+					this.SendPropertyChanging();
+					this._AppliedAt = value;
+					this.SendPropertyChanged("AppliedAt");
+					this.OnAppliedAtChanged();
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Recruiters")]
+	public partial class Recruiter : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _RecruiterID;
+		
+		private int _AccountID;
+		
+		private System.Nullable<int> _CompanyID;
+		
+		private string _FullName;
+		
+		private string _PositionTitle;
+		
+		private string _CompanyEmail;
+		
+		private string _Phone;
+		
+		private System.DateTime _CreatedAt;
+		
+		private byte _ActiveFlag;
+		
+		private System.Nullable<int> _PhotoID;
+		
+		private System.Data.Linq.Binary _RowVer;
+		
+		private string _Avatar;
+		
+		private EntitySet<BankCard> _BankCards;
+		
+		private EntitySet<JobPost> _JobPosts;
+		
+		private EntitySet<PaymentHistory> _PaymentHistories;
+		
+		private EntitySet<PendingPayment> _PendingPayments;
+		
+		private EntitySet<PostingHistory> _PostingHistories;
+		
+		private EntityRef<Account> _Account;
+		
+		private EntityRef<Company> _Company;
+		
+		private EntityRef<ProfilePhoto> _ProfilePhoto;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnRecruiterIDChanging(int value);
+    partial void OnRecruiterIDChanged();
+    partial void OnAccountIDChanging(int value);
+    partial void OnAccountIDChanged();
+    partial void OnCompanyIDChanging(System.Nullable<int> value);
+    partial void OnCompanyIDChanged();
+    partial void OnFullNameChanging(string value);
+    partial void OnFullNameChanged();
+    partial void OnPositionTitleChanging(string value);
+    partial void OnPositionTitleChanged();
+    partial void OnCompanyEmailChanging(string value);
+    partial void OnCompanyEmailChanged();
+    partial void OnPhoneChanging(string value);
+    partial void OnPhoneChanged();
+    partial void OnCreatedAtChanging(System.DateTime value);
+    partial void OnCreatedAtChanged();
+    partial void OnActiveFlagChanging(byte value);
+    partial void OnActiveFlagChanged();
+    partial void OnPhotoIDChanging(System.Nullable<int> value);
+    partial void OnPhotoIDChanged();
+    partial void OnRowVerChanging(System.Data.Linq.Binary value);
+    partial void OnRowVerChanged();
+    partial void OnAvatarChanging(string value);
+    partial void OnAvatarChanged();
+    #endregion
+		
+		public Recruiter()
+		{
+			this._BankCards = new EntitySet<BankCard>(new Action<BankCard>(this.attach_BankCards), new Action<BankCard>(this.detach_BankCards));
+			this._JobPosts = new EntitySet<JobPost>(new Action<JobPost>(this.attach_JobPosts), new Action<JobPost>(this.detach_JobPosts));
+			this._PaymentHistories = new EntitySet<PaymentHistory>(new Action<PaymentHistory>(this.attach_PaymentHistories), new Action<PaymentHistory>(this.detach_PaymentHistories));
+			this._PendingPayments = new EntitySet<PendingPayment>(new Action<PendingPayment>(this.attach_PendingPayments), new Action<PendingPayment>(this.detach_PendingPayments));
+			this._PostingHistories = new EntitySet<PostingHistory>(new Action<PostingHistory>(this.attach_PostingHistories), new Action<PostingHistory>(this.detach_PostingHistories));
+			this._Account = default(EntityRef<Account>);
+			this._Company = default(EntityRef<Company>);
+			this._ProfilePhoto = default(EntityRef<ProfilePhoto>);
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RecruiterID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true, UpdateCheck=UpdateCheck.Never)]
+		public int RecruiterID
+		{
+			get
+			{
+				return this._RecruiterID;
+			}
+			set
+			{
+				if ((this._RecruiterID != value))
+				{
+					this.OnRecruiterIDChanging(value);
+					this.SendPropertyChanging();
+					this._RecruiterID = value;
+					this.SendPropertyChanged("RecruiterID");
+					this.OnRecruiterIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AccountID", DbType="Int NOT NULL", UpdateCheck=UpdateCheck.Never)]
+		public int AccountID
+		{
+			get
+			{
+				return this._AccountID;
+			}
+			set
+			{
+				if ((this._AccountID != value))
+				{
+					if (this._Account.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnAccountIDChanging(value);
+					this.SendPropertyChanging();
+					this._AccountID = value;
+					this.SendPropertyChanged("AccountID");
+					this.OnAccountIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyID", DbType="Int", UpdateCheck=UpdateCheck.Never)]
+		public System.Nullable<int> CompanyID
+		{
+			get
+			{
+				return this._CompanyID;
+			}
+			set
+			{
+				if ((this._CompanyID != value))
+				{
+					if (this._Company.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnCompanyIDChanging(value);
+					this.SendPropertyChanging();
+					this._CompanyID = value;
+					this.SendPropertyChanged("CompanyID");
+					this.OnCompanyIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FullName", DbType="NVarChar(100) NOT NULL", CanBeNull=false, UpdateCheck=UpdateCheck.Never)]
+		public string FullName
+		{
+			get
+			{
+				return this._FullName;
+			}
+			set
+			{
+				if ((this._FullName != value))
+				{
+					this.OnFullNameChanging(value);
+					this.SendPropertyChanging();
+					this._FullName = value;
+					this.SendPropertyChanged("FullName");
+					this.OnFullNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PositionTitle", DbType="NVarChar(100)", UpdateCheck=UpdateCheck.Never)]
+		public string PositionTitle
+		{
+			get
+			{
+				return this._PositionTitle;
+			}
+			set
+			{
+				if ((this._PositionTitle != value))
+				{
+					this.OnPositionTitleChanging(value);
+					this.SendPropertyChanging();
+					this._PositionTitle = value;
+					this.SendPropertyChanged("PositionTitle");
+					this.OnPositionTitleChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyEmail", DbType="NVarChar(150)", UpdateCheck=UpdateCheck.Never)]
+		public string CompanyEmail
+		{
+			get
+			{
+				return this._CompanyEmail;
+			}
+			set
+			{
+				if ((this._CompanyEmail != value))
+				{
+					this.OnCompanyEmailChanging(value);
+					this.SendPropertyChanging();
+					this._CompanyEmail = value;
+					this.SendPropertyChanged("CompanyEmail");
+					this.OnCompanyEmailChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Phone", DbType="NVarChar(20)", UpdateCheck=UpdateCheck.Never)]
+		public string Phone
+		{
+			get
+			{
+				return this._Phone;
+			}
+			set
+			{
+				if ((this._Phone != value))
+				{
+					this.OnPhoneChanging(value);
+					this.SendPropertyChanging();
+					this._Phone = value;
+					this.SendPropertyChanged("Phone");
+					this.OnPhoneChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2 NOT NULL", UpdateCheck=UpdateCheck.Never)]
+		public System.DateTime CreatedAt
+		{
+			get
+			{
+				return this._CreatedAt;
+			}
+			set
+			{
+				if ((this._CreatedAt != value))
+				{
+					this.OnCreatedAtChanging(value);
+					this.SendPropertyChanging();
+					this._CreatedAt = value;
+					this.SendPropertyChanged("CreatedAt");
+					this.OnCreatedAtChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActiveFlag", DbType="TinyInt NOT NULL", UpdateCheck=UpdateCheck.Never)]
+		public byte ActiveFlag
+		{
+			get
+			{
+				return this._ActiveFlag;
+			}
+			set
+			{
+				if ((this._ActiveFlag != value))
+				{
+					this.OnActiveFlagChanging(value);
+					this.SendPropertyChanging();
+					this._ActiveFlag = value;
+					this.SendPropertyChanged("ActiveFlag");
+					this.OnActiveFlagChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PhotoID", DbType="Int", UpdateCheck=UpdateCheck.Never)]
+		public System.Nullable<int> PhotoID
+		{
+			get
+			{
+				return this._PhotoID;
+			}
+			set
+			{
+				if ((this._PhotoID != value))
+				{
+					if (this._ProfilePhoto.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnPhotoIDChanging(value);
+					this.SendPropertyChanging();
+					this._PhotoID = value;
+					this.SendPropertyChanged("PhotoID");
+					this.OnPhotoIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RowVer", AutoSync=AutoSync.Always, DbType="rowversion NOT NULL", CanBeNull=false, IsDbGenerated=true, IsVersion=true, UpdateCheck=UpdateCheck.Never)]
+		public System.Data.Linq.Binary RowVer
+		{
+			get
+			{
+				return this._RowVer;
+			}
+			set
+			{
+				if ((this._RowVer != value))
+				{
+					this.OnRowVerChanging(value);
+					this.SendPropertyChanging();
+					this._RowVer = value;
+					this.SendPropertyChanged("RowVer");
+					this.OnRowVerChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Avatar", DbType="NVarChar(500)", UpdateCheck=UpdateCheck.Never)]
+		public string Avatar
+		{
+			get
+			{
+				return this._Avatar;
+			}
+			set
+			{
+				if ((this._Avatar != value))
+				{
+					this.OnAvatarChanging(value);
+					this.SendPropertyChanging();
+					this._Avatar = value;
+					this.SendPropertyChanged("Avatar");
+					this.OnAvatarChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter1_BankCard", Storage="_BankCards", ThisKey="RecruiterID", OtherKey="RecruiterID")]
+		public EntitySet<BankCard> BankCards
+		{
+			get
+			{
+				return this._BankCards;
+			}
+			set
+			{
+				this._BankCards.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter1_JobPost", Storage="_JobPosts", ThisKey="RecruiterID", OtherKey="RecruiterID")]
+		public EntitySet<JobPost> JobPosts
+		{
+			get
+			{
+				return this._JobPosts;
+			}
+			set
+			{
+				this._JobPosts.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter1_PaymentHistory", Storage="_PaymentHistories", ThisKey="RecruiterID", OtherKey="RecruiterID")]
+		public EntitySet<PaymentHistory> PaymentHistories
+		{
+			get
+			{
+				return this._PaymentHistories;
+			}
+			set
+			{
+				this._PaymentHistories.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter1_PendingPayment", Storage="_PendingPayments", ThisKey="RecruiterID", OtherKey="RecruiterID")]
+		public EntitySet<PendingPayment> PendingPayments
+		{
+			get
+			{
+				return this._PendingPayments;
+			}
+			set
+			{
+				this._PendingPayments.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter1_PostingHistory", Storage="_PostingHistories", ThisKey="RecruiterID", OtherKey="RecruiterID")]
+		public EntitySet<PostingHistory> PostingHistories
+		{
+			get
+			{
+				return this._PostingHistories;
+			}
+			set
+			{
+				this._PostingHistories.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Recruiter1", Storage="_Account", ThisKey="AccountID", OtherKey="AccountID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+		public Account Account
+		{
+			get
+			{
+				return this._Account.Entity;
+			}
+			set
+			{
+				Account previousValue = this._Account.Entity;
+				if (((previousValue != value) 
+							|| (this._Account.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Account.Entity = null;
+						previousValue.Recruiters.Remove(this);
+					}
+					this._Account.Entity = value;
+					if ((value != null))
+					{
+						value.Recruiters.Add(this);
+						this._AccountID = value.AccountID;
+					}
+					else
+					{
+						this._AccountID = default(int);
+					}
+					this.SendPropertyChanged("Account");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Company_Recruiter1", Storage="_Company", ThisKey="CompanyID", OtherKey="CompanyID", IsForeignKey=true)]
+		public Company Company
+		{
+			get
+			{
+				return this._Company.Entity;
+			}
+			set
+			{
+				Company previousValue = this._Company.Entity;
+				if (((previousValue != value) 
+							|| (this._Company.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Company.Entity = null;
+						previousValue.Recruiters.Remove(this);
+					}
+					this._Company.Entity = value;
+					if ((value != null))
+					{
+						value.Recruiters.Add(this);
+						this._CompanyID = value.CompanyID;
+					}
+					else
+					{
+						this._CompanyID = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("Company");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="ProfilePhoto_Recruiter1", Storage="_ProfilePhoto", ThisKey="PhotoID", OtherKey="PhotoID", IsForeignKey=true, DeleteRule="SET NULL")]
+		public ProfilePhoto ProfilePhoto
+		{
+			get
+			{
+				return this._ProfilePhoto.Entity;
+			}
+			set
+			{
+				ProfilePhoto previousValue = this._ProfilePhoto.Entity;
+				if (((previousValue != value) 
+							|| (this._ProfilePhoto.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._ProfilePhoto.Entity = null;
+						previousValue.Recruiters.Remove(this);
+					}
+					this._ProfilePhoto.Entity = value;
+					if ((value != null))
+					{
+						value.Recruiters.Add(this);
+						this._PhotoID = value.PhotoID;
+					}
+					else
+					{
+						this._PhotoID = default(Nullable<int>);
+					}
+					this.SendPropertyChanged("ProfilePhoto");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+		
+		private void attach_BankCards(BankCard entity)
+		{
+			this.SendPropertyChanging();
+			entity.Recruiter = this;
+		}
+		
+		private void detach_BankCards(BankCard entity)
+		{
+			this.SendPropertyChanging();
+			entity.Recruiter = null;
+		}
+		
+		private void attach_JobPosts(JobPost entity)
+		{
+			this.SendPropertyChanging();
+			entity.Recruiter = this;
+		}
+		
+		private void detach_JobPosts(JobPost entity)
+		{
+			this.SendPropertyChanging();
+			entity.Recruiter = null;
+		}
+		
+		private void attach_PaymentHistories(PaymentHistory entity)
+		{
+			this.SendPropertyChanging();
+			entity.Recruiter = this;
+		}
+		
+		private void detach_PaymentHistories(PaymentHistory entity)
+		{
+			this.SendPropertyChanging();
+			entity.Recruiter = null;
+		}
+		
+		private void attach_PendingPayments(PendingPayment entity)
+		{
+			this.SendPropertyChanging();
+			entity.Recruiter = this;
+		}
+		
+		private void detach_PendingPayments(PendingPayment entity)
+		{
+			this.SendPropertyChanging();
+			entity.Recruiter = null;
+		}
+		
+		private void attach_PostingHistories(PostingHistory entity)
+		{
+			this.SendPropertyChanging();
+			entity.Recruiter = this;
+		}
+		
+		private void detach_PostingHistories(PostingHistory entity)
+		{
+			this.SendPropertyChanging();
+			entity.Recruiter = null;
 		}
 	}
 }

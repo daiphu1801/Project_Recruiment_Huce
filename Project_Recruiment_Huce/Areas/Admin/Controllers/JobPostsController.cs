@@ -404,9 +404,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         // GET: Admin/JobPosts/Edit/5
         public ActionResult Edit(int id)
         {
-            if (id == 0) // Lỗi này có thể do ID = 0 không hợp lệ
+            if (id == 0)
             {
-                // Xử lý lỗi: ID không hợp lệ hoặc không tìm thấy
+               
                 return HttpNotFound();
             }
             using (var db = new JOBPORTAL_ENDataContext(
@@ -421,7 +421,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 }
 
                 jobPost.Status = JobStatusHelper.NormalizeStatus(jobPost.Status);
-                // --- BẮT ĐẦU PHẦN SỬA LỖI ---
+                
 
                 // 1. Lấy danh sách recruiters VỚI TÊN CÔNG TY (chuẩn bị 1 lần)
                 // (Giả định có quan hệ Recruiter -> Company)
@@ -435,7 +435,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 // 2. Tạo SelectList cho dropdown
                 ViewBag.RecruiterOptions = new SelectList(
-                    recruiters, // Dùng list đã lấy ở trên
+                    recruiters,
                     "RecruiterID",
                     "FullName",
                     jobPost.RecruiterID
@@ -444,11 +444,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // 3. TẠO MAP cho JavaScript (Key: RecruiterID, Value: CompanyName)
                 // Đây là dữ liệu chúng ta sẽ truyền sang View để JS sử dụng
                 ViewBag.RecruiterCompanyMap = recruiters.ToDictionary(
-                    r => r.RecruiterID.ToString(), // Key (dạng string để JS dễ map)
-                    r => r.CompanyName ?? "Chưa gán công ty" // Value
+                    r => r.RecruiterID.ToString(), 
+                    r => r.CompanyName ?? "Chưa gán công ty" 
                 );
 
-                // --- KẾT THÚC PHẦN SỬA LỖI ---
+              
 
                 // Load dropdown options with current selected values
                 ViewBag.CompanyOptions = new SelectList(
@@ -510,7 +510,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             {
                 JobStatusHelper.NormalizeStatuses(db);
 
-                // --- BẮT ĐẦU KHỐI VALIDATION (Tương tự Create) ---
+               
 
                 // Xóa validation error cho CompanyID vì nó được tự động lấy từ RecruiterID
                 ModelState.Remove("CompanyID");
@@ -576,7 +576,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (string.IsNullOrWhiteSpace(model.Status))
                     ModelState.AddModelError("Status", "Trạng thái là bắt buộc");
 
-                // --- KẾT THÚC KHỐI VALIDATION ---
+               
 
                 // Nếu có lỗi, load lại dropdown và trả về view
                 if (!ModelState.IsValid)
