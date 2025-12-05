@@ -1,0 +1,247 @@
+@{
+    ViewBag.Title = "Thanh Toán";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var plan = ViewBag.Plan as Project_Recruiment_Huce.Models.SubscriptionPlan;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/css/payment.css" />
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Thanh toán gói @plan.Name</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("Index","Subscription")">Nâng cấp gói</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Thanh toán</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="site-section">
+    <div class="container payment-container">
+        <div class="payment-card">
+        <div class="row g-0">
+            <!-- QR Code Section -->
+            <div class="col-lg-6 qr-section">
+                <div class="qr-code-wrapper">
+                    <img src="@ViewBag.QrUrl" alt="Mã QR Thanh Toán" />
+                </div>
+                <div class="qr-status">
+                    <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                    Mã QR đã sẵn sàng
+                </div>
+            </div>
+            
+            <!-- Payment Details Section -->
+            <div class="col-lg-6 payment-details">
+                <h3 class="h4 fw-bold mb-4" style="color: #2d3748;">Thông Tin Thanh Toán</h3>
+                
+                <!-- Amount -->
+                <div class="detail-item">
+                    <div class="detail-label">Số tiền thanh toán</div>
+                    <div class="detail-value">
+                        <span class="amount-badge">@plan.Price.ToString("N0") đ</span>
+                    </div>
+                </div>
+                
+                <!-- Transfer Content -->
+                <div class="detail-item">
+                    <div class="detail-label">Nội dung chuyển khoản</div>
+                    <div class="transfer-content">
+                        <span>@ViewBag.TransferContent</span>
+                        <button class="copy-btn" onclick="copyToClipboard('@ViewBag.TransferContent')">
+                            <i class="icon-docs"></i>
+                            Copy
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Instructions -->
+                <div class="instructions-card">
+                    <div class="instructions-title">
+                        <i class="icon-lightbulb" style="font-size: 24px;"></i>
+                        Hướng dẫn thanh toán
+                    </div>
+                    <ol class="instructions-list">
+                        <li>Mở app ngân hàng (Vietcombank, MBBank, Techcombank, ...)</li>
+                        <li>Chọn chức năng <strong>Quét mã QR</strong></li>
+                        <li>Quét mã QR ở bên trái</li>
+                        <li>Kiểm tra thông tin và <strong>xác nhận thanh toán</strong></li>
+                    </ol>
+                </div>
+                
+                <!-- Auto Activation Notice -->
+                <div class="auto-notice">
+                    <div class="auto-notice-icon">
+                        <i class="icon-check"></i>
+                    </div>
+                    <p class="auto-notice-text">
+                        Hệ thống tự động kích hoạt gói trong <strong>1-2 phút</strong><br/>sau khi nhận được thanh toán
+                    </p>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="@Url.Action("Index", "Subscription")" class="action-btn btn-back">
+                        <i class="icon-arrow-left"></i>
+                        Quay lại
+                    </a>
+                    <button class="action-btn btn-check" onclick="checkPaymentStatus()">
+                        <i class="icon-reload"></i>
+                        Kiểm tra thanh toán
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+var lastKnownStatus = null;
+var checkCount = 0;
+var maxChecks = 40; // Check for 20 minutes (40 * 30 seconds)
+
+function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+            showNotification('Đã sao chép nội dung chuyển khoản!', 'success');
+        }, function(err) {
+            console.error('Failed to copy: ', err);
+            fallbackCopyTextToClipboard(text);
+        });
+    } else {
+        fallbackCopyTextToClipboard(text);
+    }
+}
+
+function fallbackCopyTextToClipboard(text) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.top = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        showNotification('Đã sao chép nội dung chuyển khoản!', 'success');
+    } catch (err) {
+        console.error('Fallback: Could not copy text: ', err);
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+function showNotification(message, type) {
+    // Remove existing notifications
+    var existing = document.querySelector('.payment-notification');
+    if (existing) {
+        existing.remove();
+    }
+
+    // Create notification element
+    var notification = document.createElement('div');
+    notification.className = 'payment-notification payment-notification-' + type;
+    
+    var icon = type === 'success' ? '✔' : type === 'error' ? '✖' : 'ⓘ';
+    notification.innerHTML = '<span class="notification-icon">' + icon + '</span><span class="notification-message">' + message + '</span>';
+    
+    document.body.appendChild(notification);
+    
+    // Show notification
+    setTimeout(function() {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Auto hide after 5 seconds
+    setTimeout(function() {
+        notification.classList.remove('show');
+        setTimeout(function() {
+            notification.remove();
+        }, 300);
+    }, 5000);
+}
+
+function checkPaymentStatus() {
+    var btn = event.target.closest('button');
+    var originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="icon-reload"></i> Đang kiểm tra...';
+    btn.disabled = true;
+    
+    fetch('@Url.Action("CheckPaymentStatus", "Subscription")')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.upgraded) {
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    window.location.href = '@Url.Action("Index", "Subscription")';
+                }, 2000);
+            } else {
+                showNotification('Chưa nhận được thanh toán. Vui lòng kiểm tra lại sau!', 'info');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Lỗi kiểm tra trạng thái. Vui lòng thử lại!', 'error');
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        });
+}
+
+// Auto-check payment status every 30 seconds
+var autoCheckInterval = setInterval(function() {
+    if (checkCount >= maxChecks) {
+        clearInterval(autoCheckInterval);
+        console.log('Đã dừng kiểm tra tự động sau 20 phút');
+        return;
+    }
+    
+    checkCount++;
+    console.log('Tự động kiểm tra trạng thái thanh toán... (Lần ' + checkCount + '/' + maxChecks + ')');
+    
+    fetch('@Url.Action("CheckPaymentStatus", "Subscription")')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.upgraded) {
+                clearInterval(autoCheckInterval);
+                showNotification(data.message + ' Tự động chuyển trang...', 'success');
+                setTimeout(function() {
+                    window.location.href = '@Url.Action("Index", "Subscription")';
+                }, 3000);
+            }
+        })
+        .catch(error => {
+            console.error('Auto-check error:', error);
+        });
+}, 30000); // Check every 30 seconds
+
+// Clear interval when page is hidden
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        clearInterval(autoCheckInterval);
+    } else {
+        // Resume checking when page becomes visible again
+        if (checkCount < maxChecks) {
+            autoCheckInterval = setInterval(function() {
+                // ... same logic as above
+            }, 30000);
+        }
+    }
+});
+
+// Show initial instruction
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        showNotification('Hệ thống đang tự động kiểm tra thanh toán của bạn...', 'info');
+    }, 2000);
+});
+</script>

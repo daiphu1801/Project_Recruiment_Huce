@@ -217,6 +217,38 @@ namespace Project_Recruiment_Huce.Controllers
             using (var db = DbContextFactory.CreateReadOnly())
             {
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId.Value);
+                
+                // Subscription Check
+                bool canPost = false;
+                string subType = recruiter?.SubscriptionType ?? "Free";
+                
+                if (subType == "Lifetime")
+                {
+                    canPost = true;
+                }
+                else if (subType == "Monthly")
+                {
+                    if (recruiter.SubscriptionExpiryDate.HasValue && recruiter.SubscriptionExpiryDate > DateTime.Now)
+                    {
+                        canPost = true;
+                    }
+                }
+                
+                // Check Free limit if not allowed by subscription
+                if (!canPost)
+                {
+                    if (recruiter.FreeJobPostCount < 1)
+                    {
+                        canPost = true;
+                    }
+                }
+
+                if (!canPost)
+                {
+                    TempData["ErrorMessage"] = "Bạn đã hết lượt đăng tin miễn phí. Vui lòng nâng cấp gói dịch vụ để tiếp tục đăng tin.";
+                    return RedirectToAction("Index", "Subscription");
+                }
+
                 if (recruiter != null && recruiter.CompanyID.HasValue)
                 {
                     ViewBag.CompanyID = recruiter.CompanyID.Value;
@@ -260,6 +292,45 @@ namespace Project_Recruiment_Huce.Controllers
                 return View("JobsCreate", viewModel);
             }
 
+            // Check subscription and increment if needed
+            bool isFreePost = false;
+            using (var db = DbContextFactory.Create())
+            {
+                var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId.Value);
+                if (recruiter != null)
+                {
+                    bool canPost = false;
+                    string subType = recruiter.SubscriptionType ?? "Free";
+                    
+                    if (subType == "Lifetime")
+                    {
+                        canPost = true;
+                    }
+                    else if (subType == "Monthly")
+                    {
+                        if (recruiter.SubscriptionExpiryDate.HasValue && recruiter.SubscriptionExpiryDate > DateTime.Now)
+                        {
+                            canPost = true;
+                        }
+                    }
+                    
+                    if (!canPost)
+                    {
+                        if (recruiter.FreeJobPostCount < 1)
+                        {
+                            canPost = true;
+                            isFreePost = true;
+                        }
+                    }
+
+                    if (!canPost)
+                    {
+                        TempData["ErrorMessage"] = "Bạn đã hết lượt đăng tin miễn phí. Vui lòng nâng cấp gói dịch vụ.";
+                        return RedirectToAction("Index", "Subscription");
+                    }
+                }
+            }
+
             // Call service to create job
             var result = _jobService.ValidateAndCreateJob(viewModel, recruiterId.Value);
 
@@ -280,6 +351,20 @@ namespace Project_Recruiment_Huce.Controllers
 
                 LoadCompaniesForDropdown(recruiterId.Value);
                 return View("JobsCreate", viewModel);
+            }
+
+            // Increment free count if success
+            if (isFreePost)
+            {
+                using (var db = DbContextFactory.Create())
+                {
+                    var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId.Value);
+                    if (recruiter != null)
+                    {
+                        recruiter.FreeJobPostCount++;
+                        db.SubmitChanges();
+                    }
+                }
             }
 
             TempData["SuccessMessage"] = "Đăng tin tuyển dụng thành công!";

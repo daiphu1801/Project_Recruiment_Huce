@@ -106,9 +106,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
               
 
-                // Map sang ViewModel
+                // Pagination
+                int pageSize = 10;
+                int totalRecords = query.Count();
+                int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
                 var JobPosts = query.OrderByDescending(j => j.PostedAt)
-                             .ToList() // Thực thi query tại đây
+                             .Skip((page - 1) * pageSize)
+                             .Take(pageSize)
+                             .ToList()
                              .Select(r => new JobPostListVm
                              {
                                  JobCode = r.JobCode,
@@ -124,6 +130,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                                  JobPostID = r.JobPostID
 
                              }).ToList();
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+                ViewBag.TotalItems = totalRecords;
+                ViewBag.PageSize = pageSize;
 
                 return View(JobPosts);
             }
