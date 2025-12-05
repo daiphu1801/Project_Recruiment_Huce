@@ -34,8 +34,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     );
                 }
 
-                // Map DB -> ViewModel
+                // Pagination
+                int pageSize = 10;
+                int totalRecords = query.Count();
+                int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
                 var data = query
+                    .OrderByDescending(a => a.UploadedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .Select(a => new PhotoVm
                     {
                         PhotoId = a.PhotoID,
@@ -45,6 +52,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                         UploadedAt = a.UploadedAt
                     }).ToList();
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+                ViewBag.TotalItems = totalRecords;
+                ViewBag.PageSize = pageSize;
 
                 return View(data);
             }

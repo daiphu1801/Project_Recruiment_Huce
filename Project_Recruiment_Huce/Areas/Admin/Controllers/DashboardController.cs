@@ -27,7 +27,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var candidatesCount = db.Candidates.Count();
                 var jobPostsCount = db.JobPosts.Count();
                 var applicationsCount = db.Applications.Count();
-                var transactionsCount = db.Transactions.Count();
+                // TODO: Transaction table doesn't exist yet - comment out for now
+                var transactionsCount = 0; // db.Transactions.Count();
 
                 // Time-series for last 7 days
                 var dates = new List<string>();

@@ -45,24 +45,35 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     );
                 }
 
-                // Convert to ViewModel
-                var companies = query.Select(c => new CompanyListVm
-                {
-                    CompanyId = c.CompanyID,
-                    CompanyName = c.CompanyName,
-                    TaxCode = c.TaxCode,
-                    Industry = c.Industry,
-                    Address = c.Address,
-                    Phone = c.Phone,
-                    Fax = c.Fax,
-                    CompanyEmail = c.CompanyEmail,
-                    Website = c.Website,
-                    Description = c.Description,
-                    CreatedAt = c.CreatedAt,
-                    ActiveFlag = c.ActiveFlag,
-                    PhotoId = c.PhotoID,
-                    PhotoUrl = c.ProfilePhoto != null ? c.ProfilePhoto.FilePath : null
-                }).ToList();
+                int pageSize = 10;
+                int totalRecords = query.Count();
+                int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+                var companies = query.OrderByDescending(c => c.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(c => new CompanyListVm
+                    {
+                        CompanyId = c.CompanyID,
+                        CompanyName = c.CompanyName,
+                        TaxCode = c.TaxCode,
+                        Industry = c.Industry,
+                        Address = c.Address,
+                        Phone = c.Phone,
+                        Fax = c.Fax,
+                        CompanyEmail = c.CompanyEmail,
+                        Website = c.Website,
+                        Description = c.Description,
+                        CreatedAt = c.CreatedAt,
+                        ActiveFlag = c.ActiveFlag,
+                        PhotoId = c.PhotoID,
+                        PhotoUrl = c.ProfilePhoto != null ? c.ProfilePhoto.FilePath : null
+                    }).ToList();
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+                ViewBag.TotalItems = totalRecords;
+                ViewBag.PageSize = pageSize;
 
                 return View(companies);
             }

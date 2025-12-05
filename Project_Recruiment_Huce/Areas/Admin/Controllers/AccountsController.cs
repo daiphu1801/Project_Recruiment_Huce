@@ -21,8 +21,6 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         // GET: Admin/Accounts
         public ActionResult Index(string q, string role = null, int page = 1)
         {
-            _ = page;
-
             ViewBag.Title = "Quản lý tài khoản";
             ViewBag.Breadcrumbs = new List<Tuple<string, string>>
             {
@@ -49,21 +47,35 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     query = query.Where(a => a.Role == role);
                 }
 
-                // Convert to ViewModel
-                var accounts = query.Select(a => new AccountListVm
-                {
-                    AccountId = a.AccountID,
-                    Username = a.Username,
-                    Email = a.Email,
-                    Phone = a.Phone,
-                    Role = a.Role,
-                    ActiveFlag = a.ActiveFlag,
-                    CreatedAt = a.CreatedAt,
-                    PhotoId = a.PhotoID,
-                    PhotoUrl = a.ProfilePhoto != null ? a.ProfilePhoto.FilePath : null
-                }).ToList();
+                // Pagination
+                int pageSize = 10;
+                int totalRecords = query.Count();
+                int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+                var accounts = query
+                    .OrderByDescending(a => a.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(a => new AccountListVm
+                    {
+                        AccountId = a.AccountID,
+                        Username = a.Username,
+                        Email = a.Email,
+                        Phone = a.Phone,
+                        Role = a.Role,
+                        ActiveFlag = a.ActiveFlag,
+                        CreatedAt = a.CreatedAt,
+                        PhotoId = a.PhotoID,
+                        PhotoUrl = a.ProfilePhoto != null ? a.ProfilePhoto.FilePath : null
+                    }).ToList();
 
                 ViewBag.RoleOptions = new SelectList(new[] { "Admin", "Recruiter", "Candidate" });
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+                ViewBag.TotalItems = totalRecords;
+                ViewBag.PageSize = pageSize;
+
                 return View(accounts);
             }
         }

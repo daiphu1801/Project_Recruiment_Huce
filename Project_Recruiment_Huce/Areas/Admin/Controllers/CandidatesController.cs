@@ -14,7 +14,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
     public class CandidatesController : AdminBaseController
     {
         // GET: Admin/Candidates
-        public ActionResult Index(string q)
+        public ActionResult Index(string q, int page = 1)
         {
             ViewBag.Title = "Quản lý ứng viên";
             ViewBag.Breadcrumbs = new List<Tuple<string, string>>
@@ -36,9 +36,16 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         (c.Phone != null && c.Phone.Contains(searchKeyword))
                     );
                 }
-                var candidatesList = query.OrderByDescending(c => c.CreatedAt).ToList();
+                int pageSize = 10;
+                int totalRecords = query.Count();
+                int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
 
-                var vmList = candidatesList.Select(c =>
+                var candidatesPage = query.OrderByDescending(c => c.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                var vmList = candidatesPage.Select(c =>
                 {
                     // Lấy Account tương ứng để lấy thông tin đăng nhập và ảnh
                     var account = db.Accounts.FirstOrDefault(a => a.AccountID == c.AccountID);
@@ -55,7 +62,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         PhotoId = account?.PhotoID,
                         CreatedAt = c.CreatedAt,
                         ActiveFlag = c.ActiveFlag,
-                        Email = c.Email, 
+                        Email = c.Email,
                         Address = c.Address,
                         PhotoUrl = photoUrl,
                         Summary = c.Summary,
@@ -63,6 +70,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         UserName = account?.Username
                     };
                 }).ToList();
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+                ViewBag.TotalItems = totalRecords;
+                ViewBag.PageSize = pageSize;
 
                 return View(vmList);
             }

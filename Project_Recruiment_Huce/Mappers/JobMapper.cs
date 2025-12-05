@@ -101,6 +101,7 @@ namespace Project_Recruiment_Huce.Mappers
                 Title = job.Title,
                 Description = job.Description,
                 Requirements = job.Requirements,
+                CompanyID = job.CompanyID,
                 CompanyName = companyName,
                 Location = job.Location,
                 EmploymentType = job.EmploymentType,
@@ -152,6 +153,7 @@ namespace Project_Recruiment_Huce.Mappers
             {
                 JobPostID = job.JobPostID,
                 Title = job.Title,
+                CompanyID = job.CompanyID,
                 CompanyName = companyName,
                 Location = job.Location,
                 EmploymentType = job.EmploymentType,

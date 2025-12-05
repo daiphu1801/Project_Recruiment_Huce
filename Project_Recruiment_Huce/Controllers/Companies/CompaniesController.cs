@@ -19,7 +19,6 @@ namespace Project_Recruiment_Huce.Controllers
     /// Controller quản lý thông tin công ty - logo, address, industry, website, description
     /// Liên kết với Recruiter qua CompanyID
     /// </summary>
-    [Authorize(Roles="Recruiter")]
     public class CompaniesController : BaseController
     {
         private readonly ICompanyService _companyService;
@@ -263,6 +262,54 @@ namespace Project_Recruiment_Huce.Controllers
 
             TempData["SuccessMessage"] = "Cập nhật thông tin công ty thành công!";
             return RedirectToAction("CompaniesManage");
+        }
+
+        /// <summary>
+        /// Hiển thị chi tiết công ty cho ứng viên xem (không cần đăng nhập)
+        /// </summary>
+        [AllowAnonymous]
+        public ActionResult CompanyDetails(int? id)
+        {
+            if (!id.HasValue)
+            {
+                return RedirectToAction("JobsListing", "Jobs");
+            }
+
+            using (var db = DbContextFactory.CreateReadOnly())
+            {
+                // Set LoadOptions để load eager Company và ProfilePhoto
+                var loadOptions = new DataLoadOptions();
+                loadOptions.LoadWith<Company>(c => c.ProfilePhoto);
+                loadOptions.LoadWith<Company>(c => c.JobPosts);
+                db.LoadOptions = loadOptions;
+
+                var company = db.Companies.FirstOrDefault(c => c.CompanyID == id.Value);
+                
+                if (company == null)
+                {
+                    return RedirectToAction("JobsListing", "Jobs");
+                }
+
+                // Tạo view model cho company details
+                var viewModel = new CompanyDetailsViewModel
+                {
+                    CompanyID = company.CompanyID,
+                    CompanyName = company.CompanyName,
+                    TaxCode = company.TaxCode,
+                    Industry = company.Industry,
+                    Address = company.Address,
+                    Phone = company.Phone,
+                    Fax = company.Fax,
+                    CompanyEmail = company.CompanyEmail,
+                    Website = company.Website,
+                    Description = company.Description,
+                    LogoUrl = company.ProfilePhoto != null ? company.ProfilePhoto.FilePath : "/Content/images/job_logo_1.jpg",
+                    ActiveJobCount = company.JobPosts.Count(j => j.Status == "Open" && 
+                                                                (!j.ApplicationDeadline.HasValue || j.ApplicationDeadline.Value >= DateTime.Now))
+                };
+
+                return View(viewModel);
+            }
         }
     }
 }

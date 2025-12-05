@@ -1,0 +1,214 @@
+/* Subscription Index Page Styles */
+/* Using standard section-hero from layout */
+
+.current-plan-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    border: none;
+    overflow: hidden;
+    margin-bottom: 50px;
+}
+
+.current-plan-card .card-body {
+    padding: 30px;
+}
+
+.plan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 14px;
+    background: linear-gradient(135deg, #89ba16 0%, #6d9413 100%);
+    color: white;
+}
+
+.plan-badge.free {
+    background: linear-gradient(135deg, #a8a8a8 0%, #7a7a7a 100%);
+}
+
+.pricing-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 2px solid #f0f0f0;
+    height: 100%;
+    position: relative;
+}
+
+.pricing-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    border-color: #89ba16;
+}
+
+.pricing-card.featured {
+    border-color: #89ba16;
+    box-shadow: 0 10px 30px rgba(137, 186, 22, 0.2);
+}
+
+.pricing-card.featured::before {
+    content: "PHỔ BIẾN";
+    position: absolute;
+    top: 20px;
+    right: -35px;
+    background: linear-gradient(135deg, #89ba16 0%, #6d9413 100%);
+    color: white;
+    padding: 5px 40px;
+    transform: rotate(45deg);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    z-index: 1;
+}
+
+.pricing-header {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    padding: 30px;
+    text-align: center;
+}
+
+.pricing-card.featured .pricing-header {
+    background: linear-gradient(135deg, #89ba16 0%, #6d9413 100%);
+    color: white;
+}
+
+.plan-name {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.plan-price {
+    font-size: 48px;
+    font-weight: 800;
+    margin: 20px 0 10px;
+    background: linear-gradient(135deg, #89ba16 0%, #6d9413 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.pricing-card.featured .plan-price {
+    background: white;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.plan-duration {
+    font-size: 16px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.pricing-card.featured .plan-duration {
+    color: rgba(255,255,255,0.9);
+}
+
+.pricing-body {
+    padding: 40px 30px;
+}
+
+.plan-description {
+    font-size: 16px;
+    color: #6c757d;
+    line-height: 1.8;
+    margin-bottom: 30px;
+    min-height: 60px;
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 30px 0;
+}
+
+.plan-features li {
+    padding: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    color: #495057;
+}
+
+.plan-features li::before {
+    content: "✓";
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #89ba16 0%, #6d9413 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.upgrade-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    background: linear-gradient(135deg, #89ba16 0%, #6d9413 100%);
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(137, 186, 22, 0.3);
+}
+
+.upgrade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(137, 186, 22, 0.4);
+    color: white;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #89ba16 0%, #6d9413 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+}
+
+.info-value {
+    font-size: 16px;
+    color: #6c757d;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .plan-price {
+        font-size: 36px;
+    }
+}

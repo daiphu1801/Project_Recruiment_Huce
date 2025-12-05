@@ -5,6 +5,25 @@ using System.Web.Mvc;
 
 namespace Project_Recruiment_Huce.Models.Companies
 {
+    /// <summary>
+    /// ViewModel hiển thị chi tiết công ty cho ứng viên
+    /// </summary>
+    public class CompanyDetailsViewModel
+    {
+        public int CompanyID { get; set; }
+        public string CompanyName { get; set; }
+        public string TaxCode { get; set; }
+        public string Industry { get; set; }
+        public string Address { get; set; }
+        public string Phone { get; set; }
+        public string Fax { get; set; }
+        public string CompanyEmail { get; set; }
+        public string Website { get; set; }
+        public string Description { get; set; }
+        public string LogoUrl { get; set; }
+        public int ActiveJobCount { get; set; }
+    }
+
     public class CompanyManageViewModel
     {
         public int? CompanyID { get; set; }
