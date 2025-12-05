@@ -45,9 +45,17 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     );
                 }
 
-                // Get recruiters and manually join with photos
-                var recruitersList = query.ToList();
-                var recruiters = recruitersList.Select(r =>
+                // Pagination
+                int pageSize = 10;
+                int totalRecords = query.Count();
+                int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+                var recruitersPage = query.OrderByDescending(r => r.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                var recruiters = recruitersPage.Select(r =>
                 {
                     var company = db.Companies.FirstOrDefault(c => c.CompanyID == r.CompanyID);
                     var account = db.Accounts.FirstOrDefault(a => a.AccountID == r.AccountID);
@@ -58,7 +66,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     {
                         RecruiterId = r.RecruiterID,
                         AccountId = r.AccountID,
-                        Username = account.Username,
+                        Username = account?.Username,
                         CompanyId = r.CompanyID,
                         FullName = r.FullName,
                         PositionTitle = r.PositionTitle,
@@ -71,6 +79,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         PhotoUrl = photo != null ? photo.FilePath : null
                     };
                 }).ToList();
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+                ViewBag.TotalItems = totalRecords;
+                ViewBag.PageSize = pageSize;
 
                 return View(recruiters);
             }

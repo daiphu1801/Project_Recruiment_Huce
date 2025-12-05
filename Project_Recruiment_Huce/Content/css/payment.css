@@ -1,0 +1,369 @@
+/* Payment/Upgrade Page Styles */
+/* Using standard section-hero from layout */
+
+.payment-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.payment-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: none;
+}
+
+.qr-section {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 600px;
+}
+
+.qr-code-wrapper {
+    background: white;
+    padding: 30px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    margin-bottom: 24px;
+    max-width: 380px;
+    width: 100%;
+}
+
+.qr-code-wrapper img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+}
+
+.qr-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.95);
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 15px;
+    color: #495057;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.payment-details {
+    padding: 30px 28px;
+}
+
+.detail-item {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border-left: 4px solid #89ba16;
+}
+
+.detail-label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.detail-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2d3748;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.amount-badge {
+    background: linear-gradient(135deg, #89ba16 0%, #6d9413 100%);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 22px;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(137, 186, 22, 0.3);
+}
+
+.transfer-content {
+    background: #2d3748;
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.copy-btn {
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.copy-btn:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+}
+
+.instructions-card {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 18px;
+    border: none;
+}
+
+.instructions-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 12px;
+}
+
+.instructions-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #78350f;
+    font-size: 14px;
+}
+
+.instructions-list li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.instructions-list strong {
+    color: #92400e;
+}
+
+.auto-notice {
+    background: linear-gradient(135deg, #e8f5e0 0%, #d4eac4 100%);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.auto-notice-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #89ba16 0%, #6d9413 100%);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.auto-notice-text {
+    color: #3d5c0b;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-back {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.btn-back:hover {
+    background: #d1d5db;
+    transform: translateY(-2px);
+    color: #374151;
+}
+
+.btn-check {
+    background: linear-gradient(135deg, #89ba16 0%, #6d9413 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(137, 186, 22, 0.3);
+}
+
+.btn-check:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(137, 186, 22, 0.4);
+    color: white;
+}
+
+.support-info {
+    text-align: center;
+    padding: 24px;
+    background: #f9fafb;
+    border-radius: 12px;
+    margin-top: 24px;
+}
+
+.support-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 14px;
+    color: #059669;
+    font-weight: 600;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.support-text {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0;
+}
+
+.support-text a {
+    color: #89ba16;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .payment-details {
+        padding: 20px;
+    }
+    .qr-section {
+        padding: 30px 20px;
+        min-height: auto;
+    }
+    .qr-code-wrapper {
+        max-width: 280px;
+        padding: 20px;
+    }
+    .action-buttons {
+        flex-direction: column;
+    }
+    .detail-value {
+        font-size: 18px;
+    }
+    .amount-badge {
+        font-size: 20px;
+    }
+    .instructions-title {
+        font-size: 14px;
+    }
+    .instructions-list {
+        font-size: 13px;
+    }
+}
+
+/* Payment Notification Styles */
+.payment-notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 9999;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    max-width: 400px;
+    border-left: 4px solid #89ba16;
+}
+
+.payment-notification.show {
+    transform: translateX(0);
+}
+
+.payment-notification-success {
+    border-left-color: #10b981;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.payment-notification-error {
+    border-left-color: #ef4444;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+}
+
+.payment-notification-info {
+    border-left-color: #3b82f6;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.notification-icon {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.payment-notification-success .notification-icon {
+    color: #10b981;
+}
+
+.payment-notification-error .notification-icon {
+    color: #ef4444;
+}
+
+.payment-notification-info .notification-icon {
+    color: #3b82f6;
+}
+
+.notification-message {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f2937;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .payment-notification {
+        left: 20px;
+        right: 20px;
+        max-width: none;
+    }
+}

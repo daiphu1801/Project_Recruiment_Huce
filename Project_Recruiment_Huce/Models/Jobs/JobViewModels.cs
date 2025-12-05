@@ -38,6 +38,7 @@ namespace Project_Recruiment_Huce.Models.Jobs
         public string Title { get; set; }
         public string Description { get; set; }
         public string Requirements { get; set; }
+        public int? CompanyID { get; set; }
         public string CompanyName { get; set; }
         public string Location { get; set; }
         public string EmploymentType { get; set; }
@@ -82,6 +83,7 @@ namespace Project_Recruiment_Huce.Models.Jobs
     {
         public int JobPostID { get; set; }
         public string Title { get; set; }
+        public int? CompanyID { get; set; }
         public string CompanyName { get; set; }
         public string Location { get; set; }
         public string EmploymentType { get; set; }

@@ -74,7 +74,19 @@
           <div>
             <h2>@(Model?.Title ?? "")</h2>
             <div>
-              <span class="ml-0 mr-2 mb-2"><span class="icon-briefcase mr-2"></span>@(Model?.CompanyName ?? "N/A")</span>
+              <span class="ml-0 mr-2 mb-2">
+                <span class="icon-briefcase mr-2"></span>
+                @if (Model?.CompanyID.HasValue == true)
+                {
+                  <a href="@Url.Action("CompanyDetails", "Companies", new { id = Model.CompanyID })" class="text-primary font-weight-bold company-link" style="text-decoration: none;">
+                    @(Model?.CompanyName ?? "N/A")
+                  </a>
+                }
+                else
+                {
+                  <text>@(Model?.CompanyName ?? "N/A")</text>
+                }
+              </span>
               @if (!string.IsNullOrEmpty(Model?.Location))
               {
                 <span class="m-2"><span class="icon-room mr-2"></span>@Model.Location</span>
@@ -519,7 +531,18 @@
             <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
               <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
                 <h2>@job.Title</h2>
-                <strong>@job.CompanyName</strong>
+                @if (job.CompanyID.HasValue)
+                {
+                  <strong>
+                    <a href="@Url.Action("CompanyDetails", "Companies", new { id = job.CompanyID })" class="text-dark company-link" style="text-decoration: none;">
+                      @job.CompanyName
+                    </a>
+                  </strong>
+                }
+                else
+                {
+                  <strong>@job.CompanyName</strong>
+                }
               </div>
               <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
                 @if (!string.IsNullOrEmpty(job.Location))
@@ -740,4 +763,24 @@
       });
     });
   </script>
+  <style>
+    .company-link {
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .company-link:hover {
+      color: #007bff !important;
+      text-decoration: underline !important;
+    }
+    .company-link:after {
+      content: '→';
+      opacity: 0;
+      margin-left: 5px;
+      transition: all 0.3s ease;
+    }
+    .company-link:hover:after {
+      opacity: 1;
+      margin-left: 8px;
+    }
+  </style>
 }

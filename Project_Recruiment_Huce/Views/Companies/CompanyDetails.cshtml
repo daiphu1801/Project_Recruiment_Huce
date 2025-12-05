@@ -1,0 +1,144 @@
+@model Project_Recruiment_Huce.Models.Companies.CompanyDetailsViewModel
+
+@{
+    ViewBag.Title = Model.CompanyName + " - Thông tin công ty";
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-7">
+        <h1 class="text-white font-weight-bold">Thông tin công ty</h1>
+        <div class="custom-breadcrumbs">
+          <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+          <a href="@Url.Action("JobsListing","Jobs")">Việc làm</a> <span class="mx-2 slash">/</span>
+          <span class="text-white"><strong>@Model.CompanyName</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="site-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="mb-5">
+          <div class="d-flex align-items-center mb-4">
+            <div class="border p-3 d-inline-block mr-3 rounded">
+              <img src="@Model.LogoUrl" alt="@Model.CompanyName" style="width: 120px; height: 120px; object-fit: contain;">
+            </div>
+            <div>
+              <h2 class="mb-2">@Model.CompanyName</h2>
+              @if (!string.IsNullOrEmpty(Model.Industry))
+              {
+                <p class="text-muted mb-1"><span class="icon-briefcase mr-2"></span>@Model.Industry</p>
+              }
+              @if (!string.IsNullOrEmpty(Model.Address))
+              {
+                <p class="text-muted mb-1"><span class="icon-room mr-2"></span>@Model.Address</p>
+              }
+            </div>
+          </div>
+
+          @if (!string.IsNullOrEmpty(Model.Description))
+          {
+            <div class="mb-4">
+              <h3 class="h5 text-black mb-3">Giới thiệu công ty</h3>
+              <div class="company-description">
+                @Html.Raw(Model.Description)
+              </div>
+            </div>
+          }
+
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <h3 class="h5 text-black mb-3">Thông tin liên hệ</h3>
+              <div class="p-3 bg-light rounded">
+                @if (!string.IsNullOrEmpty(Model.Phone))
+                {
+                  <div class="mb-2">
+                    <strong><span class="icon-phone mr-2"></span>Điện thoại:</strong> 
+                    <a href="tel:@Model.Phone">@Model.Phone</a>
+                  </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Fax))
+                {
+                  <div class="mb-2">
+                    <strong><span class="icon-print mr-2"></span>Fax:</strong> @Model.Fax
+                  </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.CompanyEmail))
+                {
+                  <div class="mb-2">
+                    <strong><span class="icon-envelope mr-2"></span>Email:</strong> 
+                    <a href="mailto:@Model.CompanyEmail">@Model.CompanyEmail</a>
+                  </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Website))
+                {
+                  <div class="mb-2">
+                    <strong><span class="icon-link mr-2"></span>Website:</strong> 
+                    <a href="@Model.Website" target="_blank" rel="noopener">@Model.Website</a>
+                  </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.TaxCode))
+                {
+                  <div class="mb-2">
+                    <strong><span class="icon-info-circle mr-2"></span>Mã số thuế:</strong> @Model.TaxCode
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <div class="bg-light p-3 border rounded mb-4">
+          <h3 class="text-primary mt-3 h5 pl-3 mb-3">Tuyển dụng</h3>
+          <ul class="list-unstyled pl-3 mb-0">
+            <li class="mb-2">
+              <strong>Vị trí đang tuyển:</strong> 
+              <span class="text-primary">@Model.ActiveJobCount</span>
+            </li>
+          </ul>
+          <div class="px-3 pt-3">
+            <a href="@Url.Action("JobsListing", "Jobs", new { keyword = Model.CompanyName })" class="btn btn-primary btn-block">
+              Xem tất cả việc làm
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-light p-3 border rounded">
+          <h3 class="text-primary mt-3 h5 pl-3 mb-3">Chia sẻ</h3>
+          <div class="px-3">
+            <a href="#" class="btn btn-sm btn-outline-primary mr-2 mb-2">
+              <span class="icon-facebook"></span>
+            </a>
+            <a href="#" class="btn btn-sm btn-outline-info mr-2 mb-2">
+              <span class="icon-twitter"></span>
+            </a>
+            <a href="#" class="btn btn-sm btn-outline-danger mb-2">
+              <span class="icon-linkedin"></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .company-description {
+    line-height: 1.8;
+    color: #666;
+  }
+  .company-description p {
+    margin-bottom: 1rem;
+  }
+  .company-description ul, .company-description ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+</style>
