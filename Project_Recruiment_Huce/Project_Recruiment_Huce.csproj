@@ -187,13 +187,11 @@
     <Compile Include="Areas\Admin\Controllers\AdminBaseController.cs" />
     <Compile Include="Areas\Admin\Controllers\ApplicationsController.cs" />
     <Compile Include="Areas\Admin\Controllers\AuthController.cs" />
-    <Compile Include="Areas\Admin\Controllers\BankCardsController.cs" />
     <Compile Include="Areas\Admin\Controllers\CandidatesController.cs" />
     <Compile Include="Areas\Admin\Controllers\CompaniesController.cs" />
+    <Compile Include="Areas\Admin\Controllers\ContactMessagesController.cs" />
     <Compile Include="Areas\Admin\Controllers\DashboardController.cs" />
     <Compile Include="Areas\Admin\Controllers\JobPostsController.cs" />
-    <Compile Include="Areas\Admin\Controllers\PaymentHistoryController.cs" />
-    <Compile Include="Areas\Admin\Controllers\PendingPaymentsController.cs" />
     <Compile Include="Areas\Admin\Controllers\PhotosController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProfileController.cs" />
     <Compile Include="Areas\Admin\Controllers\RecruitersController.cs" />
@@ -203,6 +201,7 @@
     <Compile Include="Areas\Admin\Models\ApplicationViewModels.cs" />
     <Compile Include="Areas\Admin\Models\CandidateViewModels.cs" />
     <Compile Include="Areas\Admin\Models\CompanyViewModels.cs" />
+    <Compile Include="Areas\Admin\Models\ContactMessageViewModels.cs" />
     <Compile Include="Areas\Admin\Models\JobPostViewModels.cs" />
     <Compile Include="Areas\Admin\Models\MockData.cs" />
     <Compile Include="Areas\Admin\Models\PaymentViewModels.cs" />
@@ -244,6 +243,7 @@
     <Compile Include="Models\Recruiters\RecruiterApplicationViewModel.cs" />
     <Compile Include="Models\Recruiters\RecruiterAnalyticsViewModels.cs" />
     <Compile Include="Models\Home\HomeIndexViewModel.cs" />
+    <Compile Include="Models\Home\ContactViewModels.cs" />
     <Compile Include="Models\Jobs\JobViewModels.cs" />
     <Compile Include="Models\Jobs\JobCreateViewModel.cs" />
     <Compile Include="Models\SubscriptionViewModel.cs" />
@@ -295,6 +295,8 @@
     <Compile Include="Repositories\RecruiterApplicationRepo\RecruiterApplicationRepository.cs" />
     <Compile Include="Repositories\RecruiterRepo\IRecruiterRepository.cs" />
     <Compile Include="Repositories\RecruiterRepo\RecruiterRepository.cs" />
+    <Compile Include="Repositories\ContactRepo\IContactRepository.cs" />
+    <Compile Include="Repositories\ContactRepo\ContactRepository.cs" />
     <Compile Include="Services\JobService\IJobService.cs" />
     <Compile Include="Services\JobService\JobService.cs" />
     <Compile Include="Services\JobServiceLegacy.cs" />
@@ -320,6 +322,8 @@
     <Compile Include="Services\RecruiterApplicationService\RecruiterApplicationService.cs" />
     <Compile Include="Services\RecruiterService\IRecruiterService.cs" />
     <Compile Include="Services\RecruiterService\RecruiterService.cs" />
+    <Compile Include="Services\ContactService\IContactService.cs" />
+    <Compile Include="Services\ContactService\ContactService.cs" />
     <Compile Include="Helpers\PaymentLogger.cs" />
     <Compile Include="Helpers\SePaySecurityHelper.cs" />
   </ItemGroup>

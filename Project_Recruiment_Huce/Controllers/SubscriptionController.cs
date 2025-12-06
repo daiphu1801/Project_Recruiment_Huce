@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Web.Mvc;
 using System.Threading.Tasks;
 using Project_Recruiment_Huce.Models;
@@ -143,25 +144,50 @@ namespace Project_Recruiment_Huce.Controllers
         // POST: Subscription/SePayWebhook
         [AllowAnonymous]
         [HttpPost]
-        public ActionResult SePayWebhook(SePayModel model)
+        public ActionResult SePayWebhook()
         {
             var ipAddress = Request.UserHostAddress;
             var userAgent = Request.UserAgent;
 
-            // Log incoming webhook request
-            PaymentLogger.LogWebhookRequest(ipAddress, userAgent,
-                Newtonsoft.Json.JsonConvert.SerializeObject(model));
+            // Read raw JSON body (SePay sends JSON in request body)
+            string jsonPayload = null;
+            SePayModel model = null;
 
-            if (model == null)
+            try
             {
-                PaymentLogger.Warning("Webhook received null data");
-                return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+                Request.InputStream.Position = 0;
+                using (var reader = new System.IO.StreamReader(Request.InputStream))
+                {
+                    jsonPayload = reader.ReadToEnd();
+                }
+
+                // Log raw webhook request
+                PaymentLogger.LogWebhookRequest(ipAddress, userAgent, jsonPayload);
+
+                // Deserialize JSON to model
+                if (string.IsNullOrEmpty(jsonPayload))
+                {
+                    PaymentLogger.Warning("Webhook received empty body");
+                    return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+                }
+
+                model = Newtonsoft.Json.JsonConvert.DeserializeObject<SePayModel>(jsonPayload);
+
+                if (model == null)
+                {
+                    PaymentLogger.Warning("Webhook JSON deserialization failed");
+                    return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+                }
+            }
+            catch (Exception ex)
+            {
+                PaymentLogger.Error("Failed to read webhook body", ex);
+                return Json(new { success = false, message = "Lỗi đọc dữ liệu" });
             }
 
             // Extract security headers
             var apiKey = Request.Headers["authorization"] ?? Request.Headers["x-key-api-v3a"];
             var signature = Request.Headers["X-SePay-Signature"];
-            var payload = Newtonsoft.Json.JsonConvert.SerializeObject(model);
 
             DateTime? timestamp = null;
             if (DateTime.TryParse(model.transactionDate, out var parsedDate))
@@ -169,9 +195,9 @@ namespace Project_Recruiment_Huce.Controllers
                 timestamp = parsedDate;
             }
 
-            // Validate webhook security
+            // Validate webhook security (use original JSON payload for signature validation)
             var (isValid, errorMessage) = _webhookService.ValidateWebhookSecurity(
-                apiKey, ipAddress, signature, payload, timestamp);
+                apiKey, ipAddress, signature, jsonPayload, timestamp);
 
             if (!isValid)
             {

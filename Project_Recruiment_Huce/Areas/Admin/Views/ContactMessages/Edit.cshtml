@@ -1,0 +1,187 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.ContactMessageDetailsVm
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- Message Details -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-pencil-fill me-2"></i>Chỉnh sửa tin nhắn
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">Người gửi</label>
+                        <h5>@Model.FullName</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Email</label>
+                        <h5><a href="mailto:@Model.Email">@Model.Email</a></h5>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small">Chủ đề</label>
+                    <h5>@Model.Subject</h5>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small">Nội dung tin nhắn</label>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <p style="white-space: pre-wrap;">@Model.Message</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="text-muted small">Ngày gửi</label>
+                        <p><i class="bi bi-calendar-event me-1"></i>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    @if (Model.ReadAt.HasValue)
+                    {
+                        <div class="col-md-4">
+                            <label class="text-muted small">Ngày đọc</label>
+                            <p><i class="bi bi-eye me-1"></i>@Model.ReadAt.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                    }
+                    @if (Model.RepliedAt.HasValue)
+                    {
+                        <div class="col-md-4">
+                            <label class="text-muted small">Ngày trả lời</label>
+                            <p><i class="bi bi-reply me-1"></i>@Model.RepliedAt.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Form -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-pencil-square me-2"></i>Cập nhật thông tin
+                </h5>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("Edit", "ContactMessages", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.ContactMessageID)
+                    
+                    <div class="mb-3">
+                        <label for="Status" class="form-label fw-bold">
+                            Trạng thái <span class="text-danger">*</span>
+                        </label>
+                        @Html.DropDownListFor(m => m.Status, 
+                            (SelectList)ViewBag.StatusOptions, 
+                            "-- Chọn trạng thái --", 
+                            new { @class = "form-select", required = "required" })
+                        @Html.ValidationMessageFor(m => m.Status, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="AdminNotes" class="form-label fw-bold">Ghi chú quản trị</label>
+                        @Html.TextAreaFor(m => m.AdminNotes, 
+                            new { @class = "form-control", rows = 4, placeholder = "Nhập ghi chú nội bộ cho tin nhắn này..." })
+                        @Html.ValidationMessageFor(m => m.AdminNotes, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="@Url.Action("Index")" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Hủy
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>Lưu thay đổi
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Sidebar -->
+    <div class="col-md-4">
+        <!-- Status Card -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">Trạng thái hiện tại</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <span class="@Model.StatusBadgeClass" style="font-size: 1.1rem; padding: 8px 16px;">
+                        @Model.StatusText
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">Thao tác nhanh</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("Details", new { id = Model.ContactMessageID })" class="btn btn-info">
+                        <i class="bi bi-eye"></i> Xem chi tiết
+                    </a>
+                    
+                    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=@Model.Email&su=Re: @Uri.EscapeDataString(Model.Subject)" target="_blank" class="btn btn-success">
+                        <i class="bi bi-envelope"></i> Gửi email trả lời
+                    </a>
+                    
+                    <a href="@Url.Action("Delete", new { id = Model.ContactMessageID })" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Xóa tin nhắn
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Info Card -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Thông tin liên hệ</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <small class="text-muted">Họ tên</small>
+                    <p class="mb-0"><strong>@Model.FullName</strong></p>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Email</small>
+                    <p class="mb-0">
+                        <a href="mailto:@Model.Email">@Model.Email</a>
+                    </p>
+                </div>
+                <div>
+                    <small class="text-muted">ID tin nhắn</small>
+                    <p class="mb-0">#@Model.ContactMessageID</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
