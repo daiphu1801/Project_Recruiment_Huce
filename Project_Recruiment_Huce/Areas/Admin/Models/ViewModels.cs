@@ -40,6 +40,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
         // Phân bố theo loại hình công việc
         public List<string> EmploymentTypeLabels { get; set; }
         public List<int> EmploymentTypeCounts { get; set; }
+        
+        // Thống kê thanh toán SePay
+        public decimal TotalAmountIn { get; set; }
+        public decimal TotalAmountOut { get; set; }
+        public decimal NetAmount { get; set; }
+        public int TransactionsToday { get; set; }
+        public int TransactionsThisMonth { get; set; }
+        public List<decimal> PaymentWeekly { get; set; }
+        public decimal AverageTransactionAmount { get; set; }
     }
 
     /// <summary>

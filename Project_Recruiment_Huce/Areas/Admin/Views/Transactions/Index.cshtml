@@ -1,34 +1,81 @@
-@model List<Project_Recruiment_Huce.Areas.Admin.Models.TransactionListVm>
+@model List<Project_Recruiment_Huce.Areas.Admin.Models.SePayTransactionVm>
 @using Project_Recruiment_Huce.Areas.Admin.Models
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
-@{
-    ViewBag.StatusOptions = new System.Web.Mvc.SelectList(new[] { "Processing", "Completed", "Failed" });
-    ViewBag.MethodOptions = new System.Web.Mvc.SelectList(new[] { "Bank", "Card" });
-}
+
 @Html.Partial("~/Areas/Admin/Views/Shared/_TableToolbar.cshtml", (Request["q"] ?? ""))
 
 <div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0">Giao dịch SePay</h5>
+    <p class="text-muted small mb-0">Tổng cộng: @ViewBag.TotalItems giao dịch</p>
+  </div>
   <div class="card-body table-responsive p-0">
     <table class="table table-hover">
       <thead><tr>
-        <th>Mã GD</th><th>Tài khoản</th><th>Số tiền</th><th>Phương thức</th><th>Trạng thái</th><th>Thời gian</th><th></th>
+        <th>Mã GD</th>
+        <th>Gateway</th>
+        <th>Nội dung</th>
+        <th>Số tiền</th>
+        <th>Loại</th>
+        <th>Trạng thái</th>
+        <th>Thời gian</th>
+        <th></th>
       </tr></thead>
       <tbody>
+      @if (Model.Count == 0)
+      {
+        <tr><td colspan="8" class="text-center text-muted py-4">Không có giao dịch nào</td></tr>
+      }
       @foreach (var item in Model) {
         <tr>
-          <td>@item.TransactionNo</td>
-          <td>@item.AccountEmail</td>
-          <td>@AdminUiHelpers.FormatMoney(item.Amount) đ</td>
-          <td>@item.PaymentMethod</td>
+          <td><code>@item.TransactionNo</code></td>
+          <td><span class="badge bg-info">@(item.Gateway ?? "N/A")</span></td>
+          <td>
+            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="@item.TransactionContent">
+              @(item.TransactionContent ?? item.Description ?? "-")
+            </div>
+          </td>
+          <td>
+            @if (item.AmountIn > 0)
+            {
+              <span class="text-success font-weight-bold">+@AdminUiHelpers.FormatMoney(item.AmountIn) đ</span>
+            }
+            else if (item.AmountOut > 0)
+            {
+              <span class="text-danger font-weight-bold">-@AdminUiHelpers.FormatMoney(item.AmountOut) đ</span>
+            }
+            else
+            {
+              <span class="text-muted">0 đ</span>
+            }
+          </td>
+          <td>
+            @if (item.AmountIn > 0)
+            {
+              <span class="badge bg-success">Tiền vào</span>
+            }
+            else if (item.AmountOut > 0)
+            {
+              <span class="badge bg-warning text-dark">Tiền ra</span>
+            }
+            else
+            {
+              <span class="badge bg-secondary">-</span>
+            }
+          </td>
           <td>@Html.Partial("~/Areas/Admin/Views/Shared/_StatusBadge.cshtml", System.Tuple.Create(item.Status, "Transactions"))</td>
-          <td>@(item.TransactedAt.HasValue ? item.TransactedAt.Value.ToString("dd/MM/yyyy") : "")</td>
-          <td><a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = item.TransactionId })"><i class="fa fa-eye"></i></a></td>
+          <td><small>@item.TransactionDate.ToString("dd/MM/yyyy HH:mm")</small></td>
+          <td>
+            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = item.Id })">
+              <i class="bi bi-eye me-1"></i>Chi tiết
+            </a>
+          </td>
         </tr>
       }
       </tbody>
     </table>
   </div>
 </div>
-@Html.Partial("~/Areas/Admin/Views/Shared/_Pagination.cshtml", new { PageIndex = 1, TotalPages = 1, BaseUrl = Url.Action("Index", new { q = Request["q"], method = Request["method"], status = Request["status"] }) })
+@Html.Partial("~/Areas/Admin/Views/Shared/_Pagination.cshtml", new { PageIndex = ViewBag.CurrentPage, TotalPages = ViewBag.TotalPages, BaseUrl = Url.Action("Index", new { q = Request["q"], gateway = Request["gateway"] }) })
 
 

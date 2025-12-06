@@ -12,6 +12,7 @@ using Project_Recruiment_Huce.Helpers;
 using Project_Recruiment_Huce.Mappers;
 using Project_Recruiment_Huce.Infrastructure;
 using Project_Recruiment_Huce.Services;
+using Project_Recruiment_Huce.Repositories;
 using LegacyJobRepository = Project_Recruiment_Huce.Repositories.JobRepository;
 
 namespace Project_Recruiment_Huce.Controllers
@@ -134,9 +135,79 @@ namespace Project_Recruiment_Huce.Controllers
 
         public ActionResult Contact()
         {
-            ViewBag.Message = "Your contact page.";
+            var viewModel = new ContactPageViewModel
+            {
+                ContactForm = new ContactViewModel(),
+                ContactInfo = GetContactInfo(),
+                IsSubmitted = false
+            };
 
-            return View();
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Contact(ContactPageViewModel pageViewModel)
+        {
+            // Ensure ContactInfo is populated
+            if (pageViewModel.ContactInfo == null)
+            {
+                pageViewModel.ContactInfo = GetContactInfo();
+            }
+            
+            pageViewModel.IsSubmitted = false;
+
+            // Validate the ContactForm
+            if (pageViewModel.ContactForm == null)
+            {
+                pageViewModel.ContactForm = new ContactViewModel();
+                ModelState.AddModelError("", "Dữ liệu form không hợp lệ");
+                return View(pageViewModel);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(pageViewModel);
+            }
+
+            using (var db = DbContextFactory.Create())
+            {
+                var contactRepository = new ContactRepository(db);
+                var contactService = new ContactService(contactRepository, db);
+
+                var result = contactService.SendContactMessage(pageViewModel.ContactForm);
+
+                if (result.IsValid)
+                {
+                    pageViewModel.IsSubmitted = true;
+                    pageViewModel.SuccessMessage = result.Message;
+                    pageViewModel.ContactForm = new ContactViewModel(); // Reset form
+                    TempData["SuccessMessage"] = result.Message;
+                    return View(pageViewModel);
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("ContactForm." + error.Key, error.Value);
+                    }
+                    return View(pageViewModel);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Lấy thông tin liên hệ của công ty từ cấu hình
+        /// </summary>
+        private ContactInfoViewModel GetContactInfo()
+        {
+            return new ContactInfoViewModel
+            {
+                Address = ConfigurationManager.AppSettings["Company:Address"] ?? "Số 2 Phạm Văn Đồng, Phường Dịch Vọng, Quận Cầu Giấy, Hà Nội",
+                Phone = ConfigurationManager.AppSettings["Company:Phone"] ?? "+84 24 3869 4242",
+                Email = ConfigurationManager.AppSettings["Company:Email"] ?? "contact@huce.edu.vn",
+                WorkingHours = ConfigurationManager.AppSettings["Company:WorkingHours"] ?? "Thứ 2 - Thứ 6: 8:00 - 17:00"
+            };
         }
     }
 }

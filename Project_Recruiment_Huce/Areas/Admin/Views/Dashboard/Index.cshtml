@@ -1,4 +1,5 @@
 @model Project_Recruiment_Huce.Areas.Admin.Models.DashboardVm
+@using Project_Recruiment_Huce.Areas.Admin.Models
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
 
 <div class="app-content-header">
@@ -77,9 +78,142 @@
       </div>
     </div>
 
+    <!-- Payment Dashboard Section -->
     <div class="row">
-      <div class="col-lg-4 col-12">
-        <div class="card"><div class="card-header"><h5 class="card-title">Giao dịch thanh toán</h5></div><div class="card-body"><h3>@Model.Transactions</h3></div></div>
+      <div class="col-12">
+        <h4 class="mb-3"><i class="bi bi-cash-stack text-success me-2"></i>Thống kê thanh toán SePay</h4>
+      </div>
+    </div>
+    
+    <div class="row">
+      <!-- Total Amount In -->
+      <div class="col-lg-3 col-md-6 col-12 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <p class="text-muted mb-1 small">Tổng tiền vào</p>
+                <h3 class="mb-0 text-success">@AdminUiHelpers.FormatMoney(Model.TotalAmountIn) đ</h3>
+                <small class="text-muted">@Model.TransactionsToday giao dịch hôm nay</small>
+              </div>
+              <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                <i class="bi bi-arrow-down-circle text-success fs-4"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Amount Out -->
+      <div class="col-lg-3 col-md-6 col-12 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <p class="text-muted mb-1 small">Tổng tiền ra</p>
+                <h3 class="mb-0 text-danger">@AdminUiHelpers.FormatMoney(Model.TotalAmountOut) đ</h3>
+                <small class="text-muted">@Model.TransactionsThisMonth giao dịch tháng này</small>
+              </div>
+              <div class="bg-danger bg-opacity-10 p-3 rounded-circle">
+                <i class="bi bi-arrow-up-circle text-danger fs-4"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Net Amount -->
+      <div class="col-lg-3 col-md-6 col-12 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <p class="text-muted mb-1 small">Số dư ròng</p>
+                <h3 class="mb-0 @(Model.NetAmount >= 0 ? "text-primary" : "text-warning")">
+                  @AdminUiHelpers.FormatMoney(Model.NetAmount) đ
+                </h3>
+                <small class="text-muted">Vào - Ra</small>
+              </div>
+              <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                <i class="bi bi-wallet2 text-primary fs-4"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Average Transaction -->
+      <div class="col-lg-3 col-md-6 col-12 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <p class="text-muted mb-1 small">Trung bình/GD</p>
+                <h3 class="mb-0 text-info">@AdminUiHelpers.FormatMoney(Model.AverageTransactionAmount) đ</h3>
+                <small class="text-muted">Tổng @Model.Transactions giao dịch</small>
+              </div>
+              <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                <i class="bi bi-graph-up-arrow text-info fs-4"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Chart -->
+    <div class="row">
+      <div class="col-lg-8 mb-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white border-bottom">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-bar-chart-line text-primary me-2"></i>Biểu đồ thanh toán 7 ngày qua
+            </h5>
+          </div>
+          <div class="card-body">
+            <div id="payment-chart" style="height: 300px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions Summary -->
+      <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-bottom">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-clock-history text-success me-2"></i>Tóm tắt
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted">Giao dịch hôm nay</span>
+                <span class="badge bg-primary">@Model.TransactionsToday</span>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: @(Model.Transactions > 0 ? (Model.TransactionsToday * 100.0 / Model.Transactions) : 0)%"></div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted">Giao dịch tháng này</span>
+                <span class="badge bg-success">@Model.TransactionsThisMonth</span>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: @(Model.Transactions > 0 ? (Model.TransactionsThisMonth * 100.0 / Model.Transactions) : 0)%"></div>
+              </div>
+            </div>
+
+            <hr class="my-3">
+
+            <div class="text-center">
+              <a href="@Url.Action("Index", "Transactions")" class="btn btn-outline-primary btn-sm w-100">
+                <i class="bi bi-eye me-1"></i>Xem tất cả giao dịch
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -92,6 +226,7 @@
       var dates = @Html.Raw(System.Web.Helpers.Json.Encode(Model.Dates7));
       var job = @Html.Raw(System.Web.Helpers.Json.Encode(Model.JobPostsWeekly));
       var apps = @Html.Raw(System.Web.Helpers.Json.Encode(Model.ApplicationsWeekly));
+      var payments = @Html.Raw(System.Web.Helpers.Json.Encode(Model.PaymentWeekly ?? new List<decimal>()));
 
       // Phân bố theo loại hình công việc
       var employmentLabels = @Html.Raw(System.Web.Helpers.Json.Encode(Model.EmploymentTypeLabels ?? new List<string>()));
@@ -176,6 +311,65 @@
         var totalData = job.map(function(v,i){ return (apps[i]||0) + v; });
         var spark3 = new ApexCharts(document.querySelector('#sparkline-3'), { series: [{ data: totalData }], chart: { type: 'area', height: 50, sparkline: { enabled: true } }, stroke: { curve: 'straight' }, fill: { opacity: 0.3 }, colors: ['#ffc107'] });
         spark3.render();
+
+        // Payment Chart - Bar chart for payments
+        var paymentChartOptions = {
+          series: [{
+            name: 'Thanh toán',
+            data: payments
+          }],
+          chart: {
+            type: 'bar',
+            height: 300,
+            toolbar: { show: false }
+          },
+          plotOptions: {
+            bar: {
+              borderRadius: 4,
+              dataLabels: {
+                position: 'top'
+              }
+            }
+          },
+          dataLabels: {
+            enabled: true,
+            formatter: function (val) {
+              return new Intl.NumberFormat('vi-VN').format(val) + ' đ';
+            },
+            offsetY: -20,
+            style: {
+              fontSize: '11px',
+              colors: ['#304758']
+            }
+          },
+          colors: ['#20c997'],
+          xaxis: {
+            categories: dates,
+            type: 'datetime',
+            labels: {
+              format: 'dd/MM'
+            }
+          },
+          yaxis: {
+            labels: {
+              formatter: function (val) {
+                return new Intl.NumberFormat('vi-VN', { notation: 'compact', compactDisplay: 'short' }).format(val);
+              }
+            }
+          },
+          tooltip: {
+            y: {
+              formatter: function (val) {
+                return new Intl.NumberFormat('vi-VN').format(val) + ' đ';
+              }
+            }
+          },
+          grid: {
+            borderColor: '#f1f1f1'
+          }
+        };
+        var paymentChart = new ApexCharts(document.querySelector('#payment-chart'), paymentChartOptions);
+        paymentChart.render();
       }
     })();
   </script>

@@ -1,0 +1,202 @@
+@model List<Project_Recruiment_Huce.Areas.Admin.Models.ContactMessageListVm>
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Chờ xử lý</h6>
+                        <h3 class="mb-0 text-warning">@ViewBag.TotalPending</h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Đã đọc</h6>
+                        <h3 class="mb-0 text-info">@ViewBag.TotalRead</h3>
+                    </div>
+                    <div class="text-info">
+                        <i class="bi bi-eye-fill" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Đã trả lời</h6>
+                        <h3 class="mb-0 text-success">@ViewBag.TotalReplied</h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="bi bi-reply-fill" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-secondary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Đã đóng</h6>
+                        <h3 class="mb-0 text-secondary">@ViewBag.TotalClosed</h3>
+                    </div>
+                    <div class="text-secondary">
+                        <i class="bi bi-check-circle-fill" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toolbar with search and filter -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" action="@Url.Action("Index")" class="row g-3">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Tìm theo tên, email, chủ đề..." value="@ViewBag.SearchQuery" />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="Pending" @(ViewBag.StatusFilter == "Pending" ? "selected" : "")>Chờ xử lý</option>
+                    <option value="Read" @(ViewBag.StatusFilter == "Read" ? "selected" : "")>Đã đọc</option>
+                    <option value="Replied" @(ViewBag.StatusFilter == "Replied" ? "selected" : "")>Đã trả lời</option>
+                    <option value="Closed" @(ViewBag.StatusFilter == "Closed" ? "selected" : "")>Đã đóng</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Lọc
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="@Url.Action("Index")" class="btn btn-secondary w-100">
+                    <i class="bi bi-arrow-clockwise"></i> Đặt lại
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Messages Table -->
+<div class="card">
+    <div class="card-body table-responsive p-0">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Người gửi</th>
+                    <th>Email</th>
+                    <th>Chủ đề</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày gửi</th>
+                    <th style="width: 200px;" class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                            <p class="mt-2">Không có tin nhắn nào</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr class="@(item.Status == "Pending" ? "table-warning" : "")">
+                            <td>
+                                <strong>@item.FullName</strong>
+                                @if (item.Status == "Pending")
+                                {
+                                    <span class="badge bg-danger ms-1">Mới</span>
+                                }
+                            </td>
+                            <td>
+                                <a href="mailto:@item.Email">@item.Email</a>
+                            </td>
+                            <td>
+                                <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    @item.Subject
+                                </div>
+                            </td>
+                            <td>
+                                <span class="@item.StatusBadgeClass">@item.StatusText</span>
+                            </td>
+                            <td>
+                                @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td class="text-end" style="white-space:nowrap;">
+                                <a href="@Url.Action("Details", new { id = item.ContactMessageID })" class="btn btn-sm btn-primary" title="Xem chi tiết">
+                                    <i class="bi bi-eye"></i> Chi tiết
+                                </a>
+                                <a href="@Url.Action("Edit", new { id = item.ContactMessageID })" class="btn btn-sm btn-warning" title="Sửa">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </a>
+                                <a href="@Url.Action("Delete", new { id = item.ContactMessageID })" class="btn btn-sm btn-danger" title="Xóa">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (ViewBag.TotalPages > 1)
+{
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { q = ViewBag.SearchQuery, status = ViewBag.StatusFilter, page = i })">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+<div class="mt-3 text-muted text-center">
+    Hiển thị @Model.Count trong tổng số @ViewBag.TotalItems tin nhắn
+</div>

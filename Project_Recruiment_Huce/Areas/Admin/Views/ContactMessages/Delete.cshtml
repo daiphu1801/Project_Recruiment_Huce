@@ -1,0 +1,75 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.ContactMessageDetailsVm
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Xác nhận xóa tin nhắn liên hệ
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Cảnh báo:</strong> Bạn có chắc chắn muốn xóa tin nhắn này? Hành động này không thể hoàn tác!
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="text-muted small">Người gửi</label>
+                <p><strong>@Model.FullName</strong></p>
+            </div>
+            <div class="col-md-6">
+                <label class="text-muted small">Email</label>
+                <p>@Model.Email</p>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="text-muted small">Chủ đề</label>
+            <p>@Model.Subject</p>
+        </div>
+
+        <div class="mb-3">
+            <label class="text-muted small">Nội dung</label>
+            <div class="card bg-light">
+                <div class="card-body">
+                    <p style="white-space: pre-wrap;">@Model.Message</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <label class="text-muted small">Trạng thái</label>
+                <p><span class="@Model.StatusBadgeClass">@Model.StatusText</span></p>
+            </div>
+            <div class="col-md-4">
+                <label class="text-muted small">Ngày gửi</label>
+                <p>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+            <div class="col-md-4">
+                <label class="text-muted small">ID</label>
+                <p>#@Model.ContactMessageID</p>
+            </div>
+        </div>
+
+        <hr />
+
+        <div class="d-flex gap-2">
+            <form method="post" action="@Url.Action("Delete", new { id = Model.ContactMessageID })">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có CHẮC CHẮN muốn xóa tin nhắn này không?')">
+                    <i class="bi bi-trash"></i> Xác nhận xóa
+                </button>
+            </form>
+
+            <a href="@Url.Action("Details", new { id = Model.ContactMessageID })" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Hủy bỏ
+            </a>
+
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
+    </div>
+</div>

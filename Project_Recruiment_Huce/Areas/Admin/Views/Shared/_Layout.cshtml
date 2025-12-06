@@ -372,29 +372,31 @@
                                 <p>Hồ sơ ứng tuyển</p>
                             </a>
                         </li>
+                        <li class="nav-header">HỖ TRỢ</li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index","ContactMessages", new { area = "Admin" })" class="nav-link">
+                                <i class="nav-icon bi bi-envelope"></i>
+                                <p>
+                                    Tin nhắn liên hệ
+                                    @{
+                                        try {
+                                            int pendingCount = 0;
+                                            using (var adb = new Project_Recruiment_Huce.Models.JOBPORTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString)) {
+                                                pendingCount = adb.ContactMessages.Count(c => c.Status == "Pending");
+                                            }
+                                            if (pendingCount > 0) {
+                                                <span class="badge text-bg-warning float-end">@pendingCount</span>
+                                            }
+                                        } catch { }
+                                    }
+                                </p>
+                            </a>
+                        </li>
                         <li class="nav-header">THANH TOÁN</li>
                         <li class="nav-item">
                             <a href="@Url.Action("Index","Transactions", new { area = "Admin" })" class="nav-link">
                                 <i class="nav-icon bi bi-cash-stack"></i>
-                                <p>Giao dịch</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="@Url.Action("Index","BankCards", new { area = "Admin" })" class="nav-link">
-                                <i class="nav-icon bi bi-credit-card"></i>
-                                <p>Thẻ ngân hàng</p>
-                                    </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="@Url.Action("Index","PendingPayments", new { area = "Admin" })" class="nav-link">
-                                <i class="nav-icon bi bi-card-checklist"></i>
-                                <p>Công nợ</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="@Url.Action("Index","PaymentHistory", new { area = "Admin" })" class="nav-link">
-                                <i class="nav-icon bi bi-clock-history"></i>
-                                <p>Lịch sử thanh toán</p>
+                                <p>Giao dịch SePay</p>
                             </a>
                         </li>
                         <li class="nav-header">MEDIA</li>

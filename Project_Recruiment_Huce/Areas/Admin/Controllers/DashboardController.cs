@@ -27,13 +27,26 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var candidatesCount = db.Candidates.Count();
                 var jobPostsCount = db.JobPosts.Count();
                 var applicationsCount = db.Applications.Count();
-                // TODO: Transaction table doesn't exist yet - comment out for now
-                var transactionsCount = 0; // db.Transactions.Count();
+                
+                // Thống kê thanh toán từ SePayTransactions
+                var transactionsCount = db.SePayTransactions.Count();
+                var totalAmountIn = db.SePayTransactions.Sum(t => (decimal?)t.AmountIn) ?? 0;
+                var totalAmountOut = db.SePayTransactions.Sum(t => (decimal?)t.AmountOut) ?? 0;
+                var netAmount = totalAmountIn - totalAmountOut;
+                
+                var today = DateTime.Today;
+                var transactionsToday = db.SePayTransactions.Count(t => t.TransactionDate.Date == today);
+                
+                var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+                var transactionsThisMonth = db.SePayTransactions.Count(t => t.TransactionDate >= firstDayOfMonth);
+                
+                var avgAmount = transactionsCount > 0 ? (totalAmountIn + totalAmountOut) / transactionsCount : 0;
 
                 // Time-series for last 7 days
                 var dates = new List<string>();
                 var jobSeries = new List<int>();
                 var appSeries = new List<int>();
+                var paymentSeries = new List<decimal>();
                 for (int i = 6; i >= 0; i--)
                 {
                     var d = DateTime.Today.AddDays(-i);
@@ -44,6 +57,12 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     
                     // Count applications applied on this date
                     appSeries.Add(db.Applications.Count(a => a.AppliedAt.Date == d));
+                    
+                    // Sum payments (AmountIn) on this date
+                    var dailyPayment = db.SePayTransactions
+                        .Where(t => t.TransactionDate.Date == d)
+                        .Sum(t => (decimal?)t.AmountIn) ?? 0;
+                    paymentSeries.Add(dailyPayment);
                 }
 
                 // Phân bố theo loại hình công việc
@@ -90,7 +109,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     JobPostsWeekly = jobSeries,
                     ApplicationsWeekly = appSeries,
                     EmploymentTypeLabels = employmentLabels,
-                    EmploymentTypeCounts = employmentCounts
+                    EmploymentTypeCounts = employmentCounts,
+                    // Thanh toán
+                    TotalAmountIn = totalAmountIn,
+                    TotalAmountOut = totalAmountOut,
+                    NetAmount = netAmount,
+                    TransactionsToday = transactionsToday,
+                    TransactionsThisMonth = transactionsThisMonth,
+                    PaymentWeekly = paymentSeries,
+                    AverageTransactionAmount = avgAmount
                 };
                 return View(vm);
             }

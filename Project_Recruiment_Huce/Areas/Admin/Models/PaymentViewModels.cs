@@ -3,7 +3,40 @@ using System;
 namespace Project_Recruiment_Huce.Areas.Admin.Models
 {
     /// <summary>
-    /// ViewModel cho danh sách giao dịch (Transaction table)
+    /// ViewModel cho danh sách giao dịch SePay (SePayTransactions table)
+    /// </summary>
+    public class SePayTransactionVm
+    {
+        public int Id { get; set; }
+        public string Gateway { get; set; }
+        public DateTime TransactionDate { get; set; }
+        public string AccountNumber { get; set; }
+        public string SubAccount { get; set; }
+        public decimal AmountIn { get; set; }
+        public decimal AmountOut { get; set; }
+        public decimal Accumulated { get; set; }
+        public string Code { get; set; }
+        public string TransactionContent { get; set; }
+        public string ReferenceCode { get; set; }
+        public string Description { get; set; }
+        public DateTime CreatedAt { get; set; }
+        
+        // Helper properties for display
+        public decimal Amount => AmountIn > 0 ? AmountIn : AmountOut;
+        public string TransactionNo => Code ?? ReferenceCode ?? $"TRX{Id:D6}";
+        public string Status 
+        { 
+            get
+            {
+                if (AmountIn > 0) return "Completed";
+                if (AmountOut > 0) return "Completed";
+                return "Processing";
+            }
+        }
+    }
+
+    /// <summary>
+    /// ViewModel cho danh sách giao dịch (Transaction table) - Legacy/Mock
     /// </summary>
     public class TransactionListVm
     {
