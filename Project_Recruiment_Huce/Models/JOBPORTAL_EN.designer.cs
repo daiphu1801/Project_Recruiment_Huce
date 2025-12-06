@@ -215,6 +215,14 @@ namespace Project_Recruiment_Huce.Models
 				return this.GetTable<SavedJob>();
 			}
 		}
+		
+		public System.Data.Linq.Table<ContactMessage> ContactMessages
+		{
+			get
+			{
+				return this.GetTable<ContactMessage>();
+			}
+		}
 	}
 	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Accounts")]
@@ -5300,6 +5308,316 @@ namespace Project_Recruiment_Huce.Models
 					this.SendPropertyChanged("JobPost");
 				}
 			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.ContactMessages")]
+	public partial class ContactMessage : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _ContactMessageID;
+		
+		private string _FirstName;
+		
+		private string _LastName;
+		
+		private string _Email;
+		
+		private string _Subject;
+		
+		private string _Message;
+		
+		private string _Status;
+		
+		private string _AdminNotes;
+		
+		private System.DateTime _CreatedAt;
+		
+		private System.Nullable<System.DateTime> _ReadAt;
+		
+		private System.Nullable<System.DateTime> _RepliedAt;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnContactMessageIDChanging(int value);
+    partial void OnContactMessageIDChanged();
+    partial void OnFirstNameChanging(string value);
+    partial void OnFirstNameChanged();
+    partial void OnLastNameChanging(string value);
+    partial void OnLastNameChanged();
+    partial void OnEmailChanging(string value);
+    partial void OnEmailChanged();
+    partial void OnSubjectChanging(string value);
+    partial void OnSubjectChanged();
+    partial void OnMessageChanging(string value);
+    partial void OnMessageChanged();
+    partial void OnStatusChanging(string value);
+    partial void OnStatusChanged();
+    partial void OnAdminNotesChanging(string value);
+    partial void OnAdminNotesChanged();
+    partial void OnCreatedAtChanging(System.DateTime value);
+    partial void OnCreatedAtChanged();
+    partial void OnReadAtChanging(System.Nullable<System.DateTime> value);
+    partial void OnReadAtChanged();
+    partial void OnRepliedAtChanging(System.Nullable<System.DateTime> value);
+    partial void OnRepliedAtChanged();
+    #endregion
+		
+		public ContactMessage()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ContactMessageID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int ContactMessageID
+		{
+			get
+			{
+				return this._ContactMessageID;
+			}
+			set
+			{
+				if ((this._ContactMessageID != value))
+				{
+					this.OnContactMessageIDChanging(value);
+					this.SendPropertyChanging();
+					this._ContactMessageID = value;
+					this.SendPropertyChanged("ContactMessageID");
+					this.OnContactMessageIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FirstName", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
+		public string FirstName
+		{
+			get
+			{
+				return this._FirstName;
+			}
+			set
+			{
+				if ((this._FirstName != value))
+				{
+					this.OnFirstNameChanging(value);
+					this.SendPropertyChanging();
+					this._FirstName = value;
+					this.SendPropertyChanged("FirstName");
+					this.OnFirstNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LastName", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
+		public string LastName
+		{
+			get
+			{
+				return this._LastName;
+			}
+			set
+			{
+				if ((this._LastName != value))
+				{
+					this.OnLastNameChanging(value);
+					this.SendPropertyChanging();
+					this._LastName = value;
+					this.SendPropertyChanged("LastName");
+					this.OnLastNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Email", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string Email
+		{
+			get
+			{
+				return this._Email;
+			}
+			set
+			{
+				if ((this._Email != value))
+				{
+					this.OnEmailChanging(value);
+					this.SendPropertyChanging();
+					this._Email = value;
+					this.SendPropertyChanged("Email");
+					this.OnEmailChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Subject", DbType="NVarChar(200) NOT NULL", CanBeNull=false)]
+		public string Subject
+		{
+			get
+			{
+				return this._Subject;
+			}
+			set
+			{
+				if ((this._Subject != value))
+				{
+					this.OnSubjectChanging(value);
+					this.SendPropertyChanging();
+					this._Subject = value;
+					this.SendPropertyChanged("Subject");
+					this.OnSubjectChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Message", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		public string Message
+		{
+			get
+			{
+				return this._Message;
+			}
+			set
+			{
+				if ((this._Message != value))
+				{
+					this.OnMessageChanging(value);
+					this.SendPropertyChanging();
+					this._Message = value;
+					this.SendPropertyChanged("Message");
+					this.OnMessageChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Status", DbType="NVarChar(20) NOT NULL", CanBeNull=false)]
+		public string Status
+		{
+			get
+			{
+				return this._Status;
+			}
+			set
+			{
+				if ((this._Status != value))
+				{
+					this.OnStatusChanging(value);
+					this.SendPropertyChanging();
+					this._Status = value;
+					this.SendPropertyChanged("Status");
+					this.OnStatusChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AdminNotes", DbType="NVarChar(MAX)", CanBeNull=true)]
+		public string AdminNotes
+		{
+			get
+			{
+				return this._AdminNotes;
+			}
+			set
+			{
+				if ((this._AdminNotes != value))
+				{
+					this.OnAdminNotesChanging(value);
+					this.SendPropertyChanging();
+					this._AdminNotes = value;
+					this.SendPropertyChanged("AdminNotes");
+					this.OnAdminNotesChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2 NOT NULL")]
+		public System.DateTime CreatedAt
+		{
+			get
+			{
+				return this._CreatedAt;
+			}
+			set
+			{
+				if ((this._CreatedAt != value))
+				{
+					this.OnCreatedAtChanging(value);
+					this.SendPropertyChanging();
+					this._CreatedAt = value;
+					this.SendPropertyChanged("CreatedAt");
+					this.OnCreatedAtChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ReadAt", DbType="DateTime2", CanBeNull=true)]
+		public System.Nullable<System.DateTime> ReadAt
+		{
+			get
+			{
+				return this._ReadAt;
+			}
+			set
+			{
+				if ((this._ReadAt != value))
+				{
+					this.OnReadAtChanging(value);
+					this.SendPropertyChanging();
+					this._ReadAt = value;
+					this.SendPropertyChanged("ReadAt");
+					this.OnReadAtChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RepliedAt", DbType="DateTime2", CanBeNull=true)]
+		public System.Nullable<System.DateTime> RepliedAt
+		{
+			get
+			{
+				return this._RepliedAt;
+			}
+			set
+			{
+				if ((this._RepliedAt != value))
+				{
+					this.OnRepliedAtChanging(value);
+					this.SendPropertyChanging();
+					this._RepliedAt = value;
+					this.SendPropertyChanged("RepliedAt");
+					this.OnRepliedAtChanged();
+				}
+			}
+		}
+		
+		/// <summary>
+		/// Họ tên đầy đủ của người liên hệ
+		/// </summary>
+		public string FullName
+		{
+			get { return string.Format("{0} {1}", FirstName, LastName).Trim(); }
 		}
 		
 		public event PropertyChangingEventHandler PropertyChanging;

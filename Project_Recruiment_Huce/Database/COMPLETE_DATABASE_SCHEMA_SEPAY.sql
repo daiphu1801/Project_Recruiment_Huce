@@ -451,6 +451,31 @@ BEGIN
     VALUES ('Initial_Schema_SePay_Integration');
 END
 
+-- ---------------------------------------------------------------------
+-- 1.16) ContactMessages - Tin nhắn liên hệ từ người dùng
+-- ---------------------------------------------------------------------
+IF OBJECT_ID(N'dbo.ContactMessages','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ContactMessages (
+        ContactMessageID INT IDENTITY(1,1) PRIMARY KEY,
+        FirstName        NVARCHAR(50) NOT NULL,
+        LastName         NVARCHAR(50) NOT NULL,
+        Email            NVARCHAR(100) NOT NULL,
+        Subject          NVARCHAR(200) NOT NULL,
+        Message          NVARCHAR(MAX) NOT NULL,
+        Status           NVARCHAR(20) NOT NULL DEFAULT N'Pending' CHECK (Status IN ('Pending','Read','Replied','Closed')),
+        AdminNotes       NVARCHAR(MAX) NULL,
+        CreatedAt        DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
+        ReadAt           DATETIME2(7) NULL,
+        RepliedAt        DATETIME2(7) NULL,
+        
+        INDEX IX_ContactMessages_Email (Email),
+        INDEX IX_ContactMessages_Status (Status),
+        INDEX IX_ContactMessages_CreatedAt (CreatedAt DESC)
+    );
+    PRINT '[✓] Created table dbo.ContactMessages';
+END
+
 PRINT '';
 PRINT '[i] All tables created successfully.';
 PRINT '';

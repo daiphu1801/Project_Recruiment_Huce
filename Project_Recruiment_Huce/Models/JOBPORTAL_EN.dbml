@@ -232,6 +232,9 @@
       <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
       <Column Name="PhotoID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="RowVer" Type="System.Data.Linq.Binary" DbType="rowversion NOT NULL" CanBeNull="false" IsVersion="true" />
+      <Column Name="SubscriptionType" Type="System.String" DbType="NVarChar(20) NOT NULL" CanBeNull="false" />
+      <Column Name="SubscriptionExpiryDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="FreeJobPostCount" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Association Name="Recruiter_BankCard" Member="BankCards" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="BankCard" />
       <Association Name="Recruiter_JobPost" Member="JobPosts" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="JobPost" />
       <Association Name="Recruiter_PaymentHistory" Member="PaymentHistories" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="PaymentHistory" />
@@ -261,6 +264,21 @@
       <Column Name="Note" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
       <Association Name="Candidate_SavedJob" Member="Candidate" ThisKey="CandidateID" OtherKey="CandidateID" Type="Candidate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="JobPost_SavedJob" Member="JobPost" ThisKey="JobPostID" OtherKey="JobPostID" Type="JobPost" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ContactMessages" Member="ContactMessages">
+    <Type Name="ContactMessage">
+      <Column Name="ContactMessageID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="FirstName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="LastName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="Email" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Subject" Type="System.String" DbType="NVarChar(200) NOT NULL" CanBeNull="false" />
+      <Column Name="Message" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="Status" Type="System.String" DbType="NVarChar(20) NOT NULL" CanBeNull="false" />
+      <Column Name="AdminNotes" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
+      <Column Name="ReadAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
+      <Column Name="RepliedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
     </Type>
   </Table>
 </Database>
