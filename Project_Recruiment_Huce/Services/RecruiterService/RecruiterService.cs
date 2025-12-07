@@ -35,7 +35,10 @@ namespace Project_Recruiment_Huce.Services.RecruiterService
                         AccountID = accountId,
                         FullName = userName,
                         CreatedAt = DateTime.Now,
-                        ActiveFlag = 1
+                        ActiveFlag = 1,
+                        // Set default subscription values
+                        SubscriptionType = "Free",
+                        FreeJobPostCount = 0
                     };
                     _repository.Create(recruiter);
                     _repository.SaveChanges();
@@ -146,7 +149,10 @@ namespace Project_Recruiment_Huce.Services.RecruiterService
                         Phone = validation.NormalizedPhone,
                         CompanyID = recruiter.CompanyID,
                         CreatedAt = DateTime.Now,
-                        ActiveFlag = 1
+                        ActiveFlag = 1,
+                        // Set default subscription values
+                        SubscriptionType = "Free",
+                        FreeJobPostCount = 0
                     };
                     _repository.Create(existingRecruiter);
                 }
