@@ -120,6 +120,9 @@
       <Column Name="PostedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Column Name="UpdatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Column Name="ViewCount" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="RefreshCount" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="DisplayDays" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="LastRefreshDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Association Name="JobPost_Application" Member="Applications" ThisKey="JobPostID" OtherKey="JobPostID" Type="Application" />
       <Association Name="JobPost_JobPostDetail" Member="JobPostDetails" ThisKey="JobPostID" OtherKey="JobPostID" Type="JobPostDetail" />
       <Association Name="JobPost_PostingHistory" Member="PostingHistories" ThisKey="JobPostID" OtherKey="JobPostID" Type="PostingHistory" />
@@ -172,7 +175,9 @@
       <Column Name="RecruiterID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="AccountID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="FullName" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
-      <Column Name="Position" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="PositionTitle" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="CompanyEmail" Type="System.String" DbType="NVarChar(150)" CanBeNull="true" />
+      <Column Name="Phone" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
       <Column Name="CompanyID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="PhotoID" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
