@@ -264,7 +264,10 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     CompanyEmail = model.CompanyEmail,
                     Phone = model.Phone,
                     CreatedAt = DateTime.Now,
-                    ActiveFlag = model.Active ? (byte)1 : (byte)0
+                    ActiveFlag = model.Active ? (byte)1 : (byte)0,
+                    // Set default subscription values
+                    SubscriptionType = "Free",
+                    FreeJobPostCount = 0
                 };
 
                 db.Recruiters.InsertOnSubmit(recruiter);
