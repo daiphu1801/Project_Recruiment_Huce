@@ -304,7 +304,7 @@ namespace Project_Recruiment_Huce.Controllers
                     Website = company.Website,
                     Description = company.Description,
                     LogoUrl = company.ProfilePhoto != null ? company.ProfilePhoto.FilePath : "/Content/images/job_logo_1.jpg",
-                    ActiveJobCount = company.JobPosts.Count(j => j.Status == "Open" && 
+                    ActiveJobCount = company.JobPosts.Count(j => j.Status == "Published" && 
                                                                 (!j.ApplicationDeadline.HasValue || j.ApplicationDeadline.Value >= DateTime.Now))
                 };
 

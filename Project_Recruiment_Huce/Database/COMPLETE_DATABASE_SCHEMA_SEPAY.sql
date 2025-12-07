@@ -166,7 +166,9 @@ BEGIN
         RecruiterID             INT IDENTITY(1,1) PRIMARY KEY,
         AccountID               INT NOT NULL UNIQUE,
         FullName                NVARCHAR(100) NULL,
-        Position                NVARCHAR(100) NULL,
+        PositionTitle           NVARCHAR(100) NULL,
+        CompanyEmail            NVARCHAR(150) NULL,
+        Phone                   NVARCHAR(20) NULL,
         CompanyID               INT NULL,
         PhotoID                 INT NULL,
         ActiveFlag              TINYINT NOT NULL DEFAULT 1,
@@ -234,6 +236,7 @@ BEGIN
     
     IF COL_LENGTH('dbo.Recruiters', 'RowVer') IS NULL
     BEGIN
+        SET QUOTED_IDENTIFIER ON;
         ALTER TABLE dbo.Recruiters ADD RowVer ROWVERSION NOT NULL;
         PRINT '[✓] Added RowVer column to dbo.Recruiters';
     END
@@ -327,7 +330,7 @@ BEGIN
         Location       NVARCHAR(255) NULL,
         Salary         NVARCHAR(100) NULL,
         Description    NVARCHAR(MAX) NULL,
-        PostedDate     DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
+        PostedAt       DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
         ExpiryDate     DATETIME2(7) NULL,
         RecruiterID    INT NOT NULL,
         ViewCount      INT NOT NULL DEFAULT 0,
@@ -440,15 +443,25 @@ END
 IF OBJECT_ID(N'dbo.SchemaMigrations','U') IS NULL
 BEGIN
     CREATE TABLE dbo.SchemaMigrations (
-        MigrationID   INT IDENTITY(1,1) PRIMARY KEY,
-        MigrationName NVARCHAR(255) NOT NULL UNIQUE,
+        MigrationId   INT IDENTITY(1,1) PRIMARY KEY,
+        ScriptName NVARCHAR(255) NOT NULL UNIQUE,
         AppliedAt     DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
     );
     PRINT '[✓] Created table dbo.SchemaMigrations';
     
     -- Insert initial migration
-    INSERT INTO dbo.SchemaMigrations (MigrationName) 
+    INSERT INTO dbo.SchemaMigrations (ScriptName) 
     VALUES ('Initial_Schema_SePay_Integration');
+END
+ELSE
+BEGIN
+    -- Check if migration record exists
+    IF NOT EXISTS (SELECT 1 FROM dbo.SchemaMigrations WHERE ScriptName = 'Initial_Schema_SePay_Integration')
+    BEGIN
+        INSERT INTO dbo.SchemaMigrations (ScriptName) 
+        VALUES ('Initial_Schema_SePay_Integration');
+    END
+    PRINT '[i] Table dbo.SchemaMigrations already exists';
 END
 
 -- ---------------------------------------------------------------------
@@ -597,14 +610,6 @@ BEGIN
     PRINT '[✓] FK_Applications_Candidates';
 END
 
--- Applications -> ResumeFiles
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Applications_ResumeFiles')
-BEGIN
-    ALTER TABLE dbo.Applications
-    ADD CONSTRAINT FK_Applications_ResumeFiles FOREIGN KEY (ResumeFileID) REFERENCES dbo.ResumeFiles(ResumeFileID) ON DELETE SET NULL;
-    PRINT '[✓] FK_Applications_ResumeFiles';
-END
-
 -- SavedJobs -> Candidates
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_SavedJobs_Candidates')
 BEGIN
@@ -659,8 +664,8 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_JobPosts_RecruiterID')
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_JobPosts_Status')
     CREATE INDEX IX_JobPosts_Status ON dbo.JobPosts(Status);
 
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_JobPosts_PostedDate')
-    CREATE INDEX IX_JobPosts_PostedDate ON dbo.JobPosts(PostedDate DESC);
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_JobPosts_PostedAt')
+    CREATE INDEX IX_JobPosts_PostedAt ON dbo.JobPosts(PostedAt DESC);
 
 -- Applications
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Applications_JobPostID')
@@ -690,15 +695,21 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    UPDATE dbo.Recruiters 
-    SET MonthlyJobPostCount = 0,
-        MonthlyCVViewCount = 0,
-        MonthlyEmailInviteCount = 0,
-        LastResetDate = GETDATE()
-    WHERE SubscriptionType = 'Monthly' 
-      AND DATEDIFF(DAY, LastResetDate, GETDATE()) >= 30;
-      
-    RETURN @@ROWCOUNT;
+    -- Check if columns exist before updating
+    IF COL_LENGTH('dbo.Recruiters', 'LastResetDate') IS NOT NULL
+    BEGIN
+        UPDATE dbo.Recruiters 
+        SET MonthlyJobPostCount = 0,
+            MonthlyCVViewCount = 0,
+            MonthlyEmailInviteCount = 0,
+            LastResetDate = GETDATE()
+        WHERE SubscriptionType = 'Monthly' 
+          AND DATEDIFF(DAY, LastResetDate, GETDATE()) >= 30;
+          
+        RETURN @@ROWCOUNT;
+    END
+    
+    RETURN 0;
 END
 GO
 
@@ -783,13 +794,13 @@ BEGIN
     FROM dbo.JobPosts jp
     LEFT JOIN dbo.Applications a ON a.JobPostID = jp.JobPostID
     WHERE jp.RecruiterID = @RecruiterID
-        AND jp.PostedDate BETWEEN @FromDate AND @ToDate;
+        AND jp.PostedAt BETWEEN @FromDate AND @ToDate;
     
     -- Result Set 2: Job Breakdown (chi tiết từng công việc)
     SELECT 
         jp.JobPostID,
         jp.Title AS JobTitle,
-        jp.PostedDate,
+        jp.PostedAt,
         jp.Status AS JobStatus,
         jp.ViewCount AS Views,
         COUNT(DISTINCT a.ApplicationID) AS Applications,
@@ -801,14 +812,14 @@ BEGIN
     FROM dbo.JobPosts jp
     LEFT JOIN dbo.Applications a ON a.JobPostID = jp.JobPostID
     WHERE jp.RecruiterID = @RecruiterID
-        AND jp.PostedDate BETWEEN @FromDate AND @ToDate
+        AND jp.PostedAt BETWEEN @FromDate AND @ToDate
     GROUP BY 
         jp.JobPostID, 
         jp.Title, 
-        jp.PostedDate, 
+        jp.PostedAt, 
         jp.Status, 
         jp.ViewCount
-    ORDER BY jp.PostedDate DESC;
+    ORDER BY jp.PostedAt DESC;
 END
 GO
 
