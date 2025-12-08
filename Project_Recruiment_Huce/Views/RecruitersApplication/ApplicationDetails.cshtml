@@ -268,6 +268,13 @@
                         </div>
                         <div class="card-body p-4">
                             <div class="action-buttons">
+                                @* Hiển thị nút đặt lịch phỏng vấn nếu trạng thái là Interview *@
+                                @if (Model.Status == "Interview")
+                                {
+                                    <a href="@Url.Action("ScheduleInterview", "RecruitersApplication", new { id = Model.ApplicationID })" class="btn btn-gradient-info btn-lg btn-block mb-3 action-btn animate-pulse">
+                                        <i class="icon-calendar-check-o mr-2"></i>Đặt lịch phỏng vấn
+                                    </a>
+                                }
                                 <a href="@Url.Action("UpdateApplicationStatus", "RecruitersApplication", new { id = Model.ApplicationID })" class="btn btn-gradient-success btn-lg btn-block mb-3 action-btn">
                                     <i class="icon-edit mr-2"></i>Cập nhật trạng thái
                                 </a>
@@ -285,7 +292,7 @@
                     <div class="card border-0 shadow-lg mt-4 summary-card">
                         <div class="card-header bg-gradient-info text-white border-0">
                             <h5 class="mb-0 d-flex align-items-center">
-                                <i class="icon-info-circle mr-2"></i>Tóm tắt đơn hàng
+                                <i class="icon-info-circle mr-2"></i>Tóm tắt đơn ứng tuyển
                             </h5>
                         </div>
                         <div class="card-body p-4">
@@ -296,7 +303,7 @@
                                             <i class="icon-hash text-primary"></i>
                                         </div>
                                         <div class="summary-content">
-                                            <span class="summary-label">Mã đơn</span>
+                                            <span class="summary-label">Mã đơn ứng tuyển</span>
                                             <span class="summary-value">#@Model.ApplicationID</span>
                                         </div>
                                     </div>

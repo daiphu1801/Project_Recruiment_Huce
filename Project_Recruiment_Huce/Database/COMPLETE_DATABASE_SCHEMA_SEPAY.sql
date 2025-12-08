@@ -295,6 +295,7 @@ BEGIN
         DateOfBirth DATE NULL,
         Address     NVARCHAR(500) NULL,
         Email       NVARCHAR(100) NULL,
+        ApplicationEmail NVARCHAR(100) NULL,
         Phone       NVARCHAR(20) NULL,
         PhotoID     INT NULL,
         ActiveFlag  TINYINT NOT NULL DEFAULT 1,

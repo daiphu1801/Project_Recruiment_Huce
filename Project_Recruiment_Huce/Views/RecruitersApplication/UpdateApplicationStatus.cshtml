@@ -156,23 +156,17 @@
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="form-actions mt-5">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3 mb-md-0">
-                                        <button type="submit" class="btn btn-success btn-lg btn-block update-btn" id="updateBtn" disabled>
-                                            <i class="icon-check mr-2"></i>Cập nhật trạng thái
-                                        </button>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="d-flex">
-                                            <a href="@Url.Action("ApplicationDetails", "RecruitersApplication", new { id = Model.ApplicationID })" class="btn btn-outline-secondary btn-lg flex-fill mr-2">
-                                                <i class="icon-eye mr-2"></i>Chi tiết
-                                            </a>
-                                            <a href="@Url.Action("MyApplications", "RecruitersApplication")" class="btn btn-outline-primary btn-lg flex-fill">
-                                                <i class="icon-list mr-2"></i>Danh sách
-                                            </a>
-                                        </div>
-                                    </div>
+                            <div class="form-actions mt-4">
+                                <div class="d-flex align-items-center flex-wrap" style="gap: 15px;">
+                                    <button type="submit" class="btn btn-success btn-lg update-btn px-5 py-2" id="updateBtn" disabled>
+                                        <i class="icon-check mr-2"></i>Cập nhật trạng thái
+                                    </button>
+                                    <a href="@Url.Action("ApplicationDetails", "RecruitersApplication", new { id = Model.ApplicationID })" class="btn btn-outline-secondary btn-lg px-4 py-2">
+                                        <i class="icon-eye mr-2"></i>Chi tiết
+                                    </a>
+                                    <a href="@Url.Action("MyApplications", "RecruitersApplication")" class="btn btn-outline-primary btn-lg px-4 py-2">
+                                        <i class="icon-list mr-2"></i>Danh sách
+                                    </a>
                                 </div>
                             </div>
                         }
