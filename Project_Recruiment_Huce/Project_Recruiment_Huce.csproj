@@ -191,6 +191,7 @@
     <Compile Include="Areas\Admin\Controllers\CompaniesController.cs" />
     <Compile Include="Areas\Admin\Controllers\ContactMessagesController.cs" />
     <Compile Include="Areas\Admin\Controllers\DashboardController.cs" />
+    <Compile Include="Areas\Admin\Controllers\InterviewManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\JobPostsController.cs" />
     <Compile Include="Areas\Admin\Controllers\PhotosController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProfileController.cs" />
@@ -202,6 +203,7 @@
     <Compile Include="Areas\Admin\Models\CandidateViewModels.cs" />
     <Compile Include="Areas\Admin\Models\CompanyViewModels.cs" />
     <Compile Include="Areas\Admin\Models\ContactMessageViewModels.cs" />
+    <Compile Include="Areas\Admin\Models\InterviewViewModels.cs" />
     <Compile Include="Areas\Admin\Models\JobPostViewModels.cs" />
     <Compile Include="Areas\Admin\Models\MockData.cs" />
     <Compile Include="Areas\Admin\Models\PaymentViewModels.cs" />
@@ -330,6 +332,8 @@
   <ItemGroup>
     <Content Include="Content\css\subscription.css" />
     <Content Include="Content\css\payment.css" />
+    <Content Include="Content\css\schedule-interview.css" />
+    <Content Include="Content\css\recruiters-application.css" />
     <Content Include="Content\Admin\css\adminlte.css" />
     <Content Include="Content\Admin\css\adminlte.min.css" />
     <Content Include="Content\Admin\css\adminlte.rtl.css" />
@@ -420,6 +424,9 @@
     <Content Include="Areas\Admin\Views\Companies\Edit.cshtml" />
     <Content Include="Areas\Admin\Views\Companies\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Dashboard\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\InterviewManagement\Dashboard.cshtml" />
+    <Content Include="Areas\Admin\Views\InterviewManagement\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\InterviewManagement\Index.cshtml" />
     <Content Include="Areas\Admin\Views\JobPostDetails\Index.cshtml" />
     <Content Include="Areas\Admin\Views\JobPosts\Create.cshtml" />
     <Content Include="Areas\Admin\Views\JobPosts\Delete.cshtml" />
@@ -512,6 +519,7 @@
     <Content Include="Views\RecruitersApplication\MyApplications.cshtml" />
     <Content Include="Views\RecruitersApplication\ApplicationDetails.cshtml" />
     <Content Include="Views\RecruitersApplication\UpdateApplicationStatus.cshtml" />
+    <Content Include="Views\RecruitersApplication\ScheduleInterview.cshtml" />
     <Content Include="Views\ResumeFiles\MyResumes.cshtml" />
     <Content Include="Views\JobDetails\Details.cshtml" />
     <Content Include="Views\Jobs\MyJobs.cshtml" />

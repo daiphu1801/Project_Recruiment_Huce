@@ -1,0 +1,512 @@
+@model Project_Recruiment_Huce.Areas.Admin.Models.InterviewDetailsViewModel
+@{
+    ViewBag.Title = "Chi tiết lịch phỏng vấn";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6"><h3 class="mb-0">Chi tiết lịch phỏng vấn #@Model.InterviewID</h3></div>
+        </div>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+        <!-- Action Buttons -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <a href="@Url.Action("Index", "InterviewManagement", new { area = "Admin" })" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Quay lại danh sách
+                </a>
+                @if (Model.Status == "Pending")
+                {
+                    <button type="button" class="btn btn-warning" onclick="showRescheduleModal()">
+                        <i class="bi bi-calendar-event me-1"></i>
+                        Đổi lịch
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="showCancelModal()">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Hủy lịch PV
+                    </button>
+                }
+                @if (!Model.EmailSent)
+                {
+                    <button type="button" class="btn btn-success">
+                        <i class="bi bi-envelope me-1"></i>
+                        Gửi email thông báo
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Interview Information -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title">
+                            <i class="bi bi-calendar-check me-2"></i>
+                            Thông tin lịch phỏng vấn
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted d-block mb-1">Ngày phỏng vấn</label>
+                                <p class="mb-0">
+                                    <i class="bi bi-calendar3 me-2 text-primary"></i>
+                                    <strong>@Model.InterviewDate.ToString("dd/MM/yyyy")</strong>
+                                    (@Model.InterviewDate.ToString("dddd", new System.Globalization.CultureInfo("vi-VN")))
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted d-block mb-1">Giờ phỏng vấn</label>
+                                <p class="mb-0">
+                                    <i class="bi bi-clock me-2 text-primary"></i>
+                                    <strong>@Model.InterviewTime</strong>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted d-block mb-1">Thời lượng</label>
+                                <p class="mb-0">
+                                    <i class="bi bi-hourglass-split me-2 text-warning"></i>
+                                    @Model.Duration
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted d-block mb-1">Hình thức</label>
+                                <p class="mb-0">
+                                    @if (Model.InterviewType == "Offline")
+                                    {
+                                        <span class="badge text-bg-primary fs-6">
+                                            <i class="bi bi-person-workspace me-1"></i>Trực tiếp
+                                        </span>
+                                    }
+                                    else if (Model.InterviewType == "Online")
+                                    {
+                                        <span class="badge text-bg-info fs-6">
+                                            <i class="bi bi-camera-video me-1"></i>Trực tuyến
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-secondary fs-6">
+                                            <i class="bi bi-telephone me-1"></i>Điện thoại
+                                        </span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="fw-bold text-muted d-block mb-1">Địa điểm</label>
+                                <p class="mb-0">
+                                    <i class="bi bi-geo-alt me-2 text-danger"></i>
+                                    @Model.Location
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="fw-bold text-muted d-block mb-1">Người phỏng vấn</label>
+                                <p class="mb-0">
+                                    <i class="bi bi-person-badge me-2 text-success"></i>
+                                    @Model.Interviewer
+                                </p>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.RequiredDocuments))
+                        {
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label class="fw-bold text-muted d-block mb-1">Tài liệu yêu cầu</label>
+                                    <div class="alert alert-info mb-0">
+                                        <i class="bi bi-file-earmark-text me-2"></i>
+                                        @Model.RequiredDocuments
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.AdditionalNotes))
+                        {
+                            <div class="row">
+                                <div class="col-12">
+                                    <label class="fw-bold text-muted d-block mb-1">Ghi chú thêm</label>
+                                    <div class="alert alert-secondary mb-0">
+                                        <i class="bi bi-sticky me-2"></i>
+                                        @Model.AdditionalNotes
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Candidate Information -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="card-title">
+                            <i class="bi bi-person me-2"></i>
+                            Thông tin ứng viên
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted d-block mb-1">Họ và tên</label>
+                                <p class="mb-0"><strong>@Model.CandidateName</strong></p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted d-block mb-1">Số điện thoại</label>
+                                <p class="mb-0">
+                                    <a href="tel:@Model.CandidatePhone">@Model.CandidatePhone</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <label class="fw-bold text-muted d-block mb-1">Email</label>
+                                <p class="mb-0">
+                                    <a href="mailto:@Model.CandidateEmail">@Model.CandidateEmail</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recruiter & Company Information -->
+                <div class="card mb-4">
+                    <div class="card-header bg-warning">
+                        <h3 class="card-title">
+                            <i class="bi bi-building me-2"></i>
+                            Thông tin nhà tuyển dụng
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted d-block mb-1">Công ty</label>
+                                <p class="mb-0"><strong>@Model.CompanyName</strong></p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted d-block mb-1">Người tuyển dụng</label>
+                                <p class="mb-0"><strong>@Model.RecruiterName</strong></p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted d-block mb-1">Email</label>
+                                <p class="mb-0">
+                                    <a href="mailto:@Model.RecruiterEmail">@Model.RecruiterEmail</a>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted d-block mb-1">Số điện thoại</label>
+                                <p class="mb-0">
+                                    <a href="tel:@Model.RecruiterPhone">@Model.RecruiterPhone</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <label class="fw-bold text-muted d-block mb-1">Vị trí tuyển dụng</label>
+                                <p class="mb-0">
+                                    <a href="@Url.Action("Details", "JobPosts", new { area = "Admin", id = Model.JobID })" 
+                                       class="link-primary">
+                                        <i class="bi bi-briefcase me-1"></i>
+                                        @Model.JobTitle
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Status Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Trạng thái
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="fw-bold text-muted d-block mb-2">Trạng thái lịch PV</label>
+                            @if (Model.Status == "Pending")
+                            {
+                                <span class="badge text-bg-warning fs-5">
+                                    <i class="bi bi-clock-history me-1"></i>Chờ phỏng vấn
+                                </span>
+                            }
+                            else if (Model.Status == "Completed")
+                            {
+                                <span class="badge text-bg-success fs-5">
+                                    <i class="bi bi-check-circle me-1"></i>Đã hoàn thành
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-danger fs-5">
+                                    <i class="bi bi-x-circle me-1"></i>Đã hủy
+                                </span>
+                            }
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold text-muted d-block mb-2">Trạng thái email</label>
+                            @if (Model.EmailSent)
+                            {
+                                <div class="alert alert-success mb-0">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <strong>Đã gửi</strong><br />
+                                    <small>@Model.EmailSentDate?.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning mb-0">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    <strong>Chưa gửi</strong>
+                                </div>
+                            }
+                        </div>
+                        @if (Model.Status == "Completed")
+                        {
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted d-block mb-2">Tham dự</label>
+                                @if (Model.Attended == true)
+                                {
+                                    <span class="badge text-bg-success fs-6">
+                                        <i class="bi bi-check-lg me-1"></i>Đã tham dự
+                                    </span>
+                                }
+                                else if (Model.Attended == false)
+                                {
+                                    <span class="badge text-bg-danger fs-6">
+                                        <i class="bi bi-x-lg me-1"></i>Vắng mặt
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-secondary fs-6">Chưa cập nhật</span>
+                                }
+                            </div>
+                            if (!string.IsNullOrEmpty(Model.Result))
+                            {
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted d-block mb-2">Kết quả</label>
+                                    @if (Model.Result == "Passed")
+                                    {
+                                        <span class="badge text-bg-success fs-6">
+                                            <i class="bi bi-trophy me-1"></i>Đạt
+                                        </span>
+                                    }
+                                    else if (Model.Result == "Failed")
+                                    {
+                                        <span class="badge text-bg-danger fs-6">
+                                            <i class="bi bi-x-lg me-1"></i>Không đạt
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-warning fs-6">Đang xem xét</span>
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Timeline Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-clock-history me-2"></i>
+                            Lịch sử thao tác
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            @if (Model.Timeline != null && Model.Timeline.Any())
+                            {
+                                foreach (var evt in Model.Timeline)
+                                {
+                                    <div class="time-label">
+                                        <span class="bg-primary">@evt.EventDate.ToString("dd/MM/yyyy")</span>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="bi bi-clock"></i>
+                                            @evt.EventDate.ToString("HH:mm")
+                                        </span>
+                                        <h3 class="timeline-header">@evt.EventType</h3>
+                                        <div class="timeline-body">
+                                            @evt.Description
+                                        </div>
+                                        <div class="timeline-footer">
+                                            <small class="text-muted">
+                                                <i class="bi bi-person me-1"></i>@evt.PerformedBy
+                                            </small>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <text>
+                                    <!-- Default timeline entries -->
+                                    <div class="mb-3">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0">
+                                                <i class="bi bi-circle-fill text-success"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-1">Tạo lịch PV</h6>
+                                                <p class="text-muted mb-0">
+                                                    <small>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small><br />
+                                                    <small>Bởi: @Model.CreatedBy</small>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </text>
+                                if (Model.UpdatedAt.HasValue)
+                                {
+                                    <div class="mb-3">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0">
+                                                <i class="bi bi-circle-fill text-warning"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-1">Cập nhật</h6>
+                                                <p class="text-muted mb-0">
+                                                    <small>@Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm")</small><br />
+                                                    <small>Bởi: @Model.UpdatedBy</small>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Links -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-link-45deg me-2"></i>
+                            Liên kết liên quan
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <a href="@Url.Action("Details", "Applications", new { area = "Admin", id = Model.ApplicationID })" 
+                               class="list-group-item list-group-item-action">
+                                <i class="bi bi-file-earmark-person me-2"></i>
+                                Xem hồ sơ ứng tuyển
+                            </a>
+                            <a href="@Url.Action("Details", "JobPosts", new { area = "Admin", id = Model.JobID })" 
+                               class="list-group-item list-group-item-action">
+                                <i class="bi bi-briefcase me-2"></i>
+                                Xem tin tuyển dụng
+                            </a>
+                            <a href="@Url.Action("Index", "InterviewManagement", new { area = "Admin", recruiterEmail = Model.RecruiterEmail })" 
+                               class="list-group-item list-group-item-action">
+                                <i class="bi bi-calendar-range me-2"></i>
+                                Lịch PV của NTD này
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Xác nhận hủy lịch phỏng vấn
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn hủy lịch phỏng vấn #@Model.InterviewID?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Lưu ý:</strong> Email thông báo hủy sẽ được gửi đến ứng viên.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger" onclick="cancelInterview()">
+                    <i class="bi bi-check-lg me-1"></i>
+                    Xác nhận hủy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reschedule Modal -->
+<div class="modal fade" id="rescheduleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">
+                    <i class="bi bi-calendar-event me-2"></i>
+                    Đổi lịch phỏng vấn
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Chức năng đổi lịch sẽ được triển khai trong phiên bản tiếp theo.
+                </p>
+                <!-- TODO: Backend implementation for rescheduling -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showCancelModal() {
+            var cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            cancelModal.show();
+        }
+
+        function showRescheduleModal() {
+            var rescheduleModal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
+            rescheduleModal.show();
+        }
+
+        function cancelInterview() {
+            // TODO: Backend implementation - Call API to cancel
+            console.log('Cancelling interview #@Model.InterviewID');
+            alert('Lịch phỏng vấn đã được hủy thành công!');
+            window.location.href = '@Url.Action("Index", "InterviewManagement", new { area = "Admin" })';
+        }
+    </script>
+}

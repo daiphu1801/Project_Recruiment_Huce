@@ -52,6 +52,7 @@
       <Column Name="Gender" Type="System.String" DbType="NVarChar(10) NOT NULL" CanBeNull="false" />
       <Column Name="Phone" Type="System.String" DbType="NVarChar(15)" CanBeNull="true" />
       <Column Name="Email" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="ApplicationEmail" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
       <Column Name="Address" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="Summary" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
       <Column Name="PhotoID" Type="System.Int32" DbType="Int" CanBeNull="true" />
