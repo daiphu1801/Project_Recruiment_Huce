@@ -1,19 +1,20 @@
 using Project_Recruiment_Huce.Areas.Admin.Models;
+using Project_Recruiment_Huce.Helpers;
 using Project_Recruiment_Huce.Models;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Policy;
 using System.Web.Mvc;
-using Project_Recruiment_Huce.Helpers;
 
 namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
     public class JobPostsController : AdminBaseController
     {
-        
-        public ActionResult Index(string q, string status = null, int? companyId = null, string EmploymentType=null, int? recruiterId = null, int page = 1)
+
+        public ActionResult Index(string q, string status = null, int? companyId = null, string EmploymentType = null, int? recruiterId = null, int page = 1)
         {
             ViewBag.Title = "Tin tuyển dụng";
             ViewBag.Breadcrumbs = new List<Tuple<string, string>> {
@@ -46,7 +47,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                                 job.JobPostID,
                                 job.CompanyID
                             };
-                
+
 
 
 
@@ -85,7 +86,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
                 }
 
-               
+
 
                 // Lọc trực tiếp theo ID nhà tuyển dụng
                 if (recruiterId.HasValue)
@@ -104,7 +105,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     "Id", "Name"
                 );
 
-              
+
 
                 // Pagination
                 int pageSize = 10;
@@ -295,7 +296,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
                 }
 
-               
+
 
                 //  Kiểm tra SalaryFrom & SalaryTo
                 if (model.SalaryFrom < 0 || model.SalaryFrom > 999999999.99m)
@@ -328,8 +329,14 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (string.IsNullOrWhiteSpace(model.SalaryCurrency))
                     ModelState.AddModelError("SalaryCurrency", "Loại tiền lương là bắt buộc");
 
-                if (string.IsNullOrWhiteSpace(model.Location))
-                    ModelState.AddModelError("Location", "Địa điểm là bắt buộc");
+                if (!string.IsNullOrWhiteSpace(model.Location))
+                {
+                    bool isAddressReal = IsAddressValid(model.Location);
+                    if (!isAddressReal)
+                    {
+                        ModelState.AddModelError("Location", "Địa chỉ không tồn tại trên bản đồ. Vui lòng kiểm tra lại.");
+                    }
+                }
 
                 if (string.IsNullOrWhiteSpace(model.EmploymentType))
                     ModelState.AddModelError("EmploymentType", "Loại hình công việc là bắt buộc");
@@ -404,14 +411,51 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
+        private bool IsAddressValid(string address)
+        {
+            if (string.IsNullOrWhiteSpace(address) || address.Length < 5) return false;
 
+            bool CallNominatimApi(string query)
+            {
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        client.DefaultRequestHeaders.UserAgent.ParseAdd("JobBoardProject/1.0");
+                        client.Timeout = TimeSpan.FromSeconds(3);
 
+                        var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(query)}&format=json&limit=1";
+                        var response = client.GetStringAsync(url).Result;
 
+                        return !string.IsNullOrEmpty(response) && response != "[]";
+                    }
+                }
+                catch
+                {
+                    return true;
+                }
+            }
 
+            if (CallNominatimApi(address)) return true;
 
+            var parts = address.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                               .Select(p => p.Trim())
+                               .ToList();
 
+            while (parts.Count >= 3)
+            {
+                parts.RemoveAt(0);
+                string shorterAddress = string.Join(", ", parts);
 
-        // GET: Admin/JobPosts/Edit/5
+                if (CallNominatimApi(shorterAddress))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         // GET: Admin/JobPosts/Edit/5
         public ActionResult Edit(int id)
         {
@@ -536,7 +580,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     }
                 }
 
-               
+
 
                 // Kiểm tra JobCode trùng (trừ chính nó)
                 if (!string.IsNullOrWhiteSpace(model.JobCode) &&
@@ -575,8 +619,14 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (string.IsNullOrWhiteSpace(model.SalaryCurrency))
                     ModelState.AddModelError("SalaryCurrency", "Loại tiền lương là bắt buộc");
 
-                if (string.IsNullOrWhiteSpace(model.Location))
-                    ModelState.AddModelError("Location", "Địa điểm là bắt buộc");
+                if (!string.IsNullOrWhiteSpace(model.Location))
+                {
+                    bool isAddressReal = IsAddressValid(model.Location);
+                    if (!isAddressReal)
+                    {
+                        ModelState.AddModelError("Location", "Địa chỉ không tồn tại trên bản đồ. Vui lòng kiểm tra lại.");
+                    }
+                }
 
                 if (string.IsNullOrWhiteSpace(model.EmploymentType))
                     ModelState.AddModelError("EmploymentType", "Loại hình công việc là bắt buộc");

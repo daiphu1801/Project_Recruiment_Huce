@@ -49,575 +49,601 @@
 }
 
 <section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-7">
-        <h1 class="text-white font-weight-bold">@(Model?.Title ?? "Chi tiết việc làm")</h1>
-        <div class="custom-breadcrumbs">
-          <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
-          <a href="@Url.Action("JobsListing","Jobs")">Việc làm</a> <span class="mx-2 slash">/</span>
-          <span class="text-white"><strong>@(Model?.Title ?? "Chi tiết việc làm")</strong></span>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">@(Model?.Title ?? "Chi tiết việc làm")</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("JobsListing","Jobs")">Việc làm</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>@(Model?.Title ?? "Chi tiết việc làm")</strong></span>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </section>
 
 <section class="site-section">
-  <div class="container">
-    <div class="row align-items-center mb-5">
-      <div class="col-lg-8 mb-4 mb-lg-0">
-        <div class="d-flex align-items-center">
-          <div class="border p-2 d-inline-block mr-3 rounded">
-            <img src="@(Model?.LogoUrl ?? Url.Content("~/Content/images/job_logo_1.jpg"))" alt="@(Model?.CompanyName ?? "N/A")" style="width: 120px; height: 120px; object-fit: contain;">
-          </div>
-          <div>
-            <h2>@(Model?.Title ?? "")</h2>
-            <div>
-              <span class="ml-0 mr-2 mb-2">
-                <span class="icon-briefcase mr-2"></span>
-                @if (Model?.CompanyID.HasValue == true)
-                {
-                  <a href="@Url.Action("CompanyDetails", "Companies", new { id = Model.CompanyID })" class="text-primary font-weight-bold company-link" style="text-decoration: none;">
-                    @(Model?.CompanyName ?? "N/A")
-                  </a>
-                }
-                else
-                {
-                  <text>@(Model?.CompanyName ?? "N/A")</text>
-                }
-              </span>
-              @if (!string.IsNullOrEmpty(Model?.Location))
-              {
-                <span class="m-2"><span class="icon-room mr-2"></span>@Model.Location</span>
-              }
-              @if (!string.IsNullOrEmpty(Model?.EmploymentTypeDisplay))
-              {
-                <span class="m-2"><span class="icon-clock-o mr-2"></span><span class="text-primary">@Model.EmploymentTypeDisplay</span></span>
-              }
+    <div class="container">
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-8 mb-4 mb-lg-0">
+                <div class="d-flex align-items-center">
+                    <div class="border p-2 d-inline-block mr-3 rounded">
+                        <img src="@(Model?.LogoUrl ?? Url.Content("~/Content/images/job_logo_1.jpg"))" alt="@(Model?.CompanyName ?? "N/A")" style="width: 120px; height: 120px; object-fit: contain;">
+                    </div>
+                    <div>
+                        <h2>@(Model?.Title ?? "")</h2>
+                        <div>
+                            <span class="ml-0 mr-2 mb-2">
+                                <span class="icon-briefcase mr-2"></span>
+                                @if (Model?.CompanyID.HasValue == true)
+                                {
+                                    <a href="@Url.Action("CompanyDetails", "Companies", new { id = Model.CompanyID })" class="text-primary font-weight-bold company-link" style="text-decoration: none;">
+                                        @(Model?.CompanyName ?? "N/A")
+                                    </a>
+                                }
+                                else
+                                {
+                                    <text>@(Model?.CompanyName ?? "N/A")</text>
+                                }
+                            </span>
+                            @if (!string.IsNullOrEmpty(Model?.Location))
+                            {
+                                <span class="m-2"><span class="icon-room mr-2"></span>@Model.Location</span>
+                            }
+                            @if (!string.IsNullOrEmpty(Model?.EmploymentTypeDisplay))
+                            {
+                                <span class="m-2"><span class="icon-clock-o mr-2"></span><span class="text-primary">@Model.EmploymentTypeDisplay</span></span>
+                            }
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-4">
-        <div id="jobActionAlert" class="alert alert-dismissible fade d-none mb-3" role="alert">
-          <span class="alert-status-icon mr-2"></span>
-          <span class="alert-message"></span>
-          <button type="button" class="close alert-dismiss" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+            <div class="col-lg-4">
+                <div id="jobActionAlert" class="alert alert-dismissible fade d-none mb-3" role="alert">
+                    <span class="alert-status-icon mr-2"></span>
+                    <span class="alert-message"></span>
+                    <button type="button" class="close alert-dismiss" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="row">
+                    @if (!isAuthenticated)
+                    {
+                        <div class="col-12 col-md-6 mb-3 mb-md-0">
+                            <a href="@loginUrl" class="btn btn-block btn-primary btn-md">Đăng nhập để ứng tuyển</a>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3 mb-md-0">
+                            <a href="@loginUrl" class="btn btn-block btn-outline-primary btn-md">
+                                <span class="icon-heart-o mr-2 text-danger"></span>Lưu việc làm
+                            </a>
+                        </div>
+                    }
+                    else if (isCandidate)
+                    {
+                        <div class="col-12 col-md-6 mb-3 mb-md-0">
+                            <button type="button"
+                                    id="applyJobBtn"
+                                    class="btn btn-block btn-md @(applyButtonDisabled ? "btn-secondary" : "btn-primary")"
+                                    data-apply-url="@Url.Action("Apply", "Candidates", new { jobId = Model.JobPostID })"
+                                    @(applyButtonDisabled ? "disabled=\"disabled\"" : "")>
+                                @applyButtonLabel
+                            </button>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3 mb-md-0">
+                            <button type="button"
+                                    id="saveJobBtn"
+                                    class="btn btn-block btn-md @(isJobSaved ? "btn-success" : "btn-outline-primary")"
+                                    data-saved="@isJobSaved.ToString().ToLower()"
+                                    data-save-url="@Url.Action("SaveJob","SavedJobs")"
+                                    data-unsave-url="@Url.Action("UnsaveJob","SavedJobs")">
+                                <span class="@(isJobSaved ? "icon-heart" : "icon-heart-o") mr-2 save-icon @(isJobSaved ? "" : "text-danger")"></span>
+                                <span class="save-label">@saveButtonLabel</span>
+                            </button>
+                        </div>
+                    }
+                    else if (!isRecruiter)
+                    {
+                        <div class="col-12 col-md-6 mb-3 mb-md-0">
+                            <a href="@candidateProfileUrl" class="btn btn-block btn-outline-primary btn-md">
+                                <span class="icon-heart-o mr-2 text-danger"></span>Lưu việc làm
+                            </a>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <a href="@candidateProfileUrl" class="btn btn-block btn-primary btn-md">Tạo hồ sơ ứng viên</a>
+                        </div>
+                    }
+                    else
+                    {
+                        @* Recruiters do not see job action buttons *@
+                    }
+                </div>
+                @{
+                    if (isAuthenticated && isCandidate)
+                    {
+                        <form id="jobActionsForm" class="d-none">
+                            @Html.AntiForgeryToken()
+                        </form>
+                    }
+                }
+                @if (applyButtonDisabled && isAuthenticated && isCandidate)
+                {
+                    <small class="text-muted d-block mt-2">
+                        @if (hasApplied)
+                        {
+                            @:Bạn đã ứng tuyển công việc này.
+                        }
+                        else if (isJobExpired)
+                        {
+                            @:Hạn nộp hồ sơ đã kết thúc.
+                        }
+                        else if (!string.IsNullOrEmpty(normalizedStatus))
+                        {
+                            @:Trạng thái tin: @normalizedStatus.
+                        }
+                    </small>
+                }
+            </div>
         </div>
         <div class="row">
-          @if (!isAuthenticated)
-          {
-            <div class="col-12 col-md-6 mb-3 mb-md-0">
-              <a href="@loginUrl" class="btn btn-block btn-primary btn-md">Đăng nhập để ứng tuyển</a>
-            </div>
-            <div class="col-12 col-md-6 mb-3 mb-md-0">
-              <a href="@loginUrl" class="btn btn-block btn-outline-primary btn-md">
-                <span class="icon-heart-o mr-2 text-danger"></span>Lưu việc làm
-              </a>
-            </div>
-          }
-          else if (isCandidate)
-          {
-            <div class="col-12 col-md-6 mb-3 mb-md-0">
-              <button type="button"
-                      id="applyJobBtn"
-                      class="btn btn-block btn-md @(applyButtonDisabled ? "btn-secondary" : "btn-primary")"
-                      data-apply-url="@Url.Action("Apply", "Candidates", new { jobId = Model.JobPostID })"
-                      @(applyButtonDisabled ? "disabled=\"disabled\"" : "")>
-                @applyButtonLabel
-              </button>
-            </div>
-            <div class="col-12 col-md-6 mb-3 mb-md-0">
-              <button type="button"
-                      id="saveJobBtn"
-                      class="btn btn-block btn-md @(isJobSaved ? "btn-success" : "btn-outline-primary")"
-                      data-saved="@isJobSaved.ToString().ToLower()"
-                      data-save-url="@Url.Action("SaveJob","SavedJobs")"
-                      data-unsave-url="@Url.Action("UnsaveJob","SavedJobs")">
-                <span class="@(isJobSaved ? "icon-heart" : "icon-heart-o") mr-2 save-icon @(isJobSaved ? "" : "text-danger")"></span>
-                <span class="save-label">@saveButtonLabel</span>
-              </button>
-            </div>
-          }
-          else if (!isRecruiter)
-          {
-            <div class="col-12 col-md-6 mb-3 mb-md-0">
-              <a href="@candidateProfileUrl" class="btn btn-block btn-outline-primary btn-md">
-                <span class="icon-heart-o mr-2 text-danger"></span>Lưu việc làm
-              </a>
-            </div>
-            <div class="col-12 col-md-6">
-              <a href="@candidateProfileUrl" class="btn btn-block btn-primary btn-md">Tạo hồ sơ ứng viên</a>
-            </div>
-          }
-          else
-          {
-            @* Recruiters do not see job action buttons *@
-          }
-        </div>
-        @{
-          if (isAuthenticated && isCandidate)
-          {
-            <form id="jobActionsForm" class="d-none">
-              @Html.AntiForgeryToken()
-            </form>
-          }
-        }
-        @if (applyButtonDisabled && isAuthenticated && isCandidate)
-        {
-          <small class="text-muted d-block mt-2">
-            @if (hasApplied)
-            {
-              @:Bạn đã ứng tuyển công việc này.
-            }
-            else if (isJobExpired)
-            {
-              @:Hạn nộp hồ sơ đã kết thúc.
-            }
-            else if (!string.IsNullOrEmpty(normalizedStatus))
-            {
-              @:Trạng thái tin: @normalizedStatus.
-            }
-          </small>
-        }
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-8">
-        @if (!string.IsNullOrEmpty(Model?.Description))
-        {
-          <div class="mb-5">
-            <h3 class="h5 d-flex align-items-center mb-4 text-primary"><span class="icon-align-left mr-3"></span>Mô tả công việc</h3>
-            @Html.Raw(Model.Description)
-          </div>
-        }
-        
-        @if (!string.IsNullOrEmpty(Model?.Requirements))
-        {
-          <div class="mb-5">
-            <h3 class="h5 d-flex align-items-center mb-4 text-primary"><span class="icon-rocket mr-3"></span>Yêu cầu</h3>
-            @Html.Raw(Model.Requirements)
-          </div>
-        }
-
-        @{
-          bool hasExtraDetails = Model?.HasJobDetail ?? false;
-          string ageRangeText = string.Empty;
-          if (Model?.AgeFrom.HasValue == true && Model?.AgeTo.HasValue == true)
-          {
-            ageRangeText = string.Format("{0} - {1} tuổi", Model.AgeFrom.Value, Model.AgeTo.Value);
-          }
-          else if (Model?.AgeFrom.HasValue == true)
-          {
-            ageRangeText = string.Format("Từ {0} tuổi", Model.AgeFrom.Value);
-          }
-          else if (Model?.AgeTo.HasValue == true)
-          {
-            ageRangeText = string.Format("Đến {0} tuổi", Model.AgeTo.Value);
-          }
-
-          string experienceText = Model?.YearsExperience.HasValue == true
-            ? (Model.YearsExperience.Value == 0 ? "Không yêu cầu kinh nghiệm" : string.Format("{0} năm", Model.YearsExperience.Value))
-            : string.Empty;
-
-          string headcountText = Model?.Headcount.HasValue == true
-            ? string.Format("{0} ứng viên", Model.Headcount.Value)
-            : string.Empty;
-
-          Func<string, string> cleanSkill = raw =>
-          {
-            if (string.IsNullOrWhiteSpace(raw))
-            {
-              return string.Empty;
-            }
-
-            // Remove HTML tags
-            string noHtml = Regex.Replace(raw, "<.*?>", string.Empty);
-            // Decode HTML entities
-            noHtml = HttpUtility.HtmlDecode(noHtml);
-            // Trim whitespace
-            noHtml = noHtml.Trim();
-            
-            // Remove leading dashes, bullets, or other markers
-            if (noHtml.StartsWith("-") || noHtml.StartsWith("•") || noHtml.StartsWith("*"))
-            {
-              noHtml = noHtml.Substring(1).Trim();
-            }
-
-            return noHtml;
-          };
-
-          // Parse skills from HTML or plain text
-          var skillsRaw = Model?.Skills ?? string.Empty;
-          var skills = new List<string>();
-
-          if (!string.IsNullOrWhiteSpace(skillsRaw))
-          {
-            // First, try to extract from HTML list items (<li>)
-            var liMatches = Regex.Matches(skillsRaw, @"<li[^>]*>(.*?)</li>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            if (liMatches.Count > 0)
-            {
-              foreach (Match match in liMatches)
-              {
-                var skill = cleanSkill(match.Groups[1].Value);
-                if (!string.IsNullOrEmpty(skill))
+            <div class="col-lg-8">
+                @if (!string.IsNullOrEmpty(Model?.Description))
                 {
-                  skills.Add(skill);
+                    <div class="mb-5">
+                        <h3 class="h5 d-flex align-items-center mb-4 text-primary"><span class="icon-align-left mr-3"></span>Mô tả công việc</h3>
+                        @Html.Raw(Model.Description)
+                    </div>
                 }
-              }
-            }
-            else
-            {
-              // Try to extract from paragraphs (<p>)
-              var pMatches = Regex.Matches(skillsRaw, @"<p[^>]*>(.*?)</p>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-              if (pMatches.Count > 0)
-              {
-                foreach (Match match in pMatches)
+
+                @if (!string.IsNullOrEmpty(Model?.Requirements))
                 {
-                  var skill = cleanSkill(match.Groups[1].Value);
-                  if (!string.IsNullOrEmpty(skill))
-                  {
-                    skills.Add(skill);
-                  }
+                    <div class="mb-5">
+                        <h3 class="h5 d-flex align-items-center mb-4 text-primary"><span class="icon-rocket mr-3"></span>Yêu cầu</h3>
+                        @Html.Raw(Model.Requirements)
+                    </div>
                 }
-              }
-              else
-              {
-                // Try to extract from divs (<div>)
-                var divMatches = Regex.Matches(skillsRaw, @"<div[^>]*>(.*?)</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                if (divMatches.Count > 0)
-                {
-                  foreach (Match match in divMatches)
-                  {
-                    var skill = cleanSkill(match.Groups[1].Value);
-                    if (!string.IsNullOrEmpty(skill))
+
+                @{
+                    bool hasExtraDetails = Model?.HasJobDetail ?? false;
+                    string ageRangeText = string.Empty;
+                    if (Model?.AgeFrom.HasValue == true && Model?.AgeTo.HasValue == true)
                     {
-                      skills.Add(skill);
+                        ageRangeText = string.Format("{0} - {1} tuổi", Model.AgeFrom.Value, Model.AgeTo.Value);
                     }
-                  }
+                    else if (Model?.AgeFrom.HasValue == true)
+                    {
+                        ageRangeText = string.Format("Từ {0} tuổi", Model.AgeFrom.Value);
+                    }
+                    else if (Model?.AgeTo.HasValue == true)
+                    {
+                        ageRangeText = string.Format("Đến {0} tuổi", Model.AgeTo.Value);
+                    }
+
+                    string experienceText = Model?.YearsExperience.HasValue == true
+                      ? (Model.YearsExperience.Value == 0 ? "Không yêu cầu kinh nghiệm" : string.Format("{0} năm", Model.YearsExperience.Value))
+                      : string.Empty;
+
+                    string headcountText = Model?.Headcount.HasValue == true
+                      ? string.Format("{0} ứng viên", Model.Headcount.Value)
+                      : string.Empty;
+
+                    Func<string, string> cleanSkill = raw =>
+                    {
+                        if (string.IsNullOrWhiteSpace(raw))
+                        {
+                            return string.Empty;
+                        }
+
+                        // Remove HTML tags
+                        string noHtml = Regex.Replace(raw, "<.*?>", string.Empty);
+                        // Decode HTML entities
+                        noHtml = HttpUtility.HtmlDecode(noHtml);
+                        // Trim whitespace
+                        noHtml = noHtml.Trim();
+
+                        // Remove leading dashes, bullets, or other markers
+                        if (noHtml.StartsWith("-") || noHtml.StartsWith("•") || noHtml.StartsWith("*"))
+                        {
+                            noHtml = noHtml.Substring(1).Trim();
+                        }
+
+                        return noHtml;
+                    };
+
+                    // Parse skills from HTML or plain text
+                    var skillsRaw = Model?.Skills ?? string.Empty;
+                    var skills = new List<string>();
+
+                    if (!string.IsNullOrWhiteSpace(skillsRaw))
+                    {
+                        // First, try to extract from HTML list items (<li>)
+                        var liMatches = Regex.Matches(skillsRaw, @"<li[^>]*>(.*?)</li>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                        if (liMatches.Count > 0)
+                        {
+                            foreach (Match match in liMatches)
+                            {
+                                var skill = cleanSkill(match.Groups[1].Value);
+                                if (!string.IsNullOrEmpty(skill))
+                                {
+                                    skills.Add(skill);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Try to extract from paragraphs (<p>)
+                            var pMatches = Regex.Matches(skillsRaw, @"<p[^>]*>(.*?)</p>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                            if (pMatches.Count > 0)
+                            {
+                                foreach (Match match in pMatches)
+                                {
+                                    var skill = cleanSkill(match.Groups[1].Value);
+                                    if (!string.IsNullOrEmpty(skill))
+                                    {
+                                        skills.Add(skill);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Try to extract from divs (<div>)
+                                var divMatches = Regex.Matches(skillsRaw, @"<div[^>]*>(.*?)</div>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                                if (divMatches.Count > 0)
+                                {
+                                    foreach (Match match in divMatches)
+                                    {
+                                        var skill = cleanSkill(match.Groups[1].Value);
+                                        if (!string.IsNullOrEmpty(skill))
+                                        {
+                                            skills.Add(skill);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    // Fallback: split by common delimiters and line breaks
+                                    // Replace <br> and <br/> with newlines first
+                                    var textWithNewlines = Regex.Replace(skillsRaw, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
+                                    var splitSkills = textWithNewlines
+                                      .Split(new[] { ',', ';', '|', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                                      .Select(s => cleanSkill(s))
+                                      .Where(s => !string.IsNullOrEmpty(s));
+
+                                    skills.AddRange(splitSkills);
+                                }
+                            }
+                        }
+                    }
+
+                    // Remove duplicates and empty entries, then trim each skill
+                    skills = skills
+                      .Select(s => s.Trim())
+                      .Where(s => !string.IsNullOrEmpty(s))
+                      .Distinct(StringComparer.OrdinalIgnoreCase)
+                      .ToList();
                 }
-                else
+
+                @if (hasExtraDetails)
                 {
-                  // Fallback: split by common delimiters and line breaks
-                  // Replace <br> and <br/> with newlines first
-                  var textWithNewlines = Regex.Replace(skillsRaw, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
-                  var splitSkills = textWithNewlines
-                    .Split(new[] { ',', ';', '|', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(s => cleanSkill(s))
-                    .Where(s => !string.IsNullOrEmpty(s));
-                  
-                  skills.AddRange(splitSkills);
+                    <div class="mb-5">
+                        <h3 class="h5 d-flex align-items-center mb-4 text-primary">
+                            <span class="icon-info mr-3"></span>Thông tin chi tiết công việc
+                        </h3>
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <ul class="list-unstyled mb-0">
+                                            @if (!string.IsNullOrWhiteSpace(Model.Industry))
+                                            {
+                                                <li class="mb-3 d-flex align-items-start">
+                                                    <span class="icon-briefcase text-primary mr-3 mt-1"></span>
+                                                    <div>
+                                                        <span class="text-muted text-uppercase small">Ngành nghề</span>
+                                                        <div class="font-weight-bold text-dark">@Model.Industry</div>
+                                                    </div>
+                                                </li>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(Model.Major))
+                                            {
+                                                <li class="mb-3 d-flex align-items-start">
+                                                    <span class="icon-book text-primary mr-3 mt-1"></span>
+                                                    <div>
+                                                        <span class="text-muted text-uppercase small">Chuyên ngành</span>
+                                                        <div class="font-weight-bold text-dark">@Model.Major</div>
+                                                    </div>
+                                                </li>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(experienceText))
+                                            {
+                                                <li class="mb-3 d-flex align-items-start">
+                                                    <span class="icon-clock-o text-primary mr-3 mt-1"></span>
+                                                    <div>
+                                                        <span class="text-muted text-uppercase small">Kinh nghiệm</span>
+                                                        <div class="font-weight-bold text-dark">@experienceText</div>
+                                                    </div>
+                                                </li>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(Model.DegreeRequired))
+                                            {
+                                                <li class="mb-0 d-flex align-items-start">
+                                                    <span class="icon-graduation-cap text-primary mr-3 mt-1"></span>
+                                                    <div>
+                                                        <span class="text-muted text-uppercase small">Trình độ học vấn</span>
+                                                        <div class="font-weight-bold text-dark">@Model.DegreeRequired</div>
+                                                    </div>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <ul class="list-unstyled mb-0">
+                                            @if (!string.IsNullOrWhiteSpace(headcountText))
+                                            {
+                                                <li class="mb-3 d-flex align-items-start">
+                                                    <span class="icon-users text-primary mr-3 mt-1"></span>
+                                                    <div>
+                                                        <span class="text-muted text-uppercase small">Số lượng tuyển</span>
+                                                        <div class="font-weight-bold text-dark">@headcountText</div>
+                                                    </div>
+                                                </li>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(Model.GenderRequirement))
+                                            {
+                                                <li class="mb-3 d-flex align-items-start">
+                                                    <span class="icon-user text-primary mr-3 mt-1"></span>
+                                                    <div>
+                                                        <span class="text-muted text-uppercase small">Giới tính</span>
+                                                        <div class="font-weight-bold text-dark">@Model.GenderRequirement</div>
+                                                    </div>
+                                                </li>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(ageRangeText))
+                                            {
+                                                <li class="mb-3 d-flex align-items-start">
+                                                    <span class="icon-calendar text-primary mr-3 mt-1"></span>
+                                                    <div>
+                                                        <span class="text-muted text-uppercase small">Độ tuổi</span>
+                                                        <div class="font-weight-bold text-dark">@ageRangeText</div>
+                                                    </div>
+                                                </li>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(Model.DetailStatus))
+                                            {
+                                                <li class="mb-0 d-flex align-items-start">
+                                                    <span class="icon-flag text-primary mr-3 mt-1"></span>
+                                                    <div>
+                                                        <span class="text-muted text-uppercase small">Trạng thái</span>
+                                                        <div class="font-weight-bold text-dark">@Model.DetailStatus</div>
+                                                    </div>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                @if (skills.Any())
+                                {
+                                    <div class="mt-4">
+                                        <span class="text-muted text-uppercase small">Kỹ năng ưu tiên</span>
+                                        <div class="mt-2 d-flex flex-wrap">
+                                            @foreach (var skill in skills)
+                                            {
+                                                <span class="badge badge-pill mr-2 mb-2 px-3 py-2" style="background-color: #90EE90; color: #333; font-weight: normal;">@skill</span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
                 }
-              }
-            }
-          }
 
-          // Remove duplicates and empty entries, then trim each skill
-          skills = skills
-            .Select(s => s.Trim())
-            .Where(s => !string.IsNullOrEmpty(s))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        }
-
-        @if (hasExtraDetails)
-        {
-          <div class="mb-5">
-            <h3 class="h5 d-flex align-items-center mb-4 text-primary">
-              <span class="icon-info mr-3"></span>Thông tin chi tiết công việc
-            </h3>
-            <div class="card border-0 shadow-sm">
-              <div class="card-body p-4">
-                <div class="row">
-                  <div class="col-md-6">
-                    <ul class="list-unstyled mb-0">
-                      @if (!string.IsNullOrWhiteSpace(Model.Industry))
-                      {
-                        <li class="mb-3 d-flex align-items-start">
-                          <span class="icon-briefcase text-primary mr-3 mt-1"></span>
-                          <div>
-                            <span class="text-muted text-uppercase small">Ngành nghề</span>
-                            <div class="font-weight-bold text-dark">@Model.Industry</div>
-                          </div>
-                        </li>
-                      }
-                      @if (!string.IsNullOrWhiteSpace(Model.Major))
-                      {
-                        <li class="mb-3 d-flex align-items-start">
-                          <span class="icon-book text-primary mr-3 mt-1"></span>
-                          <div>
-                            <span class="text-muted text-uppercase small">Chuyên ngành</span>
-                            <div class="font-weight-bold text-dark">@Model.Major</div>
-                          </div>
-                        </li>
-                      }
-                      @if (!string.IsNullOrWhiteSpace(experienceText))
-                      {
-                        <li class="mb-3 d-flex align-items-start">
-                          <span class="icon-clock-o text-primary mr-3 mt-1"></span>
-                          <div>
-                            <span class="text-muted text-uppercase small">Kinh nghiệm</span>
-                            <div class="font-weight-bold text-dark">@experienceText</div>
-                          </div>
-                        </li>
-                      }
-                      @if (!string.IsNullOrWhiteSpace(Model.DegreeRequired))
-                      {
-                        <li class="mb-0 d-flex align-items-start">
-                          <span class="icon-graduation-cap text-primary mr-3 mt-1"></span>
-                          <div>
-                            <span class="text-muted text-uppercase small">Trình độ học vấn</span>
-                            <div class="font-weight-bold text-dark">@Model.DegreeRequired</div>
-                          </div>
-                        </li>
-                      }
+            </div>
+            <div class="col-lg-4">
+                <div class="bg-light p-3 border rounded mb-4">
+                    <h3 class="text-primary  mt-3 h5 pl-3 mb-3 ">Tóm tắt công việc</h3>
+                    <ul class="list-unstyled pl-3 mb-0">
+                        @if (Model?.PostedAt != null)
+                        {
+                            <li class="mb-2"><strong class="text-black">Ngày đăng:</strong> @Model.PostedAt.Value.ToString("dd/MM/yyyy")</li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model?.EmploymentTypeDisplay))
+                        {
+                            <li class="mb-2"><strong class="text-black">Hình thức làm việc:</strong> @Model.EmploymentTypeDisplay</li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model?.Location))
+                        {
+                            <li class="mb-2"><strong class="text-black">Địa điểm:</strong> @Model.Location</li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model?.SalaryRange))
+                        {
+                            <li class="mb-2"><strong class="text-black">Lương:</strong> @Model.SalaryRange</li>
+                        }
+                        @if (Model?.ApplicationDeadline.HasValue ?? false)
+                        {
+                            bool isExpired = Model.ApplicationDeadline.Value < DateTime.Now;
+                            <li class="mb-2">
+                                <strong class="text-black">Hạn nộp hồ sơ:</strong>
+                                @Model.ApplicationDeadline.Value.ToString("dd/MM/yyyy")
+                                @if (isExpired)
+                                {
+                                    <span class="badge badge-danger ml-2">Đã hết hạn</span>
+                                }
+                            </li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model?.JobCode))
+                        {
+                            <li class="mb-2"><strong class="text-black">Mã công việc:</strong> @Model.JobCode</li>
+                        }
                     </ul>
-                  </div>
-                  <div class="col-md-6">
-                    <ul class="list-unstyled mb-0">
-                      @if (!string.IsNullOrWhiteSpace(headcountText))
-                      {
-                        <li class="mb-3 d-flex align-items-start">
-                          <span class="icon-users text-primary mr-3 mt-1"></span>
-                          <div>
-                            <span class="text-muted text-uppercase small">Số lượng tuyển</span>
-                            <div class="font-weight-bold text-dark">@headcountText</div>
-                          </div>
-                        </li>
-                      }
-                      @if (!string.IsNullOrWhiteSpace(Model.GenderRequirement))
-                      {
-                        <li class="mb-3 d-flex align-items-start">
-                          <span class="icon-user text-primary mr-3 mt-1"></span>
-                          <div>
-                            <span class="text-muted text-uppercase small">Giới tính</span>
-                            <div class="font-weight-bold text-dark">@Model.GenderRequirement</div>
-                          </div>
-                        </li>
-                      }
-                      @if (!string.IsNullOrWhiteSpace(ageRangeText))
-                      {
-                        <li class="mb-3 d-flex align-items-start">
-                          <span class="icon-calendar text-primary mr-3 mt-1"></span>
-                          <div>
-                            <span class="text-muted text-uppercase small">Độ tuổi</span>
-                            <div class="font-weight-bold text-dark">@ageRangeText</div>
-                          </div>
-                        </li>
-                      }
-                      @if (!string.IsNullOrWhiteSpace(Model.DetailStatus))
-                      {
-                        <li class="mb-0 d-flex align-items-start">
-                          <span class="icon-flag text-primary mr-3 mt-1"></span>
-                          <div>
-                            <span class="text-muted text-uppercase small">Trạng thái</span>
-                            <div class="font-weight-bold text-dark">@Model.DetailStatus</div>
-                          </div>
-                        </li>
-                      }
-                    </ul>
-                  </div>
                 </div>
 
-                @if (skills.Any())
+                @if (!string.IsNullOrEmpty(Model?.Location))
                 {
-                  <div class="mt-4">
-                    <span class="text-muted text-uppercase small">Kỹ năng ưu tiên</span>
-                    <div class="mt-2 d-flex flex-wrap">
-                      @foreach (var skill in skills)
-                      {
-                        <span class="badge badge-pill mr-2 mb-2 px-3 py-2" style="background-color: #90EE90; color: #333; font-weight: normal;">@skill</span>
-                      }
+                    <div class="bg-light p-3 border rounded mb-4">
+                        <h3 class="text-primary mt-3 h5 pl-3 mb-3">
+                            <span class="icon-map-marker mr-2"></span>Địa chỉ
+                        </h3>
+                        <div class="px-3 pb-3">
+                            <iframe width="100%"
+                                    height="250"
+                                    frameborder="0"
+                                    style="border:0; border-radius: 5px;"
+                                    src="https://maps.google.com/maps?q=@System.Web.HttpUtility.UrlEncode(Model.Location)&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                                    allowfullscreen>
+                            </iframe>
+
+                            <div class="mt-2 text-center">
+                                <a href="https://www.google.com/maps/search/?api=1&query=@System.Web.HttpUtility.UrlEncode(Model.Location)"
+                                   target="_blank"
+                                   class="small text-muted">
+                                    <i class="icon-external-link"></i> Mở trong Google Maps
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                  </div>
                 }
-              </div>
+
+                <div class="bg-light p-3 border rounded">
+                    <h3 class="text-primary  mt-3 h5 pl-3 mb-3 ">Chia sẻ</h3>
+                    <div class="px-3">
+                        <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-facebook"></span></a>
+                        <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-twitter"></span></a>
+                        <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-linkedin"></span></a>
+                        <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-pinterest"></span></a>
+                    </div>
+                </div>
+
             </div>
-          </div>
-        }
-
-      </div>
-      <div class="col-lg-4">
-        <div class="bg-light p-3 border rounded mb-4">
-          <h3 class="text-primary  mt-3 h5 pl-3 mb-3 ">Tóm tắt công việc</h3>
-          <ul class="list-unstyled pl-3 mb-0">
-            @if (Model?.PostedAt != null)
-            {
-              <li class="mb-2"><strong class="text-black">Ngày đăng:</strong> @Model.PostedAt.Value.ToString("dd/MM/yyyy")</li>
-            }
-            @if (!string.IsNullOrEmpty(Model?.EmploymentTypeDisplay))
-            {
-              <li class="mb-2"><strong class="text-black">Hình thức làm việc:</strong> @Model.EmploymentTypeDisplay</li>
-            }
-            @if (!string.IsNullOrEmpty(Model?.Location))
-            {
-              <li class="mb-2"><strong class="text-black">Địa điểm:</strong> @Model.Location</li>
-            }
-            @if (!string.IsNullOrEmpty(Model?.SalaryRange))
-            {
-              <li class="mb-2"><strong class="text-black">Lương:</strong> @Model.SalaryRange</li>
-            }
-            @if (Model?.ApplicationDeadline.HasValue ?? false)
-            {
-              bool isExpired = Model.ApplicationDeadline.Value < DateTime.Now;
-              <li class="mb-2">
-                <strong class="text-black">Hạn nộp hồ sơ:</strong> 
-                @Model.ApplicationDeadline.Value.ToString("dd/MM/yyyy")
-                @if (isExpired)
-                {
-                  <span class="badge badge-danger ml-2">Đã hết hạn</span>
-                }
-              </li>
-            }
-            @if (!string.IsNullOrEmpty(Model?.JobCode))
-            {
-              <li class="mb-2"><strong class="text-black">Mã công việc:</strong> @Model.JobCode</li>
-            }
-          </ul>
         </div>
-
-        <div class="bg-light p-3 border rounded">
-          <h3 class="text-primary  mt-3 h5 pl-3 mb-3 ">Chia sẻ</h3>
-          <div class="px-3">
-            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-facebook"></span></a>
-            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-twitter"></span></a>
-            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-linkedin"></span></a>
-            <a href="#" class="pt-3 pb-3 pr-3 pl-0"><span class="icon-pinterest"></span></a>
-          </div>
-        </div>
-
-      </div>
     </div>
-  </div>
 </section>
 
 <section class="site-section" id="next">
-  <div class="container">
+    <div class="container">
 
-    @{
-      var relatedJobs = ViewBag.RelatedJobs as IEnumerable<Project_Recruiment_Huce.Models.Jobs.RelatedJobViewModel>;
-    }
-    
-    @if (relatedJobs != null && relatedJobs.Any())
-    {
-      <div class="row mb-5 justify-content-center">
-        <div class="col-md-7 text-center">
-          <h2 class="section-title mb-2">Việc làm liên quan</h2>
-        </div>
-      </div>
-      
-      <ul class="job-listings mb-5">
-        @foreach (var job in relatedJobs)
-        {
-          string badgeClass = "badge-success";
-          if (!string.IsNullOrEmpty(job.EmploymentType))
-          {
-            string empType = job.EmploymentType.ToLower();
-            if (empType == "part-time" || empType == "part time")
-            {
-              badgeClass = "badge-danger";
-            }
-          }
-          
-          <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-            <a href="@Url.Action("JobDetails","Jobs", new { id = job.JobPostID })"></a>
-            <div class="job-listing-logo">
-              <img src="@job.LogoUrl" alt="@job.CompanyName" class="img-fluid">
-            </div>
-
-            <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
-              <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
-                <h2>@job.Title</h2>
-                @if (job.CompanyID.HasValue)
-                {
-                  <strong>
-                    <a href="@Url.Action("CompanyDetails", "Companies", new { id = job.CompanyID })" class="text-dark company-link" style="text-decoration: none;">
-                      @job.CompanyName
-                    </a>
-                  </strong>
-                }
-                else
-                {
-                  <strong>@job.CompanyName</strong>
-                }
-              </div>
-              <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
-                @if (!string.IsNullOrEmpty(job.Location))
-                {
-                  <span class="icon-room"></span> @job.Location
-                }
-              </div>
-              <div class="job-listing-meta">
-                @if (!string.IsNullOrEmpty(job.EmploymentTypeDisplay))
-                {
-                  <span class="badge @badgeClass">@job.EmploymentTypeDisplay</span>
-                }
-              </div>
-            </div>
-          </li>
+        @{
+            var relatedJobs = ViewBag.RelatedJobs as IEnumerable<Project_Recruiment_Huce.Models.Jobs.RelatedJobViewModel>;
         }
-      </ul>
-    }
 
-  </div>
+        @if (relatedJobs != null && relatedJobs.Any())
+        {
+            <div class="row mb-5 justify-content-center">
+                <div class="col-md-7 text-center">
+                    <h2 class="section-title mb-2">Việc làm liên quan</h2>
+                </div>
+            </div>
+
+            <ul class="job-listings mb-5">
+                @foreach (var job in relatedJobs)
+                {
+                    string badgeClass = "badge-success";
+                    if (!string.IsNullOrEmpty(job.EmploymentType))
+                    {
+                        string empType = job.EmploymentType.ToLower();
+                        if (empType == "part-time" || empType == "part time")
+                        {
+                            badgeClass = "badge-danger";
+                        }
+                    }
+
+                    <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
+                        <a href="@Url.Action("JobDetails","Jobs", new { id = job.JobPostID })"></a>
+                        <div class="job-listing-logo">
+                            <img src="@job.LogoUrl" alt="@job.CompanyName" class="img-fluid">
+                        </div>
+
+                        <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
+                            <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
+                                <h2>@job.Title</h2>
+                                @if (job.CompanyID.HasValue)
+                                {
+                                    <strong>
+                                        <a href="@Url.Action("CompanyDetails", "Companies", new { id = job.CompanyID })" class="text-dark company-link" style="text-decoration: none;">
+                                            @job.CompanyName
+                                        </a>
+                                    </strong>
+                                }
+                                else
+                                {
+                                    <strong>@job.CompanyName</strong>
+                                }
+                            </div>
+                            <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
+                                @if (!string.IsNullOrEmpty(job.Location))
+                                {
+                                    <span class="icon-room"></span> @job.Location
+                                }
+                            </div>
+                            <div class="job-listing-meta">
+                                @if (!string.IsNullOrEmpty(job.EmploymentTypeDisplay))
+                                {
+                                    <span class="badge @badgeClass">@job.EmploymentTypeDisplay</span>
+                                }
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+
+    </div>
 </section>
 
 <section class="bg-light pt-5 testimony-full">
-  <div class="owl-carousel single-carousel">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-6 align-self-center text-center text-lg-left">
-          <blockquote>
-            <p>&ldquo;JobBoard đã giúp tôi tìm được công việc mơ ước một cách nhanh chóng và dễ dàng. Giao diện thân thiện và hệ thống tìm kiếm thông minh giúp tôi nhanh chóng tìm thấy những cơ hội phù hợp với kỹ năng của mình.&rdquo;</p>
-            <p><cite> &mdash; Nguyễn Minh Tiến, Ứng viên</cite></p>
-          </blockquote>
+    <div class="owl-carousel single-carousel">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 align-self-center text-center text-lg-left">
+                    <blockquote>
+                        <p>&ldquo;JobBoard đã giúp tôi tìm được công việc mơ ước một cách nhanh chóng và dễ dàng. Giao diện thân thiện và hệ thống tìm kiếm thông minh giúp tôi nhanh chóng tìm thấy những cơ hội phù hợp với kỹ năng của mình.&rdquo;</p>
+                        <p><cite> &mdash; Nguyễn Minh Tiến, Ứng viên</cite></p>
+                    </blockquote>
+                </div>
+                <div class="col-lg-6 align-self-end text-center text-lg-right">
+                    <img src="@Url.Content("~/Content/images/ảnh_bìa_4-Photoroom.png")" alt="Phản hồi từ ứng viên" class="img-fluid mb-0">
+                </div>
+            </div>
         </div>
-        <div class="col-lg-6 align-self-end text-center text-lg-right">
-          <img src="@Url.Content("~/Content/images/ảnh_bìa_4-Photoroom.png")" alt="Phản hồi từ ứng viên" class="img-fluid mb-0">
-        </div>
-      </div>
-    </div>
 
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-6 align-self-center text-center text-lg-left">
-          <blockquote>
-            <p>&ldquo;Là một nhà tuyển dụng, tôi rất hài lòng với JobBoard. Hệ thống giúp chúng tôi tiếp cận được nhiều ứng viên chất lượng và quản lý quy trình tuyển dụng một cách hiệu quả. Đây thực sự là công cụ tuyển dụng tốt nhất mà chúng tôi từng sử dụng.&rdquo;</p>
-            <p><cite> &mdash; Trần Thị B, Nhà tuyển dụng</cite></p>
-          </blockquote>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 align-self-center text-center text-lg-left">
+                    <blockquote>
+                        <p>&ldquo;Là một nhà tuyển dụng, tôi rất hài lòng với JobBoard. Hệ thống giúp chúng tôi tiếp cận được nhiều ứng viên chất lượng và quản lý quy trình tuyển dụng một cách hiệu quả. Đây thực sự là công cụ tuyển dụng tốt nhất mà chúng tôi từng sử dụng.&rdquo;</p>
+                        <p><cite> &mdash; Trần Thị B, Nhà tuyển dụng</cite></p>
+                    </blockquote>
+                </div>
+                <div class="col-lg-6 align-self-end text-center text-lg-right">
+                    <img src="@Url.Content("~/Content/images/ảnh_bìa_3-Photoroom.png")" alt="Phản hồi từ nhà tuyển dụng" class="img-fluid mb-0">
+                </div>
+            </div>
         </div>
-        <div class="col-lg-6 align-self-end text-center text-lg-right">
-          <img src="@Url.Content("~/Content/images/ảnh_bìa_3-Photoroom.png")" alt="Phản hồi từ nhà tuyển dụng" class="img-fluid mb-0">
-        </div>
-      </div>
     </div>
-  </div>
 </section>
 
 <section class="pt-5 bg-image overlay-primary fixed overlay" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-6 align-self-center text-center text-md-left mb-5 mb-md-0">
-        <h2 class="text-white">Dễ Dàng Sử Dụng Trên Điện Thoại</h2>
-        <p class="mb-5 lead text-white">JobBoard hoạt động mượt mà trên mọi thiết bị. Bạn có thể tìm kiếm việc làm, ứng tuyển và theo dõi hành trình nghề nghiệp của mình ngay trên smartphone.</p>
-        <p class="mb-0">
-          <a href="@Url.Action("JobsListing", "Jobs")" class="btn btn-warning btn-md px-4 border-width-2"><span class="icon-search mr-3"></span>Khám phá việc làm</a>
-          <a href="@Url.Action("Register", "Account")" class="btn btn-outline-light btn-md px-4 border-width-2 mt-3 mt-md-0"><span class="icon-person_add mr-3"></span>Đăng ký miễn phí</a>
-        </p>
-        <p class="mt-3 text-white-50 small">* Không cần cài đặt ứng dụng – chỉ cần mở JobBoard trên trình duyệt điện thoại.</p>
-      </div>
-      <div class="col-md-6 ml-auto align-self-end">
-        <img src="@Url.Content("~/Content/images/apps.png")" alt="Ứng dụng JobBoard" class="img-fluid">
-      </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 align-self-center text-center text-md-left mb-5 mb-md-0">
+                <h2 class="text-white">Dễ Dàng Sử Dụng Trên Điện Thoại</h2>
+                <p class="mb-5 lead text-white">JobBoard hoạt động mượt mà trên mọi thiết bị. Bạn có thể tìm kiếm việc làm, ứng tuyển và theo dõi hành trình nghề nghiệp của mình ngay trên smartphone.</p>
+                <p class="mb-0">
+                    <a href="@Url.Action("JobsListing", "Jobs")" class="btn btn-warning btn-md px-4 border-width-2"><span class="icon-search mr-3"></span>Khám phá việc làm</a>
+                    <a href="@Url.Action("Register", "Account")" class="btn btn-outline-light btn-md px-4 border-width-2 mt-3 mt-md-0"><span class="icon-person_add mr-3"></span>Đăng ký miễn phí</a>
+                </p>
+                <p class="mt-3 text-white-50 small">* Không cần cài đặt ứng dụng – chỉ cần mở JobBoard trên trình duyệt điện thoại.</p>
+            </div>
+            <div class="col-md-6 ml-auto align-self-end">
+                <img src="@Url.Content("~/Content/images/apps.png")" alt="Ứng dụng JobBoard" class="img-fluid">
+            </div>
+        </div>
     </div>
-  </div>
 </section>
 
 @section Scripts {
-  <script>
+    <script>
     $(function () {
       var $saveBtn = $('#saveJobBtn');
       var $applyBtn = $('#applyJobBtn');
@@ -762,25 +788,28 @@
         });
       });
     });
-  </script>
-  <style>
-    .company-link {
-      transition: all 0.3s ease;
-      position: relative;
-    }
-    .company-link:hover {
-      color: #007bff !important;
-      text-decoration: underline !important;
-    }
-    .company-link:after {
-      content: '→';
-      opacity: 0;
-      margin-left: 5px;
-      transition: all 0.3s ease;
-    }
-    .company-link:hover:after {
-      opacity: 1;
-      margin-left: 8px;
-    }
-  </style>
+    </script>
+    <style>
+        .company-link {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+            .company-link:hover {
+                color: #007bff !important;
+                text-decoration: underline !important;
+            }
+
+            .company-link:after {
+                content: '→';
+                opacity: 0;
+                margin-left: 5px;
+                transition: all 0.3s ease;
+            }
+
+            .company-link:hover:after {
+                opacity: 1;
+                margin-left: 8px;
+            }
+    </style>
 }

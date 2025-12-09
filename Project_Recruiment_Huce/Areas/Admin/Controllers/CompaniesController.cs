@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Policy;
 using System.Security.Principal;
 using System.Web;
@@ -164,6 +165,16 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     return View(model);
                 }
 
+                if (!string.IsNullOrWhiteSpace(model.Address))
+                {
+                    bool isAddressReal = IsAddressValid(model.Address);
+                    if (!isAddressReal)
+                    {
+                        // Thêm lỗi vào ModelState. Điều này làm ModelState.IsValid thành false
+                        ModelState.AddModelError("Address", "Địa chỉ không tồn tại trên bản đồ. Vui lòng kiểm tra lại.");
+                    }
+                }
+
                 // Validate phone number format and uniqueness (if provided)
                 var phone = (model.Phone ?? string.Empty).Trim();
                 if (!string.IsNullOrWhiteSpace(phone))
@@ -271,6 +282,50 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
+        private bool IsAddressValid(string address)
+        {
+            if (string.IsNullOrWhiteSpace(address) || address.Length < 5) return false;
+
+            bool CallNominatimApi(string query)
+            {
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        client.DefaultRequestHeaders.UserAgent.ParseAdd("JobBoardProject/1.0");
+                        client.Timeout = TimeSpan.FromSeconds(3);
+
+                        var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(query)}&format=json&limit=1";
+                        var response = client.GetStringAsync(url).Result;
+
+                        return !string.IsNullOrEmpty(response) && response != "[]";
+                    }
+                }
+                catch
+                {
+                    return true;
+                }
+            }
+
+            if (CallNominatimApi(address)) return true;
+
+            var parts = address.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                               .Select(p => p.Trim())
+                               .ToList();
+
+            while (parts.Count >= 3)
+            {
+                parts.RemoveAt(0);
+                string shorterAddress = string.Join(", ", parts);
+
+                if (CallNominatimApi(shorterAddress))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         // GET: Admin/Accounts/Edit/5
         public ActionResult Edit(int id)
         {
@@ -356,6 +411,17 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     ModelState.AddModelError("Address", "Địa chỉ đã tồn tại");
                     refreshPhotoInfo(company);
                     return View(model);
+                }
+
+                if (!string.IsNullOrWhiteSpace(model.Address))
+                {
+                    bool isAddressReal = IsAddressValid(model.Address);
+                    if (!isAddressReal)
+                    {
+                        ModelState.AddModelError("Address", "Địa chỉ không tồn tại trên bản đồ. Vui lòng kiểm tra lại.");
+                        refreshPhotoInfo(company);
+                        return View(model);
+                    }
                 }
 
                 // Validate phone number format and uniqueness (if provided)
