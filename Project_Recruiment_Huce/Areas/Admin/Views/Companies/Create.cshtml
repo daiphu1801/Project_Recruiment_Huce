@@ -5,12 +5,47 @@
 }
 
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.8.0/dist/geosearch.css" />
+
+<style>
+    /* Đảm bảo map có chiều cao */
+    .map-container-style {
+        height: 450px;
+        width: 100%;
+        border-radius: 4px;
+        z-index: 1;
+    }
+
+    .modal-dialog {
+        max-width: 900px;
+    }
+
+    /* FIX LỖI: Đưa kết quả tìm kiếm lên trên cùng (Z-Index cao hơn Modal) */
+    .leaflet-control-geosearch {
+        z-index: 9999 !important; /* Quan trọng */
+    }
+
+        .leaflet-control-geosearch form {
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+        }
+    /* Style cho kết quả tìm kiếm */
+    .results.active {
+        background: white;
+        border: 1px solid #ccc;
+        margin-top: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>
 
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
 
 <div class="card">
     <div class="card-header">
-        <h5 class="card-title mb-0"><i class="bi bi-building"></i> Tạo công ty mới</h5>
+        <h5 class="card-title mb-0"><i class="bi bi-pencil-square"></i> Tạo công ty mới</h5>
     </div>
     <div class="card-body">
         @if (!ViewData.ModelState.IsValid)
@@ -49,9 +84,16 @@
                         @Html.ValidationMessageFor(m => m.Industry, "", new { @class = "text-danger" })
                     </div>
 
-                    <div class="mb-3">
-                        @Html.LabelFor(m => m.Address, new { @class = "form-label" })
-                        @Html.TextAreaFor(m => m.Address, new { @class = "form-control", rows = 3, placeholder = "Nhập địa chỉ" })
+                    <div class="form-group mb-3">
+                        @Html.LabelFor(m => m.Address, new { @class = "control-label" })
+                        <div class="input-group">
+                            @Html.TextBoxFor(m => m.Address, new { @class = "form-control", @id = "AddressInput", placeholder = "Nhập địa chỉ hoặc chọn trên bản đồ..." })
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-info" data-toggle="modal" data-target="#mapModal" id="openMapModalBtn">
+                                    <i class="fas fa-map-marker-alt"> </i> Chọn trên Map
+                                </button>
+                            </div>
+                        </div>
                         @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
                     </div>
 
@@ -127,10 +169,147 @@
     </div>
 </div>
 
+<div class="modal fade" id="mapModal" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"> Chọn vị trí</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"> </button>
+            </div>
+            <div class="modal-body">
+                <div class="bg-light p-2 border rounded">
+                    <div id="mapPicker" class="map-container-style"> </div>
+                </div>
+                <p class="text-muted small mt-2 text-center mb-0"> * Sử dụng thanh tìm kiếm hoặc click trực tiếp vào bản đồ.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Đóng</button>
+                <button type="button" class="btn btn-success" id="btnConfirmLocation"> Xác nhận địa chỉ này</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
 @section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-geosearch@3.8.0/dist/geosearch.umd.js"></script>
+
     <script>
+        $(document).ready(function () {
+            var map, marker, currentAddress = "";
+            var isLocationValid = ($('#AddressInput').val() || '').trim() !== "";
+
+            function cleanAddress(fullAddress) {
+                if (!fullAddress) return "";
+                return fullAddress.split(',').filter(function (part) {
+                    return !/^\d{5,6}$/.test(part.trim());
+                }).join(',').trim();
+            }
+
+            function initMap() {
+                if (map) {
+                    setTimeout(function () { map.invalidateSize(); }, 200);
+                    return;
+                }
+
+                map = L.map('mapPicker').setView([21.0285, 105.8542], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(map);
+
+                const provider = new GeoSearch.OpenStreetMapProvider({
+                    params: { 'accept-language': 'vi', countrycodes: 'vn' }
+                });
+
+                const searchControl = new GeoSearch.GeoSearchControl({
+                    provider: provider,
+                    style: 'bar',
+                    autoClose: true,
+                    searchLabel: 'Nhập địa chỉ cụ thể...',
+                    keepResult: true,
+                    updateMap: true
+                });
+                map.addControl(searchControl);
+
+                map.on('click', function (e) {
+                    updateLocation(e.latlng.lat, e.latlng.lng, null);
+                });
+
+                map.on('geosearch/showlocation', function (result) {
+                    updateLocation(result.location.y, result.location.x, result.location.label);
+                });
+            }
+
+            function updateLocation(lat, lng, label) {
+                if (!label) {
+                    $('#AddressInput').attr('placeholder', 'Đang lấy địa chỉ...');
+                    $.ajax({
+                        url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+                        headers: { 'Accept-Language': 'vi' },
+                        success: function (data) {
+                            if (data && data.display_name) {
+                                processAddress(data.display_name, lat, lng);
+                            }
+                        }
+                    });
+                } else {
+                    processAddress(label, lat, lng);
+                }
+            }
+
+            function processAddress(raw, lat, lng) {
+                currentAddress = cleanAddress(raw);
+
+                if (marker) {
+                    marker.setLatLng([lat, lng]).bindPopup(currentAddress).openPopup();
+                } else {
+                    marker = L.marker([lat, lng]).addTo(map).bindPopup(currentAddress).openPopup();
+                }
+                map.setView([lat, lng], 16);
+
+                if (currentAddress) {
+                    isLocationValid = true;
+                }
+            }
+
+            $('#openMapModalBtn').on('click', function () {
+                $('#mapModal').modal('show');
+            });
+
+            $('#mapModal').on('shown.bs.modal', function () {
+                initMap();
+                setTimeout(function () {
+                    if (map) map.invalidateSize();
+                }, 100);
+            });
+
+            $(document).on('click', '#btnConfirmLocation', function () {
+                if (currentAddress) {
+                    var inputField = $('#AddressInput');
+
+                    inputField.val(currentAddress);
+                    $('#mapModal').modal('hide');
+
+                    isLocationValid = true;
+
+                    if (inputField.hasClass('input-validation-error')) {
+                        inputField.valid();
+                    }
+                } else {
+                    alert("Vui lòng chọn một vị trí trên bản đồ trước khi xác nhận.");
+                }
+            });
+
+            $('#AddressInput').on('input', function () {
+                isLocationValid = false;
+            });
+
+        });
+
         document.addEventListener("DOMContentLoaded", function() {
 
             var photoInput = document.getElementById('PhotoFile');

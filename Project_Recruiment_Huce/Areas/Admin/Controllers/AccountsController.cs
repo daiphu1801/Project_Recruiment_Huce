@@ -336,6 +336,17 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     phone = null;
                 }
 
+                if (account.Role == "Recruiter" && model.Role != "Recruiter")
+                {
+                    var linkedRecruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == account.AccountID);
+
+                    if (linkedRecruiter != null && linkedRecruiter.CompanyID.HasValue)
+                    {
+                        ModelState.AddModelError("Role", "Tài khoản này đang quản lý một Công ty. Không thể thay đổi vai trò trừ khi công ty đó bị xóa.");
+                        return View(model);
+                    }
+                }
+
                 // Handle photo upload
                 if (model.PhotoFile != null && model.PhotoFile.ContentLength > 0)
                 {

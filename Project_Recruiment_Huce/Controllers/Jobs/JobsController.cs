@@ -1,21 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Linq;
-using System.Security.Claims;
-using System.Web.Mvc;
-using System.Configuration;
+using Project_Recruiment_Huce.Helpers;
+using Project_Recruiment_Huce.Infrastructure;
+using Project_Recruiment_Huce.Mappers;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Jobs;
 using Project_Recruiment_Huce.Repositories;
-using Project_Recruiment_Huce.Helpers;
-using Project_Recruiment_Huce.Mappers;
-using Project_Recruiment_Huce.Infrastructure;
 using Project_Recruiment_Huce.Services;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlTypes;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Web.Mvc;
+using System.Web.Script.Serialization;
+using System.Web.UI.WebControls;
 using IJobService = Project_Recruiment_Huce.Services.JobService.IJobService;
-using NewJobService = Project_Recruiment_Huce.Services.JobService.JobService;
-using NewJobRepository = Project_Recruiment_Huce.Repositories.JobRepo.JobRepository;
 using LegacyJobRepository = Project_Recruiment_Huce.Repositories.JobRepository;
+using NewJobRepository = Project_Recruiment_Huce.Repositories.JobRepo.JobRepository;
+using NewJobService = Project_Recruiment_Huce.Services.JobService.JobService;
 
 namespace Project_Recruiment_Huce.Controllers
 {
@@ -81,7 +84,7 @@ namespace Project_Recruiment_Huce.Controllers
                 // Get job details view model using mapper (reuse job entity)
                 JobStatusHelper.NormalizeStatuses(db);
                 var jobDetailsViewModel = JobMapper.MapToDetails(job);
-                
+
                 // Get related jobs
                 var relatedJobsViewModels = jobService.GetRelatedJobs(id.Value, job.CompanyID ?? 0, job.Location);
 
@@ -217,11 +220,11 @@ namespace Project_Recruiment_Huce.Controllers
             using (var db = DbContextFactory.CreateReadOnly())
             {
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == recruiterId.Value);
-                
+
                 // Subscription Check
                 bool canPost = false;
                 string subType = recruiter?.SubscriptionType ?? "Free";
-                
+
                 if (subType == "Lifetime")
                 {
                     canPost = true;
@@ -233,7 +236,7 @@ namespace Project_Recruiment_Huce.Controllers
                         canPost = true;
                     }
                 }
-                
+
                 // Check Free limit if not allowed by subscription
                 if (!canPost)
                 {
@@ -286,6 +289,17 @@ namespace Project_Recruiment_Huce.Controllers
                 return RedirectToAction("RecruitersManage", "Recruiters");
             }
 
+            // Kiểm tra địa chỉ Server - side trước khi xử lý logic khác
+            if (!string.IsNullOrWhiteSpace(viewModel.Location))
+            {
+                bool isAddressReal = IsAddressValid(viewModel.Location);
+                if (!isAddressReal)
+                {
+                    // Thêm lỗi vào ModelState. Điều này làm ModelState.IsValid thành false
+                    ModelState.AddModelError("Location", "Địa chỉ không tồn tại trên bản đồ. Vui lòng kiểm tra lại.");
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 LoadCompaniesForDropdown(recruiterId.Value);
@@ -301,7 +315,7 @@ namespace Project_Recruiment_Huce.Controllers
                 {
                     bool canPost = false;
                     string subType = recruiter.SubscriptionType ?? "Free";
-                    
+
                     if (subType == "Lifetime")
                     {
                         canPost = true;
@@ -313,7 +327,7 @@ namespace Project_Recruiment_Huce.Controllers
                             canPost = true;
                         }
                     }
-                    
+
                     if (!canPost)
                     {
                         if (recruiter.FreeJobPostCount < 1)
@@ -439,6 +453,16 @@ namespace Project_Recruiment_Huce.Controllers
             {
                 TempData["ErrorMessage"] = "Không tìm thấy tin tuyển dụng.";
                 return RedirectToAction("MyJobs", "Jobs");
+            }
+
+            // Kiểm tra địa chỉ Server - side
+            if (!string.IsNullOrWhiteSpace(viewModel.Location))
+            {
+                bool isAddressReal = IsAddressValid(viewModel.Location);
+                if (!isAddressReal)
+                {
+                    ModelState.AddModelError("Location", "Địa chỉ không tồn tại trên bản đồ. Vui lòng kiểm tra lại.");
+                }
             }
 
             if (!ModelState.IsValid)
@@ -594,6 +618,53 @@ namespace Project_Recruiment_Huce.Controllers
         }
 
         #endregion
+        /// <summary>
+        /// Hàm kiểm tra địa chỉ thông minh (Vòng lặp đệ quy)
+        /// Chấp nhận nếu tìm thấy Phường/Quận/Thành phố trong chuỗi địa chỉ
+        /// </summary>
+        private bool IsAddressValid(string address)
+        {
+            if (string.IsNullOrWhiteSpace(address) || address.Length < 5) return false;
+
+            bool CallNominatimApi(string query)
+            {
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        client.DefaultRequestHeaders.UserAgent.ParseAdd("JobBoardProject/1.0");
+                        client.Timeout = TimeSpan.FromSeconds(3);
+
+                        var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(query)}&format=json&limit=1";
+                        var response = client.GetStringAsync(url).Result;
+
+                        return !string.IsNullOrEmpty(response) && response != "[]";
+                    }
+                }
+                catch
+                {
+                    return true;
+                }
+            }
+
+            if (CallNominatimApi(address)) return true;
+
+            var parts = address.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                               .Select(p => p.Trim())
+                               .ToList();
+
+            while (parts.Count >= 3)
+            {
+                parts.RemoveAt(0);
+                string shorterAddress = string.Join(", ", parts);
+
+                if (CallNominatimApi(shorterAddress))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
 

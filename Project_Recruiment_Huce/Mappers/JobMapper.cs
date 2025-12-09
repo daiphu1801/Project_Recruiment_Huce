@@ -35,6 +35,28 @@ namespace Project_Recruiment_Huce.Mappers
             // Lấy logo URL sử dụng helper
             string logoUrl = CompanyLogoHelper.GetLogoUrl(job);
 
+            // Xử lý hiển thị location Thành phố thuôc Việt Nam
+            string displayLocation = job.Location;
+            if (!string.IsNullOrEmpty(displayLocation) && displayLocation.Contains(","))
+            {
+                var parts = displayLocation.Split(',');
+                string lastPart = parts[parts.Length - 1].Trim();
+
+                // Nếu phần cuối là "Việt Nam" hoặc "Vietnam" và có nhiều hơn 1 phần
+                if ((string.Equals(lastPart, "Việt Nam", StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(lastPart, "Vietnam", StringComparison.OrdinalIgnoreCase))
+                    && parts.Length > 1)
+                {
+                    // Lấy phần kế cuối
+                    displayLocation = parts[parts.Length - 2].Trim();
+                }
+                else
+                {
+                    // Nếu không phải Việt Nam, lấy phần cuối như bình thường
+                    displayLocation = lastPart;
+                }
+            }
+
             // Tính số lượng đơn ứng tuyển pending nếu có db context
             int pendingCount = 0;
             if (db != null)
@@ -54,7 +76,7 @@ namespace Project_Recruiment_Huce.Mappers
                 Title = job.Title,
                 Description = job.Description,
                 CompanyName = companyName,
-                Location = job.Location,
+                Location = displayLocation,
                 EmploymentType = job.EmploymentType,
                 EmploymentTypeDisplay = EmploymentTypeHelper.GetDisplay(job.EmploymentType),
                 SalaryFrom = job.SalaryFrom,
