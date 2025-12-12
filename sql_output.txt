@@ -1,0 +1,50 @@
+ Database JOBPORTAL_EN already exists.
+Changed database context to 'JOBPORTAL_EN'.
+ 
+=====================================================================
+JOBPORTAL_EN - Complete Database Schema with SePay Integration
+=====================================================================
+ 
+-- Cleaning up legacy payment tables...
+ Cleanup completed.
+ 
+-- Creating tables...
+ 
+ Added MonthlyJobPostCount column to dbo.Recruiters
+ Added MonthlyCVViewCount column to dbo.Recruiters
+ Added MonthlyEmailInviteCount column to dbo.Recruiters
+ Added LastResetDate column to dbo.Recruiters
+Msg 1934, Level 16, State 1, Server DESKTOP-EIUOD83, Line 313
+ALTER TABLE failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'. Verify that SET options are correct for use with indexed views and/or indexes on computed columns and/or filtered indexes and/or query notifications and/or XML data type methods and/or spatial index operations.
+ Created stored procedure sp_ResetMonthlyCounters
+ Created stored procedure sp_GetSubscriptionStats
+ Created stored procedure sp_IncrementJobPostViewCount
+ Created stored procedure sp_GetRecruiterAnalytics
+ 
+ All stored procedures created successfully.
+ 
+-- Creating triggers...
+ Created trigger trg_JobPosts_StatusUpdate
+ 
+ 
+=====================================================================
+✓ Database schema created successfully!
+=====================================================================
+ 
+Summary:
+  - Tables: Accounts, Admins, Companies, Recruiters (with Subscription),
+    Candidates, JobPosts, Applications, SePayTransactions, etc.
+  - Payment System: SePay (VietQR + Bank API)
+  - Subscription Plans: Free, Monthly (25K VND), Lifetime (250K VND)
+  - Foreign Keys: ✓
+  - Indexes: ✓
+  - Stored Procedures: ✓
+  - Triggers: ✓
+ 
+Next Steps:
+  1. Configure Web.config with SePay credentials
+  2. Setup Ngrok for webhook testing
+  3. Configure SePay Dashboard webhook URL
+  4. Test payment flow with QR codes
+ 
+=====================================================================

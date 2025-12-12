@@ -223,6 +223,110 @@ namespace Project_Recruiment_Huce.Controllers
             TempData["SuccessMessage"] = result.SuccessMessage;
             return RedirectToAction("ApplicationDetails", "RecruitersApplication", new { id = result.ApplicationId });
         }
+
+        /// <summary>
+        /// GET: RecruitersApplication/ScheduleInterview
+        /// Form đặt lịch phỏng vấn
+        /// </summary>
+        [HttpGet]
+        public ActionResult ScheduleInterview(int? id)
+        {
+            var accountId = GetCurrentAccountId();
+            if (accountId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var recruiterId = GetCurrentRecruiterId();
+            if (recruiterId == null)
+            {
+                TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để đặt lịch phỏng vấn.";
+                return RedirectToAction("RecruitersManage", "Recruiters");
+            }
+
+            if (!id.HasValue)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy đơn ứng tuyển.";
+                return RedirectToAction("MyApplications", "RecruitersApplication");
+            }
+
+            // Get application details from service
+            var result = _applicationService.GetApplicationDetails(id.Value, recruiterId.Value);
+
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.ErrorMessage;
+                return RedirectToAction("MyApplications", "RecruitersApplication");
+            }
+
+            // Check if status is Interview
+            if (result.Application.Status != "Interview")
+            {
+                TempData["ErrorMessage"] = "Chỉ có thể đặt lịch phỏng vấn cho đơn ứng tuyển có trạng thái 'Phỏng vấn'.";
+                return RedirectToAction("ApplicationDetails", "RecruitersApplication", new { id = id.Value });
+            }
+
+            // Create ViewModel with pre-filled data
+            var viewModel = new InterviewScheduleViewModel
+            {
+                ApplicationID = result.Application.ApplicationID,
+                CandidateName = result.Application.CandidateName,
+                CandidateEmail = result.Application.CandidateEmail,
+                JobTitle = result.Application.JobTitle,
+                InterviewDate = DateTime.Today.AddDays(3), // Default to 3 days from now
+                Duration = 60 // Default 60 minutes
+            };
+
+            // Prepare interview type options
+            ViewBag.InterviewTypes = new SelectList(new[] {
+                new { Value = "Trực tiếp", Text = "Phỏng vấn trực tiếp tại văn phòng" },
+                new { Value = "Trực tuyến", Text = "Phỏng vấn trực tuyến (Online)" },
+                new { Value = "Điện thoại", Text = "Phỏng vấn qua điện thoại" }
+            }, "Value", "Text");
+
+            return View(viewModel);
+        }
+
+        /// <summary>
+        /// POST: RecruitersApplication/ScheduleInterview
+        /// Xử lý đặt lịch phỏng vấn (sẽ implement backend sau)
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ScheduleInterview(InterviewScheduleViewModel viewModel)
+        {
+            var accountId = GetCurrentAccountId();
+            if (accountId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var recruiterId = GetCurrentRecruiterId();
+            if (recruiterId == null)
+            {
+                TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để đặt lịch phỏng vấn.";
+                return RedirectToAction("RecruitersManage", "Recruiters");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Repopulate dropdown if validation fails
+                ViewBag.InterviewTypes = new SelectList(new[] {
+                    new { Value = "Trực tiếp", Text = "Phỏng vấn trực tiếp tại văn phòng" },
+                    new { Value = "Trực tuyến", Text = "Phỏng vấn trực tuyến (Online)" },
+                    new { Value = "Điện thoại", Text = "Phỏng vấn qua điện thoại" }
+                }, "Value", "Text", viewModel.InterviewType);
+                return View(viewModel);
+            }
+
+            // TODO: Backend implementation sẽ được thực hiện sau
+            // - Lưu thông tin lịch phỏng vấn vào database
+            // - Gửi email thông báo cho ứng viên
+            // - Tạo calendar event nếu cần
+
+            TempData["SuccessMessage"] = "Đã lưu thông tin lịch phỏng vấn! (Backend sẽ được triển khai để gửi email)";
+            return RedirectToAction("ApplicationDetails", "RecruitersApplication", new { id = viewModel.ApplicationID });
+        }
     }
 }
 

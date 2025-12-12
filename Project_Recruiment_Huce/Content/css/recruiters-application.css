@@ -124,6 +124,51 @@
     background: linear-gradient(135deg, var(--primary-color) 0%, #e0a800 100%);
 }
 
+/* ===== GRADIENT BUTTONS ===== */
+.btn-gradient-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border: none;
+    color: white !important;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient-info:hover {
+    background: linear-gradient(135deg, #138496 0%, #0e6674 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(23, 162, 184, 0.4);
+    color: white !important;
+}
+
+.btn-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    border: none;
+    color: white !important;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient-success:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    color: white !important;
+}
+
+/* Animation for schedule interview button */
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .85;
+    }
+}
+
 /* ===== CARD COMPONENTS ===== */
 .card {
     border-radius: 15px;

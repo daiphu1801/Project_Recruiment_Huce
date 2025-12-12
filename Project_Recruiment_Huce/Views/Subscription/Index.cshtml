@@ -1,0 +1,127 @@
+@model Project_Recruiment_Huce.Models.SubscriptionViewModel
+@{
+    ViewBag.Title = "Gói Dịch Vụ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/css/subscription.css" />
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")')" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Nâng cấp gói dịch vụ</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Nâng cấp gói</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="site-section">
+    <div class="container">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="icon-close"></i> @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    }
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="icon-check"></i> @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    }
+
+    <!-- Current Plan Status -->
+    <div class="current-plan-card">
+        <div class="card-body">
+            <h4 class="mb-4" style="font-weight: 700; color: #2d3748;">Trạng Thái Hiện Tại</h4>
+            
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="icon-star"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <p class="info-label">Gói hiện tại</p>
+                    <span class="plan-badge @(Model.CurrentPlan == "Free" ? "free" : "")">
+                        <i class="icon-check"></i>
+                        @(Model.CurrentPlan == "Free" ? "Miễn phí" : Model.CurrentPlan == "Monthly" ? "Gói Tháng" : "Gói Trọn Đời")
+                    </span>
+                </div>
+            </div>
+            
+            @if (Model.ExpiryDate.HasValue)
+            {
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="icon-calendar"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <p class="info-label">Ngày hết hạn</p>
+                        <p class="info-value">@Model.ExpiryDate.Value.ToString("dd/MM/yyyy")</p>
+                    </div>
+                </div>
+            }
+            
+            @if (Model.CurrentPlan == "Free")
+            {
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="icon-line-documents"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <p class="info-label">Số tin đã đăng</p>
+                        <p class="info-value">@Model.FreeJobPostCount / 1 tin (miễn phí)</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Pricing Plans -->
+    <div class="row g-4 mb-5">
+        @{
+            var isFirst = true;
+        }
+        @foreach (var plan in Model.Plans)
+        {
+            <div class="col-md-6">
+                <div class="pricing-card @(isFirst ? "featured" : "")">
+                    <div class="pricing-header">
+                        <h3 class="plan-name">@plan.Name</h3>
+                        <div class="plan-price">@plan.Price.ToString("N0")<small style="font-size: 20px;">đ</small></div>
+                        <p class="plan-duration">@plan.Duration</p>
+                    </div>
+                    <div class="pricing-body">
+                        <p class="plan-description">@plan.Description</p>
+                        
+                        <ul class="plan-features">
+                            <li>Đăng tin tuyển dụng không giới hạn</li>
+                            <li>Quản lý đơn ứng tuyển</li>
+                            <li>Xem thống kê chi tiết</li>
+                            <li>Hỗ trợ qua email</li>
+                            @if (plan.Id == "Lifetime")
+                            {
+                                <li>Không giới hạn thời gian</li>
+                                <li>Tiết kiệm 50% chi phí</li>
+                            }
+                        </ul>
+                        
+                        <a href="@Url.Action("Upgrade", "Subscription", new { planId = plan.Id })" class="btn upgrade-btn">
+                            <i class="icon-check"></i> Nâng cấp ngay
+                        </a>
+                    </div>
+                </div>
+            </div>
+            isFirst = false;
+        }
+    </div>
+</section>

@@ -54,6 +54,14 @@
           href="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/css/jsvectormap.min.css"
           integrity="sha256-+uGLJmmTKOqBr+2E6KDYs/NRsHxSkONXFHUL0fy2O/4="
           crossorigin="anonymous" />
+    <style>
+        /* Admin area pagination styling (Bootstrap-compatible) */
+        .admin-pagination-wrap .pagination { margin: 0; }
+        .admin-pagination-wrap .page-link { min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+        .admin-pagination-wrap .page-item.active .page-link { background-color: #0d6efd; border-color: #0d6efd; color: #fff; }
+        .admin-pagination-wrap .page-item.disabled .page-link { color: #6c757d; }
+        .admin-pagination-wrap .text-sm { font-size: .875rem; }
+    </style>
 </head>
 <!--end::Head-->
 <!--begin::Body-->
@@ -229,18 +237,23 @@
                     <!--end::Fullscreen Toggle-->
                     <!--begin::User Menu Dropdown-->
                     <li class="nav-item dropdown user-menu">
-                        @{ 
-                            string adminAvatarUrl = null; 
-                            string adminFullName = null; 
-                            try {
-                                if (Request.IsAuthenticated) {
+                        @{
+                            string adminAvatarUrl = null;
+                            string adminFullName = null;
+                            try
+                            {
+                                if (Request.IsAuthenticated)
+                                {
                                     var idClaim = (User != null && User.Identity != null) ? ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) : null;
-                                    if (idClaim != null) {
+                                    if (idClaim != null)
+                                    {
                                         var accId = int.Parse(idClaim.Value);
-                                        using (var adb = new Project_Recruiment_Huce.Models.JOBPORTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString)) {
+                                        using (var adb = new Project_Recruiment_Huce.Models.JOBPORTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                                        {
                                             adb.ObjectTrackingEnabled = false;
                                             var acc = adb.Accounts.FirstOrDefault(a => a.AccountID == accId);
-                                            if (acc != null && acc.PhotoID.HasValue) {
+                                            if (acc != null && acc.PhotoID.HasValue)
+                                            {
                                                 var photo = adb.ProfilePhotos.FirstOrDefault(p => p.PhotoID == acc.PhotoID.Value);
                                                 if (photo != null) { adminAvatarUrl = Url.Content(photo.FilePath); }
                                             }
@@ -249,7 +262,8 @@
                                         }
                                     }
                                 }
-                            } catch { }
+                            }
+                            catch { }
                             var showName = adminFullName ?? (Request.IsAuthenticated ? User.Identity.Name : "Guest");
                         }
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
@@ -272,14 +286,20 @@
                             <!--end::User Image-->
                             <!--begin::Menu Footer-->
                             <li class="user-footer">
-                                @if (Request.IsAuthenticated) {
+                                @if (Request.IsAuthenticated)
+                                {
                                     <a href="@Url.Action("Manage","Profile", new { area = "Admin" })" class="btn btn-default btn-flat">Manage</a>
-                                } else {
+                                }
+                                else
+                                {
                                     <a href="@Url.Action("Login","Auth", new { area = "Admin" })" class="btn btn-default btn-flat">Manage</a>
                                 }
-                                @if (Request.IsAuthenticated) {
+                                @if (Request.IsAuthenticated)
+                                {
                                     <a href="@Url.Action("LogOffGet", "Auth", new { area = "Admin" })" class="btn btn-default btn-flat float-end">Logout</a>
-                                } else {
+                                }
+                                else
+                                {
                                     <a href="@Url.Action("Login","Auth", new { area = "Admin" })" class="btn btn-default btn-flat float-end">Sign in</a>
                                 }
                             </li>
@@ -364,29 +384,41 @@
                                 <p>Hồ sơ ứng tuyển</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index","InterviewManagement", new { area = "Admin" })" class="nav-link">
+                                <i class="nav-icon bi bi-calendar-check"></i>
+                                <p>Quản lý lịch PV</p>
+                            </a>
+                        </li>
+                        <li class="nav-header">HỖ TRỢ</li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index","ContactMessages", new { area = "Admin" })" class="nav-link">
+                                <i class="nav-icon bi bi-envelope"></i>
+                                <p>
+                                    Tin nhắn liên hệ
+                                    @{
+                                        try
+                                        {
+                                            int pendingCount = 0;
+                                            using (var adb = new Project_Recruiment_Huce.Models.JOBPORTAL_ENDataContext(System.Configuration.ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
+                                            {
+                                                pendingCount = adb.ContactMessages.Count(c => c.Status == "Pending");
+                                            }
+                                            if (pendingCount > 0)
+                                            {
+                                                <span class="badge text-bg-warning float-end">@pendingCount</span>
+                                            }
+                                        }
+                                        catch { }
+                                    }
+                                </p>
+                            </a>
+                        </li>
                         <li class="nav-header">THANH TOÁN</li>
                         <li class="nav-item">
                             <a href="@Url.Action("Index","Transactions", new { area = "Admin" })" class="nav-link">
                                 <i class="nav-icon bi bi-cash-stack"></i>
-                                <p>Giao dịch</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="@Url.Action("Index","BankCards", new { area = "Admin" })" class="nav-link">
-                                <i class="nav-icon bi bi-credit-card"></i>
-                                <p>Thẻ ngân hàng</p>
-                                    </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="@Url.Action("Index","PendingPayments", new { area = "Admin" })" class="nav-link">
-                                <i class="nav-icon bi bi-card-checklist"></i>
-                                <p>Công nợ</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="@Url.Action("Index","PaymentHistory", new { area = "Admin" })" class="nav-link">
-                                <i class="nav-icon bi bi-clock-history"></i>
-                                <p>Lịch sử thanh toán</p>
+                                <p>Giao dịch SePay</p>
                             </a>
                         </li>
                         <li class="nav-header">MEDIA</li>
@@ -396,7 +428,7 @@
                                 <p>Thư viện ảnh</p>
                             </a>
                         </li>
-                        
+
                     </ul>
                     <!--end::Sidebar Menu-->
                 </nav>
@@ -406,35 +438,35 @@
         <!--end::Sidebar-->
         <!--begin::App Main-->
         <main class="app-main">
-           @if (IsSectionDefined("TableHead") || IsSectionDefined("TableBody"))
-           {
-               <div class="app-content">
-                 <div class="container-fluid px-3 px-lg-4 pt-2">
-                   @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
-                   @RenderSection("Toolbar", required: false)
-                   <div class="card mb-4">
-                     <div class="card-body table-responsive p-0">
-                       <table class="table table-hover">
-                         <thead>
-                           @RenderSection("TableHead", required: false)
-                         </thead>
-                         <tbody>
-                           @RenderSection("TableBody", required: false)
-                         </tbody>
-                       </table>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-           }
-           else
-           {
-               <div class="app-content">
-                 <div class="container-fluid px-3 px-lg-4 pt-2">
-                   @RenderBody()
-                 </div>
-               </div>
-           }
+            @if (IsSectionDefined("TableHead") || IsSectionDefined("TableBody"))
+            {
+                <div class="app-content">
+                    <div class="container-fluid px-3 px-lg-4 pt-2">
+                        @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+                        @RenderSection("Toolbar", required: false)
+                        <div class="card mb-4">
+                            <div class="card-body table-responsive p-0">
+                                <table class="table table-hover">
+                                    <thead>
+                                        @RenderSection("TableHead", required: false)
+                                    </thead>
+                                    <tbody>
+                                        @RenderSection("TableBody", required: false)
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="app-content">
+                    <div class="container-fluid px-3 px-lg-4 pt-2">
+                        @RenderBody()
+                    </div>
+                </div>
+            }
         </main>
         <!--end::App Main-->
         <!--begin::Footer-->
@@ -466,39 +498,41 @@
     <!--end::Required Plugin(Bootstrap 5)--><!--begin::Required Plugin(AdminLTE)-->
     <script src="./js/adminlte.js"></script>
     <!--end::Required Plugin(AdminLTE)--><!--begin::OverlayScrollbars Configure-->
-    <script>const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
-      const Default = {
-        scrollbarTheme: 'os-theme-light',
-        scrollbarAutoHide: 'leave',
-        scrollbarClickScroll: true,
-      };
-      document.addEventListener('DOMContentLoaded', function () {
-        const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
-        if (sidebarWrapper && OverlayScrollbarsGlobal?.OverlayScrollbars !== undefined) {
-          OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
-            scrollbars: {
-              theme: Default.scrollbarTheme,
-              autoHide: Default.scrollbarAutoHide,
-              clickScroll: Default.scrollbarClickScroll,
-            },
-          });
-        }
-      });</script>
+    <script>
+    const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
+        const Default = {
+            scrollbarTheme: 'os-theme-light',
+            scrollbarAutoHide: 'leave',
+            scrollbarClickScroll: true,
+        };
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+            if (sidebarWrapper && OverlayScrollbarsGlobal?.OverlayScrollbars !== undefined) {
+                OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+                    scrollbars: {
+                        theme: Default.scrollbarTheme,
+                        autoHide: Default.scrollbarAutoHide,
+                        clickScroll: Default.scrollbarClickScroll,
+                    },
+                });
+            }
+        });</script>
     <!--end::OverlayScrollbars Configure-->
     <!-- OPTIONAL SCRIPTS -->
     <!-- sortablejs -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"
             crossorigin="anonymous"></script>
     <!-- sortablejs -->
-    <script>new Sortable(document.querySelector('.connectedSortable'), {
-        group: 'shared',
-        handle: '.card-header',
-      });
+    <script>
+    new Sortable(document.querySelector('.connectedSortable'), {
+            group: 'shared',
+            handle: '.card-header',
+        });
 
-      const cardHeaders = document.querySelectorAll('.connectedSortable .card-header');
-      cardHeaders.forEach((cardHeader) => {
-        cardHeader.style.cursor = 'move';
-      });</script>
+        const cardHeaders = document.querySelectorAll('.connectedSortable .card-header');
+        cardHeaders.forEach((cardHeader) => {
+            cardHeader.style.cursor = 'move';
+        });</script>
     <!-- apexcharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.37.1/dist/apexcharts.min.js"
             integrity="sha256-+vh8GkaU7C9/wbSLIcwq82tQ2wTf44aOHA8HlBMwRI8="
@@ -513,32 +547,35 @@
     <!-- jsvectormap -->
     <!-- Load AdminLTE JS -->
     <script src="@Url.Content("~/Scripts/Admin/js/adminlte.min.js")"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     @RenderSection("Scripts", required: false)
     <script>
-      (function() {
-        if (window.bootstrap) {
-          var toggles = document.querySelectorAll('.dropdown-toggle');
-          Array.prototype.forEach.call(toggles, function (el) {
-            try { new bootstrap.Dropdown(el); } catch(e) {}
-          });
-        }
-        // Fallback: manual toggle to ensure it opens even if Bootstrap init fails
-        document.addEventListener('click', function (ev) {
-          var toggle = ev.target.closest('.user-menu > a.dropdown-toggle');
-          var anyMenu = ev.target.closest('.user-menu');
-          if (toggle) {
-            ev.preventDefault();
-            var li = toggle.closest('.user-menu');
-            var menu = li ? li.querySelector('.dropdown-menu') : null;
-            if (!menu) return;
-            var isOpen = menu.classList.contains('show');
-            document.querySelectorAll('.user-menu .dropdown-menu.show').forEach(function(m){ m.classList.remove('show'); });
-            if (!isOpen) { menu.classList.add('show'); }
-          } else if (!anyMenu) {
-            document.querySelectorAll('.user-menu .dropdown-menu.show').forEach(function(m){ m.classList.remove('show'); });
-          }
-        });
-      })();
+        (function () {
+            if (window.bootstrap) {
+                var toggles = document.querySelectorAll('.dropdown-toggle');
+                Array.prototype.forEach.call(toggles, function (el) {
+                    try { new bootstrap.Dropdown(el); } catch (e) { }
+                });
+            }
+            // Fallback: manual toggle to ensure it opens even if Bootstrap init fails
+            document.addEventListener('click', function (ev) {
+                var toggle = ev.target.closest('.user-menu > a.dropdown-toggle');
+                var anyMenu = ev.target.closest('.user-menu');
+                if (toggle) {
+                    ev.preventDefault();
+                    var li = toggle.closest('.user-menu');
+                    var menu = li ? li.querySelector('.dropdown-menu') : null;
+                    if (!menu) return;
+                    var isOpen = menu.classList.contains('show');
+                    document.querySelectorAll('.user-menu .dropdown-menu.show').forEach(function (m) { m.classList.remove('show'); });
+                    if (!isOpen) { menu.classList.add('show'); }
+                } else if (!anyMenu) {
+                    document.querySelectorAll('.user-menu .dropdown-menu.show').forEach(function (m) { m.classList.remove('show'); });
+                }
+            });
+        })();
     </script>
     <!--end::Script-->
 </body>

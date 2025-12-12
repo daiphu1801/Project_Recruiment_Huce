@@ -26,7 +26,6 @@
       <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Column Name="ActiveFlag" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
       <Column Name="PhotoID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Association Name="Account_Transaction" Member="Transactions" ThisKey="AccountID" OtherKey="AccountID" Type="Transaction" />
       <Association Name="Account_Admin" Member="Admins" ThisKey="AccountID" OtherKey="AccountID" Type="Admin" />
       <Association Name="Account_Candidate" Member="Candidates" ThisKey="AccountID" OtherKey="AccountID" Type="Candidate" />
       <Association Name="Account_PasswordResetToken" Member="PasswordResetTokens" ThisKey="AccountID" OtherKey="AccountID" Type="PasswordResetToken" />
@@ -89,6 +88,7 @@
       <Column Name="Gender" Type="System.String" DbType="NVarChar(10) NOT NULL" CanBeNull="false" />
       <Column Name="Phone" Type="System.String" DbType="NVarChar(15)" CanBeNull="true" />
       <Column Name="Email" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="ApplicationEmail" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
       <Column Name="Address" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="Summary" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
       <Column Name="PhotoID" Type="System.Int32" DbType="Int" CanBeNull="true" />
@@ -158,6 +158,9 @@
       <Column Name="PostedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Column Name="UpdatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
       <Column Name="ViewCount" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="RefreshCount" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="DisplayDays" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="LastRefreshDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Association Name="JobPost_Application" Member="Applications" ThisKey="JobPostID" OtherKey="JobPostID" Type="Application" />
       <Association Name="JobPost_JobPostDetail" Member="JobPostDetails" ThisKey="JobPostID" OtherKey="JobPostID" Type="JobPostDetail" />
       <Association Name="JobPost_PostingHistory" Member="PostingHistories" ThisKey="JobPostID" OtherKey="JobPostID" Type="PostingHistory" />

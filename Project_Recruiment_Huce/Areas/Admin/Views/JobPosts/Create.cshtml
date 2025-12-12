@@ -5,6 +5,40 @@
     ViewBag.Title = "Thêm tin tuyển dụng mới";
 }
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.8.0/dist/geosearch.css" />
+
+<style>
+    .map-container-style {
+        height: 450px;
+        width: 100%;
+        border-radius: 4px;
+        z-index: 1;
+    }
+
+    .modal-dialog {
+        max-width: 900px;
+    }
+
+    .leaflet-control-geosearch {
+        z-index: 9999 !important;
+    }
+
+        .leaflet-control-geosearch form {
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+        }
+    
+    .results.active {
+        background: white;
+        border: 1px solid #ccc;
+        margin-top: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>
+
 @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
 
 <div class="card shadow-sm">
@@ -28,7 +62,7 @@
             </div>
         }
 
-        @using (Html.BeginForm("Create", "JobPosts", FormMethod.Post))
+        @using (Html.BeginForm("Create", "JobPosts", FormMethod.Post, new { id = "createJobPostForm" }))
         {
             @Html.AntiForgeryToken()
             @Html.HiddenFor(m => m.CompanyID)
@@ -58,24 +92,31 @@
                         @Html.ValidationMessageFor(m => m.RecruiterID, "", new { @class = "text-danger small mt-1 d-block" })
                     </div>
 
-                    <div class="mb-3">
-                        <label for="Location" class="form-label fw-semibold">Địa điểm làm việc <span class="text-danger">*</span></label>
-                        @Html.TextBoxFor(m => m.Location, new { @class = "form-control", placeholder = "VD: Hà Nội, TP.HCM, Đà Nẵng" })
-                        @Html.ValidationMessageFor(m => m.Location, "", new { @class = "text-danger small mt-1 d-block" })
+                    <div class="form-group mb-3">
+                        @Html.LabelFor(m => m.Location, new { @class = "control-label" })
+                        <div class="input-group">
+                            @Html.TextBoxFor(m => m.Location, new { @class = "form-control", @id = "AddressInput", placeholder = "Nhập địa chỉ hoặc chọn trên bản đồ..." })
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-info" data-toggle="modal" data-target="#mapModal" id="openMapModalBtn">
+                                    <i class="fas fa-map-marker-alt"></i> Chọn trên Map
+                                </button>
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Location, "", new { @class = "text-danger" })
                     </div>
 
                     <div class="mb-3">
                         <label for="EmploymentType" class="form-label fw-semibold">Loại hình công việc <span class="text-danger">*</span></label>
                         @Html.DropDownListFor(m => m.EmploymentType,
-                            new SelectList(new[] {
+                                      new SelectList(new[] {
                                 new SelectListItem { Value = "Full-time", Text = "Toàn thời gian" },
                                 new SelectListItem { Value = "Part-time", Text = "Bán thời gian" },
                                 new SelectListItem { Value = "Contract", Text = "Hợp đồng" },
                                 new SelectListItem { Value = "Internship", Text = "Thực tập" },
                                 new SelectListItem { Value = "Freelance", Text = "Tự do" }
-                            }, "Value", "Text"),
-                            "-- Chọn loại hình --",
-                            new { @class = "form-select" })
+                      }, "Value", "Text"),
+                                      "-- Chọn loại hình --",
+                                      new { @class = "form-select" })
                         @Html.ValidationMessageFor(m => m.EmploymentType, "", new { @class = "text-danger small mt-1 d-block" })
                     </div>
 
@@ -142,12 +183,12 @@
                             <div class="mb-3">
                                 <label for="GenderRequirement" class="form-label fw-semibold">Yêu cầu Giới tính</label>
                                 @Html.DropDownListFor(m => m.GenderRequirement,
-                                    new SelectList(new[] {
+                                              new SelectList(new[] {
                                         new SelectListItem { Value = "Not required", Text = "Không yêu cầu" },
                                         new SelectListItem { Value = "Male", Text = "Nam" },
                                         new SelectListItem { Value = "Female", Text = "Nữ" }
-                                    }, "Value", "Text"),
-                                    new { @class = "form-select" })
+              }, "Value", "Text"),
+                                              new { @class = "form-select" })
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -192,15 +233,15 @@
                     <div class="mb-3">
                         <label for="SalaryCurrency" class="form-label fw-semibold">Đơn vị tiền tệ <span class="text-danger">*</span></label>
                         @Html.DropDownListFor(m => m.SalaryCurrency,
-                            new SelectList(new[] { "VND", "USD", "EUR", "JPY" }),
-                            "-- Chọn loại tiền --",
-                            new { @class = "form-select" })
+                                      new SelectList(new[] { "VND", "USD", "EUR", "JPY" }),
+                                      "-- Chọn loại tiền --",
+                                      new { @class = "form-select" })
                         @Html.ValidationMessageFor(m => m.SalaryCurrency, "", new { @class = "text-danger small mt-1 d-block" })
                     </div>
 
                     <div class="mb-3">
                         <label for="ApplicationDeadline" class="form-label fw-semibold">Hạn nộp hồ sơ <span class="text-danger">*</span></label>
-                        @Html.TextBoxFor(m => m.ApplicationDeadline, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                        @Html.TextBoxFor(m => m.ApplicationDeadline, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date", id = "ApplicationDeadline" })
                         @Html.ValidationMessageFor(m => m.ApplicationDeadline, "", new { @class = "text-danger small mt-1 d-block" })
                         <small class="form-text text-muted"><i class="bi bi-calendar-event"></i> Ngày hết hạn nhận hồ sơ ứng tuyển</small>
                     </div>
@@ -208,9 +249,9 @@
                     <div class="mb-3">
                         <label for="Status" class="form-label fw-semibold">Trạng thái <span class="text-danger">*</span></label>
                         @Html.DropDownListFor(m => m.Status,
-                            ViewBag.StatusOptions as SelectList,
-                            "-- Chọn trạng thái --",
-                            new { @class = "form-select" })
+                                      ViewBag.StatusOptions as SelectList,
+                                      "-- Chọn trạng thái --",
+                                      new { @class = "form-select" })
                         @Html.ValidationMessageFor(m => m.Status, "", new { @class = "text-danger small mt-1 d-block" })
                         <small class="form-text text-muted">
                             <strong>Visible:</strong> Hiển thị công khai |
@@ -218,7 +259,7 @@
                         </small>
                     </div>
 
-                
+
 
                     <div class="alert alert-info border-0 mt-4">
                         <h6 class="alert-heading"><i class="bi bi-lightbulb"></i> Lưu ý quan trọng</h6>
@@ -241,7 +282,7 @@
                     <button type="reset" class="btn btn-outline-warning">
                         <i class="bi bi-arrow-clockwise"></i> Làm mới
                     </button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="submitCreateJobPostBtn">
                         <i class="bi bi-save"></i> Tạo tin tuyển dụng
                     </button>
                 </div>
@@ -250,11 +291,154 @@
     </div>
 </div>
 
+<div class="modal fade" id="mapModal" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chọn vị trí</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="bg-light p-2 border rounded">
+                    <div id="mapPicker" class="map-container-style"></div>
+                </div>
+                <p class="text-muted small mt-2 text-center mb-0">* Sử dụng thanh tìm kiếm hoặc click trực tiếp vào bản đồ.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-success" id="btnConfirmLocation">Xác nhận địa chỉ này</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-geosearch@3.8.0/dist/geosearch.umd.js"></script>
+
     <script>
+        $(document).ready(function () {
+            var map, marker, currentAddress = "";
+            var isLocationValid = ($('#AddressInput').val() || '').trim() !== "";
+
+            function cleanAddress(fullAddress) {
+                if (!fullAddress) return "";
+                return fullAddress.split(',').filter(function (part) {
+                    return !/^\d{5,6}$/.test(part.trim());
+                }).join(',').trim();
+            }
+
+            function initMap() {
+                if (map) {
+                    setTimeout(function () { map.invalidateSize(); }, 200);
+                    return;
+                }
+
+                map = L.map('mapPicker').setView([21.0285, 105.8542], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(map);
+
+                const provider = new GeoSearch.OpenStreetMapProvider({
+                    params: { 'accept-language': 'vi', countrycodes: 'vn' }
+                });
+
+                const searchControl = new GeoSearch.GeoSearchControl({
+                    provider: provider,
+                    style: 'bar',
+                    autoClose: true,
+                    searchLabel: 'Nhập địa chỉ cụ thể...',
+                    keepResult: true,
+                    updateMap: true
+                });
+                map.addControl(searchControl);
+
+                map.on('click', function (e) {
+                    updateLocation(e.latlng.lat, e.latlng.lng, null);
+                });
+
+                map.on('geosearch/showlocation', function (result) {
+                    updateLocation(result.location.y, result.location.x, result.location.label);
+                });
+            }
+
+            function updateLocation(lat, lng, label) {
+                if (!label) {
+                    $('#AddressInput').attr('placeholder', 'Đang lấy địa chỉ...');
+                    $.ajax({
+                        url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+                        headers: { 'Accept-Language': 'vi' },
+                        success: function (data) {
+                            if (data && data.display_name) {
+                                processAddress(data.display_name, lat, lng);
+                            }
+                        }
+                    });
+                } else {
+                    processAddress(label, lat, lng);
+                }
+            }
+
+            function processAddress(raw, lat, lng) {
+                currentAddress = cleanAddress(raw);
+
+                if (marker) {
+                    marker.setLatLng([lat, lng]).bindPopup(currentAddress).openPopup();
+                } else {
+                    marker = L.marker([lat, lng]).addTo(map).bindPopup(currentAddress).openPopup();
+                }
+                map.setView([lat, lng], 16);
+
+                if (currentAddress) {
+                    isLocationValid = true;
+                }
+            }
+
+            $('#openMapModalBtn').on('click', function () {
+                $('#mapModal').modal('show');
+            });
+
+            $('#mapModal').on('shown.bs.modal', function () {
+                initMap();
+                setTimeout(function () {
+                    if (map) map.invalidateSize();
+                }, 100);
+            });
+
+            $(document).on('click', '#btnConfirmLocation', function () {
+                if (currentAddress) {
+                    var inputField = $('#AddressInput');
+
+                    inputField.val(currentAddress);
+                    $('#mapModal').modal('hide');
+
+                    isLocationValid = true;
+
+                    if (inputField.hasClass('input-validation-error')) {
+                        inputField.valid();
+                    }
+                } else {
+                    alert("Vui lòng chọn một vị trí trên bản đồ trước khi xác nhận.");
+                }
+            });
+
+            $('#AddressInput').on('input', function () {
+                isLocationValid = false;
+            });
+
+            $('#createJobPostForm').on('submit', function (e) {
+                if (!isLocationValid) {
+                    e.preventDefault();
+                    alert("Vui lòng xác thực địa chỉ bằng cách chọn trên bản đồ hoặc tìm trên bản đồ trước khi tạo tin tuyển dụng.");
+                    $('#openMapModalBtn').focus();
+                    return false;
+                }
+            });
+        });
+
         $(document).ready(function() {
-            // Tự động set ngày mặc định cho deadline (30 ngày sau)
             var deadlineInput = $('#ApplicationDeadline');
             if (!deadlineInput.val()) {
                 var futureDate = new Date();
@@ -262,14 +446,12 @@
                 deadlineInput.val(futureDate.toISOString().split('T')[0]);
             }
 
-            // Format số tiền
             function formatCurrency(value, currency) {
                 if (!value || isNaN(value)) return 'Chưa có thông tin';
                 var formatted = parseFloat(value).toLocaleString('vi-VN');
                 return formatted + ' ' + (currency || 'VND');
             }
 
-            // Update preview lương
             function updateSalaryPreview() {
                 var from = $('#SalaryFrom').val();
                 var to = $('#SalaryTo').val();
@@ -283,46 +465,41 @@
                 }
             }
 
-            // Lắng nghe sự thay đổi
             $('#SalaryFrom, #SalaryTo, #SalaryCurrency').on('input change', updateSalaryPreview);
 
-            // Xử lý logic RecruiterID và CompanyID (AJAX)
             $('#RecruiterID').on('change', function() {
                 var recruiterId = $(this).val();
                 if (recruiterId) {
-                    // Gửi AJAX request để lấy CompanyID từ RecruiterID
                     $.ajax({
                         url: '@Url.Action("GetCompanyByRecruiter", "JobPosts")',
                         type: 'GET',
                         data: { recruiterId: recruiterId },
                         success: function(data) {
-                            if (data && data.companyId) {
-                                $('#CompanyID').val(data.companyId);
-                            } else {
-                                $('#CompanyID').val('');
-                                alert('Nhà tuyển dụng này chưa được gán cho công ty nào. Vui lòng chọn nhà tuyển dụng khác.');
-                            }
+                        if (data && data.companyId) {
+                        $('#CompanyID').val(data.companyId);
+                        } else {
+                        $('#CompanyID').val('');
+                        alert('Nhà tuyển dụng này chưa được gán cho công ty nào. Vui lòng chọn nhà tuyển dụng khác.');
+                        }
                         },
                         error: function() {
-                            console.error('Không thể lấy thông tin công ty từ nhà tuyển dụng');
-                            $('#CompanyID').val('');
+                        console.error('Không thể lấy thông tin công ty từ nhà tuyển dụng');
+                        $('#CompanyID').val('');
                         }
-                    });
-                } else {
-                    $('#CompanyID').val('');
-                }
+                        });
+                        } else {
+                        $('#CompanyID').val('');
+                        }
 
-                // Tự động điền JobCode (giữ lại logic bạn đã viết)
-                var jobCode = $('#JobCode').val();
-                if (!jobCode && recruiterId > 0) {
-                     var year = new Date().getFullYear();
-                     var random = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
-                     $('#JobCode').val('JOB-' + year + '-' + random);
-                }
-            });
+                        var jobCode = $('#JobCode').val();
+                        if (!jobCode && recruiterId > 0) {
+                        var year = new Date().getFullYear();
+                        var random = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+                        $('#JobCode').val('JOB-' + year + '-' + random);
+                        }
+                        });
 
-            // Update preview ban đầu
-            updateSalaryPreview();
-        });
+                        updateSalaryPreview();
+                        });
     </script>
 }

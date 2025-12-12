@@ -227,15 +227,71 @@ IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_duc')
     INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
     VALUES ('cand_duc', @PwdHash, 'vduc@gmail.com', '0915555555', 'Candidate', 1, DATEADD(DAY, -52, GETDATE()));
 
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_hoa')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
+    VALUES ('cand_hoa', @PwdHash, 'tthoa@gmail.com', '0916666666', 'Candidate', 1, DATEADD(DAY, -50, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_giang')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
+    VALUES ('cand_giang', @PwdHash, 'ngiang@gmail.com', '0917777777', 'Candidate', 1, DATEADD(DAY, -48, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_khanh')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
+    VALUES ('cand_khanh', @PwdHash, 'tkhanh@gmail.com', '0918888888', 'Candidate', 1, DATEADD(DAY, -46, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_long')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
+    VALUES ('cand_long', @PwdHash, 'vlong@gmail.com', '0919999999', 'Candidate', 1, DATEADD(DAY, -44, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_minh')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
+    VALUES ('cand_minh', @PwdHash, 'nminh@gmail.com', '0921111111', 'Candidate', 1, DATEADD(DAY, -42, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_nga')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
+    VALUES ('cand_nga', @PwdHash, 'tnga@gmail.com', '0922222222', 'Candidate', 1, DATEADD(DAY, -40, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_phuong')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
+    VALUES ('cand_phuong', @PwdHash, 'lphuong@gmail.com', '0923333333', 'Candidate', 1, DATEADD(DAY, -38, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_quan')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
+    VALUES ('cand_quan', @PwdHash, 'vquan@gmail.com', '0924444444', 'Candidate', 1, DATEADD(DAY, -36, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_son')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
+    VALUES ('cand_son', @PwdHash, 'nson@gmail.com', '0925555555', 'Candidate', 1, DATEADD(DAY, -34, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_thu')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
+    VALUES ('cand_thu', @PwdHash, 'tthu@gmail.com', '0926666666', 'Candidate', 1, DATEADD(DAY, -32, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Accounts WHERE Username = 'cand_vu')
+    INSERT INTO Accounts (Username, PasswordHash, Email, Phone, Role, ActiveFlag, CreatedAt)
+    VALUES ('cand_vu', @PwdHash, 'pvu@gmail.com', '0927777777', 'Candidate', 1, DATEADD(DAY, -30, GETDATE()));
+
 PRINT '=== Bước 8: Chèn Thông tin Ứng viên (Candidates) ===';
 
 DECLARE @CandAcc1 INT, @CandAcc2 INT, @CandAcc3 INT, @CandAcc4 INT, @CandAcc5 INT;
+DECLARE @CandAcc6 INT, @CandAcc7 INT, @CandAcc8 INT, @CandAcc9 INT, @CandAcc10 INT;
+DECLARE @CandAcc11 INT, @CandAcc12 INT, @CandAcc13 INT, @CandAcc14 INT, @CandAcc15 INT;
 
 SELECT @CandAcc1 = AccountID FROM Accounts WHERE Username = 'cand_an';
 SELECT @CandAcc2 = AccountID FROM Accounts WHERE Username = 'cand_bich';
 SELECT @CandAcc3 = AccountID FROM Accounts WHERE Username = 'cand_cuong';
 SELECT @CandAcc4 = AccountID FROM Accounts WHERE Username = 'cand_dung';
 SELECT @CandAcc5 = AccountID FROM Accounts WHERE Username = 'cand_duc';
+SELECT @CandAcc6 = AccountID FROM Accounts WHERE Username = 'cand_hoa';
+SELECT @CandAcc7 = AccountID FROM Accounts WHERE Username = 'cand_giang';
+SELECT @CandAcc8 = AccountID FROM Accounts WHERE Username = 'cand_khanh';
+SELECT @CandAcc9 = AccountID FROM Accounts WHERE Username = 'cand_long';
+SELECT @CandAcc10 = AccountID FROM Accounts WHERE Username = 'cand_minh';
+SELECT @CandAcc11 = AccountID FROM Accounts WHERE Username = 'cand_nga';
+SELECT @CandAcc12 = AccountID FROM Accounts WHERE Username = 'cand_phuong';
+SELECT @CandAcc13 = AccountID FROM Accounts WHERE Username = 'cand_quan';
+SELECT @CandAcc14 = AccountID FROM Accounts WHERE Username = 'cand_son';
+SELECT @CandAcc15 = AccountID FROM Accounts WHERE Username = 'cand_thu';
 
 IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc1)
     INSERT INTO Candidates (AccountID, FullName, BirthDate, Gender, Phone, Email, ApplicationEmail, Address, Summary, PhotoID, ActiveFlag, CreatedAt)
@@ -262,15 +318,77 @@ IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc5)
     VALUES (@CandAcc5, N'Hoàng Văn Đức', '1993-09-08', N'Nam', '0915555555', 'vduc@gmail.com', 'vduc@gmail.com',
         N'Quận 3, TP.HCM', N'Kỹ sư DevOps với chứng chỉ AWS Solution Architect.', 1, DATEADD(DAY, -52, GETDATE()));
 
+IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc6)
+    INSERT INTO Candidates (AccountID, FullName, BirthDate, Gender, Phone, Email, ApplicationEmail, Address, Summary, ActiveFlag, CreatedAt)
+    VALUES (@CandAcc6, N'Trần Thị Hoa', '1998-04-12', N'Nữ', '0916666666', 'tthoa@gmail.com', 'tthoa@gmail.com',
+        N'Cầu Giấy, Hà Nội', N'UI/UX Designer với 3 năm kinh nghiệm thiết kế sản phẩm Mobile & Web.', 1, DATEADD(DAY, -50, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc7)
+    INSERT INTO Candidates (AccountID, FullName, BirthDate, Gender, Phone, Email, ApplicationEmail, Address, Summary, ActiveFlag, CreatedAt)
+    VALUES (@CandAcc7, N'Nguyễn Thị Giang', '1996-08-22', N'Nữ', '0917777777', 'ngiang@gmail.com', 'ngiang@gmail.com',
+        N'Đống Đa, Hà Nội', N'Data Analyst am hiểu SQL, Python, Power BI và phân tích dữ liệu kinh doanh.', 1, DATEADD(DAY, -48, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc8)
+    INSERT INTO Candidates (AccountID, FullName, BirthDate, Gender, Phone, Email, ApplicationEmail, Address, Summary, ActiveFlag, CreatedAt)
+    VALUES (@CandAcc8, N'Trần Văn Khánh', '1992-12-05', N'Nam', '0918888888', 'tkhanh@gmail.com', 'tkhanh@gmail.com',
+        N'Bình Thạnh, TP.HCM', N'Senior QA Engineer chuyên Automation Testing (Selenium, Appium).', 1, DATEADD(DAY, -46, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc9)
+    INSERT INTO Candidates (AccountID, FullName, BirthDate, Gender, Phone, Email, ApplicationEmail, Address, Summary, ActiveFlag, CreatedAt)
+    VALUES (@CandAcc9, N'Võ Minh Long', '1994-06-18', N'Nam', '0919999999', 'vlong@gmail.com', 'vlong@gmail.com',
+        N'Quận 7, TP.HCM', N'Backend Developer Node.js/Express, có kinh nghiệm xây dựng RESTful API.', 1, DATEADD(DAY, -44, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc10)
+    INSERT INTO Candidates (AccountID, FullName, BirthDate, Gender, Phone, Email, ApplicationEmail, Address, Summary, ActiveFlag, CreatedAt)
+    VALUES (@CandAcc10, N'Nguyễn Văn Minh', '1995-02-28', N'Nam', '0921111111', 'nminh@gmail.com', 'nminh@gmail.com',
+        N'Hai Bà Trưng, Hà Nội', N'Embedded Software Engineer với 4 năm kinh nghiệm C/C++ và RTOS.', 1, DATEADD(DAY, -42, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc11)
+    INSERT INTO Candidates (AccountID, FullName, BirthDate, Gender, Phone, Email, ApplicationEmail, Address, Summary, ActiveFlag, CreatedAt)
+    VALUES (@CandAcc11, N'Trần Thị Nga', '1997-10-15', N'Nữ', '0922222222', 'tnga@gmail.com', 'tnga@gmail.com',
+        N'Quận 10, TP.HCM', N'Business Analyst có nền tảng công nghệ và kỹ năng giao tiếp tốt.', 1, DATEADD(DAY, -40, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc12)
+    INSERT INTO Candidates (AccountID, FullName, BirthDate, Gender, Phone, Email, ApplicationEmail, Address, Summary, ActiveFlag, CreatedAt)
+    VALUES (@CandAcc12, N'Lê Thị Phương', '1993-05-09', N'Nữ', '0923333333', 'lphuong@gmail.com', 'lphuong@gmail.com',
+        N'Nam Từ Liêm, Hà Nội', N'Scrum Master đã dẫn dắt 5+ dự án Agile thành công.', 1, DATEADD(DAY, -38, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc13)
+    INSERT INTO Candidates (AccountID, FullName, BirthDate, Gender, Phone, Email, ApplicationEmail, Address, Summary, ActiveFlag, CreatedAt)
+    VALUES (@CandAcc13, N'Vũ Đức Quân', '1991-11-20', N'Nam', '0924444444', 'vquan@gmail.com', 'vquan@gmail.com',
+        N'Tân Bình, TP.HCM', N'Solution Architect với chứng chỉ AWS và Azure, 6 năm kinh nghiệm.', 1, DATEADD(DAY, -36, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc14)
+    INSERT INTO Candidates (AccountID, FullName, BirthDate, Gender, Phone, Email, ApplicationEmail, Address, Summary, ActiveFlag, CreatedAt)
+    VALUES (@CandAcc14, N'Nguyễn Thanh Sơn', '1996-07-03', N'Nam', '0925555555', 'nson@gmail.com', 'nson@gmail.com',
+        N'Hoàn Kiếm, Hà Nội', N'Machine Learning Engineer thành thạo TensorFlow, PyTorch.', 1, DATEADD(DAY, -34, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM Candidates WHERE AccountID = @CandAcc15)
+    INSERT INTO Candidates (AccountID, FullName, BirthDate, Gender, Phone, Email, ApplicationEmail, Address, Summary, ActiveFlag, CreatedAt)
+    VALUES (@CandAcc15, N'Trương Thu Hà', '1998-01-14', N'Nữ', '0926666666', 'tthu@gmail.com', 'tthu@gmail.com',
+        N'Gò Vấp, TP.HCM', N'Frontend Developer React/VueJS với khả năng thiết kế UI responsive.', 1, DATEADD(DAY, -32, GETDATE()));
+
 PRINT '=== Bước 9: Chèn Hồ sơ năng lực (Resumes) ===';
 
 DECLARE @Cand1 INT, @Cand2 INT, @Cand3 INT, @Cand4 INT, @Cand5 INT;
+DECLARE @Cand6 INT, @Cand7 INT, @Cand8 INT, @Cand9 INT, @Cand10 INT;
+DECLARE @Cand11 INT, @Cand12 INT, @Cand13 INT, @Cand14 INT, @Cand15 INT;
 
 SELECT @Cand1 = CandidateID FROM Candidates WHERE FullName = N'Nguyễn Văn An';
 SELECT @Cand2 = CandidateID FROM Candidates WHERE FullName = N'Trần Thị Bích';
 SELECT @Cand3 = CandidateID FROM Candidates WHERE FullName = N'Lê Văn Cường';
 SELECT @Cand4 = CandidateID FROM Candidates WHERE FullName = N'Phạm Thị Dung';
 SELECT @Cand5 = CandidateID FROM Candidates WHERE FullName = N'Hoàng Văn Đức';
+SELECT @Cand6 = CandidateID FROM Candidates WHERE FullName = N'Trần Thị Hoa';
+SELECT @Cand7 = CandidateID FROM Candidates WHERE FullName = N'Nguyễn Thị Giang';
+SELECT @Cand8 = CandidateID FROM Candidates WHERE FullName = N'Trần Văn Khánh';
+SELECT @Cand9 = CandidateID FROM Candidates WHERE FullName = N'Võ Minh Long';
+SELECT @Cand10 = CandidateID FROM Candidates WHERE FullName = N'Nguyễn Văn Minh';
+SELECT @Cand11 = CandidateID FROM Candidates WHERE FullName = N'Trần Thị Nga';
+SELECT @Cand12 = CandidateID FROM Candidates WHERE FullName = N'Lê Thị Phương';
+SELECT @Cand13 = CandidateID FROM Candidates WHERE FullName = N'Vũ Đức Quân';
+SELECT @Cand14 = CandidateID FROM Candidates WHERE FullName = N'Nguyễn Thanh Sơn';
+SELECT @Cand15 = CandidateID FROM Candidates WHERE FullName = N'Trương Thu Hà';
 
 IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand1)
     INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
@@ -291,6 +409,46 @@ IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand4)
 IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand5)
     INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
     VALUES (@Cand5, 'CV_HoangVanDuc.pdf', '/Content/uploads/resumes/cv5.jpg', DATEADD(DAY, -52, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand6)
+    INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
+    VALUES (@Cand6, 'CV_TranThiHoa.pdf', '/Content/uploads/resumes/cv1.jpg', DATEADD(DAY, -50, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand7)
+    INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
+    VALUES (@Cand7, 'CV_NguyenThiGiang.pdf', '/Content/uploads/resumes/cv2.webp', DATEADD(DAY, -48, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand8)
+    INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
+    VALUES (@Cand8, 'CV_TranVanKhanh.pdf', '/Content/uploads/resumes/cv3.jpg', DATEADD(DAY, -46, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand9)
+    INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
+    VALUES (@Cand9, 'CV_VoMinhLong.pdf', '/Content/uploads/resumes/cv4.webp', DATEADD(DAY, -44, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand10)
+    INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
+    VALUES (@Cand10, 'CV_NguyenVanMinh.pdf', '/Content/uploads/resumes/cv5.jpg', DATEADD(DAY, -42, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand11)
+    INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
+    VALUES (@Cand11, 'CV_TranThiNga.pdf', '/Content/uploads/resumes/cv1.jpg', DATEADD(DAY, -40, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand12)
+    INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
+    VALUES (@Cand12, 'CV_LeThiPhuong.pdf', '/Content/uploads/resumes/cv2.webp', DATEADD(DAY, -38, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand13)
+    INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
+    VALUES (@Cand13, 'CV_VuDucQuan.pdf', '/Content/uploads/resumes/cv3.jpg', DATEADD(DAY, -36, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand14)
+    INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
+    VALUES (@Cand14, 'CV_NguyenThanhSon.pdf', '/Content/uploads/resumes/cv4.webp', DATEADD(DAY, -34, GETDATE()));
+
+IF NOT EXISTS (SELECT 1 FROM ResumeFiles WHERE CandidateID = @Cand15)
+    INSERT INTO ResumeFiles (CandidateID, FileName, FilePath, UploadedAt)
+    VALUES (@Cand15, 'CV_TruongThuHa.pdf', '/Content/uploads/resumes/cv5.jpg', DATEADD(DAY, -32, GETDATE()));
 
 PRINT '=== Bước 10: Chèn Tin tuyển dụng (JobPosts) ===';
 

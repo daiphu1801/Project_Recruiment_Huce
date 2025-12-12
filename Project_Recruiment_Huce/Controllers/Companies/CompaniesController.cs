@@ -1,17 +1,18 @@
+using Project_Recruiment_Huce.Helpers;
+using Project_Recruiment_Huce.Infrastructure;
+using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Models.Companies;
+using Project_Recruiment_Huce.Repositories;
+using Project_Recruiment_Huce.Services;
 using System;
+using System.Configuration;
+using System.Data.Linq;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Web;
 using System.Web.Mvc;
-using System.Configuration;
-using System.Data.Linq;
-using Project_Recruiment_Huce.Models;
-using Project_Recruiment_Huce.Models.Companies;
-using Project_Recruiment_Huce.Helpers;
-using Project_Recruiment_Huce.Infrastructure;
-using Project_Recruiment_Huce.Services;
-using Project_Recruiment_Huce.Repositories;
 
 namespace Project_Recruiment_Huce.Controllers
 {
@@ -19,7 +20,6 @@ namespace Project_Recruiment_Huce.Controllers
     /// Controller quản lý thông tin công ty - logo, address, industry, website, description
     /// Liên kết với Recruiter qua CompanyID
     /// </summary>
-    [Authorize(Roles="Recruiter")]
     public class CompaniesController : BaseController
     {
         private readonly ICompanyService _companyService;
@@ -136,7 +136,7 @@ namespace Project_Recruiment_Huce.Controllers
             if (accountId == null) return RedirectToAction("Login", "Account");
 
             var viewModel = _companyService.GetCompanyManageViewModel(accountId.Value);
-            
+
             if (viewModel == null)
             {
                 TempData["ErrorMessage"] = "Vui lòng tạo hồ sơ nhà tuyển dụng trước.";
@@ -226,6 +226,15 @@ namespace Project_Recruiment_Huce.Controllers
                 viewModel.Fax = null;
             }
 
+            if (!string.IsNullOrWhiteSpace(viewModel.Address))
+            {
+                bool isAddressReal = IsAddressValid(viewModel.Address);
+                if (!isAddressReal)
+                {
+                    ModelState.AddModelError("Address", "Địa chỉ không tồn tại trên bản đồ. Vui lòng kiểm tra lại.");
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(viewModel);
@@ -263,6 +272,103 @@ namespace Project_Recruiment_Huce.Controllers
 
             TempData["SuccessMessage"] = "Cập nhật thông tin công ty thành công!";
             return RedirectToAction("CompaniesManage");
+        }
+
+        /// <summary>
+        /// Hiển thị chi tiết công ty cho ứng viên xem (không cần đăng nhập)
+        /// </summary>
+        [AllowAnonymous]
+        public ActionResult CompanyDetails(int? id)
+        {
+            if (!id.HasValue)
+            {
+                return RedirectToAction("JobsListing", "Jobs");
+            }
+
+            using (var db = DbContextFactory.CreateReadOnly())
+            {
+                // Set LoadOptions để load eager Company và ProfilePhoto
+                var loadOptions = new DataLoadOptions();
+                loadOptions.LoadWith<Company>(c => c.ProfilePhoto);
+                loadOptions.LoadWith<Company>(c => c.JobPosts);
+                db.LoadOptions = loadOptions;
+
+                var company = db.Companies.FirstOrDefault(c => c.CompanyID == id.Value);
+
+                if (company == null)
+                {
+                    return RedirectToAction("JobsListing", "Jobs");
+                }
+
+                // Tạo view model cho company details
+                var viewModel = new CompanyDetailsViewModel
+                {
+                    CompanyID = company.CompanyID,
+                    CompanyName = company.CompanyName,
+                    TaxCode = company.TaxCode,
+                    Industry = company.Industry,
+                    Address = company.Address,
+                    Phone = company.Phone,
+                    Fax = company.Fax,
+                    CompanyEmail = company.CompanyEmail,
+                    Website = company.Website,
+                    Description = company.Description,
+                    LogoUrl = company.ProfilePhoto != null ? company.ProfilePhoto.FilePath : "/Content/images/job_logo_1.jpg",
+                    ActiveJobCount = company.JobPosts.Count(j => j.Status == "Published" &&
+                                                                (!j.ApplicationDeadline.HasValue || j.ApplicationDeadline.Value >= DateTime.Now))
+                };
+
+                return View(viewModel);
+            }
+        }
+
+        /// <summary>
+        /// Hàm kiểm tra địa chỉ thông minh (Vòng lặp đệ quy)
+        /// Chấp nhận nếu tìm thấy Phường/Quận/Thành phố trong chuỗi địa chỉ
+        /// </summary>
+        private bool IsAddressValid(string address)
+        {
+            if (string.IsNullOrWhiteSpace(address) || address.Length < 5) return false;
+
+            bool CallNominatimApi(string query)
+            {
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        client.DefaultRequestHeaders.UserAgent.ParseAdd("JobBoardProject/1.0");
+                        client.Timeout = TimeSpan.FromSeconds(3);
+
+                        var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(query)}&format=json&limit=1";
+                        var response = client.GetStringAsync(url).Result;
+
+                        return !string.IsNullOrEmpty(response) && response != "[]";
+                    }
+                }
+                catch
+                {
+                    return true;
+                }
+            }
+
+            if (CallNominatimApi(address)) return true;
+
+            var parts = address.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                               .Select(p => p.Trim())
+                               .ToList();
+
+            while (parts.Count >= 3)
+            {
+                parts.RemoveAt(0);
+                string shorterAddress = string.Join(", ", parts);
+
+                if (CallNominatimApi(shorterAddress))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
