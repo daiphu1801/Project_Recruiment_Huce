@@ -22,7 +22,7 @@ namespace Project_Recruiment_Huce.Controllers
     {
         // Khai báo Service để dùng chung
         private readonly IAccountService _accountService;
-
+        private const string USER_AUTH_TYPE = "UserCookie";
         public AccountController()
         {
             // Khởi tạo Service thủ công
@@ -180,7 +180,7 @@ namespace Project_Recruiment_Huce.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
-            AuthenticationManager.SignOut(CookieAuthenticationDefaults.AuthenticationType);
+            AuthenticationManager.SignOut(USER_AUTH_TYPE);
             return RedirectToAction("Index", "Home");
         }
 
@@ -323,10 +323,7 @@ namespace Project_Recruiment_Huce.Controllers
                 new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "Local")
             };
 
-            var identity = new ClaimsIdentity(
-            claims,
-            CookieAuthenticationDefaults.AuthenticationType
-             );
+            var identity = new ClaimsIdentity(claims, USER_AUTH_TYPE);
             AuthenticationManager.SignIn(new AuthenticationProperties { IsPersistent = rememberMe }, identity);
         }
 
