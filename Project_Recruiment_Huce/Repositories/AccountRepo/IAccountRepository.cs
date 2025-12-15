@@ -17,18 +17,49 @@ namespace Project_Recruiment_Huce.Repositories
         Account GetById(int accountId);
         Account FindByUsernameOrEmail(string emailOrUsername);
         Account Create(string username, string email, string phone, string role, string passwordHash, string salt);
-<<<<<<< HEAD
-=======
-        void CreateGoogleProfile(string email, string firstName, string lastName, int userId, string FullName, int userType, string Avatar, DateTime Birthdate);
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
         void UpdatePassword(int accountId, string passwordHash, string salt);
         void UpdateAccount(Account account);
         void UpdatePasswordResetToken(PasswordResetToken token);
         void SaveChanges();
-<<<<<<< HEAD
-=======
 
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
+        // ============================================================
+        // GOOGLE LOGIN REPOSITORY METHODS
+        // ============================================================
+        
+        /// <summary>
+        /// Tìm account theo GoogleId
+        /// </summary>
+        Account FindByGoogleId(string googleId);
+        
+        /// <summary>
+        /// Tìm account theo Email chính xác
+        /// </summary>
+        Account FindByEmail(string email);
+        
+        /// <summary>
+        /// Tạo tài khoản Google mới (chỉ tạo Account, không tạo Candidate)
+        /// </summary>
+        Account CreateGoogleAccount(string email, string fullName, string googleId, string username);
+        
+        /// <summary>
+        /// Tạo Candidate profile liên kết với Account
+        /// </summary>
+        void CreateCandidateProfile(int accountId, string fullName, string email);
+        
+        /// <summary>
+        /// Lưu ảnh đại diện (Google avatar URL)
+        /// </summary>
+        ProfilePhoto SaveProfilePhoto(string photoUrl, string fileName);
+        
+        /// <summary>
+        /// Cập nhật PhotoID cho Account
+        /// </summary>
+        void UpdateAccountPhotoId(int accountId, int photoId);
+
+        /// <summary>
+        /// Generate username duy nhất từ email
+        /// </summary>
+        string GenerateUniqueUsername(string email);
     }
 }
 

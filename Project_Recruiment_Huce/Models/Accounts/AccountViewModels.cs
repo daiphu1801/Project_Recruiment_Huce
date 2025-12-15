@@ -10,16 +10,20 @@ namespace Project_Recruiment_Huce.Models.Accounts
         [Required]
         [Display(Name = "Email")]
         public string Email { get; set; }
-<<<<<<< HEAD
-=======
-        [Display(Name = " Họ và tên ")]
-        public string AvatarUrl { get; set; }
-        [Display(Name = "Bạn là ?")]
-        public string FullName { get; set; }
-        public int UserType { get; set; } = 1;
-        public DateTime BirthDate { get; set; }
         
-
+        [Display(Name = "Avatar URL")]
+        public string AvatarUrl { get; set; }
+        
+        [Display(Name = "Họ và tên")]
+        public string FullName { get; set; }
+        
+        [Display(Name = "Google ID")]
+        public string GoogleId { get; set; }
+        
+        [Display(Name = "Bạn là ?")]
+        public int UserType { get; set; } = 1;
+        
+        public DateTime BirthDate { get; set; }
     }
     public class CandidateViewModel
     {
@@ -29,7 +33,6 @@ namespace Project_Recruiment_Huce.Models.Accounts
         public DateTime BirthDate { get; set; }
         public string Email { get; set; }   
 
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
     }
 
     public class ExternalLoginListViewModel
@@ -108,11 +111,7 @@ namespace Project_Recruiment_Huce.Models.Accounts
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         [StringLength(100, ErrorMessage = "Mật khẩu phải có ít nhất {2} ký tự.", MinimumLength = 6)]
-<<<<<<< HEAD
-        [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}$", ErrorMessage = "Mật khẩu phải gồm chữ hoa, chữ thường và số")] 
-=======
         [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}$", ErrorMessage = "Mật khẩu phải gồm chữ hoa, chữ thường và số")]
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
         [DataType(DataType.Password)]
         [Display(Name = "Mật khẩu")]
         public string Password { get; set; }
@@ -155,8 +154,5 @@ namespace Project_Recruiment_Huce.Models.Accounts
         [Display(Name = "Email")]
         public string Email { get; set; }
     }
-<<<<<<< HEAD
-=======
 
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
 }

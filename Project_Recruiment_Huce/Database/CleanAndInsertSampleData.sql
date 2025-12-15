@@ -180,24 +180,34 @@ PRINT '=== Bước 6: Chèn Thông tin Nhà tuyển dụng (Recruiters) ===';
 DECLARE @AppleRec INT, @AwsRec INT, @CocaRec INT, @NvidiaRec INT, @SamsungRec INT;
 
 IF NOT EXISTS (SELECT 1 FROM Recruiters WHERE AccountID = @AppleAcc)
-    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag, CreatedAt)
-    VALUES (@AppleAcc, @AppleCo, N'Nguyễn Thị Minh Anh', N'Trưởng phòng Nhân sự', 'minhanh@apple.vn', '0901111111', @RecPhoto1, 1, DATEADD(DAY, -95, GETDATE()));
+    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag, 
+        SubscriptionType, SubscriptionExpiryDate, FreeJobPostCount, MonthlyJobPostCount, MonthlyCVViewCount, MonthlyEmailInviteCount, LastResetDate, CreatedAt)
+    VALUES (@AppleAcc, @AppleCo, N'Nguyễn Thị Minh Anh', N'Trưởng phòng Nhân sự', 'minhanh@apple.vn', '0901111111', @RecPhoto1, 1,
+        'Lifetime', NULL, 0, 0, 0, 0, GETDATE(), DATEADD(DAY, -95, GETDATE()));
 
 IF NOT EXISTS (SELECT 1 FROM Recruiters WHERE AccountID = @AwsAcc)
-    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag, CreatedAt)
-    VALUES (@AwsAcc, @AmazonCo, N'Trần Văn Bình', N'Chuyên viên Tuyển dụng', 'binh@aws.com', '0902222222', @RecPhoto2, 1, DATEADD(DAY, -90, GETDATE()));
+    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag,
+        SubscriptionType, SubscriptionExpiryDate, FreeJobPostCount, MonthlyJobPostCount, MonthlyCVViewCount, MonthlyEmailInviteCount, LastResetDate, CreatedAt)
+    VALUES (@AwsAcc, @AmazonCo, N'Trần Văn Bình', N'Chuyên viên Tuyển dụng', 'binh@aws.com', '0902222222', @RecPhoto2, 1,
+        'Monthly', DATEADD(DAY, 25, GETDATE()), 0, 3, 15, 8, DATEADD(DAY, -5, GETDATE()), DATEADD(DAY, -90, GETDATE()));
 
 IF NOT EXISTS (SELECT 1 FROM Recruiters WHERE AccountID = @CocaAcc)
-    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag, CreatedAt)
-    VALUES (@CocaAcc, @CocaCo, N'Lê Thị Cẩm Ly', N'Đối tác Nhân sự (HRBP)', 'ly@coca.vn', '0903333333', @RecPhoto4, 1, DATEADD(DAY, -85, GETDATE()));
+    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag,
+        SubscriptionType, SubscriptionExpiryDate, FreeJobPostCount, MonthlyJobPostCount, MonthlyCVViewCount, MonthlyEmailInviteCount, LastResetDate, CreatedAt)
+    VALUES (@CocaAcc, @CocaCo, N'Lê Thị Cẩm Ly', N'Đối tác Nhân sự (HRBP)', 'ly@coca.vn', '0903333333', @RecPhoto4, 1,
+        'Free', NULL, 2, 0, 0, 0, GETDATE(), DATEADD(DAY, -85, GETDATE()));
 
 IF NOT EXISTS (SELECT 1 FROM Recruiters WHERE AccountID = @NvidiaAcc)
-    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag, CreatedAt)
-    VALUES (@NvidiaAcc, @NvidiaCo, N'Phạm Quang Huy', N'Talent Acquisition Manager', 'huy.pham@nvidia.com', '0904444444', @RecPhoto5, 1, DATEADD(DAY, -80, GETDATE()));
+    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag,
+        SubscriptionType, SubscriptionExpiryDate, FreeJobPostCount, MonthlyJobPostCount, MonthlyCVViewCount, MonthlyEmailInviteCount, LastResetDate, CreatedAt)
+    VALUES (@NvidiaAcc, @NvidiaCo, N'Phạm Quang Huy', N'Talent Acquisition Manager', 'huy.pham@nvidia.com', '0904444444', @RecPhoto5, 1,
+        'Monthly', DATEADD(DAY, 20, GETDATE()), 0, 4, 20, 12, DATEADD(DAY, -10, GETDATE()), DATEADD(DAY, -80, GETDATE()));
 
 IF NOT EXISTS (SELECT 1 FROM Recruiters WHERE AccountID = @SamsungAcc)
-    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag, CreatedAt)
-    VALUES (@SamsungAcc, @SamsungCo, N'Kim Min Joo', N'Senior HR Manager', 'minjoo.kim@samsung.vn', '0905555555', @RecPhoto6, 1, DATEADD(DAY, -75, GETDATE()));
+    INSERT INTO Recruiters (AccountID, CompanyID, FullName, PositionTitle, CompanyEmail, Phone, PhotoID, ActiveFlag,
+        SubscriptionType, SubscriptionExpiryDate, FreeJobPostCount, MonthlyJobPostCount, MonthlyCVViewCount, MonthlyEmailInviteCount, LastResetDate, CreatedAt)
+    VALUES (@SamsungAcc, @SamsungCo, N'Kim Min Joo', N'Senior HR Manager', 'minjoo.kim@samsung.vn', '0905555555', @RecPhoto6, 1,
+        'Lifetime', NULL, 0, 0, 0, 0, GETDATE(), DATEADD(DAY, -75, GETDATE()));
 
 SELECT @AppleRec = RecruiterID FROM Recruiters WHERE AccountID = @AppleAcc;
 SELECT @AwsRec = RecruiterID FROM Recruiters WHERE AccountID = @AwsAcc;

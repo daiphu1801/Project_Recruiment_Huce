@@ -97,7 +97,8 @@ BEGIN
         PhotoID     INT IDENTITY(1,1) PRIMARY KEY,
         FileName    NVARCHAR(255) NOT NULL,
         FilePath    NVARCHAR(500) NOT NULL,
-        FileSize    BIGINT NULL,
+        FileSizeKB  INT NULL,
+        FileFormat  NVARCHAR(50) NULL,
         UploadedAt  DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
     );
     PRINT '[✓] Created table dbo.ProfilePhotos';
@@ -110,16 +111,40 @@ IF OBJECT_ID(N'dbo.Accounts','U') IS NULL
 BEGIN
     CREATE TABLE dbo.Accounts (
         AccountID   INT IDENTITY(1,1) PRIMARY KEY,
-        Username    NVARCHAR(50) NOT NULL UNIQUE,
-        PasswordHash NVARCHAR(255) NOT NULL,
-        Email       NVARCHAR(100) NOT NULL UNIQUE,
+        Username    NVARCHAR(100) NOT NULL UNIQUE,
+        PasswordHash NVARCHAR(255) NULL,
+        Email       NVARCHAR(150) NOT NULL UNIQUE,
         Phone       NVARCHAR(20) NULL,
-        Role        NVARCHAR(20) NOT NULL CHECK (Role IN ('Admin','Recruiter','Candidate')),
-        ActiveFlag  TINYINT NOT NULL DEFAULT 1,
+        Role        NVARCHAR(30) NOT NULL CHECK (Role IN ('Admin','Recruiter','Candidate')),
         CreatedAt   DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
-        LastLoginAt DATETIME2(7) NULL
+        ActiveFlag  TINYINT NOT NULL DEFAULT 1,
+        PhotoID     INT NULL,
+        FullName    NVARCHAR(255) NOT NULL DEFAULT '',
+        GoogleId    NVARCHAR(255) NULL,
+        IsGoogleAccount BIT NOT NULL DEFAULT 0
     );
     PRINT '[✓] Created table dbo.Accounts';
+END
+ELSE
+BEGIN
+    -- Add Google Login columns if not exists
+    IF COL_LENGTH('dbo.Accounts', 'FullName') IS NULL
+    BEGIN
+        ALTER TABLE dbo.Accounts ADD FullName NVARCHAR(255) NOT NULL DEFAULT '';
+        PRINT '[✓] Added FullName column to dbo.Accounts';
+    END
+    
+    IF COL_LENGTH('dbo.Accounts', 'GoogleId') IS NULL
+    BEGIN
+        ALTER TABLE dbo.Accounts ADD GoogleId NVARCHAR(255) NULL;
+        PRINT '[✓] Added GoogleId column to dbo.Accounts';
+    END
+    
+    IF COL_LENGTH('dbo.Accounts', 'IsGoogleAccount') IS NULL
+    BEGIN
+        ALTER TABLE dbo.Accounts ADD IsGoogleAccount BIT NOT NULL DEFAULT 0;
+        PRINT '[✓] Added IsGoogleAccount column to dbo.Accounts';
+    END
 END
 
 -- ---------------------------------------------------------------------
@@ -130,7 +155,9 @@ BEGIN
     CREATE TABLE dbo.Admins (
         AdminID    INT IDENTITY(1,1) PRIMARY KEY,
         AccountID  INT NOT NULL UNIQUE,
-        FullName   NVARCHAR(100) NULL,
+        FullName   NVARCHAR(100) NOT NULL,
+        ContactEmail NVARCHAR(150) NULL,
+        Permission NVARCHAR(100) NOT NULL,
         CreatedAt  DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
     );
     PRINT '[✓] Created table dbo.Admins';
@@ -143,16 +170,18 @@ IF OBJECT_ID(N'dbo.Companies','U') IS NULL
 BEGIN
     CREATE TABLE dbo.Companies (
         CompanyID      INT IDENTITY(1,1) PRIMARY KEY,
-        CompanyName    NVARCHAR(200) NOT NULL,
-        Address        NVARCHAR(500) NULL,
-        Website        NVARCHAR(255) NULL,
-        Industry       NVARCHAR(100) NULL,
-        Description    NVARCHAR(MAX) NULL,
-        Email          NVARCHAR(100) NULL,
+        CompanyName    NVARCHAR(255) NOT NULL,
+        TaxCode        NVARCHAR(50) NULL,
+        Industry       NVARCHAR(150) NULL,
+        Address        NVARCHAR(255) NULL,
         Phone          NVARCHAR(20) NULL,
         Fax            NVARCHAR(20) NULL,
-        PhotoID        INT NULL,
-        CreatedAt      DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
+        CompanyEmail   NVARCHAR(150) NULL,
+        Website        NVARCHAR(200) NULL,
+        Description    NVARCHAR(1000) NULL,
+        CreatedAt      DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
+        ActiveFlag     TINYINT NOT NULL DEFAULT 1,
+        PhotoID        INT NULL
     );
     PRINT '[✓] Created table dbo.Companies';
 END
@@ -240,6 +269,12 @@ BEGIN
         ALTER TABLE dbo.Recruiters ADD RowVer ROWVERSION NOT NULL;
         PRINT '[✓] Added RowVer column to dbo.Recruiters';
     END
+    
+    IF COL_LENGTH('dbo.Recruiters', 'Avatar') IS NULL
+    BEGIN
+        ALTER TABLE dbo.Recruiters ADD Avatar NVARCHAR(500) NULL;
+        PRINT '[✓] Added Avatar column to dbo.Recruiters';
+    END
 END
 
 -- ---------------------------------------------------------------------
@@ -277,8 +312,10 @@ BEGIN
     CREATE TABLE dbo.PostingHistory (
         PostingHistoryID INT IDENTITY(1,1) PRIMARY KEY,
         RecruiterID      INT NOT NULL,
+        JobPostID        INT NOT NULL,
         PostedAt         DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
-        JobPostID        INT NULL
+        Status           NVARCHAR(50) NOT NULL,
+        Note             NVARCHAR(255) NULL
     );
     PRINT '[✓] Created table dbo.PostingHistory';
 END
@@ -291,17 +328,29 @@ BEGIN
     CREATE TABLE dbo.Candidates (
         CandidateID INT IDENTITY(1,1) PRIMARY KEY,
         AccountID   INT NOT NULL UNIQUE,
-        FullName    NVARCHAR(100) NULL,
-        DateOfBirth DATE NULL,
-        Address     NVARCHAR(500) NULL,
+        FullName    NVARCHAR(100) NOT NULL,
+        BirthDate   DATE NULL,
+        Gender      NVARCHAR(10) NOT NULL,
+        Phone       NVARCHAR(15) NULL,
         Email       NVARCHAR(100) NULL,
         ApplicationEmail NVARCHAR(100) NULL,
-        Phone       NVARCHAR(20) NULL,
+        Address     NVARCHAR(255) NULL,
+        Summary     NVARCHAR(500) NULL,
         PhotoID     INT NULL,
+        CreatedAt   DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
         ActiveFlag  TINYINT NOT NULL DEFAULT 1,
-        CreatedAt   DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
+        Avatar      NVARCHAR(500) NULL
     );
     PRINT '[✓] Created table dbo.Candidates';
+END
+ELSE
+BEGIN
+    -- Add Avatar column if not exists (for Google Login)
+    IF COL_LENGTH('dbo.Candidates', 'Avatar') IS NULL
+    BEGIN
+        ALTER TABLE dbo.Candidates ADD Avatar NVARCHAR(500) NULL;
+        PRINT '[✓] Added Avatar column to dbo.Candidates';
+    END
 END
 
 -- ---------------------------------------------------------------------
@@ -312,9 +361,8 @@ BEGIN
     CREATE TABLE dbo.ResumeFiles (
         ResumeFileID INT IDENTITY(1,1) PRIMARY KEY,
         CandidateID  INT NOT NULL,
-        FileName     NVARCHAR(255) NOT NULL,
-        FilePath     NVARCHAR(500) NOT NULL,
-        FileSize     BIGINT NULL,
+        FileName     NVARCHAR(255) NULL,
+        FilePath     NVARCHAR(500) NULL,
         UploadedAt   DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
     );
     PRINT '[✓] Created table dbo.ResumeFiles';
@@ -327,22 +375,28 @@ IF OBJECT_ID(N'dbo.JobPosts','U') IS NULL
 BEGIN
     CREATE TABLE dbo.JobPosts (
         JobPostID      INT IDENTITY(1,1) PRIMARY KEY,
-        Title          NVARCHAR(255) NOT NULL,
-        Location       NVARCHAR(255) NULL,
-        Salary         NVARCHAR(100) NULL,
-        Description    NVARCHAR(MAX) NULL,
-        PostedAt       DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
-        ExpiryDate     DATETIME2(7) NULL,
+        JobCode        NVARCHAR(20) NULL,
         RecruiterID    INT NOT NULL,
+        CompanyID      INT NULL,
+        Title          NVARCHAR(200) NOT NULL,
+        Description    NVARCHAR(MAX) NULL,
+        Requirements   NVARCHAR(MAX) NULL,
+        SalaryFrom     DECIMAL(18,2) NULL,
+        SalaryTo       DECIMAL(18,2) NULL,
+        SalaryCurrency NVARCHAR(50) NOT NULL,
+        Location       NVARCHAR(255) NULL,
+        EmploymentType NVARCHAR(100) NULL,
+        ApplicationDeadline DATE NULL,
+        Status         NVARCHAR(50) NOT NULL DEFAULT N'Published',
+        PostedAt       DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
+        UpdatedAt      DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
         ViewCount      INT NOT NULL DEFAULT 0,
         Status         NVARCHAR(50) NOT NULL DEFAULT N'Published',
         
         -- Subscription tracking
         RefreshCount   INT NOT NULL DEFAULT 0,
         DisplayDays    INT NOT NULL DEFAULT 7,
-        LastRefreshDate DATETIME NULL,
-        
-        CreatedAt      DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
+        LastRefreshDate DATETIME NULL
     );
     PRINT '[✓] Created table dbo.JobPosts';
 END
@@ -373,19 +427,18 @@ END
 IF OBJECT_ID(N'dbo.JobPostDetails','U') IS NULL
 BEGIN
     CREATE TABLE dbo.JobPostDetails (
-        JobPostDetailID  INT IDENTITY(1,1) PRIMARY KEY,
-        JobPostID        INT NOT NULL UNIQUE,
-        Industry         NVARCHAR(100) NULL,
-        Major            NVARCHAR(100) NULL,
-        YearsExperience  NVARCHAR(50) NULL,
-        DegreeRequired   NVARCHAR(50) NULL,
-        Skills           NVARCHAR(500) NULL,
-        Headcount        INT NULL,
-        WorkType         NVARCHAR(50) NULL,
-        Gender           NVARCHAR(20) NULL,
-        Benefits         NVARCHAR(MAX) NULL,
-        Requirements     NVARCHAR(MAX) NULL,
-        OtherInfo        NVARCHAR(MAX) NULL
+        DetailID         INT IDENTITY(1,1) PRIMARY KEY,
+        JobPostID        INT NOT NULL,
+        Industry         NVARCHAR(150) NOT NULL,
+        Major            NVARCHAR(150) NULL,
+        YearsExperience  INT NOT NULL,
+        DegreeRequired   NVARCHAR(100) NULL,
+        Skills           NVARCHAR(MAX) NULL,
+        Headcount        INT NOT NULL,
+        GenderRequirement NVARCHAR(20) NOT NULL,
+        AgeFrom          INT NULL,
+        AgeTo            INT NULL,
+        Status           NVARCHAR(50) NOT NULL
     );
     PRINT '[✓] Created table dbo.JobPostDetails';
 END
@@ -397,12 +450,14 @@ IF OBJECT_ID(N'dbo.Applications','U') IS NULL
 BEGIN
     CREATE TABLE dbo.Applications (
         ApplicationID  INT IDENTITY(1,1) PRIMARY KEY,
-        JobPostID      INT NOT NULL,
         CandidateID    INT NOT NULL,
-        AppliedDate    DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
+        JobPostID      INT NOT NULL,
+        AppliedAt      DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
         Status         NVARCHAR(50) NOT NULL DEFAULT N'Pending',
-        ResumeFileID   INT NULL,
-        CoverLetter    NVARCHAR(MAX) NULL
+        ResumeFilePath NVARCHAR(500) NULL,
+        CertificateFilePath NVARCHAR(500) NULL,
+        Note           NVARCHAR(500) NULL,
+        UpdatedAt      DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
     );
     PRINT '[✓] Created table dbo.Applications';
 END
@@ -416,8 +471,8 @@ BEGIN
         SavedJobID  INT IDENTITY(1,1) PRIMARY KEY,
         CandidateID INT NOT NULL,
         JobPostID   INT NOT NULL,
-        SavedDate   DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
-        CONSTRAINT UQ_SavedJobs UNIQUE (CandidateID, JobPostID)
+        SavedAt     DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
+        Note        NVARCHAR(500) NULL
     );
     PRINT '[✓] Created table dbo.SavedJobs';
 END
@@ -430,10 +485,12 @@ BEGIN
     CREATE TABLE dbo.PasswordResetTokens (
         TokenID     INT IDENTITY(1,1) PRIMARY KEY,
         AccountID   INT NOT NULL,
-        Token       NVARCHAR(255) NOT NULL UNIQUE,
-        ExpiryDate  DATETIME2(7) NOT NULL,
-        IsUsed      BIT NOT NULL DEFAULT 0,
-        CreatedAt   DATETIME2(7) NOT NULL DEFAULT SYSDATETIME()
+        ResetCode   NVARCHAR(6) NOT NULL,
+        Email       NVARCHAR(150) NOT NULL,
+        CreatedAt   DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
+        ExpiresAt   DATETIME2(7) NOT NULL,
+        UsedFlag    TINYINT NOT NULL DEFAULT 0,
+        AttemptCount INT NOT NULL DEFAULT 0
     );
     PRINT '[✓] Created table dbo.PasswordResetTokens';
 END
@@ -499,6 +556,14 @@ PRINT '';
 -- =====================================================================
 PRINT '-- Creating foreign keys...';
 
+-- Accounts -> ProfilePhotos
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Accounts_ProfilePhotos')
+BEGIN
+    ALTER TABLE dbo.Accounts
+    ADD CONSTRAINT FK_Accounts_ProfilePhotos FOREIGN KEY (PhotoID) REFERENCES dbo.ProfilePhotos(PhotoID) ON DELETE SET NULL;
+    PRINT '[✓] FK_Accounts_ProfilePhotos';
+END
+
 -- Admins -> Accounts
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Admins_Accounts')
 BEGIN
@@ -551,7 +616,7 @@ END
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_PostingHistory_JobPosts')
 BEGIN
     ALTER TABLE dbo.PostingHistory
-    ADD CONSTRAINT FK_PostingHistory_JobPosts FOREIGN KEY (JobPostID) REFERENCES dbo.JobPosts(JobPostID) ON DELETE SET NULL;
+    ADD CONSTRAINT FK_PostingHistory_JobPosts FOREIGN KEY (JobPostID) REFERENCES dbo.JobPosts(JobPostID) ON DELETE CASCADE;
     PRINT '[✓] FK_PostingHistory_JobPosts';
 END
 
@@ -583,8 +648,16 @@ END
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_JobPosts_Recruiters')
 BEGIN
     ALTER TABLE dbo.JobPosts
-    ADD CONSTRAINT FK_JobPosts_Recruiters FOREIGN KEY (RecruiterID) REFERENCES dbo.Recruiters(RecruiterID) ON DELETE CASCADE;
+    ADD CONSTRAINT FK_JobPosts_Recruiters FOREIGN KEY (RecruiterID) REFERENCES dbo.Recruiters(RecruiterID);
     PRINT '[✓] FK_JobPosts_Recruiters';
+END
+
+-- JobPosts -> Companies
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_JobPosts_Companies')
+BEGIN
+    ALTER TABLE dbo.JobPosts
+    ADD CONSTRAINT FK_JobPosts_Companies FOREIGN KEY (CompanyID) REFERENCES dbo.Companies(CompanyID);
+    PRINT '[✓] FK_JobPosts_Companies';
 END
 
 -- JobPostDetails -> JobPosts
@@ -607,7 +680,7 @@ END
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Applications_Candidates')
 BEGIN
     ALTER TABLE dbo.Applications
-    ADD CONSTRAINT FK_Applications_Candidates FOREIGN KEY (CandidateID) REFERENCES dbo.Candidates(CandidateID) ON DELETE NO ACTION;
+    ADD CONSTRAINT FK_Applications_Candidates FOREIGN KEY (CandidateID) REFERENCES dbo.Candidates(CandidateID) ON DELETE CASCADE;
     PRINT '[✓] FK_Applications_Candidates';
 END
 
@@ -623,7 +696,7 @@ END
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_SavedJobs_JobPosts')
 BEGIN
     ALTER TABLE dbo.SavedJobs
-    ADD CONSTRAINT FK_SavedJobs_JobPosts FOREIGN KEY (JobPostID) REFERENCES dbo.JobPosts(JobPostID) ON DELETE NO ACTION;
+    ADD CONSTRAINT FK_SavedJobs_JobPosts FOREIGN KEY (JobPostID) REFERENCES dbo.JobPosts(JobPostID) ON DELETE CASCADE;
     PRINT '[✓] FK_SavedJobs_JobPosts';
 END
 
@@ -650,6 +723,9 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Accounts_Email')
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Accounts_Role')
     CREATE INDEX IX_Accounts_Role ON dbo.Accounts(Role);
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Accounts_GoogleId')
+    CREATE NONCLUSTERED INDEX IX_Accounts_GoogleId ON dbo.Accounts(GoogleId) WHERE GoogleId IS NOT NULL;
 
 -- Recruiters
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Recruiters_CompanyID')

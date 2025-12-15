@@ -443,6 +443,7 @@
                 <div class="app-content">
                     <div class="container-fluid px-3 px-lg-4 pt-2">
                         @Html.Partial("~/Areas/Admin/Views/Shared/_Breadcrumbs.cshtml")
+                        @Html.Partial("~/Areas/Admin/Views/Shared/_Notifications.cshtml")
                         @RenderSection("Toolbar", required: false)
                         <div class="card mb-4">
                             <div class="card-body table-responsive p-0">
@@ -463,6 +464,7 @@
             {
                 <div class="app-content">
                     <div class="container-fluid px-3 px-lg-4 pt-2">
+                        @Html.Partial("~/Areas/Admin/Views/Shared/_Notifications.cshtml")
                         @RenderBody()
                     </div>
                 </div>

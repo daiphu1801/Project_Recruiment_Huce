@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-using System;
-using System.Linq;
-using Project_Recruiment_Huce.Models;
-=======
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Accounts;
 using Project_Recruiment_Huce.Services;
@@ -11,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
 
 namespace Project_Recruiment_Huce.Repositories
 {
@@ -26,10 +20,7 @@ namespace Project_Recruiment_Huce.Repositories
         public AccountRepository(JOBPORTAL_ENDataContext db)
         {
             _db = db ?? throw new ArgumentNullException(nameof(db));
-<<<<<<< HEAD
-=======
 
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
         }
 
         /// <summary>
@@ -133,63 +124,151 @@ namespace Project_Recruiment_Huce.Repositories
                                            && t.UsedFlag == 0
                                            && t.ExpiresAt > now);
         }
-<<<<<<< HEAD
-=======
-        public void CreateGoogleProfile(string email, string firstName, string lastName, int userId, string FullName, int userType, string Avatar, DateTime BirthDate)
+
+        // ============================================================
+        // GOOGLE LOGIN REPOSITORY METHODS
+        // ============================================================
+
+        /// <summary>
+        /// Tìm account theo GoogleId
+        /// </summary>
+        public Account FindByGoogleId(string googleId)
         {
-            if (userId <= 0 || string.IsNullOrWhiteSpace(FullName))
+            if (string.IsNullOrWhiteSpace(googleId)) return null;
+            return _db.Accounts.FirstOrDefault(a => a.GoogleId == googleId && a.ActiveFlag == 1);
+        }
+
+        /// <summary>
+        /// Tìm account theo Email (chính xác, không phân biệt hoa thường)
+        /// </summary>
+        public Account FindByEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return null;
+            var emailLower = email.ToLower();
+            return _db.Accounts.FirstOrDefault(a => a.Email.ToLower() == emailLower && a.ActiveFlag == 1);
+        }
+
+        /// <summary>
+        /// Tạo tài khoản Google mới (chỉ tạo Account, không tạo Candidate)
+        /// </summary>
+        public Account CreateGoogleAccount(string email, string fullName, string googleId, string username)
+        {
+            var account = new Account
             {
-                throw new ArgumentException("UserId và FullName không hợp lệ.");
-            }
+                Username = username,
+                Email = email,
+                FullName = fullName,
+                GoogleId = googleId,
+                IsGoogleAccount = true,
+                PasswordHash = null, // Google account không có password local
+                Role = "Candidate", // CHECK constraint yêu cầu: 'Admin', 'Recruiter', 'Candidate'
+                CreatedAt = DateTime.Now,
+                ActiveFlag = 1,
+                Phone = null,
+                PhotoID = null
+            };
 
-
-            // UserType: 1 = Candidate (Ứng viên), 2 = Recruiter (Nhà tuyển dụng)
-            if (userType == 1)
-            {
-                var candidate = new Candidate
-                {
-                    // FIX LỖI Account_ID: Dùng AccountID (hoặc AccountId)
-                    AccountID = userId,
-
-                    // FIX LỖI FullName: Dùng Full_Name (hoặc FullName, tùy theo designer.cs của bạn)
-                    FullName = FullName,
-
-                    Avatar = Avatar,
-
-                    BirthDate = DateTime.Now.AddYears(-20),
-                    Phone = null,
-                    Address = null
-                };
-                _db.Candidates.InsertOnSubmit(candidate);
-            }
-            else if (userType == 2)
-            {
-                var recruiter = new Recruiter
-                {
-                    // FIX LỖI Account_ID: Dùng AccountID
-                    AccountID = userId,
-
-                    // FIX LỖI FullName: Dùng Full_Name
-                    FullName = FullName,
-
-                    Avatar = Avatar,
-                    PositionTitle = "HR/Recruiter",
-
-
-                };
-                _db.Recruiters.InsertOnSubmit(recruiter);
-            }
-            else
-            {
-                throw new ArgumentException($"Loại người dùng không hợp lệ: {userType}");
-            }
-
+            _db.Accounts.InsertOnSubmit(account);
             _db.SubmitChanges();
+            return account;
+        }
 
+        /// <summary>
+        /// Tạo Candidate profile cho account
+        /// </summary>
+        public void CreateCandidateProfile(int accountId, string fullName, string email)
+        {
+            var candidate = new Candidate
+            {
+                AccountID = accountId,
+                FullName = fullName,
+                Email = email,
+                BirthDate = null, // User sẽ cập nhật sau
+                Gender = "Nam", // CHECK constraint: 'Nữ' hoặc 'Nam', default 'Nam' vì chưa biết
+                Phone = null,
+                Address = null,
+                Summary = null,
+                Avatar = null,
+                PhotoID = null,
+                ApplicationEmail = email,
+                CreatedAt = DateTime.Now,
+                ActiveFlag = 1
+            };
 
+            _db.Candidates.InsertOnSubmit(candidate);
+            _db.SubmitChanges();
+        }
 
+        /// <summary>
+        /// Lưu ảnh đại diện từ URL Google
+        /// </summary>
+        public ProfilePhoto SaveProfilePhoto(string photoUrl, string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(photoUrl)) return null;
+
+            var photo = new ProfilePhoto
+            {
+                FileName = fileName,
+                FilePath = photoUrl, // Lưu URL từ Google
+                FileFormat = "jpg",
+                FileSizeKB = null,
+                UploadedAt = DateTime.Now
+            };
+
+            _db.ProfilePhotos.InsertOnSubmit(photo);
+            _db.SubmitChanges();
+            return photo;
+        }
+
+        /// <summary>
+        /// Cập nhật PhotoID cho Account
+        /// </summary>
+        public void UpdateAccountPhotoId(int accountId, int photoId)
+        {
+            var account = _db.Accounts.FirstOrDefault(a => a.AccountID == accountId);
+            if (account != null)
+            {
+                account.PhotoID = photoId;
+                _db.SubmitChanges();
+            }
+        }
+
+        /// <summary>
+        /// Generate username duy nhất từ email
+        /// Ví dụ: john.doe@gmail.com -> johndoe hoặc johndoe1234
+        /// </summary>
+        public string GenerateUniqueUsername(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return null;
+
+            // Lấy phần trước @ và loại bỏ ký tự đặc biệt
+            var baseUsername = email.Split('@')[0]
+                .Replace(".", "")
+                .Replace("_", "")
+                .Replace("-", "")
+                .ToLower();
+
+            // Giới hạn độ dài
+            if (baseUsername.Length > 50)
+                baseUsername = baseUsername.Substring(0, 50);
+
+            // Kiểm tra trùng
+            if (!UsernameExists(baseUsername))
+                return baseUsername;
+
+            // Nếu trùng, thêm random số 4 chữ số
+            var random = new Random();
+            for (int i = 0; i < 100; i++) // Thử 100 lần
+            {
+                var suffix = random.Next(1000, 9999);
+                var newUsername = baseUsername + suffix;
+                if (!UsernameExists(newUsername))
+                    return newUsername;
+            }
+
+            // Fallback: timestamp
+            return baseUsername + DateTime.Now.Ticks.ToString().Substring(8);
         }
         
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
     }
 }

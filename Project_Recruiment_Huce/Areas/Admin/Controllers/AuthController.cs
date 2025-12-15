@@ -33,10 +33,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Login(LoginViewModel model, string returnUrl)
         {
-<<<<<<< HEAD
-=======
             System.Diagnostics.Debug.WriteLine($"Login attempt - Username: {model.EmailOrUsername}");
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
             if (!ModelState.IsValid)
             {
                 return View("loginAd", model);
@@ -80,12 +77,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 {
                     IsPersistent = model.RememberMe
                 }, identity);
-<<<<<<< HEAD
-
-=======
                 System.Diagnostics.Debug.WriteLine($"User authenticated: {User.Identity.IsAuthenticated}");
                 System.Diagnostics.Debug.WriteLine($"Redirecting to: {returnUrl ?? "/Admin/Dashboard/Index"}");
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
                 return RedirectToLocal(returnUrl);
             }
         }

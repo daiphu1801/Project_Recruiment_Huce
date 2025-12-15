@@ -459,15 +459,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
         // GET: Admin/JobPosts/Edit/5
         public ActionResult Edit(int id)
         {
-<<<<<<< HEAD
-            if (id == 0) // Lỗi này có thể do ID = 0 không hợp lệ
-            {
-                // Xử lý lỗi: ID không hợp lệ hoặc không tìm thấy
-=======
             if (id == 0)
             {
                
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
                 return HttpNotFound();
             }
             using (var db = new JOBPORTAL_ENDataContext(
@@ -482,11 +476,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 }
 
                 jobPost.Status = JobStatusHelper.NormalizeStatus(jobPost.Status);
-<<<<<<< HEAD
                 // --- BẮT ĐẦU PHẦN SỬA LỖI ---
-=======
                 
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
 
                 // 1. Lấy danh sách recruiters VỚI TÊN CÔNG TY (chuẩn bị 1 lần)
                 // (Giả định có quan hệ Recruiter -> Company)
@@ -500,11 +491,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 // 2. Tạo SelectList cho dropdown
                 ViewBag.RecruiterOptions = new SelectList(
-<<<<<<< HEAD
-                    recruiters, // Dùng list đã lấy ở trên
-=======
                     recruiters,
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
                     "RecruiterID",
                     "FullName",
                     jobPost.RecruiterID
@@ -513,19 +500,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // 3. TẠO MAP cho JavaScript (Key: RecruiterID, Value: CompanyName)
                 // Đây là dữ liệu chúng ta sẽ truyền sang View để JS sử dụng
                 ViewBag.RecruiterCompanyMap = recruiters.ToDictionary(
-<<<<<<< HEAD
-                    r => r.RecruiterID.ToString(), // Key (dạng string để JS dễ map)
-                    r => r.CompanyName ?? "Chưa gán công ty" // Value
-                );
-
-                // --- KẾT THÚC PHẦN SỬA LỖI ---
-=======
                     r => r.RecruiterID.ToString(), 
                     r => r.CompanyName ?? "Chưa gán công ty" 
                 );
 
               
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
 
                 // Load dropdown options with current selected values
                 ViewBag.CompanyOptions = new SelectList(
@@ -587,11 +566,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             {
                 JobStatusHelper.NormalizeStatuses(db);
 
-<<<<<<< HEAD
-                // --- BẮT ĐẦU KHỐI VALIDATION (Tương tự Create) ---
-=======
                
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
 
                 // Xóa validation error cho CompanyID vì nó được tự động lấy từ RecruiterID
                 ModelState.Remove("CompanyID");
@@ -663,11 +638,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (string.IsNullOrWhiteSpace(model.Status))
                     ModelState.AddModelError("Status", "Trạng thái là bắt buộc");
 
-<<<<<<< HEAD
-                // --- KẾT THÚC KHỐI VALIDATION ---
-=======
                
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
 
                 // Nếu có lỗi, load lại dropdown và trả về view
                 if (!ModelState.IsValid)
@@ -786,6 +757,14 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     if (job == null)
                     {
                         return HttpNotFound("Không tìm thấy tin tuyển dụng để xóa.");
+                    }
+
+                    // Kiểm tra ràng buộc với Applications
+                    var applicationCount = db.Applications.Count(a => a.JobPostID == JobPostID);
+                    if (applicationCount > 0)
+                    {
+                        TempData["ErrorMessage"] = $"Không thể xóa tin tuyển dụng này vì có {applicationCount} đơn ứng tuyển. Vui lòng xử lý các đơn ứng tuyển trước.";
+                        return RedirectToAction("Index");
                     }
 
                     db.JobPosts.DeleteOnSubmit(job);

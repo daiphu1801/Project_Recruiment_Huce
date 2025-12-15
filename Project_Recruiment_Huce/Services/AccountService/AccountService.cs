@@ -195,58 +195,95 @@ namespace Project_Recruiment_Huce.Services
             result.Data["Account"] = account;
             return result;
         }
-<<<<<<< HEAD
-=======
        
-        public void CreateGoogleProfile(string email, string fullName, string avatarUrl, int userType, int userId)
+        // ============================================================
+        // GOOGLE LOGIN SERVICE METHOD
+        // ============================================================
+
+        /// <summary>
+        /// Xử lý đăng nhập Google (Option A: Đơn giản, từ chối nếu email đã tồn tại với non-Google account)
+        /// </summary>
+        public GoogleLoginResult ProcessGoogleLogin(GoogleUserInfoViewModel googleUser)
         {
-            // 1. Xử lý Avatar mặc định nếu trống
-            if (string.IsNullOrEmpty(avatarUrl))
+            try
             {
-                avatarUrl = "/Content/images/default-avatar.png";
-            }
-
-            // 2. Xử lý tách tên (Vì Repository yêu cầu firstName/lastName)
-            string firstName = "";
-            string lastName = "";
-
-            if (!string.IsNullOrEmpty(fullName))
-            {
-                var names = fullName.Trim().Split(' ');
-                if (names.Length > 0)
+                // 1. Kiểm tra xem đã có account với GoogleId này chưa?
+                var existingGoogleAccount = _repo.FindByGoogleId(googleUser.GoogleId);
+                if (existingGoogleAccount != null)
                 {
-                    lastName = names[names.Length - 1]; // Tên thật
-                    if (names.Length > 1)
+                    // Đã có tài khoản, cho phép đăng nhập
+                    return new GoogleLoginResult
                     {
-                        firstName = fullName.Substring(0, fullName.Length - lastName.Length).Trim(); // Họ đệm
+                        Success = true,
+                        Account = existingGoogleAccount,
+                        IsNewAccount = false
+                    };
+                }
+
+                // 2. Kiểm tra email đã tồn tại chưa?
+                var existingEmailAccount = _repo.FindByEmail(googleUser.Email);
+                if (existingEmailAccount != null)
+                {
+                    // Option A: Từ chối nếu email đã tồn tại với tài khoản thường
+                    if (existingEmailAccount.IsGoogleAccount != true)
+                    {
+                        return new GoogleLoginResult
+                        {
+                            Success = false,
+                            ErrorMessage = "Email này đã được đăng ký với tài khoản thông thường. Vui lòng đăng nhập bằng mật khẩu."
+                        };
                     }
-                    else
+                    
+                    // Nếu là Google account nhưng GoogleId khác (trường hợp hiếm)
+                    return new GoogleLoginResult
                     {
-                        firstName = ""; // Trường hợp chỉ có 1 chữ
+                        Success = false,
+                        ErrorMessage = "Email này đã được liên kết với một tài khoản Google khác."
+                    };
+                }
+
+                // 3. Tạo tài khoản mới
+                // Generate username từ email
+                var username = _repo.GenerateUniqueUsername(googleUser.Email);
+
+                // Tạo Account
+                var newAccount = _repo.CreateGoogleAccount(googleUser.Email, googleUser.FullName, googleUser.GoogleId, username);
+
+                // Tạo Candidate profile
+                _repo.CreateCandidateProfile(newAccount.AccountID, googleUser.FullName, googleUser.Email);
+
+                // Lưu avatar nếu có
+                if (!string.IsNullOrWhiteSpace(googleUser.AvatarUrl))
+                {
+                    try
+                    {
+                        var photo = _repo.SaveProfilePhoto(googleUser.AvatarUrl, $"google_avatar_{newAccount.AccountID}.jpg");
+                        if (photo != null)
+                        {
+                            _repo.UpdateAccountPhotoId(newAccount.AccountID, photo.PhotoID);
+                        }
+                    }
+                    catch
+                    {
+                        // Không để lỗi avatar làm gián đoạn đăng nhập
                     }
                 }
+
+                return new GoogleLoginResult
+                {
+                    Success = true,
+                    Account = newAccount,
+                    IsNewAccount = true
+                };
             }
-            else
+            catch (Exception ex)
             {
-                // Nếu không có tên, lấy email làm tên tạm
-                lastName = email;
+                return new GoogleLoginResult
+                {
+                    Success = false,
+                    ErrorMessage = "Đã xảy ra lỗi trong quá trình xử lý đăng nhập Google: " + ex.Message
+                };
             }
-
-            // 3. Xử lý ngày sinh mặc định (Repository yêu cầu tham số này)
-            DateTime defaultBirthDate = DateTime.Now.AddYears(-20);
-
-            // 4. Gọi Repository (Đảm bảo gọi đúng thứ tự tham số của Repository bạn đã viết)
-            _repo.CreateGoogleProfile(
-                email: email,
-                firstName: firstName,
-                lastName: lastName,
-                userId: userId,         // int
-                FullName: fullName,
-                userType: userType,
-                Avatar: avatarUrl,
-                Birthdate: defaultBirthDate
-            );
         }
->>>>>>> b5687619104f46f9178da37581c63d949fa94225
     }
 }

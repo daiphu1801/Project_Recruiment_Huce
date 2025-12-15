@@ -2,7 +2,9 @@ using System;
 using System.Configuration;
 using System.Linq;
 using System.Security.Claims;
+using System.Web;
 using System.Web.Mvc;
+using Microsoft.Owin.Security;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Infrastructure;
 
@@ -11,20 +13,28 @@ namespace Project_Recruiment_Huce.Controllers
     /// <summary>
     /// Controller cơ sở cho tất cả controllers trong User area (không phải Admin)
     /// Cung cấp các phương thức trợ giúp chung để truy xuất thông tin người dùng hiện tại
+    /// CHỈ kiểm tra UserCookie authentication
     /// </summary>
     public abstract class BaseController : Controller
     {
         /// <summary>
-        /// Lấy AccountID của người dùng hiện tại từ Claims Identity
-        /// Được sử dụng để xác định người dùng đã đăng nhập
+        /// Lấy AccountID của người dùng hiện tại từ UserCookie Claims Identity
+        /// Được sử dụng để xác định người dùng đã đăng nhập (CHỈ User, không phải Admin)
         /// </summary>
-        /// <returns>AccountID nếu người dùng đã đăng nhập, null nếu chưa đăng nhập hoặc không tìm thấy claim</returns>
+        /// <returns>AccountID nếu người dùng đã đăng nhập với UserCookie, null nếu chưa đăng nhập hoặc không tìm thấy claim</returns>
         protected int? GetCurrentAccountId()
         {
-            if (User?.Identity == null || !User.Identity.IsAuthenticated)
+            // CHỈ check UserCookie authentication
+            var owinContext = System.Web.HttpContext.Current.GetOwinContext();
+            var authenticationResult = owinContext.Authentication.AuthenticateAsync("UserCookie").Result;
+            
+            if (authenticationResult == null || !authenticationResult.Identity.IsAuthenticated)
                 return null;
 
-            var idClaim = ((ClaimsIdentity)User.Identity).FindFirst(ClaimTypes.NameIdentifier);
+            var identity = authenticationResult.Identity as ClaimsIdentity;
+            if (identity == null) return null;
+            
+            var idClaim = identity.FindFirst(ClaimTypes.NameIdentifier);
             if (idClaim == null) return null;
             
             int accountId;

@@ -1,0 +1,60 @@
+@* Admin Notification Component *@
+@* Displays success, error, warning, and info messages using TempData *@
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <div>@Html.Raw(TempData["SuccessMessage"])</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <div>@Html.Raw(TempData["ErrorMessage"])</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>
+            <div>@Html.Raw(TempData["WarningMessage"])</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <div>@Html.Raw(TempData["InfoMessage"])</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<style>
+    .alert {
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    }
+    .alert i {
+        font-size: 1.25rem;
+    }
+    .alert .d-flex {
+        flex: 1;
+    }
+</style>

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using Project_Recruiment_Huce.Areas.Admin.Helpers;
 using Project_Recruiment_Huce.Areas.Admin.Models;
 using Project_Recruiment_Huce.Helpers;
 using Project_Recruiment_Huce.Models;
@@ -447,6 +448,44 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             {
                 var account = db.Accounts.FirstOrDefault(a => a.AccountID == id);
                 if (account == null) return HttpNotFound();
+
+                // Check for related data before deleting
+                if (account.Role == "Recruiter")
+                {
+                    var recruiter = db.Recruiters.FirstOrDefault(r => r.AccountID == id);
+                    if (recruiter != null)
+                    {
+                        // Check if recruiter has job posts
+                        var jobPostCount = db.JobPosts.Count(jp => jp.RecruiterID == recruiter.RecruiterID);
+                        if (jobPostCount > 0)
+                        {
+                            TempData["ErrorMessage"] = $"Không thể xóa tài khoản này vì có {jobPostCount} tin tuyển dụng đang được liên kết. Vui lòng xóa hoặc chuyển các tin tuyển dụng trước.";
+                            return RedirectToAction("Index");
+                        }
+
+                        // Check if recruiter has applications
+                        var applicationCount = db.Applications.Count(a => a.JobPost.RecruiterID == recruiter.RecruiterID);
+                        if (applicationCount > 0)
+                        {
+                            TempData["ErrorMessage"] = $"Không thể xóa tài khoản này vì có {applicationCount} đơn ứng tuyển liên quan. Vui lòng xử lý các đơn ứng tuyển trước.";
+                            return RedirectToAction("Index");
+                        }
+                    }
+                }
+                else if (account.Role == "Candidate")
+                {
+                    var candidate = db.Candidates.FirstOrDefault(c => c.AccountID == id);
+                    if (candidate != null)
+                    {
+                        // Check if candidate has applications
+                        var applicationCount = db.Applications.Count(a => a.CandidateID == candidate.CandidateID);
+                        if (applicationCount > 0)
+                        {
+                            TempData["ErrorMessage"] = $"Không thể xóa tài khoản này vì có {applicationCount} đơn ứng tuyển. Vui lòng xóa các đơn ứng tuyển trước.";
+                            return RedirectToAction("Index");
+                        }
+                    }
+                }
 
                 // Delete photo if exists
                 if (account.PhotoID.HasValue)

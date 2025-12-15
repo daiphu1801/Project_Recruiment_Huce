@@ -1,4 +1,5 @@
 using Microsoft.Owin.BuilderProperties;
+using Project_Recruiment_Huce.Areas.Admin.Helpers;
 using Project_Recruiment_Huce.Areas.Admin.Models;
 using Project_Recruiment_Huce.Helpers;
 using Project_Recruiment_Huce.Models;
@@ -495,6 +496,22 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             {
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.RecruiterID == id);
                 if (recruiter == null) return HttpNotFound();
+
+                // Kiểm tra ràng buộc với JobPosts
+                var jobPostCount = db.JobPosts.Count(jp => jp.RecruiterID == recruiter.RecruiterID);
+                if (jobPostCount > 0)
+                {
+                    TempData["ErrorMessage"] = $"Không thể xóa nhà tuyển dụng này vì có {jobPostCount} tin tuyển dụng đang được liên kết. Vui lòng xóa hoặc chuyển tin tuyển dụng trước.";
+                    return RedirectToAction("Index");
+                }
+
+                // Kiểm tra ràng buộc với Applications
+                var applicationCount = db.Applications.Count(a => a.JobPost.RecruiterID == recruiter.RecruiterID);
+                if (applicationCount > 0)
+                {
+                    TempData["ErrorMessage"] = $"Không thể xóa nhà tuyển dụng này vì có {applicationCount} đơn ứng tuyển liên quan. Vui lòng xử lý các đơn ứng tuyển trước.";
+                    return RedirectToAction("Index");
+                }
 
                 var account = db.Accounts.FirstOrDefault(a => a.AccountID == recruiter.AccountID);
 

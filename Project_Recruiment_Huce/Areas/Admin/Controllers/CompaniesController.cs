@@ -1,4 +1,5 @@
 using Microsoft.Owin.BuilderProperties;
+using Project_Recruiment_Huce.Areas.Admin.Helpers;
 using Project_Recruiment_Huce.Areas.Admin.Models;
 using Project_Recruiment_Huce.Helpers;
 using Project_Recruiment_Huce.Models;
@@ -583,39 +584,20 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var company = db.Companies.FirstOrDefault(c => c.CompanyID == id);
                 if (company == null) return HttpNotFound();
 
-                bool hasRecruiters = db.Recruiters.Any(r => r.CompanyID == id);
-                bool hasJobs = db.JobPosts.Any(j => j.CompanyID == id);
-
-                if (hasRecruiters || hasJobs)
+                // Kiểm tra ràng buộc với Recruiters
+                var recruiterCount = db.Recruiters.Count(r => r.CompanyID == id);
+                if (recruiterCount > 0)
                 {
-                    var vm = new CompanyListVm
-                    {
-                        CompanyId = company.CompanyID,
-                        CompanyName = company.CompanyName ?? string.Empty,
-                        TaxCode = company.TaxCode ?? string.Empty,
-                        Industry = company.Industry ?? string.Empty,
-                        Address = company.Address ?? string.Empty,
-                        Phone = company.Phone ?? string.Empty,
-                        Fax = company.Fax ?? string.Empty,
-                        CompanyEmail = company.CompanyEmail ?? string.Empty,
-                        Website = company.Website ?? string.Empty,
-                        Description = company.Description ?? string.Empty,
-                        ActiveFlag = company.ActiveFlag,
-                        CreatedAt = company.CreatedAt,
-                        PhotoId = company.PhotoID,
-                        PhotoUrl = company.ProfilePhoto != null ? company.ProfilePhoto.FilePath : null
-                    };
+                    TempData["ErrorMessage"] = $"Không thể xóa công ty này vì có {recruiterCount} nhà tuyển dụng đang liên kết. Vui lòng xóa hoặc chuyển nhà tuyển dụng sang công ty khác trước.";
+                    return RedirectToAction("Index");
+                }
 
-                    if (hasRecruiters)
-                    {
-                        ViewBag.ErrorMessage = "Xóa thất bại: Công ty này đang có Nhà tuyển dụng liên kết. Vui lòng xóa nhà tuyển dụng trước.";
-                    }
-                    else if (hasJobs)
-                    {
-                        ViewBag.ErrorMessage = "Xóa thất bại: Công ty này đang có Bài đăng tuyển dụng. Vui lòng xóa bài đăng trước.";
-                    }
-
-                    return View(vm);
+                // Kiểm tra ràng buộc với JobPosts
+                var jobPostCount = db.JobPosts.Count(j => j.CompanyID == id);
+                if (jobPostCount > 0)
+                {
+                    TempData["ErrorMessage"] = $"Không thể xóa công ty này vì có {jobPostCount} tin tuyển dụng đang được liên kết. Vui lòng xóa hoặc chuyển tin tuyển dụng sang công ty khác trước.";
+                    return RedirectToAction("Index");
                 }
 
                 try
@@ -634,14 +616,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 }
                 catch (Exception ex)
                 {
-                    var vm = new CompanyListVm
-                    {
-                        CompanyId = company.CompanyID,
-                        CompanyName = company.CompanyName,
-                        PhotoUrl = company.ProfilePhoto != null ? company.ProfilePhoto.FilePath : null
-                    };
-                    ViewBag.ErrorMessage = "Đã xảy ra lỗi hệ thống khi xóa: " + ex.Message;
-                    return View(vm);
+                    TempData["ErrorMessage"] = "Đã xảy ra lỗi hệ thống khi xóa: " + ex.Message;
+                    return RedirectToAction("Index");
                 }
             }
         }

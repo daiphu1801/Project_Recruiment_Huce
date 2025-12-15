@@ -196,7 +196,7 @@ namespace Project_Recruiment_Huce.Controllers
                         {
                             TempData["WarningMessage"] = error.Value;
                             TempData.Remove("ErrorMessage");
-                            return RedirectToAction("Details", "JobDetails", new { id = viewModel.JobPostID });
+                            return RedirectToAction("JobDetails", "Jobs", new { id = viewModel.JobPostID });
                         }
                         else
                         {
@@ -212,7 +212,7 @@ namespace Project_Recruiment_Huce.Controllers
             }
 
             TempData["SuccessMessage"] = "Bạn đã gửi đơn ứng tuyển thành công! Chúng tôi sẽ xem xét và liên hệ với bạn sớm nhất có thể.";
-            return RedirectToAction("Details", "JobDetails", new { id = viewModel.JobPostID });
+            return RedirectToAction("JobDetails", "Jobs", new { id = viewModel.JobPostID });
         }
     }
 }

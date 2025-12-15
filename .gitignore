@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Custom: Protect sensitive configuration files
+**/Web.config.local
+**/Web.config.backup
+**/appsettings.local.json
+**/*.local.config
