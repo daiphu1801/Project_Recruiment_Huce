@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Project_Recruiment_Huce.Models.Recruiters;
 using Project_Recruiment_Huce.Repositories.RecruiterApplicationRepo;
-
+using Hangfire;
+using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Services;
 namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
 {
     /// <summary>
@@ -144,11 +146,11 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
                 {
                     ApplicationID = application.ApplicationID,
                     JobPostID = application.JobPostID,
-                    CandidateName = !string.IsNullOrEmpty(application.Candidate?.FullName) 
-                        ? application.Candidate.FullName 
+                    CandidateName = !string.IsNullOrEmpty(application.Candidate?.FullName)
+                        ? application.Candidate.FullName
                         : "Ứng viên ẩn danh",
-                    JobTitle = !string.IsNullOrEmpty(application.JobPost?.Title) 
-                        ? application.JobPost.Title 
+                    JobTitle = !string.IsNullOrEmpty(application.JobPost?.Title)
+                        ? application.JobPost.Title
                         : "Công việc không có tiêu đề",
                     Status = application.Status ?? "Under review",
                     Note = application.Note
@@ -245,13 +247,13 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
                 ApplicationID = app.ApplicationID,
                 JobPostID = app.JobPostID,
                 CandidateID = app.CandidateID,
-                CandidateName = !string.IsNullOrEmpty(app.Candidate?.FullName) 
-                    ? app.Candidate.FullName 
+                CandidateName = !string.IsNullOrEmpty(app.Candidate?.FullName)
+                    ? app.Candidate.FullName
                     : "Ứng viên ẩn danh",
                 CandidateEmail = app.Candidate?.Email ?? "",
                 CandidatePhone = app.Candidate?.Phone ?? "",
-                JobTitle = !string.IsNullOrEmpty(app.JobPost?.Title) 
-                    ? app.JobPost.Title 
+                JobTitle = !string.IsNullOrEmpty(app.JobPost?.Title)
+                    ? app.JobPost.Title
                     : "Công việc không có tiêu đề",
                 JobCode = app.JobPost?.JobCode ?? "",
                 CompanyName = companyName,
@@ -310,6 +312,60 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
             }
         }
 
+        public ServiceResult ScheduleInterview(InterviewScheduleViewModel viewModel, int recruiterId)
+        {
+            try
+            {
+                // 1. Lấy dữ liệu
+                var application = _repository.GetApplicationById(viewModel.ApplicationID);
+                if (application == null)
+                    return new ServiceResult { Success = false, ErrorMessage = "Không tìm thấy đơn ứng tuyển." };
+
+                // 2. Check quyền
+                if (!_repository.IsApplicationOwnedByRecruiter(viewModel.ApplicationID, recruiterId))
+                    return new ServiceResult { Success = false, ErrorMessage = "Bạn không có quyền thao tác trên đơn ứng tuyển này." };
+
+                // 3. Map dữ liệu
+                var emailData = new InterviewEmailData
+                {
+                    ApplicationID = viewModel.ApplicationID,
+                    CandidateName = viewModel.CandidateName,
+                    CandidateEmail = viewModel.CandidateEmail,
+                    JobTitle = viewModel.JobTitle,
+                    InterviewDate = viewModel.InterviewDate,
+                    InterviewTime = viewModel.InterviewTime,
+                    Duration = viewModel.Duration ?? 0,
+                    Location = viewModel.Location,
+                    InterviewType = viewModel.InterviewType,
+                    Interviewer = viewModel.Interviewer,
+                    RequiredDocuments = viewModel.RequiredDocuments,
+                    AdditionalNotes = viewModel.AdditionalNotes
+                };
+
+                // 4. Gọi Hangfire (QUAN TRỌNG)
+                BackgroundJob.Enqueue<EmailService>(service => service.SendInterviewInvitation(emailData));
+
+                // 5. Update DB
+                string logNote = $"Đã gửi lịch phỏng vấn: {viewModel.InterviewDate:dd/MM/yyyy} lúc {viewModel.InterviewTime}.";
+                _repository.UpdateApplicationStatus(viewModel.ApplicationID, "Interview", logNote);
+                _repository.SaveChanges();
+
+                return new ServiceResult
+                {
+                    Success = true,
+                    SuccessMessage = $"Đã lên lịch thành công! Email mời phỏng vấn đang được gửi đến {viewModel.CandidateEmail}."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResult { Success = false, ErrorMessage = "Lỗi hệ thống: " + ex.Message };
+            }
+        }
+
+        // Helper
+
+
         #endregion
     }
 }
+

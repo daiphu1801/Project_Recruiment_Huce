@@ -33,6 +33,7 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
         /// Get list of jobs for filter dropdown
         /// </summary>
         List<JobFilterItem> GetJobsForFilter(int recruiterId);
+        ServiceResult ScheduleInterview(InterviewScheduleViewModel viewModel, int recruiterId);
     }
 
     #region Result Classes

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Linq;
 using System.Linq;
@@ -66,19 +66,47 @@ namespace Project_Recruiment_Huce.Repositories.RecruiterApplicationRepo
         public void UpdateApplicationStatus(int applicationId, string status, string note)
         {
             var application = _db.Applications.FirstOrDefault(a => a.ApplicationID == applicationId);
+
             if (application == null)
             {
                 throw new InvalidOperationException($"Application with ID {applicationId} not found");
             }
 
+            
+
             application.Status = status;
-            application.Note = note;
+            string timeStamp = $"[{DateTime.Now:dd/MM/yyyy HH:mm}] ";
+
+            if (!string.IsNullOrEmpty(application.Note))
+            {
+                // Nếu đã có ghi chú cũ, xuống dòng rồi nối thêm ghi chú mới
+                application.Note += Environment.NewLine + timeStamp + note;
+            }
+            else
+            {
+                // Nếu chưa có, tạo mới
+                application.Note = timeStamp + note;
+            }
+            // =========================================================================
+
+            // 3. Cập nhật thời gian
             application.UpdatedAt = DateTime.Now;
+
+            // Lưu ý: Code cũ của bạn không có _db.SubmitChanges() ở đây 
+            // mà gọi hàm SaveChanges() riêng ở Service. Nếu muốn an toàn, bạn có thể thêm:
+            // _db.SubmitChanges(); 
         }
+
+        
+
 
         public void SaveChanges()
         {
             _db.SubmitChanges();
+        }
+        public Application GetApplicationById(int id)
+        {
+            return _db.Applications.FirstOrDefault(a => a.ApplicationID == id);
         }
     }
 }

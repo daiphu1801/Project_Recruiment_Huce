@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Project_Recruiment_Huce.Models;
 
@@ -45,5 +45,8 @@ namespace Project_Recruiment_Huce.Repositories.RecruiterApplicationRepo
         /// Save changes to database
         /// </summary>
         void SaveChanges();
+        // Các hàm lấy dữ liệu
+        Application GetApplicationById(int id);
+       
     }
 }

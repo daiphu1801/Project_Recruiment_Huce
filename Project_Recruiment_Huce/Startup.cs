@@ -1,7 +1,8 @@
-﻿using Microsoft.Owin;
+﻿using Hangfire;
+using Microsoft.Owin;
 using Owin;
-using System.Web.Helpers;
 using System.Security.Claims;
+using System.Web.Helpers;
 
 [assembly: OwinStartupAttribute(typeof(Project_Recruiment_Huce.Startup))]
 namespace Project_Recruiment_Huce
@@ -14,6 +15,11 @@ namespace Project_Recruiment_Huce
             AntiForgeryConfig.UniqueClaimTypeIdentifier = ClaimTypes.NameIdentifier;
             
             ConfigureAuth(app);
+            GlobalConfiguration.Configuration
+                .UseSqlServerStorage("JOBPORTAL_ENConnectionString");
+
+            app.UseHangfireDashboard();
+            app.UseHangfireServer();
         }
     }
 }
