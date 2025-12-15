@@ -1,105 +1,166 @@
 ﻿@model Project_Recruiment_Huce.Models.Accounts.RegisterViewModel
 @{
     ViewBag.Title = "Đăng ký";
+    var userType = Request.QueryString["userType"] ?? "candidate";
 }
 
+@section Styles {
+    <link href="@Url.Content("~/Content/css/auth-split-screen.css")" rel="stylesheet" type="text/css" />
+}
+
+<!-- Hero Section -->
 <section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-7">
-        <h1 class="text-white font-weight-bold">Tạo tài khoản</h1>
-        <div class="custom-breadcrumbs">
-          <a href="@Url.Action("Index", "Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
-          <span class="text-white"><strong>Đăng ký</strong></span>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Đăng ký</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Đăng ký</strong></span>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </section>
 
-<section class="site-section">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-6">
-        <h2 class="mb-4">Đăng ký tài khoản JobBoard</h2>
-        @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { role = "form", @class = "p-4 border rounded" }))
-        {
-            @Html.AntiForgeryToken()
-            @Html.ValidationSummary("", new { @class = "text-danger" })
+<div class="auth-split-container">
+    @if (userType == "candidate")
+    {
+        <!-- Form Ứng Viên -->
+        <div class="auth-panel auth-panel-single">
+            <div class="auth-card scrollable">
+                <div class="auth-header">
+                    <div class="auth-icon">
+                        <i class="icon-user"></i>
+                    </div>
+                    <h2 class="auth-title">Đăng Ký Ứng Viên</h2>
+                    <p class="auth-subtitle">Tạo tài khoản để tìm kiếm công việc</p>
+                </div>
 
-            <div class="row form-group">
-              <div class="col-md-12 mb-3 mb-md-0">
-                @Html.LabelFor(m => m.TenDangNhap, new { @class = "text-black" })
-                @Html.TextBoxFor(m => m.TenDangNhap, new { @class = "form-control", placeholder = "Nhập tên đăng nhập" })
-                @Html.ValidationMessageFor(m => m.TenDangNhap, "", new { @class = "text-danger" })
-              </div>
-            </div>
-
-            <div class="row form-group">
-              <div class="col-md-12 mb-3 mb-md-0">
-                @Html.LabelFor(m => m.Email, new { @class = "text-black" })
-                @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "email@example.com" })
-                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
-              </div>
-            </div>
-
-            <div class="row form-group">
-              <div class="col-md-12 mb-3 mb-md-0">
-                @Html.LabelFor(m => m.SoDienThoai, new { @class = "text-black" })
-                @Html.TextBoxFor(m => m.SoDienThoai, new { @class = "form-control", placeholder = "Số điện thoại (tùy chọn)" })
-                @Html.ValidationMessageFor(m => m.SoDienThoai, "", new { @class = "text-danger" })
-              </div>
-            </div>
-
-            <div class="row form-group">
-              <div class="col-md-12 mb-3 mb-md-0">
-                @Html.LabelFor(m => m.VaiTro, new { @class = "text-black" })
-                @Html.DropDownListFor(m => m.VaiTro, new SelectList(new[]
+                @using (Html.BeginForm("Register", "Account", new { userType = "candidate" }, FormMethod.Post))
                 {
-                    new SelectListItem { Text = "-- Chọn vai trò --", Value = "" },
-                    new SelectListItem { Text = "Người ứng tuyển", Value = "NguoiUngTuyen" },
-                    new SelectListItem { Text = "Nhà tuyển dụng", Value = "NhaTuyenDung" }
-                }, "Value", "Text"), new { @class = "form-control" })
-                @Html.ValidationMessageFor(m => m.VaiTro, "", new { @class = "text-danger" })
-              </div>
-            </div>
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary("", new { @class = "text-danger" })
 
-            <div class="row form-group">
-              <div class="col-md-12 mb-3 mb-md-0">
-                @Html.LabelFor(m => m.Password, new { @class = "text-black" })
-                <div style="position: relative;">
-                  @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Tối thiểu 6 ký tự", id = "Password", style = "padding-right: 40px;" })
-                  <span class="password-toggle-icon icon-eye" onclick="togglePassword('Password', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+                    <div class="auth-form-group">
+                        <label class="auth-label">Tên đăng nhập *</label>
+                        @Html.TextBoxFor(m => m.TenDangNhap, new { @class = "auth-input", placeholder = "Nhập tên đăng nhập" })
+                        @Html.ValidationMessageFor(m => m.TenDangNhap, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label class="auth-label">Email *</label>
+                        @Html.TextBoxFor(m => m.Email, new { @class = "auth-input", placeholder = "email@example.com" })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label class="auth-label">Số điện thoại</label>
+                        @Html.TextBoxFor(m => m.SoDienThoai, new { @class = "auth-input", placeholder = "Số điện thoại (tùy chọn)" })
+                        @Html.ValidationMessageFor(m => m.SoDienThoai, "", new { @class = "text-danger" })
+                    </div>
+
+                    @Html.HiddenFor(m => m.VaiTro, new { Value = "NguoiUngTuyen" })
+
+                    <div class="auth-form-group">
+                        <label class="auth-label">Mật khẩu *</label>
+                        <div class="password-toggle">
+                            @Html.PasswordFor(m => m.Password, new { @class = "auth-input", placeholder = "Tối thiểu 6 ký tự", id = "Password" })
+                            <span class="password-toggle-icon icon-eye" onclick="togglePassword('Password', this)"></span>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label class="auth-label">Xác nhận mật khẩu *</label>
+                        <div class="password-toggle">
+                            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "auth-input", placeholder = "Nhập lại mật khẩu", id = "ConfirmPassword" })
+                            <span class="password-toggle-icon icon-eye" onclick="togglePassword('ConfirmPassword', this)"></span>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger" })
+                    </div>
+
+                    <button type="submit" class="auth-btn auth-btn-primary">
+                        Đăng ký
+                    </button>
+                }
+
+                <div class="auth-links">
+                    <div>Đã có tài khoản? @Html.ActionLink("Đăng nhập", "Login", new { userType = "candidate" })</div>
+                    <div style="margin-top: 8px;">Bạn là nhà tuyển dụng? @Html.ActionLink("Đăng ký ở đây", "Register", new { userType = "recruiter" })</div>
                 </div>
-                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
-              </div>
             </div>
-
-            <div class="row form-group mb-4">
-              <div class="col-md-12 mb-3 mb-md-0">
-                @Html.LabelFor(m => m.ConfirmPassword, new { @class = "text-black" })
-                <div style="position: relative;">
-                  @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Nhập lại mật khẩu", id = "ConfirmPassword", style = "padding-right: 40px;" })
-                  <span class="password-toggle-icon icon-eye" onclick="togglePassword('ConfirmPassword', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
+        </div>
+    }
+    else
+    {
+        <!-- Form Nhà Tuyển Dụng -->
+        <div class="auth-panel auth-panel-single">
+            <div class="auth-card scrollable">
+                <div class="auth-header">
+                    <div class="auth-icon">
+                        <i class="icon-briefcase"></i>
+                    </div>
+                    <h2 class="auth-title">Đăng Ký NTD</h2>
+                    <p class="auth-subtitle">Tạo tài khoản để tuyển dụng nhân tài</p>
                 </div>
-                @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger" })
-              </div>
-            </div>
 
-            <div class="row form-group">
-              <div class="col-md-12">
-                <input type="submit" value="Đăng ký" class="btn px-4 btn-primary text-white" />
-              </div>
-            </div>
+                @using (Html.BeginForm("Register", "Account", new { userType = "recruiter" }, FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary("", new { @class = "text-danger" })
 
-            <p>
-              Đã có tài khoản? @Html.ActionLink("Đăng nhập", "Login")
-            </p>
-        }
-      </div>
-    </div>
-  </div>
-</section>
+                    <div class="auth-form-group">
+                        <label class="auth-label">Tên đăng nhập *</label>
+                        @Html.TextBoxFor(m => m.TenDangNhap, new { @class = "auth-input", placeholder = "Nhập tên đăng nhập" })
+                        @Html.ValidationMessageFor(m => m.TenDangNhap, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label class="auth-label">Email *</label>
+                        @Html.TextBoxFor(m => m.Email, new { @class = "auth-input", placeholder = "email@example.com" })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label class="auth-label">Số điện thoại</label>
+                        @Html.TextBoxFor(m => m.SoDienThoai, new { @class = "auth-input", placeholder = "Số điện thoại (tùy chọn)" })
+                        @Html.ValidationMessageFor(m => m.SoDienThoai, "", new { @class = "text-danger" })
+                    </div>
+
+                    @Html.HiddenFor(m => m.VaiTro, new { Value = "NhaTuyenDung" })
+
+                    <div class="auth-form-group">
+                        <label class="auth-label">Mật khẩu *</label>
+                        <div class="password-toggle">
+                            @Html.PasswordFor(m => m.Password, new { @class = "auth-input", placeholder = "Tối thiểu 6 ký tự", id = "Password" })
+                            <span class="password-toggle-icon icon-eye" onclick="togglePassword('Password', this)"></span>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label class="auth-label">Xác nhận mật khẩu *</label>
+                        <div class="password-toggle">
+                            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "auth-input", placeholder = "Nhập lại mật khẩu", id = "ConfirmPassword" })
+                            <span class="password-toggle-icon icon-eye" onclick="togglePassword('ConfirmPassword', this)"></span>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger" })
+                    </div>
+
+                    <button type="submit" class="auth-btn auth-btn-primary">
+                        Đăng ký
+                    </button>
+                }
+
+                <div class="auth-links">
+                    <div>Đã có tài khoản? @Html.ActionLink("Đăng nhập", "Login", new { userType = "recruiter" })</div>
+                    <div style="margin-top: 8px;">Bạn là ứng viên? @Html.ActionLink("Đăng ký ở đây", "Register", new { userType = "candidate" })</div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")

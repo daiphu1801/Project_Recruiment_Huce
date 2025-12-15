@@ -1,124 +1,248 @@
 ﻿@using Project_Recruiment_Huce.Models.Accounts
 
-    @model LoginViewModel
-    @{
-        ViewBag.Title = "Đăng nhập";
-    }
+@model LoginViewModel
+@{
+    ViewBag.Title = "Đăng nhập";
+}
 
-    <section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-7">
-                    <h1 class="text-white font-weight-bold">Đăng nhập</h1>
-                    <div class="custom-breadcrumbs">
-                        <a href="@Url.Action("Index", "Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
-                        <span class="text-white"><strong>Đăng nhập</strong></span>
-                    </div>
+@section Styles {
+    <link href="@Url.Content("~/Content/css/auth-split-screen.css")" rel="stylesheet" type="text/css" />
+}
+
+<!-- Hero Section -->
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <h1 class="text-white font-weight-bold">Đăng nhập</h1>
+                <div class="custom-breadcrumbs">
+                    <a href="@Url.Action("Index","Home")">Trang chủ</a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong>Đăng nhập</strong></span>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="site-section">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-6">
-                    <h2 class="mb-4">Đăng nhập vào JobBoard</h2>
-
-                    @* Hiển thị thông báo lỗi từ TempData *@
-                    @if (TempData["ErrorMessage"] != null)
-                    {
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            @TempData["ErrorMessage"]
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    }
-
-                    <div class="p-4 border rounded">
-                        @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form" }))
-                        {
-                            @Html.AntiForgeryToken()
-                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
-                            <div class="row form-group">
-                                <div class="col-md-12 mb-3 mb-md-0">
-                                    @Html.LabelFor(m => m.EmailOrUsername, new { @class = "text-black" })
-                                    @Html.TextBoxFor(m => m.EmailOrUsername, new { @class = "form-control", placeholder = "Nhập tên đăng nhập hoặc email" })
-                                    @Html.ValidationMessageFor(m => m.EmailOrUsername, "", new { @class = "text-danger" })
-                                </div>
-                            </div>
-
-                            <div class="row form-group mb-4">
-                                <div class="col-md-12 mb-3 mb-md-0">
-                                    @Html.LabelFor(m => m.Password, new { @class = "text-black" })
-                                    <div style="position: relative;">
-                                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Nhập mật khẩu", id = "Password", style = "padding-right: 40px;" })
-                                        <span class="password-toggle-icon icon-eye" onclick="togglePassword('Password', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #666; user-select: none; z-index: 10;"></span>
-                                    </div>
-                                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
-                                </div>
-                            </div>
-
-                            <div class="row form-group">
-                                <div class="col-md-12">
-                                    <div class="checkbox">
-                                        <label>
-                                            @Html.CheckBoxFor(m => m.RememberMe)
-                                            Giữ đăng nhập
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row form-group">
-                                <div class="col-md-12">
-                                    <input type="submit" value="Đăng nhập" class="btn px-4 btn-primary text-white btn-block" />
-                                </div>
-                            </div>
-                        } <hr class="my-4" />
-
-                        <div class="text-center">
-                            @using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post))
-                            {
-                                @Html.AntiForgeryToken()
-                                <button type="submit" name="provider" value="Google" class="btn btn-danger btn-block d-flex align-items-center justify-content-center" title="Đăng nhập bằng Google">
-                                    <i class="icon-google mr-2"></i> Đăng nhập bằng Google
-                                </button>
-                            }
-                        </div>
-
-                        <div class="row form-group mt-4">
-                            <div class="col-md-12 text-center">
-                                <p class="mb-2">
-                                    @Html.ActionLink("Quên mật khẩu?", "ForgotPassword", null, new { @class = "text-primary" })
-                                </p>
-                                <p>
-                                    Chưa có tài khoản? @Html.ActionLink("Đăng ký ngay", "Register", null, new { @class = "text-primary font-weight-bold" })
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+<div class="auth-split-container">
+    <!-- Panel Ứng Viên -->
+    <div class="auth-panel auth-panel-left">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i class="icon-user"></i>
                 </div>
+                <h2 class="auth-title">Đăng nhập Ứng viên</h2>
+                <p class="auth-subtitle">Đăng nhập để tiếp tục với JobBoard</p>
             </div>
-        </div>
-    </section>
 
-    @section Scripts {
-        @Scripts.Render("~/bundles/jqueryval")
-        <script>
-            function togglePassword(inputId, iconElement) {
-                var input = document.getElementById(inputId);
-                if (input.type === "password") {
-                    input.type = "text";
-                    iconElement.classList.remove("icon-eye");
-                    iconElement.classList.add("icon-eye-slash");
-                } else {
-                    input.type = "password";
-                    iconElement.classList.remove("icon-eye-slash");
-                    iconElement.classList.add("icon-eye");
-                }
+            @if (TempData["ErrorMessage"] != null && ViewBag.UserType != "recruiter")
+            {
+                <div class="alert-custom alert-danger-custom">
+                    @TempData["ErrorMessage"]
+                </div>
             }
-        </script>
-    }
+
+            <!-- Google Login First -->
+            @using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = ViewBag.ReturnUrl, userType = "candidate" }, FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <button type="submit" name="provider" value="Google" class="auth-btn auth-btn-google">
+                    <i class="icon-google"></i>
+                    Tiếp tục với Google
+                </button>
+            }
+
+            <div class="auth-divider">
+                <span>Hoặc đăng nhập với email</span>
+            </div>
+
+            @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl, userType = "candidate" }, FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="auth-form-group">
+                    <label class="auth-label">Email hoặc tên đăng nhập</label>
+                    @Html.TextBoxFor(m => m.EmailOrUsername, new { @class = "auth-input", placeholder = "your.email@example.com", id = "candidateEmailOrUsername" })
+                    @Html.ValidationMessageFor(m => m.EmailOrUsername, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="auth-form-group">
+                    <label class="auth-label">Mật khẩu</label>
+                    <div class="password-toggle">
+                        @Html.PasswordFor(m => m.Password, new { @class = "auth-input", placeholder = "Nhập mật khẩu", id = "candidatePassword" })
+                        <span class="password-toggle-icon icon-eye" onclick="togglePassword('candidatePassword', this)"></span>
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="auth-form-group">
+                    <label class="checkbox-wrapper">
+                        @Html.CheckBoxFor(m => m.RememberMe, new { id = "candidateRememberMe" })
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-btn auth-btn-primary">
+                    Đăng nhập
+                </button>
+            }
+
+            <div class="auth-links">
+                <div>@Html.ActionLink("Quên mật khẩu?", "ForgotPassword")</div>
+                <div style="margin-top: 10px;">
+                    Chưa có tài khoản? @Html.ActionLink("Đăng ký ngay", "Register", new { userType = "candidate" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Nhà Tuyển Dụng với Info Card -->
+    <div class="auth-panel auth-panel-right">
+        <!-- Info Card -->
+        <div class="recruiter-info-card">
+            <div class="recruiter-info-icon">
+                <i class="icon-briefcase"></i>
+            </div>
+            <h2 class="recruiter-info-title">Bạn là Nhà tuyển dụng?</h2>
+            <p class="recruiter-info-subtitle">Quản lý tuyển dụng hiệu quả với hệ thống chuyên nghiệp</p>
+            
+            <div class="recruiter-stats">
+                <div class="stat-item">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Công ty</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1000+</div>
+                    <div class="stat-label">Tin tuyển</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50k+</div>
+                    <div class="stat-label">Ứng viên</div>
+                </div>
+            </div>
+
+            <div class="recruiter-actions">
+                <button type="button" class="recruiter-btn recruiter-btn-light" onclick="toggleRecruiterLogin()">
+                    <i class="icon-lock"></i> Đăng nhập Nhà tuyển dụng
+                </button>
+                <a href="@Url.Action("Register", "Account", new { userType = "recruiter" })" class="recruiter-btn recruiter-btn-outline">
+                    <i class="icon-user-plus"></i> Đăng ký Nhà tuyển dụng
+                </a>
+            </div>
+
+            <div class="recruiter-features">
+                <h3 class="features-title">Tính năng nổi bật:</h3>
+                <ul class="features-list">
+                    <li><i class="icon-check"></i> Quản lý team tuyển dụng</li>
+                    <li><i class="icon-check"></i> Trang tuyển dụng riêng biệt</li>
+                    <li><i class="icon-check"></i> Phân quyền chi tiết</li>
+                    <li><i class="icon-check"></i> Báo cáo và thống kê</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Form Đăng Nhập Nhà Tuyển Dụng (ẩn mặc định) -->
+        <div class="auth-card auth-card-recruiter" id="recruiterLoginForm" style="display: none;">
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i class="icon-briefcase"></i>
+                </div>
+                <h2 class="auth-title">Nhà Tuyển Dụng</h2>
+                <p class="auth-subtitle">Quản lý tuyển dụng hiệu quả</p>
+            </div>
+
+            @if (TempData["ErrorMessage"] != null && ViewBag.UserType == "recruiter")
+            {
+                <div class="alert-custom alert-danger-custom">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl, userType = "recruiter" }, FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="auth-form-group">
+                    <label class="auth-label">Email hoặc tên đăng nhập</label>
+                    @Html.TextBoxFor(m => m.EmailOrUsername, new { @class = "auth-input", placeholder = "company@example.com", id = "recruiterEmailOrUsername" })
+                    @Html.ValidationMessageFor(m => m.EmailOrUsername, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="auth-form-group">
+                    <label class="auth-label">Mật khẩu</label>
+                    <div class="password-toggle">
+                        @Html.PasswordFor(m => m.Password, new { @class = "auth-input", placeholder = "Nhập mật khẩu", id = "recruiterPassword" })
+                        <span class="password-toggle-icon icon-eye" onclick="togglePassword('recruiterPassword', this)"></span>
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="auth-form-group">
+                    <label class="checkbox-wrapper">
+                        @Html.CheckBoxFor(m => m.RememberMe, new { id = "recruiterRememberMe" })
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-btn auth-btn-primary">
+                    Đăng nhập
+                </button>
+            }
+
+            <div class="auth-links">
+                <div>@Html.ActionLink("Quên mật khẩu?", "ForgotPassword")</div>
+                <div style="margin-top: 10px;">
+                    Chưa có tài khoản? @Html.ActionLink("Đăng ký ngay", "Register", new { userType = "recruiter" })
+                </div>
+                <div style="margin-top: 10px;">
+                    <a href="javascript:void(0)" onclick="toggleRecruiterLogin()">← Quay lại</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePassword(inputId, iconElement) {
+            var input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                iconElement.classList.remove("icon-eye");
+                iconElement.classList.add("icon-eye-slash");
+            } else {
+                input.type = "password";
+                iconElement.classList.remove("icon-eye-slash");
+                iconElement.classList.add("icon-eye");
+            }
+        }
+
+        function toggleRecruiterLogin() {
+            var candidatePanel = document.querySelector('.auth-panel-left');
+            var infoCard = document.querySelector('.recruiter-info-card');
+            var loginForm = document.getElementById('recruiterLoginForm');
+            var container = document.querySelector('.auth-split-container');
+            
+            if (loginForm.style.display === 'none') {
+                // Hiện form login NTD, ẩn form ứng viên và info card
+                candidatePanel.style.display = 'none';
+                infoCard.style.display = 'none';
+                loginForm.style.display = 'block';
+                container.style.justifyContent = 'center';
+            } else {
+                // Quay lại: hiện form ứng viên và info card, ẩn form login NTD
+                candidatePanel.style.display = 'flex';
+                infoCard.style.display = 'block';
+                loginForm.style.display = 'none';
+                container.style.justifyContent = 'space-between';
+            }
+        }
+
+        // Auto show login form if there's an error for recruiter
+        @if (TempData["ErrorMessage"] != null && ViewBag.UserType == "recruiter")
+        {
+            @:toggleRecruiterLogin();
+        }
+    </script>
+}
