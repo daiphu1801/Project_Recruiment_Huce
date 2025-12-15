@@ -11,7 +11,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 {
     public class PhotosController : AdminBaseController
     {
+<<<<<<< HEAD
         // ========== LIST ==========
+=======
+       
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
         public ActionResult Index(string q, int page = 1)
         {
             ViewBag.Title = "Thư viện ảnh";
@@ -62,7 +66,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
+<<<<<<< HEAD
         // ========== DETAILS ==========
+=======
+      
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
         public ActionResult Details(int id)
         {
             using (var db = new JOBPORTAL_ENDataContext(
@@ -92,7 +100,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
+<<<<<<< HEAD
         // ========== CREATE (GET) ==========
+=======
+        
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
         public ActionResult Create()
         {
             ViewBag.Title = "Thêm ảnh mới";
@@ -104,7 +116,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
             return View();
         }
+<<<<<<< HEAD
         // ========== CREATE (POST) ==========
+=======
+        
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
         [HttpPost]
 
         public ActionResult Create(CreatePhotoVm model)

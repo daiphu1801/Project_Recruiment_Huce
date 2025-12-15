@@ -66,7 +66,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         Address = c.Address,
                         PhotoUrl = photoUrl,
                         Summary = c.Summary,
+<<<<<<< HEAD
                         ApplicationEmail = c.ApplicationEmail,
+=======
+                        //ApplicationEmail = c.ApplicationEmail,
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
                         UserName = account?.Username
                     };
                 }).ToList();
@@ -105,7 +109,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Address = candidate.Address,
                     PhotoUrl = account?.ProfilePhoto?.FilePath,
                     Summary = candidate.Summary,
+<<<<<<< HEAD
                     ApplicationEmail = candidate.ApplicationEmail,
+=======
+                    //ApplicationEmail = candidate.ApplicationEmail,
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
                     UserName = account?.Username
                 };
 
@@ -220,7 +228,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Account = account, 
                     FullName = model.FullName,
                     Email = model.Email, 
+<<<<<<< HEAD
                     ApplicationEmail = model.ApplicationEmail,
+=======
+                    //ApplicationEmail = model.ApplicationEmail,
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
                     Phone = phone,
                     CreatedAt = DateTime.Now,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,
@@ -276,7 +288,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Email = candidate.Email,
                     Address = candidate.Address,
                     Summary = candidate.Summary,
+<<<<<<< HEAD
                     ApplicationEmail = candidate.ApplicationEmail,
+=======
+                    //ApplicationEmail = candidate.ApplicationEmail,
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
                     Username = account?.Username,
                     CurrentPhotoId = account?.PhotoID,
                     CurrentPhotoUrl = account?.ProfilePhoto?.FilePath
@@ -376,7 +392,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 candidate.Gender = model.Gender;
                 candidate.Phone = phone; 
                 candidate.Email = model.Email; 
+<<<<<<< HEAD
                 candidate.ApplicationEmail = model.ApplicationEmail;
+=======
+                //candidate.ApplicationEmail = model.ApplicationEmail;
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
                 candidate.Address = model.Address;
                 candidate.Summary = model.Summary;
                 candidate.ActiveFlag = model.Active ? (byte)1 : (byte)0;

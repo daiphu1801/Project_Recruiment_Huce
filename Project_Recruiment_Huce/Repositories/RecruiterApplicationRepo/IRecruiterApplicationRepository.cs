@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 ﻿using System.Collections.Generic;
+=======
+using System.Collections.Generic;
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 using System.Linq;
 using Project_Recruiment_Huce.Models;
 
@@ -45,8 +49,11 @@ namespace Project_Recruiment_Huce.Repositories.RecruiterApplicationRepo
         /// Save changes to database
         /// </summary>
         void SaveChanges();
+<<<<<<< HEAD
         // Các hàm lấy dữ liệu
         Application GetApplicationById(int id);
        
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     }
 }

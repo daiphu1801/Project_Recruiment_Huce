@@ -39,12 +39,24 @@ namespace Project_Recruiment_Huce.Models
     partial void InsertApplication(Application instance);
     partial void UpdateApplication(Application instance);
     partial void DeleteApplication(Application instance);
+<<<<<<< HEAD
+=======
+    partial void InsertAspNetUserLogin(AspNetUserLogin instance);
+    partial void UpdateAspNetUserLogin(AspNetUserLogin instance);
+    partial void DeleteAspNetUserLogin(AspNetUserLogin instance);
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     partial void InsertCandidate(Candidate instance);
     partial void UpdateCandidate(Candidate instance);
     partial void DeleteCandidate(Candidate instance);
     partial void InsertCompany(Company instance);
     partial void UpdateCompany(Company instance);
     partial void DeleteCompany(Company instance);
+<<<<<<< HEAD
+=======
+    partial void InsertContactMessage(ContactMessage instance);
+    partial void UpdateContactMessage(ContactMessage instance);
+    partial void DeleteContactMessage(ContactMessage instance);
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     partial void InsertJobPostDetail(JobPostDetail instance);
     partial void UpdateJobPostDetail(JobPostDetail instance);
     partial void DeleteJobPostDetail(JobPostDetail instance);
@@ -69,12 +81,21 @@ namespace Project_Recruiment_Huce.Models
     partial void InsertSavedJob(SavedJob instance);
     partial void UpdateSavedJob(SavedJob instance);
     partial void DeleteSavedJob(SavedJob instance);
+<<<<<<< HEAD
     partial void InsertSePayTransaction(SePayTransaction instance);
     partial void UpdateSePayTransaction(SePayTransaction instance);
     partial void DeleteSePayTransaction(SePayTransaction instance);
     partial void InsertContactMessage(ContactMessage instance);
     partial void UpdateContactMessage(ContactMessage instance);
     partial void DeleteContactMessage(ContactMessage instance);
+=======
+    partial void InsertSchemaMigration(SchemaMigration instance);
+    partial void UpdateSchemaMigration(SchemaMigration instance);
+    partial void DeleteSchemaMigration(SchemaMigration instance);
+    partial void InsertSePayTransaction(SePayTransaction instance);
+    partial void UpdateSePayTransaction(SePayTransaction instance);
+    partial void DeleteSePayTransaction(SePayTransaction instance);
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     #endregion
 		
 		public JOBPORTAL_ENDataContext(string connection) : 
@@ -125,6 +146,17 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
+=======
+		public System.Data.Linq.Table<AspNetUserLogin> AspNetUserLogins
+		{
+			get
+			{
+				return this.GetTable<AspNetUserLogin>();
+			}
+		}
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		public System.Data.Linq.Table<Candidate> Candidates
 		{
 			get
@@ -141,6 +173,17 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
+=======
+		public System.Data.Linq.Table<ContactMessage> ContactMessages
+		{
+			get
+			{
+				return this.GetTable<ContactMessage>();
+			}
+		}
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		public System.Data.Linq.Table<JobPostDetail> JobPostDetails
 		{
 			get
@@ -205,6 +248,17 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
+=======
+		public System.Data.Linq.Table<SchemaMigration> SchemaMigrations
+		{
+			get
+			{
+				return this.GetTable<SchemaMigration>();
+			}
+		}
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		public System.Data.Linq.Table<SePayTransaction> SePayTransactions
 		{
 			get
@@ -212,6 +266,7 @@ namespace Project_Recruiment_Huce.Models
 				return this.GetTable<SePayTransaction>();
 			}
 		}
+<<<<<<< HEAD
 		
 		public System.Data.Linq.Table<ContactMessage> ContactMessages
 		{
@@ -220,6 +275,8 @@ namespace Project_Recruiment_Huce.Models
 				return this.GetTable<ContactMessage>();
 			}
 		}
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 	}
 	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Accounts")]
@@ -234,6 +291,11 @@ namespace Project_Recruiment_Huce.Models
 		
 		private string _PasswordHash;
 		
+<<<<<<< HEAD
+=======
+		private string _Salt;
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		private string _Email;
 		
 		private string _Phone;
@@ -246,6 +308,13 @@ namespace Project_Recruiment_Huce.Models
 		
 		private System.Nullable<int> _PhotoID;
 		
+<<<<<<< HEAD
+=======
+		private string _Avatar;
+		
+		private string _FullName;
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		private EntitySet<Admin> _Admins;
 		
 		private EntitySet<Candidate> _Candidates;
@@ -266,6 +335,11 @@ namespace Project_Recruiment_Huce.Models
     partial void OnUsernameChanged();
     partial void OnPasswordHashChanging(string value);
     partial void OnPasswordHashChanged();
+<<<<<<< HEAD
+=======
+    partial void OnSaltChanging(string value);
+    partial void OnSaltChanged();
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     partial void OnEmailChanging(string value);
     partial void OnEmailChanged();
     partial void OnPhoneChanging(string value);
@@ -278,6 +352,13 @@ namespace Project_Recruiment_Huce.Models
     partial void OnActiveFlagChanged();
     partial void OnPhotoIDChanging(System.Nullable<int> value);
     partial void OnPhotoIDChanged();
+<<<<<<< HEAD
+=======
+    partial void OnAvatarChanging(string value);
+    partial void OnAvatarChanged();
+    partial void OnFullNameChanging(string value);
+    partial void OnFullNameChanged();
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     #endregion
 		
 		public Account()
@@ -350,6 +431,29 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
+=======
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Salt", DbType="NVarChar(255)")]
+		public string Salt
+		{
+			get
+			{
+				return this._Salt;
+			}
+			set
+			{
+				if ((this._Salt != value))
+				{
+					this.OnSaltChanging(value);
+					this.SendPropertyChanging();
+					this._Salt = value;
+					this.SendPropertyChanged("Salt");
+					this.OnSaltChanged();
+				}
+			}
+		}
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Email", DbType="NVarChar(150) NOT NULL", CanBeNull=false)]
 		public string Email
 		{
@@ -474,6 +578,49 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
+=======
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Avatar", DbType="NVarChar(255) NOT NULL", CanBeNull=false)]
+		public string Avatar
+		{
+			get
+			{
+				return this._Avatar;
+			}
+			set
+			{
+				if ((this._Avatar != value))
+				{
+					this.OnAvatarChanging(value);
+					this.SendPropertyChanging();
+					this._Avatar = value;
+					this.SendPropertyChanged("Avatar");
+					this.OnAvatarChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FullName", DbType="NVarChar(255) NOT NULL", CanBeNull=false)]
+		public string FullName
+		{
+			get
+			{
+				return this._FullName;
+			}
+			set
+			{
+				if ((this._FullName != value))
+				{
+					this.OnFullNameChanging(value);
+					this.SendPropertyChanging();
+					this._FullName = value;
+					this.SendPropertyChanged("FullName");
+					this.OnFullNameChanged();
+				}
+			}
+		}
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_Admin", Storage="_Admins", ThisKey="AccountID", OtherKey="AccountID")]
 		public EntitySet<Admin> Admins
 		{
@@ -1188,6 +1335,119 @@ namespace Project_Recruiment_Huce.Models
 		}
 	}
 	
+<<<<<<< HEAD
+=======
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.AspNetUserLogins")]
+	public partial class AspNetUserLogin : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private string _LoginProvider;
+		
+		private string _ProviderKey;
+		
+		private string _UserId;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnLoginProviderChanging(string value);
+    partial void OnLoginProviderChanged();
+    partial void OnProviderKeyChanging(string value);
+    partial void OnProviderKeyChanged();
+    partial void OnUserIdChanging(string value);
+    partial void OnUserIdChanged();
+    #endregion
+		
+		public AspNetUserLogin()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LoginProvider", DbType="NVarChar(128) NOT NULL", CanBeNull=false, IsPrimaryKey=true)]
+		public string LoginProvider
+		{
+			get
+			{
+				return this._LoginProvider;
+			}
+			set
+			{
+				if ((this._LoginProvider != value))
+				{
+					this.OnLoginProviderChanging(value);
+					this.SendPropertyChanging();
+					this._LoginProvider = value;
+					this.SendPropertyChanged("LoginProvider");
+					this.OnLoginProviderChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ProviderKey", DbType="NVarChar(128) NOT NULL", CanBeNull=false, IsPrimaryKey=true)]
+		public string ProviderKey
+		{
+			get
+			{
+				return this._ProviderKey;
+			}
+			set
+			{
+				if ((this._ProviderKey != value))
+				{
+					this.OnProviderKeyChanging(value);
+					this.SendPropertyChanging();
+					this._ProviderKey = value;
+					this.SendPropertyChanged("ProviderKey");
+					this.OnProviderKeyChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UserId", DbType="NVarChar(128) NOT NULL", CanBeNull=false, IsPrimaryKey=true)]
+		public string UserId
+		{
+			get
+			{
+				return this._UserId;
+			}
+			set
+			{
+				if ((this._UserId != value))
+				{
+					this.OnUserIdChanging(value);
+					this.SendPropertyChanging();
+					this._UserId = value;
+					this.SendPropertyChanged("UserId");
+					this.OnUserIdChanged();
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Candidates")]
 	public partial class Candidate : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -1208,8 +1468,11 @@ namespace Project_Recruiment_Huce.Models
 		
 		private string _Email;
 		
+<<<<<<< HEAD
 		private string _ApplicationEmail;
 		
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		private string _Address;
 		
 		private string _Summary;
@@ -1220,6 +1483,11 @@ namespace Project_Recruiment_Huce.Models
 		
 		private byte _ActiveFlag;
 		
+<<<<<<< HEAD
+=======
+		private string _Avatar;
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		private EntitySet<Application> _Applications;
 		
 		private EntitySet<ResumeFile> _ResumeFiles;
@@ -1248,8 +1516,11 @@ namespace Project_Recruiment_Huce.Models
     partial void OnPhoneChanged();
     partial void OnEmailChanging(string value);
     partial void OnEmailChanged();
+<<<<<<< HEAD
     partial void OnApplicationEmailChanging(string value);
     partial void OnApplicationEmailChanged();
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     partial void OnAddressChanging(string value);
     partial void OnAddressChanged();
     partial void OnSummaryChanging(string value);
@@ -1260,6 +1531,11 @@ namespace Project_Recruiment_Huce.Models
     partial void OnCreatedAtChanged();
     partial void OnActiveFlagChanging(byte value);
     partial void OnActiveFlagChanged();
+<<<<<<< HEAD
+=======
+    partial void OnAvatarChanging(string value);
+    partial void OnAvatarChanged();
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     #endregion
 		
 		public Candidate()
@@ -1416,6 +1692,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ApplicationEmail", DbType="NVarChar(100)")]
 		public string ApplicationEmail
 		{
@@ -1436,6 +1713,8 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Address", DbType="NVarChar(255)")]
 		public string Address
 		{
@@ -1540,6 +1819,29 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
+=======
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Avatar", DbType="NVarChar(500)")]
+		public string Avatar
+		{
+			get
+			{
+				return this._Avatar;
+			}
+			set
+			{
+				if ((this._Avatar != value))
+				{
+					this.OnAvatarChanging(value);
+					this.SendPropertyChanging();
+					this._Avatar = value;
+					this.SendPropertyChanged("Avatar");
+					this.OnAvatarChanged();
+				}
+			}
+		}
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Candidate_Application", Storage="_Applications", ThisKey="CandidateID", OtherKey="CandidateID")]
 		public EntitySet<Application> Applications
 		{
@@ -1722,8 +2024,11 @@ namespace Project_Recruiment_Huce.Models
 		
 		private string _Phone;
 		
+<<<<<<< HEAD
 		private string _Fax;
 		
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		private string _CompanyEmail;
 		
 		private string _Website;
@@ -1736,6 +2041,11 @@ namespace Project_Recruiment_Huce.Models
 		
 		private System.Nullable<int> _PhotoID;
 		
+<<<<<<< HEAD
+=======
+		private string _Fax;
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		private EntitySet<JobPost> _JobPosts;
 		
 		private EntitySet<Recruiter> _Recruiters;
@@ -1758,8 +2068,11 @@ namespace Project_Recruiment_Huce.Models
     partial void OnAddressChanged();
     partial void OnPhoneChanging(string value);
     partial void OnPhoneChanged();
+<<<<<<< HEAD
     partial void OnFaxChanging(string value);
     partial void OnFaxChanged();
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     partial void OnCompanyEmailChanging(string value);
     partial void OnCompanyEmailChanged();
     partial void OnWebsiteChanging(string value);
@@ -1772,6 +2085,11 @@ namespace Project_Recruiment_Huce.Models
     partial void OnActiveFlagChanged();
     partial void OnPhotoIDChanging(System.Nullable<int> value);
     partial void OnPhotoIDChanged();
+<<<<<<< HEAD
+=======
+    partial void OnFaxChanging(string value);
+    partial void OnFaxChanged();
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     #endregion
 		
 		public Company()
@@ -1902,6 +2220,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Fax", DbType="NVarChar(20)")]
 		public string Fax
 		{
@@ -1922,6 +2241,8 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyEmail", DbType="NVarChar(150)")]
 		public string CompanyEmail
 		{
@@ -2046,6 +2367,29 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
+=======
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Fax", DbType="NVarChar(50)")]
+		public string Fax
+		{
+			get
+			{
+				return this._Fax;
+			}
+			set
+			{
+				if ((this._Fax != value))
+				{
+					this.OnFaxChanging(value);
+					this.SendPropertyChanging();
+					this._Fax = value;
+					this.SendPropertyChanged("Fax");
+					this.OnFaxChanged();
+				}
+			}
+		}
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Company_JobPost", Storage="_JobPosts", ThisKey="CompanyID", OtherKey="CompanyID")]
 		public EntitySet<JobPost> JobPosts
 		{
@@ -2151,6 +2495,311 @@ namespace Project_Recruiment_Huce.Models
 		}
 	}
 	
+<<<<<<< HEAD
+=======
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.ContactMessages")]
+	public partial class ContactMessage : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _ContactMessageID;
+		
+		private string _FirstName;
+		
+		private string _LastName;
+		
+		private string _Email;
+		
+		private string _Subject;
+		
+		private string _Message;
+		
+		private string _Status;
+		
+		private string _AdminNotes;
+		
+		private System.DateTime _CreatedAt;
+		
+		private System.Nullable<System.DateTime> _ReadAt;
+		
+		private System.Nullable<System.DateTime> _RepliedAt;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnContactMessageIDChanging(int value);
+    partial void OnContactMessageIDChanged();
+    partial void OnFirstNameChanging(string value);
+    partial void OnFirstNameChanged();
+    partial void OnLastNameChanging(string value);
+    partial void OnLastNameChanged();
+    partial void OnEmailChanging(string value);
+    partial void OnEmailChanged();
+    partial void OnSubjectChanging(string value);
+    partial void OnSubjectChanged();
+    partial void OnMessageChanging(string value);
+    partial void OnMessageChanged();
+    partial void OnStatusChanging(string value);
+    partial void OnStatusChanged();
+    partial void OnAdminNotesChanging(string value);
+    partial void OnAdminNotesChanged();
+    partial void OnCreatedAtChanging(System.DateTime value);
+    partial void OnCreatedAtChanged();
+    partial void OnReadAtChanging(System.Nullable<System.DateTime> value);
+    partial void OnReadAtChanged();
+    partial void OnRepliedAtChanging(System.Nullable<System.DateTime> value);
+    partial void OnRepliedAtChanged();
+    #endregion
+		
+		public ContactMessage()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ContactMessageID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int ContactMessageID
+		{
+			get
+			{
+				return this._ContactMessageID;
+			}
+			set
+			{
+				if ((this._ContactMessageID != value))
+				{
+					this.OnContactMessageIDChanging(value);
+					this.SendPropertyChanging();
+					this._ContactMessageID = value;
+					this.SendPropertyChanged("ContactMessageID");
+					this.OnContactMessageIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FirstName", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
+		public string FirstName
+		{
+			get
+			{
+				return this._FirstName;
+			}
+			set
+			{
+				if ((this._FirstName != value))
+				{
+					this.OnFirstNameChanging(value);
+					this.SendPropertyChanging();
+					this._FirstName = value;
+					this.SendPropertyChanged("FirstName");
+					this.OnFirstNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LastName", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
+		public string LastName
+		{
+			get
+			{
+				return this._LastName;
+			}
+			set
+			{
+				if ((this._LastName != value))
+				{
+					this.OnLastNameChanging(value);
+					this.SendPropertyChanging();
+					this._LastName = value;
+					this.SendPropertyChanged("LastName");
+					this.OnLastNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Email", DbType="NVarChar(100) NOT NULL", CanBeNull=false)]
+		public string Email
+		{
+			get
+			{
+				return this._Email;
+			}
+			set
+			{
+				if ((this._Email != value))
+				{
+					this.OnEmailChanging(value);
+					this.SendPropertyChanging();
+					this._Email = value;
+					this.SendPropertyChanged("Email");
+					this.OnEmailChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Subject", DbType="NVarChar(200) NOT NULL", CanBeNull=false)]
+		public string Subject
+		{
+			get
+			{
+				return this._Subject;
+			}
+			set
+			{
+				if ((this._Subject != value))
+				{
+					this.OnSubjectChanging(value);
+					this.SendPropertyChanging();
+					this._Subject = value;
+					this.SendPropertyChanged("Subject");
+					this.OnSubjectChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Message", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		public string Message
+		{
+			get
+			{
+				return this._Message;
+			}
+			set
+			{
+				if ((this._Message != value))
+				{
+					this.OnMessageChanging(value);
+					this.SendPropertyChanging();
+					this._Message = value;
+					this.SendPropertyChanged("Message");
+					this.OnMessageChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Status", DbType="NVarChar(20) NOT NULL", CanBeNull=false)]
+		public string Status
+		{
+			get
+			{
+				return this._Status;
+			}
+			set
+			{
+				if ((this._Status != value))
+				{
+					this.OnStatusChanging(value);
+					this.SendPropertyChanging();
+					this._Status = value;
+					this.SendPropertyChanged("Status");
+					this.OnStatusChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AdminNotes", DbType="NVarChar(MAX)")]
+		public string AdminNotes
+		{
+			get
+			{
+				return this._AdminNotes;
+			}
+			set
+			{
+				if ((this._AdminNotes != value))
+				{
+					this.OnAdminNotesChanging(value);
+					this.SendPropertyChanging();
+					this._AdminNotes = value;
+					this.SendPropertyChanged("AdminNotes");
+					this.OnAdminNotesChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2 NOT NULL")]
+		public System.DateTime CreatedAt
+		{
+			get
+			{
+				return this._CreatedAt;
+			}
+			set
+			{
+				if ((this._CreatedAt != value))
+				{
+					this.OnCreatedAtChanging(value);
+					this.SendPropertyChanging();
+					this._CreatedAt = value;
+					this.SendPropertyChanged("CreatedAt");
+					this.OnCreatedAtChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ReadAt", DbType="DateTime2")]
+		public System.Nullable<System.DateTime> ReadAt
+		{
+			get
+			{
+				return this._ReadAt;
+			}
+			set
+			{
+				if ((this._ReadAt != value))
+				{
+					this.OnReadAtChanging(value);
+					this.SendPropertyChanging();
+					this._ReadAt = value;
+					this.SendPropertyChanged("ReadAt");
+					this.OnReadAtChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RepliedAt", DbType="DateTime2")]
+		public System.Nullable<System.DateTime> RepliedAt
+		{
+			get
+			{
+				return this._RepliedAt;
+			}
+			set
+			{
+				if ((this._RepliedAt != value))
+				{
+					this.OnRepliedAtChanging(value);
+					this.SendPropertyChanging();
+					this._RepliedAt = value;
+					this.SendPropertyChanged("RepliedAt");
+					this.OnRepliedAtChanged();
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.JobPostDetails")]
 	public partial class JobPostDetail : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -3446,7 +4095,11 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_PasswordResetToken", Storage="_Account", ThisKey="AccountID", OtherKey="AccountID", IsForeignKey=true, DeleteOnNull=true, DeleteRule="CASCADE")]
+=======
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Account_PasswordResetToken", Storage="_Account", ThisKey="AccountID", OtherKey="AccountID", IsForeignKey=true)]
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		public Account Account
 		{
 			get
@@ -4069,6 +4722,11 @@ namespace Project_Recruiment_Huce.Models
 		
 		private int _AccountID;
 		
+<<<<<<< HEAD
+=======
+		private System.Nullable<int> _CompanyID;
+		
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		private string _FullName;
 		
 		private string _PositionTitle;
@@ -4077,11 +4735,23 @@ namespace Project_Recruiment_Huce.Models
 		
 		private string _Phone;
 		
+<<<<<<< HEAD
 		private System.Nullable<int> _CompanyID;
 		
 		private System.Nullable<int> _PhotoID;
 		
 		private byte _ActiveFlag;
+=======
+		private System.DateTime _CreatedAt;
+		
+		private byte _ActiveFlag;
+		
+		private System.Nullable<int> _PhotoID;
+		
+		private System.Data.Linq.Binary _RowVer;
+		
+		private string _Avatar;
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		
 		private string _SubscriptionType;
 		
@@ -4097,10 +4767,13 @@ namespace Project_Recruiment_Huce.Models
 		
 		private System.DateTime _LastResetDate;
 		
+<<<<<<< HEAD
 		private System.DateTime _CreatedAt;
 		
 		private System.Data.Linq.Binary _RowVer;
 		
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		private EntitySet<JobPost> _JobPosts;
 		
 		private EntitySet<PostingHistory> _PostingHistories;
@@ -4119,6 +4792,11 @@ namespace Project_Recruiment_Huce.Models
     partial void OnRecruiterIDChanged();
     partial void OnAccountIDChanging(int value);
     partial void OnAccountIDChanged();
+<<<<<<< HEAD
+=======
+    partial void OnCompanyIDChanging(System.Nullable<int> value);
+    partial void OnCompanyIDChanged();
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     partial void OnFullNameChanging(string value);
     partial void OnFullNameChanged();
     partial void OnPositionTitleChanging(string value);
@@ -4127,12 +4805,25 @@ namespace Project_Recruiment_Huce.Models
     partial void OnCompanyEmailChanged();
     partial void OnPhoneChanging(string value);
     partial void OnPhoneChanged();
+<<<<<<< HEAD
     partial void OnCompanyIDChanging(System.Nullable<int> value);
     partial void OnCompanyIDChanged();
     partial void OnPhotoIDChanging(System.Nullable<int> value);
     partial void OnPhotoIDChanged();
     partial void OnActiveFlagChanging(byte value);
     partial void OnActiveFlagChanged();
+=======
+    partial void OnCreatedAtChanging(System.DateTime value);
+    partial void OnCreatedAtChanged();
+    partial void OnActiveFlagChanging(byte value);
+    partial void OnActiveFlagChanged();
+    partial void OnPhotoIDChanging(System.Nullable<int> value);
+    partial void OnPhotoIDChanged();
+    partial void OnRowVerChanging(System.Data.Linq.Binary value);
+    partial void OnRowVerChanged();
+    partial void OnAvatarChanging(string value);
+    partial void OnAvatarChanged();
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     partial void OnSubscriptionTypeChanging(string value);
     partial void OnSubscriptionTypeChanged();
     partial void OnSubscriptionExpiryDateChanging(System.Nullable<System.DateTime> value);
@@ -4147,10 +4838,13 @@ namespace Project_Recruiment_Huce.Models
     partial void OnMonthlyEmailInviteCountChanged();
     partial void OnLastResetDateChanging(System.DateTime value);
     partial void OnLastResetDateChanged();
+<<<<<<< HEAD
     partial void OnCreatedAtChanging(System.DateTime value);
     partial void OnCreatedAtChanged();
     partial void OnRowVerChanging(System.Data.Linq.Binary value);
     partial void OnRowVerChanged();
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     #endregion
 		
 		public Recruiter()
@@ -4207,7 +4901,35 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FullName", DbType="NVarChar(100)", UpdateCheck=UpdateCheck.Never)]
+=======
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyID", DbType="Int", UpdateCheck=UpdateCheck.Never)]
+		public System.Nullable<int> CompanyID
+		{
+			get
+			{
+				return this._CompanyID;
+			}
+			set
+			{
+				if ((this._CompanyID != value))
+				{
+					if (this._Company.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnCompanyIDChanging(value);
+					this.SendPropertyChanging();
+					this._CompanyID = value;
+					this.SendPropertyChanged("CompanyID");
+					this.OnCompanyIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FullName", DbType="NVarChar(100) NOT NULL", CanBeNull=false, UpdateCheck=UpdateCheck.Never)]
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		public string FullName
 		{
 			get
@@ -4287,6 +5009,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyID", DbType="Int", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<int> CompanyID
 		{
@@ -4307,6 +5030,44 @@ namespace Project_Recruiment_Huce.Models
 					this._CompanyID = value;
 					this.SendPropertyChanged("CompanyID");
 					this.OnCompanyIDChanged();
+=======
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2 NOT NULL", UpdateCheck=UpdateCheck.Never)]
+		public System.DateTime CreatedAt
+		{
+			get
+			{
+				return this._CreatedAt;
+			}
+			set
+			{
+				if ((this._CreatedAt != value))
+				{
+					this.OnCreatedAtChanging(value);
+					this.SendPropertyChanging();
+					this._CreatedAt = value;
+					this.SendPropertyChanged("CreatedAt");
+					this.OnCreatedAtChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActiveFlag", DbType="TinyInt NOT NULL", UpdateCheck=UpdateCheck.Never)]
+		public byte ActiveFlag
+		{
+			get
+			{
+				return this._ActiveFlag;
+			}
+			set
+			{
+				if ((this._ActiveFlag != value))
+				{
+					this.OnActiveFlagChanging(value);
+					this.SendPropertyChanging();
+					this._ActiveFlag = value;
+					this.SendPropertyChanged("ActiveFlag");
+					this.OnActiveFlagChanged();
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 				}
 			}
 		}
@@ -4335,6 +5096,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActiveFlag", DbType="TinyInt NOT NULL", UpdateCheck=UpdateCheck.Never)]
 		public byte ActiveFlag
 		{
@@ -4351,6 +5113,44 @@ namespace Project_Recruiment_Huce.Models
 					this._ActiveFlag = value;
 					this.SendPropertyChanged("ActiveFlag");
 					this.OnActiveFlagChanged();
+=======
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RowVer", AutoSync=AutoSync.Always, DbType="rowversion NOT NULL", CanBeNull=false, IsDbGenerated=true, IsVersion=true, UpdateCheck=UpdateCheck.Never)]
+		public System.Data.Linq.Binary RowVer
+		{
+			get
+			{
+				return this._RowVer;
+			}
+			set
+			{
+				if ((this._RowVer != value))
+				{
+					this.OnRowVerChanging(value);
+					this.SendPropertyChanging();
+					this._RowVer = value;
+					this.SendPropertyChanged("RowVer");
+					this.OnRowVerChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Avatar", DbType="NVarChar(500)", UpdateCheck=UpdateCheck.Never)]
+		public string Avatar
+		{
+			get
+			{
+				return this._Avatar;
+			}
+			set
+			{
+				if ((this._Avatar != value))
+				{
+					this.OnAvatarChanging(value);
+					this.SendPropertyChanging();
+					this._Avatar = value;
+					this.SendPropertyChanged("Avatar");
+					this.OnAvatarChanged();
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 				}
 			}
 		}
@@ -4495,6 +5295,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+<<<<<<< HEAD
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedAt", DbType="DateTime2 NOT NULL", UpdateCheck=UpdateCheck.Never)]
 		public System.DateTime CreatedAt
 		{
@@ -4535,6 +5336,8 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 		
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Recruiter_JobPost", Storage="_JobPosts", ThisKey="RecruiterID", OtherKey="RecruiterID")]
 		public EntitySet<JobPost> JobPosts
 		{
@@ -5147,6 +5950,119 @@ namespace Project_Recruiment_Huce.Models
 		}
 	}
 	
+<<<<<<< HEAD
+=======
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.SchemaMigrations")]
+	public partial class SchemaMigration : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _MigrationId;
+		
+		private string _ScriptName;
+		
+		private System.DateTime _AppliedAt;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnMigrationIdChanging(int value);
+    partial void OnMigrationIdChanged();
+    partial void OnScriptNameChanging(string value);
+    partial void OnScriptNameChanged();
+    partial void OnAppliedAtChanging(System.DateTime value);
+    partial void OnAppliedAtChanged();
+    #endregion
+		
+		public SchemaMigration()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MigrationId", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int MigrationId
+		{
+			get
+			{
+				return this._MigrationId;
+			}
+			set
+			{
+				if ((this._MigrationId != value))
+				{
+					this.OnMigrationIdChanging(value);
+					this.SendPropertyChanging();
+					this._MigrationId = value;
+					this.SendPropertyChanged("MigrationId");
+					this.OnMigrationIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ScriptName", DbType="NVarChar(200) NOT NULL", CanBeNull=false)]
+		public string ScriptName
+		{
+			get
+			{
+				return this._ScriptName;
+			}
+			set
+			{
+				if ((this._ScriptName != value))
+				{
+					this.OnScriptNameChanging(value);
+					this.SendPropertyChanging();
+					this._ScriptName = value;
+					this.SendPropertyChanged("ScriptName");
+					this.OnScriptNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AppliedAt", DbType="DateTime NOT NULL")]
+		public System.DateTime AppliedAt
+		{
+			get
+			{
+				return this._AppliedAt;
+			}
+			set
+			{
+				if ((this._AppliedAt != value))
+				{
+					this.OnAppliedAtChanging(value);
+					this.SendPropertyChanging();
+					this._AppliedAt = value;
+					this.SendPropertyChanged("AppliedAt");
+					this.OnAppliedAtChanged();
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.SePayTransactions")]
 	public partial class SePayTransaction : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -5496,6 +6412,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 	}
+<<<<<<< HEAD
 	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.ContactMessages")]
 	public partial class ContactMessage : INotifyPropertyChanging, INotifyPropertyChanged
@@ -5798,5 +6715,7 @@ namespace Project_Recruiment_Huce.Models
 			}
 		}
 	}
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 }
 #pragma warning restore 1591

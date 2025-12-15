@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 ﻿using System;
+=======
+using System;
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 using System.Collections.Generic;
 using System.Data.Linq;
 using System.Linq;
@@ -66,12 +70,16 @@ namespace Project_Recruiment_Huce.Repositories.RecruiterApplicationRepo
         public void UpdateApplicationStatus(int applicationId, string status, string note)
         {
             var application = _db.Applications.FirstOrDefault(a => a.ApplicationID == applicationId);
+<<<<<<< HEAD
 
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
             if (application == null)
             {
                 throw new InvalidOperationException($"Application with ID {applicationId} not found");
             }
 
+<<<<<<< HEAD
             
 
             application.Status = status;
@@ -100,13 +108,23 @@ namespace Project_Recruiment_Huce.Repositories.RecruiterApplicationRepo
         
 
 
+=======
+            application.Status = status;
+            application.Note = note;
+            application.UpdatedAt = DateTime.Now;
+        }
+
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
         public void SaveChanges()
         {
             _db.SubmitChanges();
         }
+<<<<<<< HEAD
         public Application GetApplicationById(int id)
         {
             return _db.Applications.FirstOrDefault(a => a.ApplicationID == id);
         }
+=======
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
     }
 }

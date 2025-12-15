@@ -293,24 +293,45 @@ namespace Project_Recruiment_Huce.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
+<<<<<<< HEAD
 
             public ActionResult ScheduleInterview(InterviewScheduleViewModel viewModel)
         {
             var recruiterId = GetCurrentRecruiterId();
             if (recruiterId == null)
+=======
+        public ActionResult ScheduleInterview(InterviewScheduleViewModel viewModel)
+        {
+            var accountId = GetCurrentAccountId();
+            if (accountId == null)
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
             {
                 return RedirectToAction("Login", "Account");
             }
 
+<<<<<<< HEAD
             // 1. Kiểm tra dữ liệu đầu vào
             if (!ModelState.IsValid)
             {
                 // Nếu lỗi, load lại Dropdown để không bị crash View
+=======
+            var recruiterId = GetCurrentRecruiterId();
+            if (recruiterId == null)
+            {
+                TempData["ErrorMessage"] = "Bạn cần có hồ sơ Recruiter để đặt lịch phỏng vấn.";
+                return RedirectToAction("RecruitersManage", "Recruiters");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Repopulate dropdown if validation fails
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
                 ViewBag.InterviewTypes = new SelectList(new[] {
                     new { Value = "Trực tiếp", Text = "Phỏng vấn trực tiếp tại văn phòng" },
                     new { Value = "Trực tuyến", Text = "Phỏng vấn trực tuyến (Online)" },
                     new { Value = "Điện thoại", Text = "Phỏng vấn qua điện thoại" }
                 }, "Value", "Text", viewModel.InterviewType);
+<<<<<<< HEAD
 
                 return View(viewModel);
             }
@@ -343,4 +364,19 @@ namespace Project_Recruiment_Huce.Controllers
     }
     }
 
+=======
+                return View(viewModel);
+            }
+
+            // TODO: Backend implementation sẽ được thực hiện sau
+            // - Lưu thông tin lịch phỏng vấn vào database
+            // - Gửi email thông báo cho ứng viên
+            // - Tạo calendar event nếu cần
+
+            TempData["SuccessMessage"] = "Đã lưu thông tin lịch phỏng vấn! (Backend sẽ được triển khai để gửi email)";
+            return RedirectToAction("ApplicationDetails", "RecruitersApplication", new { id = viewModel.ApplicationID });
+        }
+    }
+}
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 

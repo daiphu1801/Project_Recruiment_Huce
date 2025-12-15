@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Project_Recruiment_Huce.Models.Recruiters;
 using Project_Recruiment_Huce.Repositories.RecruiterApplicationRepo;
+<<<<<<< HEAD
 using Hangfire;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Services;
+=======
+
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
 namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
 {
     /// <summary>
@@ -146,11 +150,19 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
                 {
                     ApplicationID = application.ApplicationID,
                     JobPostID = application.JobPostID,
+<<<<<<< HEAD
                     CandidateName = !string.IsNullOrEmpty(application.Candidate?.FullName)
                         ? application.Candidate.FullName
                         : "Ứng viên ẩn danh",
                     JobTitle = !string.IsNullOrEmpty(application.JobPost?.Title)
                         ? application.JobPost.Title
+=======
+                    CandidateName = !string.IsNullOrEmpty(application.Candidate?.FullName) 
+                        ? application.Candidate.FullName 
+                        : "Ứng viên ẩn danh",
+                    JobTitle = !string.IsNullOrEmpty(application.JobPost?.Title) 
+                        ? application.JobPost.Title 
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
                         : "Công việc không có tiêu đề",
                     Status = application.Status ?? "Under review",
                     Note = application.Note
@@ -247,6 +259,7 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
                 ApplicationID = app.ApplicationID,
                 JobPostID = app.JobPostID,
                 CandidateID = app.CandidateID,
+<<<<<<< HEAD
                 CandidateName = !string.IsNullOrEmpty(app.Candidate?.FullName)
                     ? app.Candidate.FullName
                     : "Ứng viên ẩn danh",
@@ -254,6 +267,15 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
                 CandidatePhone = app.Candidate?.Phone ?? "",
                 JobTitle = !string.IsNullOrEmpty(app.JobPost?.Title)
                     ? app.JobPost.Title
+=======
+                CandidateName = !string.IsNullOrEmpty(app.Candidate?.FullName) 
+                    ? app.Candidate.FullName 
+                    : "Ứng viên ẩn danh",
+                CandidateEmail = app.Candidate?.Email ?? "",
+                CandidatePhone = app.Candidate?.Phone ?? "",
+                JobTitle = !string.IsNullOrEmpty(app.JobPost?.Title) 
+                    ? app.JobPost.Title 
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
                     : "Công việc không có tiêu đề",
                 JobCode = app.JobPost?.JobCode ?? "",
                 CompanyName = companyName,
@@ -312,6 +334,7 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
             }
         }
 
+<<<<<<< HEAD
         public ServiceResult ScheduleInterview(InterviewScheduleViewModel viewModel, int recruiterId)
         {
             try
@@ -369,3 +392,8 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
     }
 }
 
+=======
+        #endregion
+    }
+}
+>>>>>>> b5687619104f46f9178da37581c63d949fa94225
