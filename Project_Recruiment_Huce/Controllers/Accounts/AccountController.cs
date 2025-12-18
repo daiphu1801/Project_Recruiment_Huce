@@ -60,7 +60,7 @@ namespace Project_Recruiment_Huce.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(LoginViewModel model, string returnUrl)
+        public ActionResult Login(LoginViewModel model, string returnUrl, string userType)
         {
             // Chặn login attempts khi đã authenticated
             if (User?.Identity?.IsAuthenticated == true)
@@ -75,6 +75,7 @@ namespace Project_Recruiment_Huce.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.ReturnUrl = returnUrl;
+                ViewBag.UserType = userType;
                 return View(model);
             }
 
@@ -88,11 +89,35 @@ namespace Project_Recruiment_Huce.Controllers
                 var account = db.Accounts.FirstOrDefault(a =>
                     (isEmail ? a.Email.ToLower() == lower : a.Username == input) && a.ActiveFlag == 1);
 
+                // Kiểm tra tài khoản không tồn tại hoặc mật khẩu sai
                 if (account == null || !PasswordHelper.VerifyPassword(model.Password, account.PasswordHash))
                 {
                     ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
                     ViewBag.ReturnUrl = returnUrl;
+                    ViewBag.UserType = userType;
                     return View(model);
+                }
+
+                // Kiểm tra role có khớp với userType không
+                if (!string.IsNullOrEmpty(userType))
+                {
+                    bool roleMatched = false;
+                    if (userType.ToLower() == "candidate" && account.Role == "Candidate")
+                    {
+                        roleMatched = true;
+                    }
+                    else if (userType.ToLower() == "recruiter" && account.Role == "Recruiter")
+                    {
+                        roleMatched = true;
+                    }
+
+                    if (!roleMatched)
+                    {
+                        ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
+                        ViewBag.ReturnUrl = returnUrl;
+                        ViewBag.UserType = userType;
+                        return View(model);
+                    }
                 }
 
                 // Gọi hàm đăng nhập dùng chung
@@ -260,8 +285,11 @@ namespace Project_Recruiment_Huce.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult ExternalLogin(string provider, string returnUrl)
+        public ActionResult ExternalLogin(string provider, string returnUrl, string userType)
         {
+            // Lưu userType vào session để dùng trong callback
+            Session["LoginUserType"] = userType;
+            
             // Trigger OWIN Google authentication
             return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }
@@ -273,11 +301,15 @@ namespace Project_Recruiment_Huce.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
         {
+            // Lấy userType từ session
+            var userType = Session["LoginUserType"] as string;
+            
             // 1. Lấy thông tin từ Google thông qua OWIN
             var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
             if (loginInfo == null)
             {
                 TempData["ErrorMessage"] = "Lỗi xác thực với Google. Vui lòng thử lại.";
+                ViewBag.UserType = userType;
                 return RedirectToAction("Login");
             }
 
@@ -299,6 +331,28 @@ namespace Project_Recruiment_Huce.Controllers
             // 5. Xử lý kết quả
             if (result.Success)
             {
+                // Kiểm tra role có khớp với userType không
+                if (!string.IsNullOrEmpty(userType))
+                {
+                    bool roleMatched = false;
+                    if (userType.ToLower() == "candidate" && result.Account.Role == "Candidate")
+                    {
+                        roleMatched = true;
+                    }
+                    else if (userType.ToLower() == "recruiter" && result.Account.Role == "Recruiter")
+                    {
+                        roleMatched = true;
+                    }
+
+                    if (!roleMatched)
+                    {
+                        TempData["ErrorMessage"] = "Tên đăng nhập hoặc mật khẩu không đúng.";
+                        ViewBag.UserType = userType;
+                        Session.Remove("LoginUserType");
+                        return RedirectToAction("Login");
+                    }
+                }
+                
                 // Đăng nhập thành công
                 SignInUser(result.Account, false);
 
@@ -308,12 +362,15 @@ namespace Project_Recruiment_Huce.Controllers
                     TempData["SuccessMessage"] = "Chào mừng bạn! Tài khoản đã được tạo thành công từ Google.";
                 }
 
+                Session.Remove("LoginUserType");
                 return RedirectToLocal(returnUrl);
             }
             else
             {
                 // Đăng nhập thất bại
                 TempData["ErrorMessage"] = result.ErrorMessage;
+                ViewBag.UserType = userType;
+                Session.Remove("LoginUserType");
                 return RedirectToAction("Login");
             }
         }

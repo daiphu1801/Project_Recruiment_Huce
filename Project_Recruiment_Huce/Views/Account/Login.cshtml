@@ -43,6 +43,11 @@
                 </div>
             }
 
+            @if (ViewBag.UserType != "recruiter")
+            {
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            }
+
             <!-- Google Login First -->
             @using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = ViewBag.ReturnUrl, userType = "candidate" }, FormMethod.Post))
             {
@@ -157,6 +162,11 @@
                 <div class="alert-custom alert-danger-custom">
                     @TempData["ErrorMessage"]
                 </div>
+            }
+
+            @if (ViewBag.UserType == "recruiter")
+            {
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
             }
 
             @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl, userType = "recruiter" }, FormMethod.Post))

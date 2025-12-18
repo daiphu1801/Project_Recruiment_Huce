@@ -4,21 +4,28 @@ using System.Configuration;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
-using Project_Recruiment_Huce.Models;
+using Project_Recruiment_Huce.Models; // Để dùng được InterviewEmailData ở trên
 
 namespace Project_Recruiment_Huce.Services
 {
     public class EmailService
     {
-        // Constructor không tham số để Hangfire có thể tạo instance
-        public EmailService()
-        {
-        }
-
-        public virtual void SendInterviewInvitation(InterviewEmailData data)
+        public void SendInterviewInvitation(InterviewEmailData data)
         {
             try
             {
+                // Validate email addresses
+                var senderEmail = ConfigurationManager.AppSettings["FromEmail"];
+                if (string.IsNullOrWhiteSpace(senderEmail))
+                {
+                    throw new Exception("Chưa cấu hình FromEmail trong Web.config");
+                }
+
+                if (string.IsNullOrWhiteSpace(data.CandidateEmail))
+                {
+                    throw new Exception("Email ứng viên không được để trống");
+                }
+
                 string subject = $"[Thư Mời Phỏng Vấn] - {data.JobTitle}";
 
                 // Nội dung HTML
@@ -39,39 +46,50 @@ namespace Project_Recruiment_Huce.Services
                         <p><strong>Lưu ý:</strong> {data.AdditionalNotes}</p>
                         <p>Vui lòng phản hồi email này để xác nhận tham gia.</p>
                         <hr/>
-                        <p style='font-size:12px; color:#888;'>Email tự động từ hệ thống tuyển dụng HUCE.</p>
+                        <p style='font-size:12px; color:#888;'>Email tự động từ hệ thống tuyển dụng JobBoard.</p>
                     </div>";
 
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("Tuyen Dung HUCE", ConfigurationManager.AppSettings["SenderEmail"]));
-                message.To.Add(new MailboxAddress("", data.CandidateEmail));
+                message.From.Add(new MailboxAddress("Tuyen Dung HUCE", senderEmail));
+                message.To.Add(new MailboxAddress(data.CandidateName ?? "", data.CandidateEmail));
                 message.Subject = subject;
                 message.Body = new BodyBuilder { HtmlBody = content }.ToMessageBody();
 
                 using (var client = new SmtpClient())
                 {
+                    // Quan trọng: Bỏ qua lỗi chứng chỉ SSL khi chạy localhost
                     client.CheckCertificateRevocation = false;
 
-                    client.Connect(
-                        ConfigurationManager.AppSettings["SmtpServer"], 
-                        int.Parse(ConfigurationManager.AppSettings["Port"]), 
-                        SecureSocketOptions.StartTls
-                    );
-                    
-                    client.Authenticate(
-                        ConfigurationManager.AppSettings["SenderEmail"], 
-                        ConfigurationManager.AppSettings["Password"]
-                    );
-                    
+                    var smtpServer = ConfigurationManager.AppSettings["SmtpHost"];
+                    var portStr = ConfigurationManager.AppSettings["SmtpPort"];
+                    var password = ConfigurationManager.AppSettings["SmtpPassword"];
+
+                    if (string.IsNullOrWhiteSpace(smtpServer))
+                    {
+                        throw new Exception("Chưa cấu hình SmtpHost trong Web.config");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(portStr) || !int.TryParse(portStr, out int port))
+                    {
+                        throw new Exception("Chưa cấu hình SmtpPort hợp lệ trong Web.config");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(password))
+                    {
+                        throw new Exception("Chưa cấu hình SmtpPassword trong Web.config");
+                    }
+
+                    client.Connect(smtpServer, port, SecureSocketOptions.StartTls);
+                    client.Authenticate(senderEmail, password);
                     client.Send(message);
                     client.Disconnect(true);
                 }
             }
             catch (Exception ex)
             {
-                // Log chi tiết lỗi
-                Debug.WriteLine($"=== LỖI GỬI EMAIL ===");
-                Debug.WriteLine($"Message: {ex.Message}");
-                DebNém lỗi ra để Hangfire biết mà thử lại (Retry)
-                throw new Exception($"Lỗi gửi e
+                // Ném lỗi ra để Hangfire biết mà thử lại (Retry)
+                throw new Exception("Lỗi gửi mail: " + ex.Message);
+            }
+        }
+    }
 }
