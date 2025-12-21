@@ -124,7 +124,6 @@
                             <th>Công việc</th>
                             <th>Ngày PV</th>
                             <th>Hình thức</th>
-                            <th>Trạng thái</th>
                             <th class="text-end">Thao tác</th>
                         </tr>
                     </thead>
@@ -174,36 +173,11 @@
                                             </span>
                                         }
                                     </td>
-                                    <td>
-                                        @if (interview.Status == "Pending")
-                                        {
-                                            <span class="badge text-bg-warning">
-                                                <i class="bi bi-clock-history me-1"></i>Chờ PV
-                                            </span>
-                                        }
-                                        else if (interview.Status == "Completed")
-                                        {
-                                            <span class="badge text-bg-success">
-                                                <i class="bi bi-check-circle me-1"></i>Hoàn thành
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge text-bg-danger">
-                                                <i class="bi bi-x-circle me-1"></i>Đã hủy
-                                            </span>
-                                        }
-                                    </td>
                                     <td class="text-end" style="white-space:nowrap;">
                                         <a class="btn btn-sm btn-outline-primary" 
                                            href="@Url.Action("Details", "InterviewManagement", new { area = "Admin", id = interview.InterviewID })" 
                                            title="Chi tiết">
                                             <i class="bi bi-eye me-1"></i>Chi tiết
-                                        </a>
-                                        <a class="btn btn-sm btn-outline-warning" 
-                                           href="#" 
-                                           title="Sửa lịch">
-                                            <i class="bi bi-pencil me-1"></i>Sửa
                                         </a>
                                         <button type="button" class="btn btn-sm btn-outline-danger" 
                                                 onclick="confirmCancel(@interview.InterviewID)" 
@@ -217,7 +191,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">
+                                <td colspan="6" class="text-center py-4 text-muted">
                                     <i class="bi bi-inbox" style="font-size: 3rem;"></i>
                                     <p class="mt-2">Không tìm thấy lịch phỏng vấn nào</p>
                                 </td>
