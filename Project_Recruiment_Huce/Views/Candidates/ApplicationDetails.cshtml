@@ -1,0 +1,441 @@
+@model Project_Recruiment_Huce.Models.Candidates.ApplicationDetailsViewModel
+@{
+    ViewBag.Title = "Chi tiết đơn ứng tuyển";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")')" id="home-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <h1 class="text-white font-weight-bold d-flex align-items-center">
+                    <i class="icon-file-text mr-3"></i>Chi tiết đơn ứng tuyển
+                </h1>
+                <div class="custom-breadcrumbs d-flex align-items-center">
+                    <a href="@Url.Action("Index","Home")" class="breadcrumb-link">
+                        <i class="icon-home mr-1"></i>Trang chủ
+                    </a> <span class="mx-2 slash">/</span>
+                    <a href="@Url.Action("MyApplications","Candidates")" class="breadcrumb-link">
+                        <i class="icon-list mr-1"></i>Đơn ứng tuyển của tôi
+                    </a> <span class="mx-2 slash">/</span>
+                    <span class="text-white"><strong><i class="icon-eye mr-1"></i>Chi tiết #@Model.ApplicationID</strong></span>
+                </div>
+                <div class="mt-3">
+                    <div class="d-flex align-items-center text-white-50">
+                        <i class="icon-briefcase mr-2"></i>
+                        <span class="mr-4"><strong>@Model.JobTitle</strong></span>
+                        <i class="icon-building mr-2"></i>
+                        <span>@Model.CompanyName</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="site-section">
+  <div class="container">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Job Information -->
+            <div class="card border-0 shadow-lg mb-4 job-info-card">
+                <div class="card-header bg-gradient-primary text-white border-0">
+                    <h4 class="mb-0 d-flex align-items-center">
+                        <i class="icon-briefcase mr-3"></i>Thông tin công việc ứng tuyển
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="job-header mb-4">
+                        <h3 class="job-title mb-2">
+                            <a href="@Url.Action("JobsDetails", "Jobs", new { id = Model.JobPostID })" class="text-decoration-none job-link">
+                                <i class="icon-external-link-square mr-2"></i>@Model.JobTitle
+                            </a>
+                        </h3>
+                        @if (Model.IsExpired)
+                        {
+                            <span class="badge badge-danger badge-pill mb-2">
+                                <i class="icon-exclamation-triangle mr-1"></i>Đã hết hạn
+                            </span>
+                        }
+                        else if (Model.IsRecent)
+                        {
+                            <span class="badge badge-success badge-pill mb-2">
+                                <i class="icon-star mr-1"></i>Mới ứng tuyển
+                            </span>
+                        }
+                    </div>
+                    
+                    <div class="company-info mb-4">
+                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                            @if (!string.IsNullOrEmpty(Model.CompanyLogo))
+                            {
+                                <img src="@Url.Content(Model.CompanyLogo)" alt="@Model.CompanyName" class="company-logo-img mr-3" style="width: 60px; height: 60px; object-fit: contain; border-radius: 8px;" />
+                            }
+                            else
+                            {
+                                <div class="company-icon-placeholder mr-3">
+                                    <i class="icon-building text-primary" style="font-size: 2rem;"></i>
+                                </div>
+                            }
+                            <div class="company-details">
+                                <span class="company-label text-muted d-block small">Công ty</span>
+                                <h5 class="company-name mb-0">@Model.CompanyName</h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="job-meta-grid">
+                        @if (!string.IsNullOrEmpty(Model.Location))
+                        {
+                            <div class="job-meta-item">
+                                <i class="icon-map-marker text-danger"></i>
+                                <span>@Model.Location</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.SalaryRange))
+                        {
+                            <div class="job-meta-item">
+                                <i class="icon-money text-success"></i>
+                                <span>@Model.SalaryRange</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.JobType))
+                        {
+                            <div class="job-meta-item">
+                                <i class="icon-clock-o text-info"></i>
+                                <span>@Model.JobType</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.ExperienceLevel))
+                        {
+                            <div class="job-meta-item">
+                                <i class="icon-star text-warning"></i>
+                                <span>Kinh nghiệm: @Model.ExperienceLevel</span>
+                            </div>
+                        }
+                        @if (Model.ApplicationDeadline.HasValue)
+                        {
+                            <div class="job-meta-item">
+                                <i class="icon-calendar text-primary"></i>
+                                <span>Hạn nộp: @Model.ApplicationDeadline.Value.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application Status -->
+            <div class="card border-0 shadow-lg mb-4 status-card">
+                <div class="card-header bg-gradient-info text-white border-0">
+                    <h4 class="mb-0 d-flex align-items-center">
+                        <i class="icon-flag mr-3"></i>Trạng thái đơn ứng tuyển
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="status-display text-center mb-4">
+                        @{
+                            string statusClass = "under-review";
+                            string statusDisplay = "Đang xem xét";
+                            if (!string.IsNullOrEmpty(Model.Status))
+                            {
+                                string statusLower = Model.Status.ToLower();
+                                statusClass = statusLower.Replace(" ", "-");
+                                if (statusLower == "under review" || statusLower == "pending")
+                                {
+                                    statusDisplay = "Đang xem xét";
+                                    statusClass = "badge-warning";
+                                }
+                                else if (statusLower == "accepted" || statusLower == "approved")
+                                {
+                                    statusDisplay = "Đã chấp nhận";
+                                    statusClass = "badge-success";
+                                }
+                                else if (statusLower == "rejected" || statusLower == "declined")
+                                {
+                                    statusDisplay = "Đã từ chối";
+                                    statusClass = "badge-danger";
+                                }
+                                else if (statusLower == "interview" || statusLower == "interview scheduled")
+                                {
+                                    statusDisplay = "Đã lên lịch phỏng vấn";
+                                    statusClass = "badge-info";
+                                }
+                                else
+                                {
+                                    statusDisplay = Model.Status;
+                                }
+                            }
+                        }
+                        <div class="status-badge-container">
+                            <span class="badge @statusClass status-badge-xl">@statusDisplay</span>
+                        </div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Note))
+                    {
+                        <div class="note-section">
+                            <h6 class="note-title mb-3">
+                                <i class="icon-comment mr-2 text-muted"></i>Ghi chú của bạn
+                            </h6>
+                            <div class="note-content p-3 bg-light border-left-primary rounded">
+                                <i class="icon-quote-left text-muted mr-2"></i>
+                                @Model.Note
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Documents -->
+            <div class="card border-0 shadow-lg mb-4 documents-card">
+                <div class="card-header bg-gradient-warning text-dark border-0">
+                    <h4 class="mb-0 d-flex align-items-center">
+                        <i class="icon-folder-open mr-3"></i>Tài liệu đã nộp
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="documents-grid">
+                        @if (!string.IsNullOrEmpty(Model.ResumeFilePath))
+                        {
+                            <div class="document-item mb-3">
+                                <div class="document-card p-3 border rounded h-100">
+                                    <div class="d-flex align-items-center">
+                                        <div class="document-icon mr-3">
+                                            <i class="icon-file-pdf text-danger" style="font-size: 2rem;"></i>
+                                        </div>
+                                        <div class="document-info flex-grow-1">
+                                            <h6 class="document-title mb-1">Hồ sơ ứng viên (CV)</h6>
+                                            <p class="document-desc text-muted mb-2 small">File PDF chứa thông tin cá nhân và kinh nghiệm</p>
+                                        </div>
+                                        <div class="document-actions">
+                                            <a href="@Url.Content(Model.ResumeFilePath)" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="icon-download mr-1"></i>Tải xuống
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.CertificateFilePath))
+                        {
+                            <div class="document-item mb-3">
+                                <div class="document-card p-3 border rounded h-100">
+                                    <div class="d-flex align-items-center">
+                                        <div class="document-icon mr-3">
+                                            <i class="icon-certificate text-warning" style="font-size: 2rem;"></i>
+                                        </div>
+                                        <div class="document-info flex-grow-1">
+                                            <h6 class="document-title mb-1">Chứng chỉ & Bằng cấp</h6>
+                                            <p class="document-desc text-muted mb-2 small">Các chứng chỉ chuyên môn và bằng cấp</p>
+                                        </div>
+                                        <div class="document-actions">
+                                            <a href="@Url.Content(Model.CertificateFilePath)" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="icon-download mr-1"></i>Tải xuống
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        @if (string.IsNullOrEmpty(Model.ResumeFilePath) && string.IsNullOrEmpty(Model.CertificateFilePath))
+                        {
+                            <div class="empty-documents text-center py-4">
+                                <i class="icon-folder-open text-muted" style="font-size: 3rem;"></i>
+                                <h6 class="mt-3 text-muted">Chưa có tài liệu đính kèm</h6>
+                                <p class="text-muted small">Không có CV hoặc chứng chỉ nào được tải lên</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Description (Optional) -->
+            @if (!string.IsNullOrEmpty(Model.JobDescription) || !string.IsNullOrEmpty(Model.JobRequirements))
+            {
+                <div class="card border-0 shadow-lg mb-4">
+                    <div class="card-header bg-gradient-secondary text-white border-0">
+                        <h4 class="mb-0 d-flex align-items-center">
+                            <i class="icon-list-alt mr-3"></i>Chi tiết công việc
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
+                        @if (!string.IsNullOrEmpty(Model.JobDescription))
+                        {
+                            <div class="job-section mb-4">
+                                <h6 class="job-section-title mb-3">
+                                    <i class="icon-info-circle mr-2 text-primary"></i>Mô tả công việc
+                                </h6>
+                                <div class="job-section-content">
+                                    @Html.Raw(Model.JobDescription)
+                                </div>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.JobRequirements))
+                        {
+                            <div class="job-section">
+                                <h6 class="job-section-title mb-3">
+                                    <i class="icon-check-circle mr-2 text-success"></i>Yêu cầu công việc
+                                </h6>
+                                <div class="job-section-content">
+                                    @Html.Raw(Model.JobRequirements)
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sticky-sidebar">
+                <!-- Quick Actions -->
+                <div class="card border-0 shadow-lg actions-card mb-4">
+                    <div class="card-header bg-gradient-success text-white border-0">
+                        <h5 class="mb-0 d-flex align-items-center">
+                            <i class="icon-bolt mr-2"></i>Thao tác nhanh
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="action-buttons">
+                            <a href="@Url.Action("JobsDetails", "Jobs", new { id = Model.JobPostID })" class="btn btn-gradient-primary btn-lg btn-block mb-3 action-btn">
+                                <i class="icon-briefcase mr-2"></i>Xem tin tuyển dụng
+                            </a>
+                            <a href="@Url.Action("MyApplications", "Candidates")" class="btn btn-outline-secondary btn-lg btn-block action-btn">
+                                <i class="icon-arrow-left mr-2"></i>Quay lại danh sách
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Application Summary -->
+                <div class="card border-0 shadow-lg summary-card">
+                    <div class="card-header bg-gradient-info text-white border-0">
+                        <h5 class="mb-0 d-flex align-items-center">
+                            <i class="icon-info-circle mr-2"></i>Tóm tắt đơn ứng tuyển
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="summary-items">
+                            <div class="summary-item mb-3 pb-3 border-bottom">
+                                <div class="d-flex align-items-center">
+                                    <div class="summary-icon mr-3">
+                                        <i class="icon-hash text-primary"></i>
+                                    </div>
+                                    <div class="summary-content flex-grow-1">
+                                        <span class="summary-label d-block text-muted small">Mã đơn</span>
+                                        <span class="summary-value font-weight-bold">#@Model.ApplicationID</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="summary-item mb-3 pb-3 border-bottom">
+                                <div class="d-flex align-items-center">
+                                    <div class="summary-icon mr-3">
+                                        <i class="icon-calendar text-success"></i>
+                                    </div>
+                                    <div class="summary-content flex-grow-1">
+                                        <span class="summary-label d-block text-muted small">Ngày nộp đơn</span>
+                                        <span class="summary-value">@(Model.AppliedAt?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @if (Model.UpdatedAt.HasValue)
+                            {
+                                <div class="summary-item mb-3 pb-3 border-bottom">
+                                    <div class="d-flex align-items-center">
+                                        <div class="summary-icon mr-3">
+                                            <i class="icon-refresh text-warning"></i>
+                                        </div>
+                                        <div class="summary-content flex-grow-1">
+                                            <span class="summary-label d-block text-muted small">Cập nhật</span>
+                                            <span class="summary-value">@Model.UpdatedAt.Value.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            <div class="summary-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="summary-icon mr-3">
+                                        <i class="icon-flag text-danger"></i>
+                                    </div>
+                                    <div class="summary-content flex-grow-1">
+                                        <span class="summary-label d-block text-muted small">Trạng thái</span>
+                                        <span class="badge @statusClass summary-badge">@statusDisplay</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Your Information -->
+                <div class="card border-0 shadow-lg mt-4">
+                    <div class="card-header bg-gradient-primary text-white border-0">
+                        <h5 class="mb-0 d-flex align-items-center">
+                            <i class="icon-user mr-2"></i>Thông tin của bạn
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="candidate-info">
+                            <div class="info-item mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="icon-user-circle text-primary mr-2"></i>
+                                    <div>
+                                        <span class="d-block text-muted small">Họ tên</span>
+                                        <strong>@Model.CandidateName</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="info-item mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="icon-envelope text-info mr-2"></i>
+                                    <div>
+                                        <span class="d-block text-muted small">Email</span>
+                                        <a href="mailto:@Model.CandidateEmail">@Model.CandidateEmail</a>
+                                    </div>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.CandidatePhone))
+                            {
+                                <div class="info-item">
+                                    <div class="d-flex align-items-center">
+                                        <i class="icon-phone text-success mr-2"></i>
+                                        <div>
+                                            <span class="d-block text-muted small">Điện thoại</span>
+                                            <a href="tel:@Model.CandidatePhone">@Model.CandidatePhone</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+@section Styles {
+    <link href="@Url.Content("~/Content/css/recruiters-application.css")?v=@DateTime.Now.Ticks" rel="stylesheet" type="text/css" />
+}

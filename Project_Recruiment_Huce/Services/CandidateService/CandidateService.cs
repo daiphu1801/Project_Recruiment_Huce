@@ -454,5 +454,95 @@ namespace Project_Recruiment_Huce.Services.CandidateService
 
             return result;
         }
+
+        public ApplicationDetailsResult GetApplicationDetails(int applicationId, int accountId)
+        {
+            var result = new ApplicationDetailsResult();
+
+            // Get candidate by accountId
+            var candidate = _repository.GetCandidateByAccountId(accountId);
+            if (candidate == null)
+            {
+                result.Success = false;
+                result.ErrorMessage = "Vui lòng hoàn thiện hồ sơ trước.";
+                return result;
+            }
+
+            // Get application and verify ownership
+            var application = _repository.GetApplicationById(applicationId, candidate.CandidateID);
+            if (application == null)
+            {
+                result.Success = false;
+                result.ErrorMessage = "Không tìm thấy đơn ứng tuyển hoặc bạn không có quyền xem.";
+                return result;
+            }
+
+            // Get job post details
+            var jobPost = application.JobPost;
+            if (jobPost == null)
+            {
+                result.Success = false;
+                result.ErrorMessage = "Không tìm thấy thông tin công việc.";
+                return result;
+            }
+
+            // Get company details
+            var company = jobPost.Company;
+            
+            // Get job post detail for additional info
+            var jobDetail = jobPost.JobPostDetails.FirstOrDefault();
+            
+            // Build salary range string
+            string salaryRange = "Thỏa thuận";
+            if (jobPost.SalaryFrom.HasValue && jobPost.SalaryTo.HasValue)
+            {
+                salaryRange = $"{jobPost.SalaryFrom:N0} - {jobPost.SalaryTo:N0} {jobPost.SalaryCurrency ?? "VND"}";
+            }
+            else if (jobPost.SalaryFrom.HasValue)
+            {
+                salaryRange = $"Từ {jobPost.SalaryFrom:N0} {jobPost.SalaryCurrency ?? "VND"}";
+            }
+
+            // Get company logo path from ProfilePhoto
+            string companyLogo = null;
+            if (company?.PhotoID.HasValue == true && company.PhotoID.Value > 0)
+            {
+                var photo = company.ProfilePhoto;
+                if (photo != null && !string.IsNullOrEmpty(photo.FilePath))
+                {
+                    companyLogo = photo.FilePath;
+                }
+            }
+
+            // Build view model
+            var viewModel = new ApplicationDetailsViewModel
+            {
+                ApplicationID = application.ApplicationID,
+                JobPostID = jobPost.JobPostID,
+                JobTitle = jobPost.Title,
+                JobDescription = jobPost.Description,
+                JobRequirements = jobPost.Requirements,
+                CompanyName = company?.CompanyName ?? "N/A",
+                CompanyLogo = companyLogo,
+                Location = jobPost.Location,
+                SalaryRange = salaryRange,
+                JobType = jobPost.EmploymentType,
+                ExperienceLevel = jobDetail != null ? $"{jobDetail.YearsExperience} năm" : "N/A",
+                ApplicationDeadline = jobPost.ApplicationDeadline,
+                Status = application.Status,
+                AppliedAt = application.AppliedAt,
+                Note = application.Note,
+                ResumeFilePath = application.ResumeFilePath,
+                CertificateFilePath = application.CertificateFilePath,
+                CandidateName = candidate.FullName,
+                CandidateEmail = candidate.Email,
+                CandidatePhone = candidate.Phone,
+                UpdatedAt = application.UpdatedAt
+            };
+
+            result.Success = true;
+            result.ViewModel = viewModel;
+            return result;
+        }
     }
 }

@@ -31,6 +31,11 @@ namespace Project_Recruiment_Huce.Services.CandidateService
         ApplicationListResult GetApplicationsList(int accountId, int pageNumber, int pageSize);
 
         /// <summary>
+        /// Lấy chi tiết application theo ID
+        /// </summary>
+        ApplicationDetailsResult GetApplicationDetails(int applicationId, int accountId);
+
+        /// <summary>
         /// Lấy dữ liệu cho form Apply
         /// </summary>
         ApplyFormResult GetApplyFormData(int accountId, int jobPostId, HttpServerUtilityBase server);
@@ -66,5 +71,15 @@ namespace Project_Recruiment_Huce.Services.CandidateService
         public bool Success { get; set; }
         public string ErrorMessage { get; set; }
         public ApplicationApplyViewModel ViewModel { get; set; }
+    }
+
+    /// <summary>
+    /// Kết quả trả về từ GetApplicationDetails
+    /// </summary>
+    public class ApplicationDetailsResult
+    {
+        public bool Success { get; set; }
+        public string ErrorMessage { get; set; }
+        public ApplicationDetailsViewModel ViewModel { get; set; }
     }
 }

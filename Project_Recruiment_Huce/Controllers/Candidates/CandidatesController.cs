@@ -104,6 +104,30 @@ namespace Project_Recruiment_Huce.Controllers
             return View(result.Applications);
         }
 
+        /// <summary>
+        /// GET: Candidates/ApplicationDetails
+        /// Xem chi tiết đơn ứng tuyển của candidate
+        /// </summary>
+        [HttpGet]
+        public ActionResult ApplicationDetails(int id)
+        {
+            var accountId = GetCurrentAccountId();
+            if (accountId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var result = _candidateService.GetApplicationDetails(id, accountId.Value);
+
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.ErrorMessage;
+                return RedirectToAction("MyApplications");
+            }
+
+            return View(result.ViewModel);
+        }
+
 
         /// <summary>
         /// GET: Candidates/Apply

@@ -130,6 +130,11 @@ namespace Project_Recruiment_Huce.Repositories.CandidateRepo
             _db.Applications.InsertOnSubmit(application);
         }
 
+        public Application GetApplicationById(int applicationId, int candidateId)
+        {
+            return _db.Applications.FirstOrDefault(a => a.ApplicationID == applicationId && a.CandidateID == candidateId);
+        }
+
         public bool IsPhoneUnique(string phone, int accountId)
         {
             // Check trong Accounts (trừ account hiện tại)

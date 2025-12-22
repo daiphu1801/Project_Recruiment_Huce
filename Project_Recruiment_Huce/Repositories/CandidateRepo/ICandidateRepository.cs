@@ -80,6 +80,11 @@ namespace Project_Recruiment_Huce.Repositories.CandidateRepo
         void CreateApplication(Application application);
 
         /// <summary>
+        /// Lấy application theo ID và CandidateID (để đảm bảo quyền truy cập)
+        /// </summary>
+        Application GetApplicationById(int applicationId, int candidateId);
+
+        /// <summary>
         /// Kiểm tra phone uniqueness (trừ accountId hiện tại)
         /// </summary>
         bool IsPhoneUnique(string phone, int accountId);

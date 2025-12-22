@@ -288,6 +288,7 @@
     <Compile Include="Models\Accounts\MyAccountViewModels.cs" />
     <Compile Include="Models\Candidates\CandidateManageViewModel.cs" />
     <Compile Include="Models\Candidates\ApplicationListViewModel.cs" />
+    <Compile Include="Models\Candidates\ApplicationDetailsViewModel.cs" />
     <Compile Include="Models\Candidates\ApplicationApplyViewModel.cs" />
     <Compile Include="Models\Candidates\ResumeFileViewModel.cs" />
     <Compile Include="Models\Candidates\SavedJobViewModel.cs" />
@@ -569,6 +570,7 @@
     <Content Include="Views\Account\ExternalLoginFailure.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Candidates\MyApplications.cshtml" />
+    <Content Include="Views\Candidates\ApplicationDetails.cshtml" />
     <Content Include="Views\Candidates\CandidatesManage.cshtml" />
     <Content Include="Views\Candidates\Apply.cshtml" />
     <Content Include="Views\Companies\CompaniesManage.cshtml" />
