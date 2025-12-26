@@ -34,66 +34,24 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
         /// </summary>
         List<JobFilterItem> GetJobsForFilter(int recruiterId);
 
+        /// <summary>
+        /// Schedule interview and send email
+        /// </summary>
         ServiceResult ScheduleInterview(InterviewScheduleViewModel viewModel, int recruiterId);
+
+        /// <summary>
+        /// Get schedule interview form with subscription and status validation
+        /// </summary>
+        ScheduleInterviewFormResult GetScheduleInterviewForm(int applicationId, int recruiterId);
+
+        /// <summary>
+        /// Get status options for dropdown
+        /// </summary>
+        List<StatusOption> GetStatusOptions();
+
+        /// <summary>
+        /// Get interview type options for dropdown
+        /// </summary>
+        List<InterviewTypeOption> GetInterviewTypeOptions();
     }
-
-    #region Result Classes
-
-    /// <summary>
-    /// Result for paginated application list
-    /// </summary>
-    public class ApplicationListResult
-    {
-        public bool Success { get; set; }
-        public string ErrorMessage { get; set; }
-        public List<RecruiterApplicationViewModel> Applications { get; set; }
-        public int CurrentPage { get; set; }
-        public int TotalPages { get; set; }
-        public int TotalItems { get; set; }
-        public int? JobId { get; set; }
-        public string Status { get; set; }
-    }
-
-    /// <summary>
-    /// Result for application details
-    /// </summary>
-    public class ApplicationDetailsResult
-    {
-        public bool Success { get; set; }
-        public string ErrorMessage { get; set; }
-        public RecruiterApplicationViewModel Application { get; set; }
-    }
-
-    /// <summary>
-    /// Result for application status form
-    /// </summary>
-    public class ApplicationStatusFormResult
-    {
-        public bool Success { get; set; }
-        public string ErrorMessage { get; set; }
-        public UpdateApplicationStatusViewModel ViewModel { get; set; }
-    }
-
-    /// <summary>
-    /// Result for status update operation
-    /// </summary>
-    public class UpdateStatusResult
-    {
-        public bool Success { get; set; }
-        public string ErrorMessage { get; set; }
-        public string SuccessMessage { get; set; }
-        public int ApplicationId { get; set; }
-    }
-
-    /// <summary>
-    /// Job filter item for dropdown
-    /// </summary>
-    public class JobFilterItem
-    {
-        public int JobPostID { get; set; }
-        public string Title { get; set; }
-        public string JobCode { get; set; }
-    }
-
-    #endregion
 }

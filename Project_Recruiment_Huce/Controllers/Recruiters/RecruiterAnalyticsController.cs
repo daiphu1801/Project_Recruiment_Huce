@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Models.Recruiters;
 using Project_Recruiment_Huce.Repositories.RecruiterAnalyticsRepo;
+using Project_Recruiment_Huce.Services.SubscriptionService;
 using IRecruiterAnalyticsService = Project_Recruiment_Huce.Services.RecruiterAnalyticsService.IRecruiterAnalyticsService;
 using NewRecruiterAnalyticsService = Project_Recruiment_Huce.Services.RecruiterAnalyticsService.RecruiterAnalyticsService;
 
@@ -20,11 +21,13 @@ namespace Project_Recruiment_Huce.Controllers.Recruiters
     {
         private readonly IRecruiterAnalyticsService _analyticsService;
         private readonly IRecruiterAnalyticsRepository _repository;
+        private readonly ISubscriptionService _subscriptionService;
 
         public RecruiterAnalyticsController()
         {
             _repository = new RecruiterAnalyticsRepository(readOnly: true);
             _analyticsService = new NewRecruiterAnalyticsService(_repository);
+            _subscriptionService = new SubscriptionService();
         }
         /// <summary>
         /// Analytics dashboard - summary and job breakdown
@@ -37,6 +40,13 @@ namespace Project_Recruiment_Huce.Controllers.Recruiters
             {
                 TempData["ErrorMessage"] = "Không tìm thấy thông tin nhà tuyển dụng.";
                 return RedirectToAction("Index", "Home");
+            }
+
+            // Premium feature check - Analytics chỉ dành cho gói đăng ký trả phí
+            if (!_subscriptionService.HasActiveSubscription(recruiterId.Value))
+            {
+                TempData["ErrorMessage"] = "Tính năng Phân tích & Thống kê chỉ dành cho gói đăng ký trả phí. Vui lòng nâng cấp để sử dụng!";
+                return RedirectToAction("Index", "Subscription");
             }
 
             const int pageSize = 10;
@@ -70,6 +80,13 @@ namespace Project_Recruiment_Huce.Controllers.Recruiters
             {
                 TempData["ErrorMessage"] = "Không tìm thấy thông tin nhà tuyển dụng.";
                 return RedirectToAction("Index", "Home");
+            }
+
+            // Premium feature check - Analytics chỉ dành cho gói đăng ký trả phí
+            if (!_subscriptionService.HasActiveSubscription(recruiterId.Value))
+            {
+                TempData["ErrorMessage"] = "Tính năng Phân tích & Thống kê chỉ dành cho gói đăng ký trả phí.";
+                return RedirectToAction("Index", "Subscription");
             }
 
             // Call service to get job analytics

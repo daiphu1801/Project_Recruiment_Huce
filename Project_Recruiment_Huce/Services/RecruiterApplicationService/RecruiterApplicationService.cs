@@ -6,6 +6,7 @@ using Project_Recruiment_Huce.Repositories.RecruiterApplicationRepo;
 using Hangfire;
 using Project_Recruiment_Huce.Models;
 using Project_Recruiment_Huce.Services;
+using Project_Recruiment_Huce.Services.SubscriptionService;
 
 namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
 {
@@ -15,11 +16,13 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
     public class RecruiterApplicationService : IRecruiterApplicationService
     {
         private readonly IRecruiterApplicationRepository _repository;
+        private readonly ISubscriptionService _subscriptionService;
         private static readonly string[] ValidStatuses = { "Under review", "Interview", "Offered", "Hired", "Rejected" };
 
-        public RecruiterApplicationService(IRecruiterApplicationRepository repository)
+        public RecruiterApplicationService(IRecruiterApplicationRepository repository, ISubscriptionService subscriptionService = null)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _subscriptionService = subscriptionService ?? new SubscriptionService.SubscriptionService();
         }
 
         public ApplicationListResult GetApplicationsList(int recruiterId, int? jobId, string status, int page, int pageSize)
@@ -229,6 +232,90 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
             }).ToList();
         }
 
+        public List<StatusOption> GetStatusOptions()
+        {
+            return new List<StatusOption>
+            {
+                new StatusOption { Value = "", Text = "Tất cả trạng thái" },
+                new StatusOption { Value = "Under review", Text = "Đang xem xét" },
+                new StatusOption { Value = "Interview", Text = "Phỏng vấn" },
+                new StatusOption { Value = "Offered", Text = "Đã đề xuất" },
+                new StatusOption { Value = "Hired", Text = "Đã tuyển" },
+                new StatusOption { Value = "Rejected", Text = "Đã từ chối" }
+            };
+        }
+
+        public List<InterviewTypeOption> GetInterviewTypeOptions()
+        {
+            return new List<InterviewTypeOption>
+            {
+                new InterviewTypeOption { Value = "Trực tiếp", Text = "Phỏng vấn trực tiếp tại văn phòng" },
+                new InterviewTypeOption { Value = "Trực tuyến", Text = "Phỏng vấn trực tuyến (Online)" },
+                new InterviewTypeOption { Value = "Điện thoại", Text = "Phỏng vấn qua điện thoại" }
+            };
+        }
+
+        public ScheduleInterviewFormResult GetScheduleInterviewForm(int applicationId, int recruiterId)
+        {
+            try
+            {
+                // Business rule 1: Check subscription
+                if (!_subscriptionService.HasActiveSubscription(recruiterId))
+                {
+                    return new ScheduleInterviewFormResult
+                    {
+                        Success = false,
+                        RequiresSubscription = true,
+                        ErrorMessage = "Tính năng gửi email mời phỏng vấn chỉ dành cho gói đăng ký trả phí. Vui lòng nâng cấp!"
+                    };
+                }
+
+                // Get application details
+                var detailResult = GetApplicationDetails(applicationId, recruiterId);
+                if (!detailResult.Success)
+                {
+                    return new ScheduleInterviewFormResult
+                    {
+                        Success = false,
+                        ErrorMessage = detailResult.ErrorMessage
+                    };
+                }
+
+                // Business rule 2: Status must be Interview
+                if (detailResult.Application.Status != "Interview")
+                {
+                    return new ScheduleInterviewFormResult
+                    {
+                        Success = false,
+                        ErrorMessage = "Chỉ có thể đặt lịch phỏng vấn cho đơn ứng tuyển có trạng thái 'Phỏng vấn'."
+                    };
+                }
+
+                // Build ViewModel with default values
+                return new ScheduleInterviewFormResult
+                {
+                    Success = true,
+                    ViewModel = new InterviewScheduleViewModel
+                    {
+                        ApplicationID = detailResult.Application.ApplicationID,
+                        CandidateName = detailResult.Application.CandidateName,
+                        CandidateEmail = detailResult.Application.CandidateEmail,
+                        JobTitle = detailResult.Application.JobTitle,
+                        InterviewDate = DateTime.Today.AddDays(3),
+                        Duration = 60
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ScheduleInterviewFormResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Lỗi khi tải form đặt lịch phỏng vấn: {ex.Message}"
+                };
+            }
+        }
+
         #region Private Helper Methods
 
         private RecruiterApplicationViewModel MapToViewModel(Models.Application app)
@@ -317,6 +404,12 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
         {
             try
             {
+                // Business rule: Check subscription
+                if (!_subscriptionService.HasActiveSubscription(recruiterId))
+                {
+                    return new ServiceResult { Success = false, ErrorMessage = "SUBSCRIPTION_REQUIRED" };
+                }
+
                 // 1. Lấy dữ liệu
                 var application = _repository.GetApplicationById(viewModel.ApplicationID);
                 if (application == null)

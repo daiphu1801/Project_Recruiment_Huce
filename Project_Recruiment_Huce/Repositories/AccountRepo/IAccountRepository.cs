@@ -16,7 +16,7 @@ namespace Project_Recruiment_Huce.Repositories
         PasswordResetToken GetPasswordResetToken(string emailLower, string resetCodeUpper);
         Account GetById(int accountId);
         Account FindByUsernameOrEmail(string emailOrUsername);
-        Account Create(string username, string email, string phone, string role, string passwordHash, string salt);
+        Account Create(string username, string email, string phone, string role, string passwordHash, string salt, string fullName = null);
         void UpdatePassword(int accountId, string passwordHash, string salt);
         void UpdateAccount(Account account);
         void UpdatePasswordResetToken(PasswordResetToken token);

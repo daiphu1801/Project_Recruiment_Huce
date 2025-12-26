@@ -60,7 +60,7 @@ namespace Project_Recruiment_Huce.Repositories
             return _db.Accounts.Any(a => (a.Phone ?? string.Empty) == normalizedPhone);
         }
 
-        public Account Create(string username, string email, string phone, string role, string passwordHash, string salt)
+        public Account Create(string username, string email, string phone, string role, string passwordHash, string salt, string fullName = null)
         {
             var account = new Account
             {
@@ -69,6 +69,7 @@ namespace Project_Recruiment_Huce.Repositories
                 Phone = phone,
                 Role = role,
                 PasswordHash = passwordHash,
+                FullName = !string.IsNullOrWhiteSpace(fullName) ? fullName : username, // Default to username if fullName not provided
                 CreatedAt = DateTime.Now,
                 ActiveFlag = 1
             };

@@ -299,7 +299,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>JOBPORTAL_EN.dbml</DependentUpon>
     </Compile>
-    <Compile Include="Models\Recruiters\RecruiterApplicationViewModel.cs" />
+    <Compile Include="Models\Recruiters\RecruiterApplicationViewModels.cs" />
+    <Compile Include="Models\Recruiters\InterviewScheduleViewModels.cs" />
     <Compile Include="Models\Recruiters\RecruiterAnalyticsViewModels.cs" />
     <Compile Include="Models\Home\HomeIndexViewModel.cs" />
     <Compile Include="Models\Home\ContactViewModels.cs" />
