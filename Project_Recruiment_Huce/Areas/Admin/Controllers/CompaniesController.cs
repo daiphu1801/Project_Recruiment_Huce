@@ -81,12 +81,18 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
             }
         }
 
-        // GET: Admin/Accounts/Details/5
-        public ActionResult Details(int id)
+        // GET: Admin/Companies/Details/5
+        public ActionResult Details(int? id)
         {
+            if (!id.HasValue)
+            {
+                TempData["ErrorMessage"] = "ID công ty không hợp lệ";
+                return RedirectToAction("Index");
+            }
+            
             using (var db = new JOBPORTAL_ENDataContext(ConfigurationManager.ConnectionStrings["JOBPORTAL_ENConnectionString"].ConnectionString))
             {
-                var company = db.Companies.FirstOrDefault(c => c.CompanyID == id);
+                var company = db.Companies.FirstOrDefault(c => c.CompanyID == id.Value);
                 if (company == null) return HttpNotFound();
 
                 var recruiter = db.Recruiters.FirstOrDefault(r => r.CompanyID == id);

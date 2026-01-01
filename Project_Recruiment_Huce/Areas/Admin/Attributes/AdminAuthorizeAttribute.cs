@@ -38,7 +38,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Attributes
 
             return false;
         }
-
+        
         protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
         {
             // Luôn redirect về Login nếu không authorized

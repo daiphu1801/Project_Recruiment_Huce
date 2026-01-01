@@ -173,7 +173,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 {
                     ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
                 }
-                if (db.Accounts.Any(a => a.Email.ToLower() == model.Email.ToLower()))
+                if (!string.IsNullOrWhiteSpace(model.Email) && db.Accounts.Any(a => a.Email != null && a.Email.ToLower() == model.Email.ToLower()))
                 {
                     ModelState.AddModelError("Email", "Email (login) đã được sử dụng");
                 }
@@ -235,6 +235,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     Username = model.Username,
                     Email = model.Email,
                     Phone = model.Phone,
+                    FullName = model.FullName ?? model.Username, // FullName là bắt buộc trong database
                     Role = "Recruiter",
                     PasswordHash = passwordHash,
                     ActiveFlag = model.Active ? (byte)1 : (byte)0,

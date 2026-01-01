@@ -282,6 +282,17 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
         private ActionResult RedirectToLocal(string returnUrl)
         {
+            // Bỏ qua các returnUrl có thể gây redirect loop
+            if (!string.IsNullOrWhiteSpace(returnUrl))
+            {
+                var lowerUrl = returnUrl.ToLowerInvariant().Trim();
+                // Nếu returnUrl chỉ là root /admin, bỏ qua và redirect về Dashboard
+                if (lowerUrl == "/admin" || lowerUrl == "/admin/")
+                {
+                    return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                }
+            }
+            
             if (Url.IsLocalUrl(returnUrl) && returnUrl.Length > 1 && returnUrl.StartsWith("/")
                 && !returnUrl.StartsWith("//") && !returnUrl.StartsWith("/\\"))
             {

@@ -218,64 +218,6 @@ BEGIN
     );
     PRINT '[✓] Created table dbo.Recruiters with Subscription fields';
 END
-ELSE
-BEGIN
-    -- Add subscription columns if not exists
-    IF COL_LENGTH('dbo.Recruiters', 'SubscriptionType') IS NULL
-    BEGIN
-        ALTER TABLE dbo.Recruiters ADD SubscriptionType NVARCHAR(20) NOT NULL DEFAULT N'Free';
-        PRINT '[✓] Added SubscriptionType column to dbo.Recruiters';
-    END
-    
-    IF COL_LENGTH('dbo.Recruiters', 'SubscriptionExpiryDate') IS NULL
-    BEGIN
-        ALTER TABLE dbo.Recruiters ADD SubscriptionExpiryDate DATETIME NULL;
-        PRINT '[✓] Added SubscriptionExpiryDate column to dbo.Recruiters';
-    END
-    
-    IF COL_LENGTH('dbo.Recruiters', 'FreeJobPostCount') IS NULL
-    BEGIN
-        ALTER TABLE dbo.Recruiters ADD FreeJobPostCount INT NOT NULL DEFAULT 0;
-        PRINT '[✓] Added FreeJobPostCount column to dbo.Recruiters';
-    END
-    
-    IF COL_LENGTH('dbo.Recruiters', 'MonthlyJobPostCount') IS NULL
-    BEGIN
-        ALTER TABLE dbo.Recruiters ADD MonthlyJobPostCount INT NOT NULL DEFAULT 0;
-        PRINT '[✓] Added MonthlyJobPostCount column to dbo.Recruiters';
-    END
-    
-    IF COL_LENGTH('dbo.Recruiters', 'MonthlyCVViewCount') IS NULL
-    BEGIN
-        ALTER TABLE dbo.Recruiters ADD MonthlyCVViewCount INT NOT NULL DEFAULT 0;
-        PRINT '[✓] Added MonthlyCVViewCount column to dbo.Recruiters';
-    END
-    
-    IF COL_LENGTH('dbo.Recruiters', 'MonthlyEmailInviteCount') IS NULL
-    BEGIN
-        ALTER TABLE dbo.Recruiters ADD MonthlyEmailInviteCount INT NOT NULL DEFAULT 0;
-        PRINT '[✓] Added MonthlyEmailInviteCount column to dbo.Recruiters';
-    END
-    
-    IF COL_LENGTH('dbo.Recruiters', 'LastResetDate') IS NULL
-    BEGIN
-        ALTER TABLE dbo.Recruiters ADD LastResetDate DATETIME NOT NULL DEFAULT GETDATE();
-        PRINT '[✓] Added LastResetDate column to dbo.Recruiters';
-    END
-    
-    IF COL_LENGTH('dbo.Recruiters', 'RowVer') IS NULL
-    BEGIN
-        SET QUOTED_IDENTIFIER ON;
-        ALTER TABLE dbo.Recruiters ADD RowVer ROWVERSION NOT NULL;
-        PRINT '[✓] Added RowVer column to dbo.Recruiters';
-    END
-    
-    IF COL_LENGTH('dbo.Recruiters', 'Avatar') IS NULL
-    BEGIN
-        ALTER TABLE dbo.Recruiters ADD Avatar NVARCHAR(500) NULL;
-        PRINT '[✓] Added Avatar column to dbo.Recruiters';
-    END
-END
 
 -- ---------------------------------------------------------------------
 -- 1.6) SePayTransactions - Lịch sử giao dịch SePay
@@ -338,8 +280,7 @@ BEGIN
         Summary     NVARCHAR(500) NULL,
         PhotoID     INT NULL,
         CreatedAt   DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
-        ActiveFlag  TINYINT NOT NULL DEFAULT 1,
-        Avatar      NVARCHAR(500) NULL
+        ActiveFlag  TINYINT NOT NULL DEFAULT 1
     );
     PRINT '[✓] Created table dbo.Candidates';
 END
@@ -399,26 +340,6 @@ BEGIN
         LastRefreshDate DATETIME NULL
     );
     PRINT '[✓] Created table dbo.JobPosts';
-END
-ELSE
-BEGIN
-    IF COL_LENGTH('dbo.JobPosts', 'RefreshCount') IS NULL
-    BEGIN
-        ALTER TABLE dbo.JobPosts ADD RefreshCount INT NOT NULL DEFAULT 0;
-        PRINT '[✓] Added RefreshCount column to dbo.JobPosts';
-    END
-    
-    IF COL_LENGTH('dbo.JobPosts', 'DisplayDays') IS NULL
-    BEGIN
-        ALTER TABLE dbo.JobPosts ADD DisplayDays INT NOT NULL DEFAULT 7;
-        PRINT '[✓] Added DisplayDays column to dbo.JobPosts';
-    END
-    
-    IF COL_LENGTH('dbo.JobPosts', 'LastRefreshDate') IS NULL
-    BEGIN
-        ALTER TABLE dbo.JobPosts ADD LastRefreshDate DATETIME NULL;
-        PRINT '[✓] Added LastRefreshDate column to dbo.JobPosts';
-    END
 END
 
 -- ---------------------------------------------------------------------
