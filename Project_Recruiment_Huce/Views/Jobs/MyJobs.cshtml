@@ -6,69 +6,7 @@
 }
 
 @section Styles {
-    <style>
-        .job-card {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: box-shadow 0.3s;
-        }
-        .job-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .job-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-        }
-        .job-title-link {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #007bff;
-            text-decoration: none;
-        }
-        .job-title-link:hover {
-            text-decoration: underline;
-        }
-        .job-status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        .status-published {
-            background-color: #28a745;
-            color: white;
-        }
-        .status-closed {
-            background-color: #dc3545;
-            color: white;
-        }
-        .status-draft {
-            background-color: #6c757d;
-            color: white;
-        }
-        .job-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 15px;
-            color: #666;
-        }
-        .job-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .job-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-    </style>
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/myjobs.css")" />
 }
 
 <section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
@@ -200,6 +138,24 @@
                         </div>
                     }
 
+                    @if (job.Status == "Published" && job.PendingApplicationsCount > 0)
+                    {
+                        <div class="applicant-warning">
+                            <div class="warning-content">
+                                <div class="warning-icon-wrapper">
+                                    <i class="icon-exclamation-triangle"></i>
+                                </div>
+                                <div class="warning-text">
+                                    <strong>Lưu ý:</strong>
+                                    <p>Có <span class="pending-count">@job.PendingApplicationsCount</span> ứng viên đang chờ xử lý</p>
+                                </div>
+                                <a href="@Url.Action("MyApplications", "RecruitersApplication", new { jobId = job.JobPostID })" class="btn btn-warning btn-sm warning-action">
+                                    Xử lý ngay →
+                                </a>
+                            </div>
+                        </div>
+                    }
+
                     <div class="job-actions">
                         <a href="@Url.Action("JobDetails","Jobs", new { id = job.JobPostID })" class="btn btn-sm btn-outline-primary">
                             <span class="icon-eye mr-1"></span>Xem chi tiết
@@ -212,13 +168,7 @@
                             <a href="@Url.Action("Edit","Jobs", new { id = job.JobPostID })" class="btn btn-sm btn-outline-secondary">
                                 <span class="icon-edit mr-1"></span>Chỉnh sửa
                             </a>
-                            if (job.PendingApplicationsCount > 0)
-                            {
-                                <div class="alert alert-warning d-inline-block mb-0 ml-2" style="padding: 5px 10px; font-size: 0.875rem;">
-                                    <i class="icon-warning mr-1"></i>
-                                    <strong>Cảnh báo:</strong> Có @job.PendingApplicationsCount hồ sơ ứng viên đang trong quá trình xử lý. Vui lòng xử lý hết trước khi đóng tin.
-                                </div>
-                            }
+                            
                             string confirmMessage = job.PendingApplicationsCount > 0 
                                 ? string.Format("Cảnh báo: Có {0} hồ sơ ứng viên đang trong quá trình xử lý. Bạn có chắc chắn muốn đóng tin tuyển dụng này? Candidates sẽ không thể ứng tuyển nữa.", job.PendingApplicationsCount)
                                 : "Bạn có chắc chắn muốn đóng tin tuyển dụng này? Candidates sẽ không thể ứng tuyển nữa.";
@@ -234,22 +184,19 @@
                         }
                         else if (job.Status == "Closed")
                         {
-                            <span class="badge badge-danger ml-2">Đã đóng</span>
-                            bool canReopen = true;
                             bool deadlinePassed = job.ApplicationDeadline.HasValue && job.ApplicationDeadline.Value < DateTime.Now.Date;
                             string reopenConfirmMessage = deadlinePassed 
                                 ? "Hạn nộp hồ sơ đã qua. Bạn sẽ được chuyển đến trang chỉnh sửa để cập nhật hạn nộp mới. Bạn có muốn tiếp tục?" 
                                 : "Bạn có chắc chắn muốn mở lại tin tuyển dụng này?";
-                            if (canReopen)
+                            
+                            <span class="badge badge-danger ml-2">Đã đóng</span>
+                            using (Html.BeginForm("ReopenJob", "Jobs", FormMethod.Post, new { @class = "d-inline", onsubmit = string.Format("return confirm('{0}');", reopenConfirmMessage.Replace("'", "\\'")) }))
                             {
-                                using (Html.BeginForm("ReopenJob", "Jobs", FormMethod.Post, new { @class = "d-inline", onsubmit = string.Format("return confirm('{0}');", reopenConfirmMessage.Replace("'", "\\'")) }))
-                                {
-                                    @Html.AntiForgeryToken()
-                                    @Html.Hidden("id", job.JobPostID)
-                                    <button type="submit" class="btn btn-sm btn-outline-success ml-2">
-                                        <span class="icon-check mr-1"></span>Mở lại tin
-                                    </button>
-                                }
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("id", job.JobPostID)
+                                <button type="submit" class="btn btn-sm btn-outline-success ml-2">
+                                    <span class="icon-check mr-1"></span>Mở lại tin
+                                </button>
                             }
                         }
                         else if (job.Status == "Expired")

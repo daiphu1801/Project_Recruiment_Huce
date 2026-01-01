@@ -193,6 +193,7 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 // Create account
                 var account = new Account
                 {
+                    FullName = model.FullName,
                     Username = model.Username,
                     Email = model.Email,
                     Phone = phone, // Use normalized phone

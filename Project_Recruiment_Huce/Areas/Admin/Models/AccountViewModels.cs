@@ -28,6 +28,11 @@ namespace Project_Recruiment_Huce.Areas.Admin.Models
     /// </summary>
     public class CreateAccountVm
     {
+        [Required(ErrorMessage = "Vui lòng nhập họ và tên")]
+        [StringLength(255, ErrorMessage = "Họ và tên tối đa 255 ký tự")]
+        [Display(Name = "Họ và tên")]
+        public string FullName { get; set; }
+
         [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
         [StringLength(100, ErrorMessage = "Tên đăng nhập tối đa 100 ký tự")]
         public string Username { get; set; }

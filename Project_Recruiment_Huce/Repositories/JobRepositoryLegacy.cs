@@ -39,8 +39,11 @@ namespace Project_Recruiment_Huce.Repositories
         public IEnumerable<JobPost> GetPublishedJobs()
         {
             JobStatusHelper.NormalizeStatuses(_db);
+            var now = DateTime.Now;
             return _db.JobPosts
                 .Where(j => j.Status == JobStatusHelper.Published)
+                // Lọc bỏ các tin đã hết hạn: ApplicationDeadline phải null hoặc >= ngày hiện tại
+                .Where(j => !j.ApplicationDeadline.HasValue || j.ApplicationDeadline.Value >= now)
                 .OrderByDescending(j => j.PostedAt > j.UpdatedAt ? j.PostedAt : j.UpdatedAt)
                 .ToList();
         }
@@ -65,9 +68,12 @@ namespace Project_Recruiment_Huce.Repositories
         public IEnumerable<JobPost> GetRelatedJobs(int jobId, int companyId, string location, int take = 5)
         {
             JobStatusHelper.NormalizeStatuses(_db);
+            var now = DateTime.Now;
             return _db.JobPosts
                 .Where(j => j.JobPostID != jobId &&
                            j.Status == JobStatusHelper.Published &&
+                           // Lọc bỏ các tin đã hết hạn
+                           (!j.ApplicationDeadline.HasValue || j.ApplicationDeadline.Value >= now) &&
                            (j.CompanyID == companyId ||
                             (j.Location != null && location != null && j.Location == location)))
                 .OrderByDescending(j => j.PostedAt > j.UpdatedAt ? j.PostedAt : j.UpdatedAt)
@@ -87,7 +93,11 @@ namespace Project_Recruiment_Huce.Repositories
             }
 
             JobStatusHelper.NormalizeStatuses(_db);
-            var query = _db.JobPosts.Where(j => j.Status == JobStatusHelper.Published);
+            var now = DateTime.Now;
+            // Chỉ lấy các tin Published và chưa hết hạn
+            var query = _db.JobPosts
+                .Where(j => j.Status == JobStatusHelper.Published)
+                .Where(j => !j.ApplicationDeadline.HasValue || j.ApplicationDeadline.Value >= now);
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {

@@ -10,7 +10,7 @@ using Project_Recruiment_Huce.Repositories.SubscriptionRepo;
 namespace Project_Recruiment_Huce.Services.SubscriptionService
 {
     /// <summary>
-    /// Service for subscription business logic
+    /// Service xử lý logic nghiệp vụ cho gói đăng ký (subscription)
     /// </summary>
     public class SubscriptionService : ISubscriptionService
     {
@@ -25,7 +25,7 @@ namespace Project_Recruiment_Huce.Services.SubscriptionService
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             
-            // Define subscription plans
+            // Định nghĩa các gói đăng ký
             _plans = new List<SubscriptionPlan>
             {
                 new SubscriptionPlan 
@@ -48,7 +48,7 @@ namespace Project_Recruiment_Huce.Services.SubscriptionService
         }
 
         /// <summary>
-        /// Get all available subscription plans
+        /// Lấy danh sách tất cả các gói đăng ký khả dụng
         /// </summary>
         public List<SubscriptionPlan> GetAvailablePlans()
         {
@@ -56,7 +56,7 @@ namespace Project_Recruiment_Huce.Services.SubscriptionService
         }
 
         /// <summary>
-        /// Get plan by ID
+        /// Lấy thông tin gói đăng ký theo ID
         /// </summary>
         public SubscriptionPlan GetPlanById(string planId)
         {
@@ -64,46 +64,46 @@ namespace Project_Recruiment_Huce.Services.SubscriptionService
         }
 
         /// <summary>
-        /// Process subscription upgrade
+        /// Xử lý nâng cấp gói đăng ký
         /// </summary>
         public bool ProcessUpgrade(SubscriptionUpgradeRequest request)
         {
             if (request == null)
             {
-                PaymentLogger.Warning("ProcessUpgrade: Request is null");
+                PaymentLogger.Warning("ProcessUpgrade: Yêu cầu nâng cấp rỗng (null)");
                 return false;
             }
 
             var recruiter = _repository.GetRecruiterById(request.RecruiterID);
             if (recruiter == null)
             {
-                PaymentLogger.Warning($"ProcessUpgrade: Recruiter not found - ID: {request.RecruiterID}");
+                PaymentLogger.Warning($"ProcessUpgrade: Không tìm thấy nhà tuyển dụng - ID: {request.RecruiterID}");
                 return false;
             }
 
             var plan = GetPlanById(request.PlanId);
             if (plan == null)
             {
-                PaymentLogger.Warning($"ProcessUpgrade: Plan not found - {request.PlanId}");
+                PaymentLogger.Warning($"ProcessUpgrade: Không tìm thấy gói đăng ký - {request.PlanId}");
                 return false;
             }
 
-            // Validate amount (allow some tolerance or amountIn=0 if content is valid)
+            // Kiểm tra số tiền (cho phép amountIn=0 nếu nội dung hợp lệ)
             if (request.AmountPaid > 0 && request.AmountPaid < plan.Price)
             {
-                PaymentLogger.Warning($"ProcessUpgrade: Amount mismatch. Required: {plan.Price}, Paid: {request.AmountPaid}");
+                PaymentLogger.Warning($"ProcessUpgrade: Số tiền không khớp. Yêu cầu: {plan.Price}, Đã trả: {request.AmountPaid}");
                 return false;
             }
 
             var oldSubscription = recruiter.SubscriptionType;
             var oldExpiry = recruiter.SubscriptionExpiryDate;
 
-            // Update subscription
+            // Cập nhật thông tin gói đăng ký
             recruiter.SubscriptionType = plan.Id;
 
             if (plan.Id == "Monthly")
             {
-                // Extend if already monthly, else set new
+                // Nếu còn hạn thì gia hạn thêm, nếu hết hạn thì đặt mới
                 if (recruiter.SubscriptionExpiryDate.HasValue && recruiter.SubscriptionExpiryDate > DateTime.Now)
                 {
                     recruiter.SubscriptionExpiryDate = recruiter.SubscriptionExpiryDate.Value.AddDays(30);
@@ -115,23 +115,23 @@ namespace Project_Recruiment_Huce.Services.SubscriptionService
             }
             else if (plan.Id == "Lifetime")
             {
-                recruiter.SubscriptionExpiryDate = null; // No expiry
+                recruiter.SubscriptionExpiryDate = null; // Không hết hạn
             }
 
-            // Reset free count
+            // Đặt lại số lượt đăng tin miễn phí
             recruiter.FreeJobPostCount = 0;
 
             _repository.UpdateRecruiterSubscription(recruiter);
 
-            PaymentLogger.Info($"Upgrade successful. RecruiterID: {request.RecruiterID}, "
-                + $"Old: {oldSubscription} (Expiry: {oldExpiry}), "
-                + $"New: {recruiter.SubscriptionType} (Expiry: {recruiter.SubscriptionExpiryDate})");
+            PaymentLogger.Info($"Nâng cấp thành công. RecruiterID: {request.RecruiterID}, "
+                + $"Cũ: {oldSubscription} (Hết hạn: {oldExpiry}), "
+                + $"Mới: {recruiter.SubscriptionType} (Hết hạn: {recruiter.SubscriptionExpiryDate})");
 
             return true;
         }
 
         /// <summary>
-        /// Get subscription status for a recruiter
+        /// Lấy trạng thái gói đăng ký của nhà tuyển dụng
         /// </summary>
         public SubscriptionStatusDto GetSubscriptionStatus(int recruiterId)
         {
@@ -139,7 +139,7 @@ namespace Project_Recruiment_Huce.Services.SubscriptionService
         }
 
         /// <summary>
-        /// Check if recruiter has active subscription
+        /// Kiểm tra nhà tuyển dụng có gói đăng ký đang hoạt động không
         /// </summary>
         public bool HasActiveSubscription(int recruiterId)
         {
@@ -147,8 +147,8 @@ namespace Project_Recruiment_Huce.Services.SubscriptionService
         }
 
         /// <summary>
-        /// Parse payment content to extract RecruiterID and PlanID
-        /// Supports formats:
+        /// Phân tích nội dung thanh toán để trích xuất RecruiterID và PlanID
+        /// Hỗ trợ các định dạng:
         /// - "UPGRADE 123 Monthly"
         /// - "UP123 Monthly"
         /// - "BankAPINotify 109808362433-UP37 Monthly-CHUYEN TIEN-..."
@@ -158,21 +158,21 @@ namespace Project_Recruiment_Huce.Services.SubscriptionService
             if (string.IsNullOrEmpty(content))
                 return (null, null);
 
-            PaymentLogger.Info($"Parsing payment content: {content}");
+            PaymentLogger.Info($"Đang phân tích nội dung thanh toán: {content}");
 
-            // Try regex pattern to extract "UP{ID} {Plan}" from anywhere in the string
+            // Thử regex để trích xuất "UP{ID} {Plan}" từ bất kỳ vị trí nào trong chuỗi
             var match = Regex.Match(content, @"UP(\d+)\s+(\w+)", RegexOptions.IgnoreCase);
             if (match.Success)
             {
                 if (int.TryParse(match.Groups[1].Value, out int recruiterId))
                 {
                     string planId = match.Groups[2].Value;
-                    PaymentLogger.Info($"Parsed via regex: RecruiterID={recruiterId}, PlanId={planId}");
+                    PaymentLogger.Info($"Phân tích thành công qua regex: RecruiterID={recruiterId}, PlanId={planId}");
                     return (recruiterId, planId);
                 }
             }
 
-            // Fallback: Try splitting by spaces and finding UPGRADE/UP keyword
+            // Dự phòng: Tách theo khoảng trắng và tìm từ khóa UPGRADE/UP
             var parts = content.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             int upgradeIndex = Array.FindIndex(parts, p =>
                 p.Equals("UPGRADE", StringComparison.OrdinalIgnoreCase) ||
@@ -184,13 +184,13 @@ namespace Project_Recruiment_Huce.Services.SubscriptionService
                 string recruiterIdStr = "";
                 string planId = "";
 
-                // Check if format is "UP123" (short format)
+                // Kiểm tra định dạng "UP123" (dạng ngắn)
                 if (firstPart.StartsWith("UP", StringComparison.OrdinalIgnoreCase) && firstPart.Length > 2)
                 {
                     recruiterIdStr = firstPart.Substring(2);
                     planId = parts.Length > upgradeIndex + 1 ? parts[upgradeIndex + 1] : "";
                 }
-                // Format is "UPGRADE 123" (full format)
+                // Định dạng "UPGRADE 123" (dạng đầy đủ)
                 else
                 {
                     recruiterIdStr = parts.Length > upgradeIndex + 1 ? parts[upgradeIndex + 1] : "";
@@ -199,17 +199,17 @@ namespace Project_Recruiment_Huce.Services.SubscriptionService
 
                 if (int.TryParse(recruiterIdStr, out int recruiterId))
                 {
-                    PaymentLogger.Info($"Parsed via split: RecruiterID={recruiterId}, PlanId={planId}");
+                    PaymentLogger.Info($"Phân tích thành công qua split: RecruiterID={recruiterId}, PlanId={planId}");
                     return (recruiterId, planId);
                 }
             }
 
-            PaymentLogger.Warning($"Failed to parse payment content: {content}");
+            PaymentLogger.Warning($"Không thể phân tích nội dung thanh toán: {content}");
             return (null, null);
         }
 
         /// <summary>
-        /// Validate payment amount matches plan price
+        /// Kiểm tra số tiền thanh toán có khớp với giá gói không
         /// </summary>
         public bool ValidatePaymentAmount(string planId, decimal amountPaid)
         {
@@ -217,7 +217,7 @@ namespace Project_Recruiment_Huce.Services.SubscriptionService
             if (plan == null)
                 return false;
 
-            // Allow amountIn=0 (SePay API limitation) or exact/greater amount
+            // Cho phép amountIn=0 (hạn chế của SePay API) hoặc số tiền bằng/lớn hơn giá gói
             return amountPaid == 0 || amountPaid >= plan.Price;
         }
     }
