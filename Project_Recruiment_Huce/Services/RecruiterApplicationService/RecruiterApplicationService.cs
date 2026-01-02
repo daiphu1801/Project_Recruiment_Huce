@@ -180,7 +180,7 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
         {
             try
             {
-                // Verify ownership
+                // 1. Verify ownership (giữ nguyên logic cũ)
                 if (!_repository.IsApplicationOwnedByRecruiter(applicationId, recruiterId))
                 {
                     return new UpdateStatusResult
@@ -190,7 +190,26 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
                     };
                 }
 
-                // Validate status
+                // --- ĐOẠN CODE THÊM MỚI ---
+                // 2. Kiểm tra trạng thái tin tuyển dụng (JobPost)
+                // Lấy thông tin chi tiết để check JobPost.Status
+                var application = _repository.GetApplicationByIdWithDetails(applicationId);
+
+                if (application?.JobPost != null)
+                {
+                    string jobStatus = application.JobPost.Status;
+                    if (jobStatus == "Closed" || jobStatus == "Expired")
+                    {
+                        return new UpdateStatusResult
+                        {
+                            Success = false,
+                            ErrorMessage = $"Không thể cập nhật đơn ứng tuyển vì tin tuyển dụng này đã đóng hoặc hết hạn (Trạng thái: {jobStatus})."
+                        };
+                    }
+                }
+                // ---------------------------
+
+                // 3. Validate status (giữ nguyên logic cũ)
                 if (!ValidStatuses.Contains(status))
                 {
                     return new UpdateStatusResult
@@ -414,6 +433,18 @@ namespace Project_Recruiment_Huce.Services.RecruiterApplicationService
                 var application = _repository.GetApplicationById(viewModel.ApplicationID);
                 if (application == null)
                     return new ServiceResult { Success = false, ErrorMessage = "Không tìm thấy đơn ứng tuyển." };
+
+                if (application.JobPost != null)
+                {
+                    if (application.JobPost.Status == "Closed" || application.JobPost.Status == "Expired")
+                    {
+                        return new ServiceResult
+                        {
+                            Success = false,
+                            ErrorMessage = "Không thể xếp lịch phỏng vấn vì tin tuyển dụng đã đóng hoặc hết hạn."
+                        };
+                    }
+                }
 
                 // 2. Check quyền
                 if (!_repository.IsApplicationOwnedByRecruiter(viewModel.ApplicationID, recruiterId))

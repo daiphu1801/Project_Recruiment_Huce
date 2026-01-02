@@ -122,12 +122,14 @@
                     <div class="form-row">
                         <div class="form-group col-md-4">
                             <label for="SalaryFrom">Lương từ</label>
-                            @Html.TextBoxFor(m => m.SalaryFrom, new { @class = "form-control", type = "number", step = "0.01", placeholder = "0" })
+                            @* Thêm tham số "{0:0.##}" để format số chuẩn, loại bỏ số 0 thừa *@
+                            @Html.TextBoxFor(m => m.SalaryFrom, "{0:0.##}", new { @class = "form-control", type = "number", step = "0.01", placeholder = "0" })
                             @Html.ValidationMessageFor(m => m.SalaryFrom, "", new { @class = "text-danger" })
                         </div>
                         <div class="form-group col-md-4">
                             <label for="SalaryTo">Lương đến</label>
-                            @Html.TextBoxFor(m => m.SalaryTo, new { @class = "form-control", type = "number", step = "0.01", placeholder = "0" })
+                            @* Thêm tham số "{0:0.##}" tương tự *@
+                            @Html.TextBoxFor(m => m.SalaryTo, "{0:0.##}", new { @class = "form-control", type = "number", step = "0.01", placeholder = "0" })
                             @Html.ValidationMessageFor(m => m.SalaryTo, "", new { @class = "text-danger" })
                         </div>
                         <div class="form-group col-md-4">
@@ -349,7 +351,7 @@
                         showMarker: false,
                         searchLabel: 'Nhập tên đường, tòa nhà...',
                         keepResult: true,
-                        updateMap: false 
+                        updateMap: false
                     });
 
                     map.addControl(searchControl);
@@ -373,7 +375,7 @@
                 if(currentAddress) {
                     $('#LocationInput').val(currentAddress);
                     $('#mapModal').modal('hide');
-                    $('#LocationInput').valid(); 
+                    $('#LocationInput').valid();
                 } else {
                     alert("Vui lòng chọn một vị trí trên bản đồ.");
                 }

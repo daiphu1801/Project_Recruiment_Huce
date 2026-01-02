@@ -46,6 +46,23 @@
 
     string loginUrl = Url.Action("Login", "Account", new { returnUrl = Request?.RawUrl ?? Url.Action("JobDetails", "Jobs", new { id = Model?.JobPostID }) });
     string candidateProfileUrl = Url.Action("CandidatesManage", "Candidates");
+    string displayLocation = Model?.Location;
+    if (!string.IsNullOrEmpty(displayLocation) && displayLocation.Contains(","))
+    {
+        var parts = displayLocation.Split(',');
+        string lastPart = parts[parts.Length - 1].Trim();
+
+        if ((string.Equals(lastPart, "Việt Nam", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(lastPart, "Vietnam", StringComparison.OrdinalIgnoreCase))
+            && parts.Length > 1)
+        {
+            displayLocation = parts[parts.Length - 2].Trim();
+        }
+        else
+        {
+            displayLocation = lastPart;
+        }
+    }
 }
 
 <section class="section-hero overlay inner-page bg-image" style="background-image: url('@Url.Content("~/Content/images/hero_1.jpg")');" id="home-section">
@@ -89,7 +106,7 @@
                             </span>
                             @if (!string.IsNullOrEmpty(Model?.Location))
                             {
-                                <span class="m-2"><span class="icon-room mr-2"></span>@Model.Location</span>
+                                <span class="m-2"><span class="icon-room mr-2"></span>@displayLocation</span>
                             }
                             @if (!string.IsNullOrEmpty(Model?.EmploymentTypeDisplay))
                             {

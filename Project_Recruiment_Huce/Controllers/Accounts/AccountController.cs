@@ -31,7 +31,7 @@ namespace Project_Recruiment_Huce.Controllers
         {
             // Khởi tạo Service thủ công
             var dbContext = DbContextFactory.Create();
-            
+
             var repo = new Repositories.AccountRepository(dbContext);
             _accountService = new Services.AccountService(repo);
         }
@@ -209,10 +209,10 @@ namespace Project_Recruiment_Huce.Controllers
                 {
                     // Tạo mã reset và lưu vào database
                     var token = PasswordResetHelper.CreateResetToken(db, account.AccountID, account.Email);
-                    
+
                     // Gửi email chứa mã reset
                     bool emailSent = PasswordResetHelper.SendResetCodeEmail(account.Email, token.ResetCode, account.Username);
-                    
+
                     if (emailSent)
                     {
                         // Lưu email vào session để dùng ở trang ResetPassword
@@ -223,11 +223,11 @@ namespace Project_Recruiment_Huce.Controllers
                     else
                     {
                         ModelState.AddModelError("", "Không thể gửi email. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.");
+                    }
+                    TempData["SuccessMessage"] = "Nếu email tồn tại, mã xác thực đã được gửi.";
+                    return RedirectToAction("Login");
                 }
-                TempData["SuccessMessage"] = "Nếu email tồn tại, mã xác thực đã được gửi.";
-                return RedirectToAction("Login");
             }
-        }
 
             return View(model);
         }
@@ -289,7 +289,7 @@ namespace Project_Recruiment_Huce.Controllers
         {
             // Lưu userType vào session để dùng trong callback
             Session["LoginUserType"] = userType;
-            
+
             // Trigger OWIN Google authentication
             return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }
@@ -303,7 +303,7 @@ namespace Project_Recruiment_Huce.Controllers
         {
             // Lấy userType từ session
             var userType = Session["LoginUserType"] as string;
-            
+
             // 1. Lấy thông tin từ Google thông qua OWIN
             var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
             if (loginInfo == null)
@@ -352,7 +352,7 @@ namespace Project_Recruiment_Huce.Controllers
                         return RedirectToAction("Login");
                     }
                 }
-                
+
                 // Đăng nhập thành công
                 SignInUser(result.Account, false);
 
@@ -392,12 +392,12 @@ namespace Project_Recruiment_Huce.Controllers
             };
 
             var identity = new ClaimsIdentity(claims, USER_AUTH_TYPE);
-            var authProperties = new AuthenticationProperties 
-            { 
+            var authProperties = new AuthenticationProperties
+            {
                 IsPersistent = rememberMe,
                 AllowRefresh = true
             };
-            
+
             // Sign in với authentication type rõ ràng
             AuthenticationManager.SignIn(authProperties, identity);
         }

@@ -55,10 +55,17 @@ namespace Project_Recruiment_Huce.Services.JobService
                 return result;
             }
 
+            if (viewModel.ApplicationDeadline.HasValue && viewModel.ApplicationDeadline.Value.Date < DateTime.Now.Date)
+            {
+                result.Errors["ApplicationDeadline"] = "Hạn nộp hồ sơ phải lớn hơn hoặc bằng ngày hiện tại.";
+                return result;
+            }
+
             // Sanitize HTML content
             string sanitizedDescription = SanitizeHtmlField(viewModel.Description);
             string sanitizedRequirements = SanitizeHtmlField(viewModel.Requirements);
             string sanitizedSkills = SanitizeHtmlField(viewModel.Skills);
+            sanitizedSkills = NormalizeSkillsList(sanitizedSkills);
 
             // Convert employment type from Vietnamese to database format
             string employmentType = ConvertEmploymentTypeToDatabaseFormat(viewModel.EmploymentType);
@@ -200,10 +207,17 @@ namespace Project_Recruiment_Huce.Services.JobService
                 return result;
             }
 
+            if (viewModel.ApplicationDeadline.HasValue && viewModel.ApplicationDeadline.Value.Date < DateTime.Now.Date)
+            {
+                result.Errors["ApplicationDeadline"] = "Hạn nộp hồ sơ phải lớn hơn hoặc bằng ngày hiện tại.";
+                return result;
+            }
+
             // Sanitize HTML content
             string sanitizedDescription = SanitizeHtmlField(viewModel.Description);
             string sanitizedRequirements = SanitizeHtmlField(viewModel.Requirements);
             string sanitizedSkills = SanitizeHtmlField(viewModel.Skills);
+            sanitizedSkills = NormalizeSkillsList(sanitizedSkills);
 
             // Convert employment type from Vietnamese to database format
             string employmentType = ConvertEmploymentTypeToDatabaseFormat(viewModel.EmploymentType);
@@ -332,7 +346,7 @@ namespace Project_Recruiment_Huce.Services.JobService
             }
 
             // Check if ApplicationDeadline has passed
-            bool isDeadlinePassed = job.ApplicationDeadline.HasValue && 
+            bool isDeadlinePassed = job.ApplicationDeadline.HasValue &&
                                    job.ApplicationDeadline.Value < DateTime.Now.Date;
 
             if (isDeadlinePassed)
@@ -418,10 +432,10 @@ namespace Project_Recruiment_Huce.Services.JobService
         private List<SelectListItem> GetCompaniesSelectList(IJobRepository repository, int? selectedCompanyId)
         {
             var companies = new List<SelectListItem>();
-            
+
             // Create a new read-only repository instance to query companies
             var readOnlyRepo = new JobRepository(readOnly: true);
-            
+
             try
             {
                 // Get companies (this is a simplification - ideally use CompanyRepository)
@@ -450,6 +464,53 @@ namespace Project_Recruiment_Huce.Services.JobService
             return companies;
         }
 
+
+        /// <summary>
+        /// Chuẩn hóa danh sách kỹ năng: Chuyển đổi dấu phẩy/xuống dòng thành HTML List (Bullet points)
+        /// </summary>
+        private string NormalizeSkillsList(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return input;
+
+            // Nếu người dùng đã chủ động tạo danh sách (ul/ol) trong editor thì giữ nguyên, không can thiệp
+            if (input.IndexOf("<ul>", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                input.IndexOf("<ol>", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return input;
+            }
+
+            // Loại bỏ các thẻ HTML cơ bản (như <p>) để lấy nội dung text
+            string plainText = System.Text.RegularExpressions.Regex.Replace(input, "<.*?>", "\n");
+
+            // Decode các ký tự đặc biệt (nếu có)
+            plainText = System.Net.WebUtility.HtmlDecode(plainText);
+
+            // Tách chuỗi dựa trên: Dấu phẩy (,), Chấm phẩy (;), và Xuống dòng (\n)
+            var items = plainText.Split(new[] { ',', ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (items.Length == 0) return input;
+
+            // Xây dựng lại chuỗi HTML dưới dạng danh sách không thứ tự (ul)
+            var sb = new System.Text.StringBuilder();
+            sb.Append("<ul>");
+            bool hasItems = false;
+            foreach (var item in items)
+            {
+                var trimmed = item.Trim();
+                // Loại bỏ dấu chấm câu ở cuối mỗi kỹ năng nếu có (tùy chọn)
+                if (trimmed.EndsWith(".")) trimmed = trimmed.Substring(0, trimmed.Length - 1).Trim();
+
+                if (!string.IsNullOrWhiteSpace(trimmed))
+                {
+                    sb.Append($"<li>{trimmed}</li>");
+                    hasItems = true;
+                }
+            }
+            sb.Append("</ul>");
+
+            // Chỉ trả về dạng list nếu tách được ít nhất 1 item, ngược lại trả về gốc
+            return hasItems ? sb.ToString() : input;
+        }
         #endregion
     }
 }
