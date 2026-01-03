@@ -12,18 +12,28 @@
         @using (Html.BeginForm("Index", "Applications", FormMethod.Get, new { id = "filterForm", @class = "row g-2 align-items-center" }))
         {
             <div class="col-md-3">
-                <input type="text" name="q" value="@ViewBag.CurrentQ" class="form-control" placeholder="Tìm kiếm...">
+                <div class="input-group">
+                    <input type="text" name="q" value="@ViewBag.CurrentQ" class="form-control" placeholder="Tìm kiếm...">
+                    <button class="btn btn-outline-secondary" type="submit" title="Tìm kiếm">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
             </div>
-            <div class="col-md-3">
-                @Html.DropDownList("companyId", ViewBag.CompanyId as SelectList, "-- Tất cả công ty --", new { @class = "form-select", onchange = "this.form.submit()" })
+            <div class="col-md-2">
+                @Html.DropDownList("companyId", ViewBag.CompanyId as SelectList, "-- Công ty --", new { @class = "form-select", onchange = "this.form.submit()" })
             </div>
-            <div class="col-md-3">
-                @Html.DropDownList("jobId", ViewBag.JobId as SelectList, "-- Tất cả công việc --", new { @class = "form-select", onchange = "this.form.submit()" })
+            <div class="col-md-2">
+                @Html.DropDownList("jobId", ViewBag.JobId as SelectList, "-- Công việc --", new { @class = "form-select", onchange = "this.form.submit()" })
             </div>
             <div class="col-md-2">
                 @Html.DropDownList("status", ViewBag.StatusOptions as SelectList, "-- Trạng thái --", new { @class = "form-select", onchange = "this.form.submit()" })
             </div>
-            <div class="col-md-1 text-end">
+            <div class="col-auto">
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary" title="Làm mới">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </a>
+            </div>
+            <div class="col-auto ms-auto">
                 <a href="@Url.Action("Create")" class="btn btn-primary text-nowrap">
                     <i class="bi bi-plus-lg"></i> Thêm
                 </a>

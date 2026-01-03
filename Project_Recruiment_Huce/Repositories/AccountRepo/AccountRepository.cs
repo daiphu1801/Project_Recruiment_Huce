@@ -189,7 +189,6 @@ namespace Project_Recruiment_Huce.Repositories
                 Phone = null,
                 Address = null,
                 Summary = null,
-                Avatar = null,
                 PhotoID = null,
                 ApplicationEmail = email,
                 CreatedAt = DateTime.Now,

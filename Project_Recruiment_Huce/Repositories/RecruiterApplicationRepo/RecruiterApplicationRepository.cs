@@ -72,21 +72,8 @@ namespace Project_Recruiment_Huce.Repositories.RecruiterApplicationRepo
                 throw new InvalidOperationException($"Application with ID {applicationId} not found");
             }
 
+            // Chỉ cập nhật trạng thái, không chạm vào Note (Note chỉ dành cho Candidate)
             application.Status = status;
-            string timeStamp = $"[{DateTime.Now:dd/MM/yyyy HH:mm}] ";
-
-            if (!string.IsNullOrEmpty(application.Note))
-            {
-                // Nếu đã có ghi chú cũ, xuống dòng rồi nối thêm ghi chú mới
-                application.Note += Environment.NewLine + timeStamp + note;
-            }
-            else
-            {
-                // Nếu chưa có, tạo mới
-                application.Note = timeStamp + note;
-            }
-
-            // 3. Cập nhật thời gian
             application.UpdatedAt = DateTime.Now;
         }
 

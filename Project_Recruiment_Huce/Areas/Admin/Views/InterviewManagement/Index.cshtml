@@ -8,45 +8,37 @@
 
 <div class="app-content">
     <div class="container-fluid">
-        <!-- Page Header -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <h4><i class="bi bi-calendar-check me-2"></i>Danh sách lịch phỏng vấn</h4>
-            </div>
-            <div class="col-md-6 text-end">
-                <a href="@Url.Action("Dashboard", "InterviewManagement", new { area = "Admin" })" class="btn btn-info">
-                    <i class="bi bi-bar-chart me-1"></i>Thống kê
-                </a>
-            </div>
-        </div>
-
         <!-- Filter Form -->
         <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0"><i class="bi bi-funnel me-2"></i>Bộ lọc</h5>
-            </div>
             <div class="card-body">
-                @using (Html.BeginForm("Index", "InterviewManagement", new { area = "Admin" }, FormMethod.Get, new { @class = "row g-3" }))
+                @using (Html.BeginForm("Index", "InterviewManagement", new { area = "Admin" }, FormMethod.Get, new { @class = "d-flex align-items-end flex-wrap gap-2" }))
                 {
-                    <div class="col-md-3">
+                    <div style="min-width:180px;">
                         <label class="form-label">Từ ngày</label>
                         <input type="date" name="Filters.FromDate" value="@Model.Filters.FromDate?.ToString("yyyy-MM-dd")" class="form-control" />
                     </div>
-                    <div class="col-md-3">
+                    <div style="min-width:180px;">
                         <label class="form-label">Đến ngày</label>
                         <input type="date" name="Filters.ToDate" value="@Model.Filters.ToDate?.ToString("yyyy-MM-dd")" class="form-control" />
                     </div>
-                    <div class="col-md-3">
+                    <div style="min-width:200px;max-width:260px;">
                         <label class="form-label">Nhà tuyển dụng</label>
-                        @Html.DropDownList("Filters.RecruiterEmail", ViewBag.Recruiters as SelectList, new { @class = "form-select" })
+                        @Html.DropDownList("Filters.RecruiterEmail", ViewBag.Recruiters as SelectList, "-- Tất cả --", new { @class = "form-select" })
                     </div>
-                    <div class="col-md-3">
+                    <div style="min-width:200px;max-width:300px;">
                         <label class="form-label">Tìm kiếm</label>
                         <input type="text" name="Filters.SearchTerm" value="@Model.Filters.SearchTerm" class="form-control" placeholder="Tên ứng viên, vị trí..." />
                     </div>
-                    <div class="col-12 text-end">
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Lọc</button>
-                        <a href="@Url.Action("Index", "InterviewManagement", new { area = "Admin" })" class="btn btn-secondary"><i class="bi bi-x-circle me-1"></i>Xóa bộ lọc</a>
+                    <div class="flex-shrink-0">
+                        <button type="submit" class="btn btn-outline-secondary" title="Tìm kiếm"><i class="bi bi-search"></i></button>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <a href="@Url.Action("Index", "InterviewManagement", new { area = "Admin" })" class="btn btn-outline-secondary" title="Làm mới"><i class="bi bi-arrow-clockwise"></i></a>
+                    </div>
+                    <div class="flex-shrink-0 ms-auto">
+                        <a href="@Url.Action("Dashboard", "InterviewManagement", new { area = "Admin" })" class="btn btn-info">
+                            <i class="bi bi-bar-chart me-1"></i>Thống kê
+                        </a>
                     </div>
                 }
             </div>

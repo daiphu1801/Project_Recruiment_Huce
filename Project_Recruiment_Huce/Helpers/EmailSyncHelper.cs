@@ -58,7 +58,13 @@ namespace Project_Recruiment_Huce.Helpers
                         FullName = fullName ?? string.Empty,
                         CompanyEmail = null, // Email liên lạc - để trống, user sẽ tự cập nhật
                         CreatedAt = DateTime.Now,
-                        ActiveFlag = 1
+                        ActiveFlag = 1,
+                        SubscriptionType = "Free", // Gói miễn phí mặc định
+                        FreeJobPostCount = 3, // 3 bài đăng miễn phí
+                        MonthlyJobPostCount = 0,
+                        MonthlyCVViewCount = 0,
+                        MonthlyEmailInviteCount = 0,
+                        LastResetDate = DateTime.Now // Khởi tạo ngày reset để tránh SqlDateTime overflow
                     };
                     db.Recruiters.InsertOnSubmit(recruiter);
                 }

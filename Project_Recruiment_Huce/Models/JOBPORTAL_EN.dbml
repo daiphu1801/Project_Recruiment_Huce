@@ -218,8 +218,6 @@
       <Column Name="MonthlyCVViewCount" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="MonthlyEmailInviteCount" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="LastResetDate" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
-      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
-      <Column Name="RowVer" Type="System.Data.Linq.Binary" DbType="rowversion NOT NULL" CanBeNull="false" IsVersion="true" />
       <Association Name="Recruiter_JobPost" Member="JobPosts" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="JobPost" />
       <Association Name="Recruiter_PostingHistory" Member="PostingHistories" ThisKey="RecruiterID" OtherKey="RecruiterID" Type="PostingHistory" />
       <Association Name="Account_Recruiter" Member="Account" ThisKey="AccountID" OtherKey="AccountID" Type="Account" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
@@ -270,21 +268,6 @@
       <Column Name="ReferenceCode" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Column Name="Description" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
       <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
-    </Type>
-  </Table>
-  <Table Name="dbo.ContactMessages" Member="ContactMessages">
-    <Type Name="ContactMessage">
-      <Column Name="ContactMessageID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="FirstName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
-      <Column Name="LastName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
-      <Column Name="Email" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
-      <Column Name="Subject" Type="System.String" DbType="NVarChar(200) NOT NULL" CanBeNull="false" />
-      <Column Name="Message" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
-      <Column Name="Status" Type="System.String" DbType="NVarChar(20) NOT NULL" CanBeNull="false" />
-      <Column Name="AdminNotes" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Column Name="CreatedAt" Type="System.DateTime" DbType="DateTime2 NOT NULL" CanBeNull="false" />
-      <Column Name="ReadAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Column Name="RepliedAt" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
     </Type>
   </Table>
 </Database>

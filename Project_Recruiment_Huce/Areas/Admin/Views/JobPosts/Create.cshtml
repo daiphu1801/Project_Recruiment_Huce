@@ -174,8 +174,9 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="Skills" class="form-label fw-semibold">Kỹ năng cần thiết (phân cách bằng dấu phẩy)</label>
+                        <label for="Skills" class="form-label fw-semibold">Kỹ năng cần thiết</label>
                         @Html.TextAreaFor(m => m.Skills, new { @class = "form-control", rows = "2", placeholder = "VD: C#, .NET Core, SQL Server, Tiếng Anh" })
+                        <small class="form-text text-muted">Nhập danh sách kỹ năng. Sẽ tự động format thành danh sách có dấu đầu dòng khi hiển thị.</small>
                     </div>
 
                     <div class="row">

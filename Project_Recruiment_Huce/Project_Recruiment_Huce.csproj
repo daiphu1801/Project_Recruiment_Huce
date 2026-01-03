@@ -472,8 +472,10 @@
     <Content Include="Areas\Admin\Views\Applications\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Auth\loginAd.cshtml" />
     <Content Include="Areas\Admin\Views\Auth\registerAd.cshtml" />
-    <Content Include="Areas\Admin\Views\BankCards\Details.cshtml" />
-    <Content Include="Areas\Admin\Views\BankCards\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\ContactMessages\Delete.cshtml" />
+    <Content Include="Areas\Admin\Views\ContactMessages\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\ContactMessages\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\ContactMessages\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Candidates\Create.cshtml" />
     <Content Include="Areas\Admin\Views\Candidates\Delete.cshtml" />
     <Content Include="Areas\Admin\Views\Candidates\Details.cshtml" />
@@ -488,16 +490,13 @@
     <Content Include="Areas\Admin\Views\InterviewManagement\Dashboard.cshtml" />
     <Content Include="Areas\Admin\Views\InterviewManagement\Details.cshtml" />
     <Content Include="Areas\Admin\Views\InterviewManagement\Index.cshtml" />
-    <Content Include="Areas\Admin\Views\JobPostDetails\Index.cshtml" />
+
     <Content Include="Areas\Admin\Views\JobPosts\Create.cshtml" />
     <Content Include="Areas\Admin\Views\JobPosts\Delete.cshtml" />
     <Content Include="Areas\Admin\Views\JobPosts\Details.cshtml" />
     <Content Include="Areas\Admin\Views\JobPosts\Edit.cshtml" />
     <Content Include="Areas\Admin\Views\JobPosts\Index.cshtml" />
-    <Content Include="Areas\Admin\Views\PaymentHistory\Details.cshtml" />
-    <Content Include="Areas\Admin\Views\PaymentHistory\Index.cshtml" />
-    <Content Include="Areas\Admin\Views\PendingPayments\Details.cshtml" />
-    <Content Include="Areas\Admin\Views\PendingPayments\Index.cshtml" />
+
     <Content Include="Areas\Admin\Views\Photos\Create.cshtml" />
     <Content Include="Areas\Admin\Views\Photos\Delete.cshtml" />
     <Content Include="Areas\Admin\Views\Photos\Details.cshtml" />
@@ -515,10 +514,10 @@
     <Content Include="Areas\Admin\Views\Shared\_RowActions.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\_StatusBadge.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\_TableToolbar.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\_Notifications.cshtml" />
     <Content Include="Areas\Admin\Views\Transactions\Details.cshtml" />
     <Content Include="Areas\Admin\Views\Transactions\Index.cshtml" />
-    <Content Include="Areas\Admin\Views\WorkExperiences\Details.cshtml" />
-    <Content Include="Areas\Admin\Views\WorkExperiences\Index.cshtml" />
+
     <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
     <Content Include="Content\Admin\css\adminlte.css.map" />
     <Content Include="Content\Admin\css\adminlte.min.css.map" />
@@ -583,7 +582,7 @@
     <Content Include="Views\RecruitersApplication\UpdateApplicationStatus.cshtml" />
     <Content Include="Views\RecruitersApplication\ScheduleInterview.cshtml" />
     <Content Include="Views\ResumeFiles\MyResumes.cshtml" />
-    <Content Include="Views\JobDetails\Details.cshtml" />
+
     <Content Include="Views\Jobs\MyJobs.cshtml" />
     <Content Include="Views\Jobs\Edit.cshtml" />
     <Content Include="Views\Jobs\JobsCreate.cshtml" />

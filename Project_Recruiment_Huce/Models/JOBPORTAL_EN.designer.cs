@@ -1424,8 +1424,6 @@ namespace Project_Recruiment_Huce.Models
 		
 		private byte _ActiveFlag;
 		
-		private string _Avatar;
-		
 		private EntitySet<Application> _Applications;
 		
 		private EntitySet<ResumeFile> _ResumeFiles;
@@ -1466,8 +1464,6 @@ namespace Project_Recruiment_Huce.Models
     partial void OnCreatedAtChanged();
     partial void OnActiveFlagChanging(byte value);
     partial void OnActiveFlagChanged();
-    partial void OnAvatarChanging(string value);
-    partial void OnAvatarChanged();
     #endregion
 		
 		public Candidate()
@@ -1744,26 +1740,6 @@ namespace Project_Recruiment_Huce.Models
 					this._ActiveFlag = value;
 					this.SendPropertyChanged("ActiveFlag");
 					this.OnActiveFlagChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Avatar", DbType="NVarChar(500)")]
-		public string Avatar
-		{
-			get
-			{
-				return this._Avatar;
-			}
-			set
-			{
-				if ((this._Avatar != value))
-				{
-					this.OnAvatarChanging(value);
-					this.SendPropertyChanging();
-					this._Avatar = value;
-					this.SendPropertyChanged("Avatar");
-					this.OnAvatarChanged();
 				}
 			}
 		}
@@ -4617,8 +4593,6 @@ namespace Project_Recruiment_Huce.Models
 		
 		private System.Data.Linq.Binary _RowVer;
 		
-		private string _Avatar;
-		
 		private string _SubscriptionType;
 		
 		private System.Nullable<System.DateTime> _SubscriptionExpiryDate;
@@ -4669,8 +4643,6 @@ namespace Project_Recruiment_Huce.Models
     partial void OnPhotoIDChanged();
     partial void OnRowVerChanging(System.Data.Linq.Binary value);
     partial void OnRowVerChanged();
-    partial void OnAvatarChanging(string value);
-    partial void OnAvatarChanged();
     partial void OnSubscriptionTypeChanging(string value);
     partial void OnSubscriptionTypeChanged();
     partial void OnSubscriptionExpiryDateChanging(System.Nullable<System.DateTime> value);
@@ -4925,26 +4897,6 @@ namespace Project_Recruiment_Huce.Models
 					this._RowVer = value;
 					this.SendPropertyChanged("RowVer");
 					this.OnRowVerChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Avatar", DbType="NVarChar(500)", UpdateCheck=UpdateCheck.Never)]
-		public string Avatar
-		{
-			get
-			{
-				return this._Avatar;
-			}
-			set
-			{
-				if ((this._Avatar != value))
-				{
-					this.OnAvatarChanging(value);
-					this.SendPropertyChanging();
-					this._Avatar = value;
-					this.SendPropertyChanged("Avatar");
-					this.OnAvatarChanged();
 				}
 			}
 		}

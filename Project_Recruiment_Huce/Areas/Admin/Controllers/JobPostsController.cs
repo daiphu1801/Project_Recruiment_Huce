@@ -347,6 +347,16 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (string.IsNullOrWhiteSpace(model.Status))
                     ModelState.AddModelError("Status", "Trạng thái là bắt buộc");
 
+                // Kiểm tra các trường bắt buộc trong JobPostDetail
+                if (string.IsNullOrWhiteSpace(model.Industry))
+                    ModelState.AddModelError("Industry", "Ngành nghề là bắt buộc");
+
+                if (model.YearsExperience < 0)
+                    ModelState.AddModelError("YearsExperience", "Số năm kinh nghiệm không được âm");
+
+                if (model.Headcount < 1)
+                    ModelState.AddModelError("Headcount", "Số lượng tuyển phải ít nhất là 1");
+
                 // Nếu có lỗi, load lại dropdown
                 if (!ModelState.IsValid)
                 {
@@ -389,12 +399,12 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 var jobPostDetail = new JobPostDetail
                 {
                     JobPostID = jobPost.JobPostID, // Dùng ID vừa tạo
-                    Industry = model.Industry,
+                    Industry = string.IsNullOrWhiteSpace(model.Industry) ? "Chưa xác định" : model.Industry,
                     Major = model.Major,
                     YearsExperience = model.YearsExperience,
                     DegreeRequired = model.DegreeRequired,
                     Skills = model.Skills,
-                    Headcount = model.Headcount,
+                    Headcount = model.Headcount > 0 ? model.Headcount : 1,
                     // Xử lý GenderRequirement: nếu null, dùng giá trị default của DB
                     GenderRequirement = string.IsNullOrWhiteSpace(model.GenderRequirement) ? "Not required" : model.GenderRequirement,
                     AgeFrom = model.AgeFrom,
@@ -523,6 +533,9 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
 
                 ViewBag.StatusOptions = BuildStatusSelectList(jobPost.Status);
 
+                // Load JobPostDetail nếu có
+                var jobPostDetail = db.JobPostDetails.FirstOrDefault(d => d.JobPostID == id);
+
                 // Map entity to view model
                 var vm = new JobPostEditVm
                 {
@@ -540,7 +553,18 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                     EmploymentType = jobPost.EmploymentType ?? string.Empty,
                     ApplicationDeadline = jobPost.ApplicationDeadline,
                     Status = jobPost.Status ?? string.Empty,
-                    PostedAt = jobPost.PostedAt
+                    PostedAt = jobPost.PostedAt,
+                    
+                    // Map JobPostDetail fields
+                    Industry = jobPostDetail?.Industry ?? string.Empty,
+                    Major = jobPostDetail?.Major ?? string.Empty,
+                    YearsExperience = jobPostDetail?.YearsExperience ?? 0,
+                    DegreeRequired = jobPostDetail?.DegreeRequired ?? string.Empty,
+                    Skills = jobPostDetail?.Skills ?? string.Empty,
+                    Headcount = jobPostDetail?.Headcount ?? 1,
+                    GenderRequirement = jobPostDetail?.GenderRequirement ?? string.Empty,
+                    AgeFrom = jobPostDetail?.AgeFrom,
+                    AgeTo = jobPostDetail?.AgeTo
                 };
 
                 ViewBag.Title = "Chỉnh sửa tin tuyển dụng";
@@ -638,7 +662,15 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 if (string.IsNullOrWhiteSpace(model.Status))
                     ModelState.AddModelError("Status", "Trạng thái là bắt buộc");
 
-               
+                // Kiểm tra các trường bắt buộc trong JobPostDetail
+                if (string.IsNullOrWhiteSpace(model.Industry))
+                    ModelState.AddModelError("Industry", "Ngành nghề là bắt buộc");
+
+                if (model.YearsExperience < 0)
+                    ModelState.AddModelError("YearsExperience", "Số năm kinh nghiệm không được âm");
+
+                if (model.Headcount < 1)
+                    ModelState.AddModelError("Headcount", "Số lượng tuyển phải ít nhất là 1");
 
                 // Nếu có lỗi, load lại dropdown và trả về view
                 if (!ModelState.IsValid)
@@ -691,12 +723,12 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                 jobPost.UpdatedAt = DateTime.Now;
 
                 // Cập nhật thông tin JobPostDetail
-                jobPostDetail.Industry = model.Industry;
+                jobPostDetail.Industry = string.IsNullOrWhiteSpace(model.Industry) ? "Chưa xác định" : model.Industry;
                 jobPostDetail.Major = model.Major;
                 jobPostDetail.YearsExperience = model.YearsExperience;
                 jobPostDetail.DegreeRequired = model.DegreeRequired;
                 jobPostDetail.Skills = model.Skills;
-                jobPostDetail.Headcount = model.Headcount;
+                jobPostDetail.Headcount = model.Headcount > 0 ? model.Headcount : 1;
                 jobPostDetail.GenderRequirement = string.IsNullOrWhiteSpace(model.GenderRequirement) ? "Not required" : model.GenderRequirement;
                 jobPostDetail.AgeFrom = model.AgeFrom;
                 jobPostDetail.AgeTo = model.AgeTo;

@@ -58,19 +58,7 @@
     @if (ViewBag.TotalItems != null)
     {
         <div class="stats-banner">
-            <h4>
-                <i class="icon-bar-chart mr-2"></i>Tổng quan đơn ứng tuyển
-            </h4>
-            <p>
-                <i class="icon-file-text mr-2"></i>
-                Bạn có <strong>@ViewBag.TotalItems</strong> đơn ứng tuyển
-                @if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
-                {
-                    <span class="ml-3">
-                      <i class="icon-layers mr-2"></i>Trang <strong>@ViewBag.CurrentPage</strong> / <strong>@ViewBag.TotalPages</strong>
-                    </span>
-                }
-            </p>
+            <span>Tổng cộng: <strong>@ViewBag.TotalItems</strong> đơn ứng tuyển</span>
         </div>
     }
 
@@ -79,122 +67,63 @@
         <div class="applications-grid">
             @foreach (var app in Model)
             {
-                <div class="application-card @(app.IsRecent ? "recent" : "") @(app.IsExpired ? "expired" : "")">
-                    <div class="card-header-app @(app.IsRecent ? "recent" : "") @(app.IsExpired ? "expired" : "")">
-                        <div class="job-title-card">
-                            <a href="@Url.Action("JobsDetails", "Jobs", new { id = app.JobPostID })">
-                                @app.JobTitle
-                            </a>
-                        </div>
-                        <div class="company-name-card">
-                            <i class="icon-building"></i>
-                            @app.CompanyName
-                        </div>
-                    </div>
-                    
-                    <div class="card-body-app">
-                        <div class="job-meta-grid">
+                <div class="application-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="job-title-simple">
+                                <a href="@Url.Action("JobsDetails", "Jobs", new { id = app.JobPostID })">@app.JobTitle</a>
+                            </h5>
+                            <p class="company-simple mb-1">
+                                <i class="icon-building mr-1"></i>@app.CompanyName
+                            </p>
                             @if (!string.IsNullOrEmpty(app.Location))
                             {
-                                <div class="job-meta-item-card">
-                                    <i class="icon-map-marker"></i>
-                                    <span>@app.Location</span>
-                                </div>
-                            }
-                            @if (!string.IsNullOrEmpty(app.SalaryRange))
-                            {
-                                <div class="job-meta-item-card">
-                                    <i class="icon-money"></i>
-                                    <span>@app.SalaryRange</span>
-                                </div>
-                            }
-                            @if (app.ApplicationDeadline.HasValue)
-                            {
-                                <div class="job-meta-item-card">
-                                    <i class="icon-calendar"></i>
-                                    <span>
-                                        Hạn: @app.ApplicationDeadline.Value.ToString("dd/MM/yyyy")
-                                        @if (app.IsExpired)
-                                        {
-                                            <span class="badge badge-danger ml-2" style="font-size: 0.75rem;">Hết hạn</span>
-                                        }
-                                    </span>
-                                </div>
+                                <p class="location-simple mb-0">
+                                    <i class="icon-map-marker mr-1"></i>@app.Location
+                                </p>
                             }
                         </div>
-
-                        <div class="status-row">
-                            <div>
-                                @{
-                                    string statusClass = "badge-warning";
-                                    string statusDisplay = "Đang xem xét";
-                                    string statusIcon = "icon-clock-o";
-                                    if (!string.IsNullOrEmpty(app.Status))
+                        <div class="col-md-3 text-center">
+                            @{
+                                string statusClass = "badge-warning";
+                                string statusDisplay = "Đang xem xét";
+                                if (!string.IsNullOrEmpty(app.Status))
+                                {
+                                    string statusLower = app.Status.ToLower();
+                                    if (statusLower == "under review" || statusLower == "pending")
                                     {
-                                        string statusLower = app.Status.ToLower();
-                                        if (statusLower == "under review" || statusLower == "pending")
-                                        {
-                                            statusDisplay = "Đang xem xét";
-                                            statusClass = "badge-warning";
-                                            statusIcon = "icon-clock-o";
-                                        }
-                                        else if (statusLower == "accepted" || statusLower == "approved")
-                                        {
-                                            statusDisplay = "Đã chấp nhận";
-                                            statusClass = "badge-success";
-                                            statusIcon = "icon-check-circle";
-                                        }
-                                        else if (statusLower == "rejected" || statusLower == "declined")
-                                        {
-                                            statusDisplay = "Đã từ chối";
-                                            statusClass = "badge-danger";
-                                            statusIcon = "icon-times-circle";
-                                        }
-                                        else if (statusLower == "interview" || statusLower == "interview scheduled")
-                                        {
-                                            statusDisplay = "Lịch phỏng vấn";
-                                            statusClass = "badge-info";
-                                            statusIcon = "icon-calendar-check-o";
-                                        }
-                                        else
-                                        {
-                                            statusDisplay = app.Status;
-                                        }
+                                        statusDisplay = "Đang xem xét";
+                                        statusClass = "badge-warning";
+                                    }
+                                    else if (statusLower == "accepted" || statusLower == "approved")
+                                    {
+                                        statusDisplay = "Đã chấp nhận";
+                                        statusClass = "badge-success";
+                                    }
+                                    else if (statusLower == "rejected" || statusLower == "declined")
+                                    {
+                                        statusDisplay = "Đã từ chối";
+                                        statusClass = "badge-danger";
+                                    }
+                                    else if (statusLower == "interview" || statusLower == "interview scheduled")
+                                    {
+                                        statusDisplay = "Lịch phỏng vấn";
+                                        statusClass = "badge-info";
+                                    }
+                                    else
+                                    {
+                                        statusDisplay = app.Status;
                                     }
                                 }
-                                <span class="status-badge-card @statusClass">
-                                    <i class="@statusIcon"></i>
-                                    @statusDisplay
-                                </span>
-                            </div>
-                            <div class="application-date-card">
-                                <i class="icon-calendar"></i>
-                                @(app.AppliedAt?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")
-                            </div>
-                        </div>
-
-                        @if (!string.IsNullOrEmpty(app.Note))
-                        {
-                            <div class="note-section-card">
-                                <strong>
-                                    <i class="icon-comment"></i>
-                                    Ghi chú của bạn:
-                                </strong>
-                                <div class="note-content-card">
-                                    @app.Note
-                                </div>
-                            </div>
-                        }
-
-                        <div class="card-actions">
-                            @if (!string.IsNullOrEmpty(app.ResumeFilePath))
-                            {
-                                <a href="@Url.Content(app.ResumeFilePath)" target="_blank" class="btn-view-cv">
-                                    <i class="icon-file-pdf"></i> Xem CV
-                                </a>
                             }
-                            <a href="@Url.Action("ApplicationDetails", "Candidates", new { id = app.ApplicationID })" class="btn-details">
-                                <i class="icon-eye"></i>Xem chi tiết
+                            <span class="badge @statusClass" style="font-size: 0.85rem; padding: 8px 15px;">@statusDisplay</span>
+                            <p class="text-muted mt-2 mb-0" style="font-size: 0.8rem;">
+                                Ứng tuyển: @(app.AppliedAt?.ToString("dd/MM/yyyy") ?? "N/A")
+                            </p>
+                        </div>
+                        <div class="col-md-3 text-right">
+                            <a href="@Url.Action("ApplicationDetails", "Candidates", new { id = app.ApplicationID })" class="btn btn-primary btn-sm">
+                                <i class="icon-eye mr-1"></i>Chi tiết
                             </a>
                         </div>
                     </div>

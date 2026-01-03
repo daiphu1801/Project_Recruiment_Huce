@@ -332,7 +332,6 @@ BEGIN
         PostedAt       DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
         UpdatedAt      DATETIME2(7) NOT NULL DEFAULT SYSDATETIME(),
         ViewCount      INT NOT NULL DEFAULT 0,
-        Status         NVARCHAR(50) NOT NULL DEFAULT N'Published',
         
         -- Subscription tracking
         RefreshCount   INT NOT NULL DEFAULT 0,

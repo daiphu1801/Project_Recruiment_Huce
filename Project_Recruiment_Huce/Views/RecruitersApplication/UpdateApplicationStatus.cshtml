@@ -137,22 +137,6 @@
                                         <span class="badge badge-info ml-0" id="newStatusBadge"></span>
                                     </div>
                                 </div>
-                            </div>               
-                                 
-                            <!-- Notes Section -->
-                            <div class="form-group mb-4">
-                                @Html.LabelFor(m => m.Note, new { @class = "form-label font-weight-bold text-dark mb-3" })
-                                <div class="notes-section">
-                                    @Html.TextAreaFor(m => m.Note, new { @class = "form-control form-control-lg", rows = "5", placeholder = "Nhập ghi chú về việc cập nhật trạng thái này (tùy chọn)...", @id = "noteTextarea" })
-                                    @Html.ValidationMessageFor(m => m.Note, "", new { @class = "text-danger mt-2 d-block" })
-                                    <div class="character-count mt-2">
-                                        <small class="text-muted">0/500 ký tự</small>
-                                    </div>
-                                    <small class="form-text text-muted mt-2">
-                                        <i class="icon-info-circle mr-1"></i>
-                                        Ghi chú này sẽ được lưu vào lịch sử cập nhật của đơn ứng tuyển.
-                                    </small>
-                                </div>
                             </div>
 
                             <!-- Action Buttons -->
@@ -241,8 +225,7 @@
             const statusPreview = $('#statusPreview');
             const newStatusBadge = $('#newStatusBadge');
             const currentStatus = '@Model.Status';
-            const noteTextarea = $('#noteTextarea');
-            const characterCount = $('.character-count small');
+
             
             // Status change handler
             statusSelect.on('change', function() {
@@ -285,20 +268,7 @@
                 }
             });
             
-            // Character count for notes
-            noteTextarea.on('input', function() {
-                const length = $(this).val().length;
-                const maxLength = 500;
-                characterCount.text(length + '/' + maxLength + ' ký tự');
-                
-                if (length > maxLength) {
-                    characterCount.addClass('text-danger');
-                } else if (length > maxLength * 0.8) {
-                    characterCount.removeClass('text-danger').addClass('text-warning');
-                } else {
-                    characterCount.removeClass('text-danger text-warning');
-                }
-            });
+
             
             // Form submission with confirmation
             $('#statusForm').on('submit', function(e) {
@@ -317,7 +287,7 @@
             
             // Initialize
             statusSelect.trigger('change');
-            noteTextarea.trigger('input');
+
         });
     </script>
 }

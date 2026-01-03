@@ -14,7 +14,7 @@
     <meta name="description" content="" />
     <meta name="keywords" content="" />
     <meta name="author" content="Free-Template.co" />
-    <link rel="shortcut icon" href="ftco-32x32.png">
+    <link rel="shortcut icon" href="@Url.Content("~/Content/uploads/icon/Gemini_Generated_Image_njvyxqnjvyxqnjvy.png")" type="image/png">
     
     <link rel="stylesheet" href="~/Content/css/custom-bs.css">
     <link rel="stylesheet" href="~/Content/css/jquery.fancybox.min.css">
@@ -164,7 +164,7 @@
     
 
     <!-- NAVBAR -->
-    <header class="site-navbar mt-3">
+    <header class="site-navbar">
       <div class="container-fluid">
         <div class="row align-items-center">
           <div class="site-logo col-6"><a href="@Url.Action("Index", "Home")">JobBoard</a></div>
@@ -253,20 +253,6 @@
                             if (acc.PhotoID.HasValue) {
                               var photo = mdb.ProfilePhotos.FirstOrDefault(p => p.PhotoID == acc.PhotoID.Value);
                               if (photo != null) { mAvatarUrl = Url.Content(photo.FilePath); }
-                            }
-                            // Nếu không có PhotoID, lấy Avatar URL từ Candidate/Recruiter (Google login)
-                            if (string.IsNullOrEmpty(mAvatarUrl) && mobileRoleClaimForAvatar != null) {
-                              if (mobileRoleClaimForAvatar.Value == "Candidate") {
-                                var candidate = mdb.Candidates.FirstOrDefault(c => c.AccountID == accId);
-                                if (candidate != null && !string.IsNullOrEmpty(candidate.Avatar)) {
-                                  mAvatarUrl = candidate.Avatar;
-                                }
-                              } else if (mobileRoleClaimForAvatar.Value == "Recruiter") {
-                                var recruiter = mdb.Recruiters.FirstOrDefault(r => r.AccountID == accId);
-                                if (recruiter != null && !string.IsNullOrEmpty(recruiter.Avatar)) {
-                                  mAvatarUrl = recruiter.Avatar;
-                                }
-                              }
                             }
                           }
                         }
@@ -368,20 +354,6 @@
                             if (acc.PhotoID.HasValue) {
                               var photo = navdb.ProfilePhotos.FirstOrDefault(p => p.PhotoID == acc.PhotoID.Value);
                               if (photo != null) { avatarUrl = Url.Content(photo.FilePath); }
-                            }
-                            // Nếu không có PhotoID, lấy Avatar URL từ Candidate/Recruiter (Google login)
-                            if (string.IsNullOrEmpty(avatarUrl) && roleClaimNav != null) {
-                              if (roleClaimNav.Value == "Candidate") {
-                                var candidate = navdb.Candidates.FirstOrDefault(c => c.AccountID == accId);
-                                if (candidate != null && !string.IsNullOrEmpty(candidate.Avatar)) {
-                                  avatarUrl = candidate.Avatar;
-                                }
-                              } else if (roleClaimNav.Value == "Recruiter") {
-                                var recruiter = navdb.Recruiters.FirstOrDefault(r => r.AccountID == accId);
-                                if (recruiter != null && !string.IsNullOrEmpty(recruiter.Avatar)) {
-                                  avatarUrl = recruiter.Avatar;
-                                }
-                              }
                             }
                           }
                         }
@@ -608,6 +580,25 @@
     <script src="~/Scripts/js/bootstrap-select.min.js"></script>
     
     <script src="~/Scripts/js/custom.js?v=@DateTime.Now.Ticks"></script>
+
+    <!-- Navbar Scroll Effect -->
+    <script>
+      (function() {
+        var navbar = document.querySelector('.site-navbar');
+        if (!navbar) return;
+        
+        function handleScroll() {
+          if (window.scrollY > 80) {
+            navbar.classList.add('scrolled');
+          } else {
+            navbar.classList.remove('scrolled');
+          }
+        }
+        
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll(); // Check on load
+      })();
+    </script>
 
     <script>
       (function(){
