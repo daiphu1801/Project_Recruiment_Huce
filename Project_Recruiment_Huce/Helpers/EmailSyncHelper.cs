@@ -60,7 +60,7 @@ namespace Project_Recruiment_Huce.Helpers
                         CreatedAt = DateTime.Now,
                         ActiveFlag = 1,
                         SubscriptionType = "Free", // Gói miễn phí mặc định
-                        FreeJobPostCount = 3, // 3 bài đăng miễn phí
+                        FreeJobPostCount = 0, // Chưa đăng tin nào
                         MonthlyJobPostCount = 0,
                         MonthlyCVViewCount = 0,
                         MonthlyEmailInviteCount = 0,
