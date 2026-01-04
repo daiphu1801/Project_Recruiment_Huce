@@ -15,7 +15,6 @@
 --   - ĐÃ THÊM: SePayTransactions, Subscription fields trong Recruiters
 --   - Sử dụng PBKDF2 để hash password (không còn Salt column)
 -- =====================================================================
-
 SET NOCOUNT ON;
 GO
 

@@ -199,7 +199,8 @@ namespace Project_Recruiment_Huce.Areas.Admin.Controllers
                         Role = "Admin", // HARDCODE: Luôn là Admin cho admin area
                         PasswordHash = passwordHash,
                         CreatedAt = DateTime.Now,
-                        ActiveFlag = 1
+                        ActiveFlag = 1,
+                        FullName = model.TenDangNhap // Sử dụng tên đăng nhập làm FullName mặc định
                     };
 
                     // Đảm bảo Role không bị thay đổi
